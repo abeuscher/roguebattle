@@ -1,0 +1,7 @@
+Source: unit-table-final.xlsx
+Classes: 160
+Lines: 50
+Role templates: 27
+Problems: 1
+
+- Sheet is missing columns the spec expects: Traits, Leader aura, XP rate.

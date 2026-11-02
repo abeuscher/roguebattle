@@ -1,0 +1,692 @@
+{
+ "1": [
+  [
+   "Serf"
+  ],
+  [
+   "Fighter"
+  ],
+  [
+   "Soldier"
+  ],
+  [
+   "Sentinel",
+   "Champion"
+  ]
+ ],
+ "2": [
+  [
+   "Serf"
+  ],
+  [
+   "Fighter"
+  ],
+  [
+   "Spearman"
+  ],
+  [
+   "Centurion",
+   "Zweihander"
+  ]
+ ],
+ "3": [
+  [
+   "Serf"
+  ],
+  [
+   "Fighter"
+  ],
+  [
+   "Knight"
+  ],
+  [
+   "Paladin"
+  ]
+ ],
+ "4": [
+  [
+   "Serf"
+  ],
+  [
+   "Fighter"
+  ],
+  [
+   "Berserker"
+  ],
+  [
+   "Evil One"
+  ]
+ ],
+ "5": [
+  [
+   "Serf"
+  ],
+  [
+   "Fighter"
+  ],
+  [
+   "Beast Man"
+  ],
+  [
+   "Beast Master"
+  ]
+ ],
+ "6": [
+  [
+   "Serf"
+  ],
+  [
+   "Squire"
+  ],
+  [
+   "Lancer"
+  ],
+  [
+   "Dragoon"
+  ]
+ ],
+ "7": [
+  [
+   "Serf"
+  ],
+  [
+   "Squire"
+  ],
+  [
+   "Horse Archer"
+  ],
+  [
+   "Scythian"
+  ]
+ ],
+ "8": [
+  [
+   "Serf"
+  ],
+  [
+   "Squire"
+  ],
+  [
+   "Scout"
+  ],
+  [
+   "Hussar"
+  ]
+ ],
+ "9": [
+  [
+   "Serf"
+  ],
+  [
+   "Bowman"
+  ],
+  [
+   "Archer"
+  ],
+  [
+   "Warbow"
+  ]
+ ],
+ "10": [
+  [
+   "Serf"
+  ],
+  [
+   "Bowman"
+  ],
+  [
+   "Crossbowman"
+  ],
+  [
+   "Arbalest"
+  ]
+ ],
+ "11": [
+  [
+   "Serf"
+  ],
+  [
+   "Bowman"
+  ],
+  [
+   "Rogue"
+  ],
+  [
+   "Assassin"
+  ]
+ ],
+ "12": [
+  [
+   "Serf"
+  ],
+  [
+   "Bowman"
+  ],
+  [
+   "Ninja"
+  ],
+  [
+   "Ninja Master"
+  ]
+ ],
+ "13": [
+  [
+   "Serf"
+  ],
+  [
+   "Militia"
+  ],
+  [
+   "Swordfighter"
+  ],
+  [
+   "Swordmaster"
+  ]
+ ],
+ "14": [
+  [
+   "Serf"
+  ],
+  [
+   "Militia"
+  ],
+  [
+   "Skirmisher"
+  ],
+  [
+   "Ranger"
+  ]
+ ],
+ "15": [
+  [
+   "Serf"
+  ],
+  [
+   "Militia"
+  ],
+  [
+   "Samurai"
+  ],
+  [
+   "Samurai Master"
+  ]
+ ],
+ "16": [
+  [
+   "Serf"
+  ],
+  [
+   "Acolyte"
+  ],
+  [
+   "Cleric"
+  ],
+  [
+   "Templar"
+  ]
+ ],
+ "17": [
+  [
+   "Serf"
+  ],
+  [
+   "Acolyte"
+  ],
+  [
+   "Valkyrie"
+  ],
+  [
+   "Muse"
+  ]
+ ],
+ "18": [
+  [
+   "Serf"
+  ],
+  [
+   "Acolyte"
+  ],
+  [
+   "Witch"
+  ],
+  [
+   "Wicked Witch",
+   "Fairy Godmother"
+  ]
+ ],
+ "19": [
+  [
+   "Serf"
+  ],
+  [
+   "Apprentice"
+  ],
+  [
+   "Mage"
+  ],
+  [
+   "Fire Mage",
+   "Ice Mage",
+   "Lightning Mage"
+  ]
+ ],
+ "20": [
+  [
+   "Serf"
+  ],
+  [
+   "Apprentice"
+  ],
+  [
+   "Wizard"
+  ],
+  [
+   "Sorcerer"
+  ]
+ ],
+ "21": [
+  [
+   "Serf"
+  ],
+  [
+   "Apprentice"
+  ],
+  [
+   "Enchantress"
+  ],
+  [
+   "Sorceress"
+  ]
+ ],
+ "L1": [
+  [
+   "Drakeling"
+  ],
+  [
+   "Wyrm"
+  ],
+  [
+   "Dragon"
+  ],
+  [
+   "Red Dragon",
+   "Blue Dragon",
+   "Silver Dragon",
+   "Black Dragon"
+  ]
+ ],
+ "L2": [
+  [
+   "Drakeling"
+  ],
+  [
+   "Serpent"
+  ],
+  [
+   "Sea Dragon"
+  ],
+  [
+   "Leviathan"
+  ]
+ ],
+ "L3": [
+  [
+   "Drakeling"
+  ],
+  [
+   "Snow Snake"
+  ],
+  [
+   "Snow Serpent"
+  ],
+  [
+   "Kuraokami"
+  ]
+ ],
+ "L4": [
+  [
+   "Wolf"
+  ],
+  [
+   "Hellhound"
+  ],
+  [
+   "Cerberus"
+  ],
+  [
+   "Cujo"
+  ]
+ ],
+ "L5": [
+  [
+   "Wolf"
+  ],
+  [
+   "Wolfhound"
+  ],
+  [
+   "Arctic Wolf"
+  ],
+  [
+   "Balto"
+  ]
+ ],
+ "L6": [
+  [
+   "Bobcat"
+  ],
+  [
+   "Hell Cat"
+  ],
+  [
+   "Siamese"
+  ],
+  [
+   "Sabretooth"
+  ]
+ ],
+ "L7": [
+  [
+   "Bobcat"
+  ],
+  [
+   "Battle Cat"
+  ],
+  [
+   "War Cat"
+  ],
+  [
+   "Tigress"
+  ]
+ ],
+ "L8": [
+  [
+   "Cuttlefish"
+  ],
+  [
+   "Octopus"
+  ],
+  [
+   "Battle Octopus"
+  ],
+  [
+   "Octolord"
+  ]
+ ],
+ "L9": [
+  [
+   "Cuttlefish"
+  ],
+  [
+   "Kraken"
+  ],
+  [
+   "Electro Kraken"
+  ],
+  [
+   "Cthulhu"
+  ]
+ ],
+ "L10": [
+  [
+   "War Bird"
+  ],
+  [
+   "Gryphon"
+  ],
+  [
+   "Cockatrice"
+  ],
+  [
+   "Sphinx"
+  ]
+ ],
+ "L11": [
+  [
+   "War Bird"
+  ],
+  [
+   "Deathwing"
+  ],
+  [
+   "Blackwing"
+  ],
+  [
+   "Wraith"
+  ]
+ ],
+ "L12": [
+  [
+   "Bigfoot"
+  ],
+  [
+   "Yeti"
+  ],
+  [
+   "Sasquatch"
+  ],
+  [
+   "Coldmiser"
+  ]
+ ],
+ "L13": [
+  [
+   "Goat"
+  ],
+  [
+   "Battle Goat"
+  ],
+  [
+   "Battle Ram"
+  ],
+  [
+   "Chupacabra"
+  ]
+ ],
+ "L14": [
+  [
+   "Bison"
+  ],
+  [
+   "Battle Bison"
+  ],
+  [
+   "Battle Buffalo"
+  ],
+  [
+   "Gamork"
+  ]
+ ],
+ "L15": [
+  [
+   "Mountain Cub"
+  ],
+  [
+   "Mountain Lion"
+  ],
+  [
+   "Lionelle"
+  ],
+  [
+   "Lion-O"
+  ]
+ ],
+ "L16": [
+  [
+   "Salamander"
+  ],
+  [
+   "Viper"
+  ],
+  [
+   "Monitor"
+  ],
+  [
+   "Komodo"
+  ]
+ ],
+ "N1": [
+  [
+   "Elfling"
+  ],
+  [
+   "Elf Squire"
+  ],
+  [
+   "Elf"
+  ],
+  [
+   "Royal Elf"
+  ]
+ ],
+ "N2": [
+  [
+   "Trollkin"
+  ],
+  [
+   "Trollboy"
+  ],
+  [
+   "Troll"
+  ],
+  [
+   "Big Troll"
+  ]
+ ],
+ "N3": [
+  [
+   "Gnomeboy"
+  ],
+  [
+   "Gnome"
+  ],
+  [
+   "Master Gnome"
+  ],
+  [
+   "Mountaineer"
+  ]
+ ],
+ "N4": [
+  [
+   "Goblin"
+  ],
+  [
+   "Nobgoblin"
+  ],
+  [
+   "Hobgoblin"
+  ],
+  [
+   "Bobgoblin"
+  ]
+ ],
+ "N5": [
+  [
+   "Wisp"
+  ],
+  [
+   "Ghost"
+  ],
+  [
+   "Spectre"
+  ],
+  [
+   "Niffin"
+  ]
+ ],
+ "N6": [
+  [
+   "Tadpole"
+  ],
+  [
+   "Frog"
+  ],
+  [
+   "Frog Boy"
+  ],
+  [
+   "Frog Man"
+  ]
+ ],
+ "N7": [
+  [
+   "Tadpole"
+  ],
+  [
+   "Toad"
+  ],
+  [
+   "Toad Boy"
+  ],
+  [
+   "Toad Man"
+  ]
+ ],
+ "R1": [
+  [
+   "Centaur"
+  ],
+  [
+   "Spiritaur"
+  ],
+  [
+   "Deitaur"
+  ]
+ ],
+ "R2": [
+  [
+   "Angel"
+  ],
+  [
+   "Archangel"
+  ],
+  [
+   "Seraphim"
+  ]
+ ],
+ "R3": [
+  [
+   "Imp"
+  ],
+  [
+   "Demon"
+  ],
+  [
+   "Archdemon"
+  ]
+ ],
+ "R4": [
+  [
+   "Eagle Rider"
+  ],
+  [
+   "Eagle Knight"
+  ],
+  [
+   "Eagle Lord"
+  ]
+ ],
+ "R5": [
+  [
+   "Mermaid"
+  ],
+  [
+   "Siren"
+  ],
+  [
+   "Naiad"
+  ]
+ ],
+ "R6": [
+  [
+   "Faerie"
+  ],
+  [
+   "Pixie"
+  ],
+  [
+   "Sylph"
+  ]
+ ]
+}

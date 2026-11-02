@@ -1,0 +1,11 @@
+# Godot 4
+.godot/
+/android/
+export_credentials.cfg
+
+# Python
+__pycache__/
+
+# Local output
+logs/
+*.tmp

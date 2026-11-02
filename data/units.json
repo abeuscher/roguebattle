@@ -1,0 +1,5809 @@
+[
+ {
+  "class": "Serf",
+  "stage": 1,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 2,
+  "role": "Serf",
+  "key_stats": [
+   "CON"
+  ],
+  "stat_total": 30,
+  "flex_min": 2,
+  "flex_max": 4,
+  "front_attack": "Melee",
+  "front_count": 1,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": "Every soldier starts here",
+  "base_stats": {
+   "STR": 5,
+   "CON": 6,
+   "INT": 3,
+   "SPD": 5,
+   "AGI": 5,
+   "PDEF": 3,
+   "MDEF": 3
+  },
+  "lines": [
+   "1",
+   "2",
+   "3",
+   "4",
+   "5",
+   "6",
+   "7",
+   "8",
+   "9",
+   "10",
+   "11",
+   "12",
+   "13",
+   "14",
+   "15",
+   "16",
+   "17",
+   "18",
+   "19",
+   "20",
+   "21"
+  ]
+ },
+ {
+  "class": "Fighter",
+  "stage": 2,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 1,
+  "role": "Fighter",
+  "key_stats": [
+   "STR",
+   "AGI"
+  ],
+  "stat_total": 51,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 11,
+   "CON": 10,
+   "INT": 4,
+   "SPD": 8,
+   "AGI": 8,
+   "PDEF": 6,
+   "MDEF": 4
+  },
+  "lines": [
+   "1",
+   "2",
+   "3",
+   "4",
+   "5"
+  ]
+ },
+ {
+  "class": "Squire",
+  "stage": 2,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 3,
+  "role": "Cavalry",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 54,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 11,
+   "CON": 11,
+   "INT": 4,
+   "SPD": 10,
+   "AGI": 6,
+   "PDEF": 8,
+   "MDEF": 4
+  },
+  "lines": [
+   "6",
+   "7",
+   "8"
+  ]
+ },
+ {
+  "class": "Bowman",
+  "stage": 2,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 2,
+  "role": "Archer",
+  "key_stats": [
+   "AGI",
+   "STR"
+  ],
+  "stat_total": 49,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Ranged",
+  "front_count": 1,
+  "back_attack": "Ranged",
+  "back_count": 2,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 9,
+   "CON": 8,
+   "INT": 5,
+   "SPD": 8,
+   "AGI": 10,
+   "PDEF": 4,
+   "MDEF": 5
+  },
+  "lines": [
+   "9",
+   "10",
+   "11",
+   "12"
+  ]
+ },
+ {
+  "class": "Militia",
+  "stage": 2,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 2,
+  "role": "Skirmisher",
+  "key_stats": [
+   "AGI",
+   "SPD"
+  ],
+  "stat_total": 51,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Ranged",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 9,
+   "CON": 9,
+   "INT": 4,
+   "SPD": 9,
+   "AGI": 10,
+   "PDEF": 5,
+   "MDEF": 5
+  },
+  "lines": [
+   "13",
+   "14",
+   "15"
+  ]
+ },
+ {
+  "class": "Acolyte",
+  "stage": 2,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 1,
+  "role": "Healer",
+  "key_stats": [
+   "INT",
+   "MDEF"
+  ],
+  "stat_total": 47,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 1,
+  "back_attack": "Heal",
+  "back_count": 2,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 4,
+   "CON": 8,
+   "INT": 10,
+   "SPD": 6,
+   "AGI": 6,
+   "PDEF": 4,
+   "MDEF": 9
+  },
+  "lines": [
+   "16",
+   "17",
+   "18"
+  ]
+ },
+ {
+  "class": "Apprentice",
+  "stage": 2,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 1,
+  "role": "Caster",
+  "key_stats": [
+   "INT",
+   "MDEF"
+  ],
+  "stat_total": 44,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Magic",
+  "front_count": 1,
+  "back_attack": "Magic",
+  "back_count": 2,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 4,
+   "CON": 6,
+   "INT": 11,
+   "SPD": 6,
+   "AGI": 6,
+   "PDEF": 2,
+   "MDEF": 9
+  },
+  "lines": [
+   "19",
+   "20",
+   "21"
+  ]
+ },
+ {
+  "class": "Soldier",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 1,
+  "role": "Tank",
+  "key_stats": [
+   "CON",
+   "PDEF",
+   "STR"
+  ],
+  "stat_total": 61,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 12,
+   "CON": 15,
+   "INT": 4,
+   "SPD": 6,
+   "AGI": 6,
+   "PDEF": 12,
+   "MDEF": 6
+  },
+  "lines": [
+   "1"
+  ]
+ },
+ {
+  "class": "Sentinel",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 1,
+  "role": "Tank",
+  "key_stats": [
+   "CON",
+   "PDEF",
+   "STR"
+  ],
+  "stat_total": 72,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 2,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 14,
+   "CON": 18,
+   "INT": 5,
+   "SPD": 7,
+   "AGI": 7,
+   "PDEF": 14,
+   "MDEF": 7
+  },
+  "lines": [
+   "1"
+  ]
+ },
+ {
+  "class": "Champion",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 1,
+  "role": "Fighter",
+  "key_stats": [
+   "STR",
+   "AGI"
+  ],
+  "stat_total": 69,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 2,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 16,
+   "CON": 14,
+   "INT": 5,
+   "SPD": 10,
+   "AGI": 10,
+   "PDEF": 9,
+   "MDEF": 5
+  },
+  "lines": [
+   "1"
+  ]
+ },
+ {
+  "class": "Spearman",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 1,
+  "role": "Reach tank",
+  "key_stats": [
+   "CON",
+   "PDEF",
+   "STR"
+  ],
+  "stat_total": 59,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee (reach 2nd row)",
+  "back_count": 1,
+  "element": null,
+  "notes": "Anti-cavalry",
+  "base_stats": {
+   "STR": 12,
+   "CON": 15,
+   "INT": 4,
+   "SPD": 6,
+   "AGI": 6,
+   "PDEF": 10,
+   "MDEF": 6
+  },
+  "lines": [
+   "2"
+  ]
+ },
+ {
+  "class": "Centurion",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 1,
+  "role": "Reach tank",
+  "key_stats": [
+   "CON",
+   "PDEF",
+   "STR"
+  ],
+  "stat_total": 70,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee (reach 2nd row)",
+  "back_count": 2,
+  "element": null,
+  "notes": "Anti-cavalry",
+  "base_stats": {
+   "STR": 14,
+   "CON": 18,
+   "INT": 5,
+   "SPD": 7,
+   "AGI": 7,
+   "PDEF": 12,
+   "MDEF": 7
+  },
+  "lines": [
+   "2"
+  ]
+ },
+ {
+  "class": "Zweihander",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 1,
+  "role": "Fighter",
+  "key_stats": [
+   "STR",
+   "AGI"
+  ],
+  "stat_total": 69,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 2,
+  "element": null,
+  "notes": "Anti-cavalry",
+  "base_stats": {
+   "STR": 16,
+   "CON": 14,
+   "INT": 5,
+   "SPD": 10,
+   "AGI": 10,
+   "PDEF": 9,
+   "MDEF": 5
+  },
+  "lines": [
+   "2"
+  ]
+ },
+ {
+  "class": "Knight",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Plains",
+  "speed_tier": 1,
+  "role": "Tank",
+  "key_stats": [
+   "CON",
+   "PDEF",
+   "STR"
+  ],
+  "stat_total": 61,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": "Stronger by day",
+  "base_stats": {
+   "STR": 12,
+   "CON": 15,
+   "INT": 4,
+   "SPD": 6,
+   "AGI": 6,
+   "PDEF": 12,
+   "MDEF": 6
+  },
+  "lines": [
+   "3"
+  ]
+ },
+ {
+  "class": "Paladin",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Plains",
+  "speed_tier": 1,
+  "role": "Tank",
+  "key_stats": [
+   "CON",
+   "PDEF",
+   "STR"
+  ],
+  "stat_total": 72,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 2,
+  "element": "Holy",
+  "notes": "Stronger by day",
+  "base_stats": {
+   "STR": 14,
+   "CON": 18,
+   "INT": 5,
+   "SPD": 7,
+   "AGI": 7,
+   "PDEF": 14,
+   "MDEF": 7
+  },
+  "lines": [
+   "3"
+  ]
+ },
+ {
+  "class": "Berserker",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Plains",
+  "speed_tier": 2,
+  "role": "Fighter",
+  "key_stats": [
+   "STR",
+   "AGI"
+  ],
+  "stat_total": 60,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": "Stronger at night; Vampyre by item",
+  "base_stats": {
+   "STR": 14,
+   "CON": 12,
+   "INT": 4,
+   "SPD": 9,
+   "AGI": 9,
+   "PDEF": 8,
+   "MDEF": 4
+  },
+  "lines": [
+   "4"
+  ]
+ },
+ {
+  "class": "Evil One",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Plains",
+  "speed_tier": 2,
+  "role": "Fighter",
+  "key_stats": [
+   "STR",
+   "AGI"
+  ],
+  "stat_total": 69,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 2,
+  "element": "Dark",
+  "notes": "Stronger at night; Vampyre by item",
+  "base_stats": {
+   "STR": 16,
+   "CON": 14,
+   "INT": 5,
+   "SPD": 10,
+   "AGI": 10,
+   "PDEF": 9,
+   "MDEF": 5
+  },
+  "lines": [
+   "4"
+  ]
+ },
+ {
+  "class": "Beast Man",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Neutral",
+  "terrain": "Forest",
+  "speed_tier": 2,
+  "role": "Fighter",
+  "key_stats": [
+   "STR",
+   "AGI"
+  ],
+  "stat_total": 60,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": "Recruits large beasts",
+  "base_stats": {
+   "STR": 14,
+   "CON": 12,
+   "INT": 4,
+   "SPD": 9,
+   "AGI": 9,
+   "PDEF": 8,
+   "MDEF": 4
+  },
+  "lines": [
+   "5"
+  ]
+ },
+ {
+  "class": "Beast Master",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Neutral",
+  "terrain": "Forest",
+  "speed_tier": 2,
+  "role": "Fighter",
+  "key_stats": [
+   "STR",
+   "AGI"
+  ],
+  "stat_total": 69,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 2,
+  "element": null,
+  "notes": "Recruits large beasts",
+  "base_stats": {
+   "STR": 16,
+   "CON": 14,
+   "INT": 5,
+   "SPD": 10,
+   "AGI": 10,
+   "PDEF": 9,
+   "MDEF": 5
+  },
+  "lines": [
+   "5"
+  ]
+ },
+ {
+  "class": "Lancer",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 3,
+  "role": "Cavalry",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 65,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": "Charge",
+  "base_stats": {
+   "STR": 14,
+   "CON": 14,
+   "INT": 4,
+   "SPD": 12,
+   "AGI": 8,
+   "PDEF": 9,
+   "MDEF": 4
+  },
+  "lines": [
+   "6"
+  ]
+ },
+ {
+  "class": "Dragoon",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 3,
+  "role": "Cavalry",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 75,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 2,
+  "element": null,
+  "notes": "Charge",
+  "base_stats": {
+   "STR": 16,
+   "CON": 16,
+   "INT": 5,
+   "SPD": 14,
+   "AGI": 9,
+   "PDEF": 10,
+   "MDEF": 5
+  },
+  "lines": [
+   "6"
+  ]
+ },
+ {
+  "class": "Horse Archer",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 3,
+  "role": "Mounted archer",
+  "key_stats": [
+   "AGI",
+   "SPD"
+  ],
+  "stat_total": 62,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Ranged",
+  "front_count": 1,
+  "back_attack": "Ranged",
+  "back_count": 3,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 10,
+   "CON": 10,
+   "INT": 6,
+   "SPD": 12,
+   "AGI": 12,
+   "PDEF": 6,
+   "MDEF": 6
+  },
+  "lines": [
+   "7"
+  ]
+ },
+ {
+  "class": "Scythian",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 3,
+  "role": "Mounted archer",
+  "key_stats": [
+   "AGI",
+   "SPD"
+  ],
+  "stat_total": 73,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Ranged",
+  "front_count": 2,
+  "back_attack": "Ranged",
+  "back_count": 3,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 12,
+   "CON": 12,
+   "INT": 7,
+   "SPD": 14,
+   "AGI": 14,
+   "PDEF": 7,
+   "MDEF": 7
+  },
+  "lines": [
+   "7"
+  ]
+ },
+ {
+  "class": "Scout",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Forest",
+  "speed_tier": 3,
+  "role": "Cavalry",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 65,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": "Fast in rough terrain",
+  "base_stats": {
+   "STR": 14,
+   "CON": 14,
+   "INT": 4,
+   "SPD": 12,
+   "AGI": 8,
+   "PDEF": 9,
+   "MDEF": 4
+  },
+  "lines": [
+   "8"
+  ]
+ },
+ {
+  "class": "Hussar",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Forest",
+  "speed_tier": 3,
+  "role": "Cavalry",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 75,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 2,
+  "element": null,
+  "notes": "Fast in rough terrain",
+  "base_stats": {
+   "STR": 16,
+   "CON": 16,
+   "INT": 5,
+   "SPD": 14,
+   "AGI": 9,
+   "PDEF": 10,
+   "MDEF": 5
+  },
+  "lines": [
+   "8"
+  ]
+ },
+ {
+  "class": "Archer",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 2,
+  "role": "Archer",
+  "key_stats": [
+   "AGI",
+   "STR"
+  ],
+  "stat_total": 56,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Ranged",
+  "front_count": 1,
+  "back_attack": "Ranged",
+  "back_count": 3,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 10,
+   "CON": 9,
+   "INT": 6,
+   "SPD": 9,
+   "AGI": 12,
+   "PDEF": 4,
+   "MDEF": 6
+  },
+  "lines": [
+   "9"
+  ]
+ },
+ {
+  "class": "Warbow",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 2,
+  "role": "Archer",
+  "key_stats": [
+   "AGI",
+   "STR"
+  ],
+  "stat_total": 65,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Ranged",
+  "front_count": 2,
+  "back_attack": "Ranged",
+  "back_count": 3,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 12,
+   "CON": 10,
+   "INT": 7,
+   "SPD": 10,
+   "AGI": 14,
+   "PDEF": 5,
+   "MDEF": 7
+  },
+  "lines": [
+   "9"
+  ]
+ },
+ {
+  "class": "Crossbowman",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 2,
+  "role": "Archer",
+  "key_stats": [
+   "AGI",
+   "STR"
+  ],
+  "stat_total": 56,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Ranged",
+  "front_count": 1,
+  "back_attack": "Ranged",
+  "back_count": 3,
+  "element": null,
+  "notes": "Armor-piercing",
+  "base_stats": {
+   "STR": 10,
+   "CON": 9,
+   "INT": 6,
+   "SPD": 9,
+   "AGI": 12,
+   "PDEF": 4,
+   "MDEF": 6
+  },
+  "lines": [
+   "10"
+  ]
+ },
+ {
+  "class": "Arbalest",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 2,
+  "role": "Archer",
+  "key_stats": [
+   "AGI",
+   "STR"
+  ],
+  "stat_total": 65,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Ranged",
+  "front_count": 2,
+  "back_attack": "Ranged",
+  "back_count": 3,
+  "element": null,
+  "notes": "Armor-piercing",
+  "base_stats": {
+   "STR": 12,
+   "CON": 10,
+   "INT": 7,
+   "SPD": 10,
+   "AGI": 14,
+   "PDEF": 5,
+   "MDEF": 7
+  },
+  "lines": [
+   "10"
+  ]
+ },
+ {
+  "class": "Rogue",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Forest",
+  "speed_tier": 2,
+  "role": "Rear striker",
+  "key_stats": [
+   "AGI",
+   "SPD"
+  ],
+  "stat_total": 59,
+  "flex_min": 3,
+  "flex_max": 6,
+  "front_attack": "Melee (any row)",
+  "front_count": 3,
+  "back_attack": "Melee (any row)",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 10,
+   "CON": 9,
+   "INT": 4,
+   "SPD": 12,
+   "AGI": 14,
+   "PDEF": 4,
+   "MDEF": 6
+  },
+  "lines": [
+   "11"
+  ]
+ },
+ {
+  "class": "Assassin",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Forest",
+  "speed_tier": 2,
+  "role": "Rear striker",
+  "key_stats": [
+   "AGI",
+   "SPD"
+  ],
+  "stat_total": 69,
+  "flex_min": 3,
+  "flex_max": 6,
+  "front_attack": "Melee (any row)",
+  "front_count": 3,
+  "back_attack": "Melee (any row)",
+  "back_count": 2,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 12,
+   "CON": 10,
+   "INT": 5,
+   "SPD": 14,
+   "AGI": 16,
+   "PDEF": 5,
+   "MDEF": 7
+  },
+  "lines": [
+   "11"
+  ]
+ },
+ {
+  "class": "Ninja",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Forest",
+  "speed_tier": 2,
+  "role": "Rear striker",
+  "key_stats": [
+   "AGI",
+   "SPD"
+  ],
+  "stat_total": 59,
+  "flex_min": 3,
+  "flex_max": 6,
+  "front_attack": "Melee (any row)",
+  "front_count": 3,
+  "back_attack": "Melee (any row)",
+  "back_count": 1,
+  "element": null,
+  "notes": "Night bonus",
+  "base_stats": {
+   "STR": 10,
+   "CON": 9,
+   "INT": 4,
+   "SPD": 12,
+   "AGI": 14,
+   "PDEF": 4,
+   "MDEF": 6
+  },
+  "lines": [
+   "12"
+  ]
+ },
+ {
+  "class": "Ninja Master",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Forest",
+  "speed_tier": 2,
+  "role": "Rear striker",
+  "key_stats": [
+   "AGI",
+   "SPD"
+  ],
+  "stat_total": 69,
+  "flex_min": 3,
+  "flex_max": 6,
+  "front_attack": "Melee (any row)",
+  "front_count": 3,
+  "back_attack": "Melee (any row)",
+  "back_count": 2,
+  "element": "Dark",
+  "notes": "Night bonus",
+  "base_stats": {
+   "STR": 12,
+   "CON": 10,
+   "INT": 5,
+   "SPD": 14,
+   "AGI": 16,
+   "PDEF": 5,
+   "MDEF": 7
+  },
+  "lines": [
+   "12"
+  ]
+ },
+ {
+  "class": "Swordfighter",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 2,
+  "role": "Fighter",
+  "key_stats": [
+   "STR",
+   "AGI"
+  ],
+  "stat_total": 60,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 14,
+   "CON": 12,
+   "INT": 4,
+   "SPD": 9,
+   "AGI": 9,
+   "PDEF": 8,
+   "MDEF": 4
+  },
+  "lines": [
+   "13"
+  ]
+ },
+ {
+  "class": "Swordmaster",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 2,
+  "role": "Fighter",
+  "key_stats": [
+   "STR",
+   "AGI"
+  ],
+  "stat_total": 69,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 2,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 16,
+   "CON": 14,
+   "INT": 5,
+   "SPD": 10,
+   "AGI": 10,
+   "PDEF": 9,
+   "MDEF": 5
+  },
+  "lines": [
+   "13"
+  ]
+ },
+ {
+  "class": "Skirmisher",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Forest",
+  "speed_tier": 2,
+  "role": "Skirmisher",
+  "key_stats": [
+   "AGI",
+   "SPD"
+  ],
+  "stat_total": 58,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Ranged",
+  "back_count": 1,
+  "element": null,
+  "notes": "Opening volley",
+  "base_stats": {
+   "STR": 10,
+   "CON": 10,
+   "INT": 4,
+   "SPD": 10,
+   "AGI": 12,
+   "PDEF": 6,
+   "MDEF": 6
+  },
+  "lines": [
+   "14"
+  ]
+ },
+ {
+  "class": "Ranger",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Forest",
+  "speed_tier": 2,
+  "role": "Skirmisher",
+  "key_stats": [
+   "AGI",
+   "SPD"
+  ],
+  "stat_total": 69,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Ranged",
+  "back_count": 2,
+  "element": null,
+  "notes": "Opening volley",
+  "base_stats": {
+   "STR": 12,
+   "CON": 12,
+   "INT": 5,
+   "SPD": 12,
+   "AGI": 14,
+   "PDEF": 7,
+   "MDEF": 7
+  },
+  "lines": [
+   "14"
+  ]
+ },
+ {
+  "class": "Samurai",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Forest",
+  "speed_tier": 2,
+  "role": "Fighter",
+  "key_stats": [
+   "STR",
+   "AGI"
+  ],
+  "stat_total": 60,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 14,
+   "CON": 12,
+   "INT": 4,
+   "SPD": 9,
+   "AGI": 9,
+   "PDEF": 8,
+   "MDEF": 4
+  },
+  "lines": [
+   "15"
+  ]
+ },
+ {
+  "class": "Samurai Master",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Forest",
+  "speed_tier": 2,
+  "role": "Fighter",
+  "key_stats": [
+   "STR",
+   "AGI"
+  ],
+  "stat_total": 69,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 2,
+  "element": "Holy",
+  "notes": null,
+  "base_stats": {
+   "STR": 16,
+   "CON": 14,
+   "INT": 5,
+   "SPD": 10,
+   "AGI": 10,
+   "PDEF": 9,
+   "MDEF": 5
+  },
+  "lines": [
+   "15"
+  ]
+ },
+ {
+  "class": "Cleric",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Plains",
+  "speed_tier": 1,
+  "role": "Healer",
+  "key_stats": [
+   "INT",
+   "MDEF"
+  ],
+  "stat_total": 55,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 1,
+  "back_attack": "Heal",
+  "back_count": 3,
+  "element": null,
+  "notes": "Main healer",
+  "base_stats": {
+   "STR": 4,
+   "CON": 9,
+   "INT": 12,
+   "SPD": 8,
+   "AGI": 8,
+   "PDEF": 4,
+   "MDEF": 10
+  },
+  "lines": [
+   "16"
+  ]
+ },
+ {
+  "class": "Templar",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Plains",
+  "speed_tier": 1,
+  "role": "Healer",
+  "key_stats": [
+   "INT",
+   "MDEF"
+  ],
+  "stat_total": 64,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Heal",
+  "back_count": 3,
+  "element": "Holy",
+  "notes": "Main healer",
+  "base_stats": {
+   "STR": 5,
+   "CON": 10,
+   "INT": 14,
+   "SPD": 9,
+   "AGI": 9,
+   "PDEF": 5,
+   "MDEF": 12
+  },
+  "lines": [
+   "16"
+  ]
+ },
+ {
+  "class": "Valkyrie",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Plains",
+  "speed_tier": 3,
+  "role": "Fighter-healer",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 62,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Heal",
+  "back_count": 1,
+  "element": null,
+  "notes": "Mounted",
+  "base_stats": {
+   "STR": 9,
+   "CON": 10,
+   "INT": 9,
+   "SPD": 9,
+   "AGI": 9,
+   "PDEF": 8,
+   "MDEF": 8
+  },
+  "lines": [
+   "17"
+  ]
+ },
+ {
+  "class": "Muse",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Plains",
+  "speed_tier": 3,
+  "role": "Fighter-healer",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 70,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Heal",
+  "back_count": 2,
+  "element": "Holy",
+  "notes": "Mounted",
+  "base_stats": {
+   "STR": 10,
+   "CON": 12,
+   "INT": 10,
+   "SPD": 10,
+   "AGI": 10,
+   "PDEF": 9,
+   "MDEF": 9
+  },
+  "lines": [
+   "17"
+  ]
+ },
+ {
+  "class": "Witch",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "By alignment",
+  "terrain": "Swamp",
+  "speed_tier": 1,
+  "role": "Caster",
+  "key_stats": [
+   "INT",
+   "MDEF"
+  ],
+  "stat_total": 55,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Magic",
+  "front_count": 1,
+  "back_attack": "Magic",
+  "back_count": 3,
+  "element": null,
+  "notes": "Branch by alignment",
+  "base_stats": {
+   "STR": 4,
+   "CON": 8,
+   "INT": 14,
+   "SPD": 8,
+   "AGI": 8,
+   "PDEF": 3,
+   "MDEF": 10
+  },
+  "lines": [
+   "18"
+  ]
+ },
+ {
+  "class": "Wicked Witch",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Swamp",
+  "speed_tier": 1,
+  "role": "Caster",
+  "key_stats": [
+   "INT",
+   "MDEF"
+  ],
+  "stat_total": 64,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Magic",
+  "front_count": 2,
+  "back_attack": "Magic",
+  "back_count": 3,
+  "element": "Dark",
+  "notes": "Branch by alignment",
+  "base_stats": {
+   "STR": 5,
+   "CON": 9,
+   "INT": 16,
+   "SPD": 9,
+   "AGI": 9,
+   "PDEF": 4,
+   "MDEF": 12
+  },
+  "lines": [
+   "18"
+  ]
+ },
+ {
+  "class": "Fairy Godmother",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Swamp",
+  "speed_tier": 1,
+  "role": "Caster",
+  "key_stats": [
+   "INT",
+   "MDEF"
+  ],
+  "stat_total": 64,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Magic",
+  "front_count": 2,
+  "back_attack": "Magic",
+  "back_count": 3,
+  "element": "Holy",
+  "notes": "Branch by alignment",
+  "base_stats": {
+   "STR": 5,
+   "CON": 9,
+   "INT": 16,
+   "SPD": 9,
+   "AGI": 9,
+   "PDEF": 4,
+   "MDEF": 12
+  },
+  "lines": [
+   "18"
+  ]
+ },
+ {
+  "class": "Mage",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 1,
+  "role": "Caster",
+  "key_stats": [
+   "INT",
+   "MDEF"
+  ],
+  "stat_total": 55,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Magic",
+  "front_count": 1,
+  "back_attack": "Magic",
+  "back_count": 3,
+  "element": null,
+  "notes": "Element at stage 4",
+  "base_stats": {
+   "STR": 4,
+   "CON": 8,
+   "INT": 14,
+   "SPD": 8,
+   "AGI": 8,
+   "PDEF": 3,
+   "MDEF": 10
+  },
+  "lines": [
+   "19"
+  ]
+ },
+ {
+  "class": "Fire Mage",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 1,
+  "role": "Caster",
+  "key_stats": [
+   "INT",
+   "MDEF"
+  ],
+  "stat_total": 64,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Magic",
+  "front_count": 2,
+  "back_attack": "Magic",
+  "back_count": 3,
+  "element": "Fire",
+  "notes": "Element at stage 4",
+  "base_stats": {
+   "STR": 5,
+   "CON": 9,
+   "INT": 16,
+   "SPD": 9,
+   "AGI": 9,
+   "PDEF": 4,
+   "MDEF": 12
+  },
+  "lines": [
+   "19"
+  ]
+ },
+ {
+  "class": "Ice Mage",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 1,
+  "role": "Caster",
+  "key_stats": [
+   "INT",
+   "MDEF"
+  ],
+  "stat_total": 64,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Magic",
+  "front_count": 2,
+  "back_attack": "Magic",
+  "back_count": 3,
+  "element": "Ice",
+  "notes": "Element at stage 4",
+  "base_stats": {
+   "STR": 5,
+   "CON": 9,
+   "INT": 16,
+   "SPD": 9,
+   "AGI": 9,
+   "PDEF": 4,
+   "MDEF": 12
+  },
+  "lines": [
+   "19"
+  ]
+ },
+ {
+  "class": "Lightning Mage",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 1,
+  "role": "Caster",
+  "key_stats": [
+   "INT",
+   "MDEF"
+  ],
+  "stat_total": 64,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Magic",
+  "front_count": 2,
+  "back_attack": "Magic",
+  "back_count": 3,
+  "element": "Lightning",
+  "notes": "Element at stage 4",
+  "base_stats": {
+   "STR": 5,
+   "CON": 9,
+   "INT": 16,
+   "SPD": 9,
+   "AGI": 9,
+   "PDEF": 4,
+   "MDEF": 12
+  },
+  "lines": [
+   "19"
+  ]
+ },
+ {
+  "class": "Wizard",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Plains",
+  "speed_tier": 1,
+  "role": "Caster",
+  "key_stats": [
+   "INT",
+   "MDEF"
+  ],
+  "stat_total": 55,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Magic",
+  "front_count": 1,
+  "back_attack": "Magic",
+  "back_count": 3,
+  "element": null,
+  "notes": "Summons undead; Lich by item",
+  "base_stats": {
+   "STR": 4,
+   "CON": 8,
+   "INT": 14,
+   "SPD": 8,
+   "AGI": 8,
+   "PDEF": 3,
+   "MDEF": 10
+  },
+  "lines": [
+   "20"
+  ]
+ },
+ {
+  "class": "Sorcerer",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Plains",
+  "speed_tier": 1,
+  "role": "Caster",
+  "key_stats": [
+   "INT",
+   "MDEF"
+  ],
+  "stat_total": 64,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Magic",
+  "front_count": 2,
+  "back_attack": "Magic",
+  "back_count": 3,
+  "element": "Dark",
+  "notes": "Summons undead; Lich by item",
+  "base_stats": {
+   "STR": 5,
+   "CON": 9,
+   "INT": 16,
+   "SPD": 9,
+   "AGI": 9,
+   "PDEF": 4,
+   "MDEF": 12
+  },
+  "lines": [
+   "20"
+  ]
+ },
+ {
+  "class": "Enchantress",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 1,
+  "role": "Debuffer",
+  "key_stats": [
+   "INT",
+   "AGI"
+  ],
+  "stat_total": 55,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Magic",
+  "front_count": 1,
+  "back_attack": "Debuff",
+  "back_count": 3,
+  "element": null,
+  "notes": "Weakens enemies",
+  "base_stats": {
+   "STR": 4,
+   "CON": 8,
+   "INT": 12,
+   "SPD": 9,
+   "AGI": 9,
+   "PDEF": 3,
+   "MDEF": 10
+  },
+  "lines": [
+   "21"
+  ]
+ },
+ {
+  "class": "Sorceress",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 1,
+  "role": "Debuffer",
+  "key_stats": [
+   "INT",
+   "AGI"
+  ],
+  "stat_total": 64,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Magic",
+  "front_count": 2,
+  "back_attack": "Debuff",
+  "back_count": 3,
+  "element": null,
+  "notes": "Weakens enemies",
+  "base_stats": {
+   "STR": 5,
+   "CON": 9,
+   "INT": 14,
+   "SPD": 10,
+   "AGI": 10,
+   "PDEF": 4,
+   "MDEF": 12
+  },
+  "lines": [
+   "21"
+  ]
+ },
+ {
+  "class": "Centaur",
+  "stage": 2,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 3,
+  "role": "Mounted healer",
+  "key_stats": [
+   "INT",
+   "SPD"
+  ],
+  "stat_total": 55,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 1,
+  "back_attack": "Heal",
+  "back_count": 2,
+  "element": null,
+  "notes": "Healer for mounted squads",
+  "base_stats": {
+   "STR": 6,
+   "CON": 9,
+   "INT": 9,
+   "SPD": 10,
+   "AGI": 8,
+   "PDEF": 5,
+   "MDEF": 8
+  },
+  "lines": [
+   "R1"
+  ]
+ },
+ {
+  "class": "Spiritaur",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 3,
+  "role": "Mounted healer",
+  "key_stats": [
+   "INT",
+   "SPD"
+  ],
+  "stat_total": 64,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 1,
+  "back_attack": "Heal",
+  "back_count": 3,
+  "element": null,
+  "notes": "Healer for mounted squads",
+  "base_stats": {
+   "STR": 8,
+   "CON": 10,
+   "INT": 10,
+   "SPD": 12,
+   "AGI": 9,
+   "PDEF": 6,
+   "MDEF": 9
+  },
+  "lines": [
+   "R1"
+  ]
+ },
+ {
+  "class": "Deitaur",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 3,
+  "role": "Mounted healer",
+  "key_stats": [
+   "INT",
+   "SPD"
+  ],
+  "stat_total": 74,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Heal",
+  "back_count": 3,
+  "element": null,
+  "notes": "Healer for mounted squads",
+  "base_stats": {
+   "STR": 9,
+   "CON": 12,
+   "INT": 12,
+   "SPD": 14,
+   "AGI": 10,
+   "PDEF": 7,
+   "MDEF": 10
+  },
+  "lines": [
+   "R1"
+  ]
+ },
+ {
+  "class": "Angel",
+  "stage": 2,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Holy",
+  "terrain": "Desert",
+  "speed_tier": 2,
+  "role": "Flying healer",
+  "key_stats": [
+   "INT",
+   "MDEF"
+  ],
+  "stat_total": 49,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Magic",
+  "front_count": 1,
+  "back_attack": "Heal",
+  "back_count": 2,
+  "element": "Holy",
+  "notes": "Low flyer; white magic",
+  "base_stats": {
+   "STR": 4,
+   "CON": 6,
+   "INT": 10,
+   "SPD": 9,
+   "AGI": 8,
+   "PDEF": 2,
+   "MDEF": 10
+  },
+  "lines": [
+   "R2"
+  ]
+ },
+ {
+  "class": "Archangel",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Desert",
+  "speed_tier": 2,
+  "role": "Flying healer",
+  "key_stats": [
+   "INT",
+   "MDEF"
+  ],
+  "stat_total": 58,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Magic",
+  "front_count": 1,
+  "back_attack": "Heal",
+  "back_count": 3,
+  "element": "Holy",
+  "notes": "Low flyer; white magic",
+  "base_stats": {
+   "STR": 4,
+   "CON": 8,
+   "INT": 12,
+   "SPD": 10,
+   "AGI": 9,
+   "PDEF": 3,
+   "MDEF": 12
+  },
+  "lines": [
+   "R2"
+  ]
+ },
+ {
+  "class": "Seraphim",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Desert",
+  "speed_tier": 2,
+  "role": "Flying healer",
+  "key_stats": [
+   "INT",
+   "MDEF"
+  ],
+  "stat_total": 68,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Magic",
+  "front_count": 2,
+  "back_attack": "Heal",
+  "back_count": 3,
+  "element": "Holy",
+  "notes": "Low flyer; white magic",
+  "base_stats": {
+   "STR": 5,
+   "CON": 9,
+   "INT": 14,
+   "SPD": 12,
+   "AGI": 10,
+   "PDEF": 4,
+   "MDEF": 14
+  },
+  "lines": [
+   "R2"
+  ]
+ },
+ {
+  "class": "Imp",
+  "stage": 2,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Evil",
+  "terrain": "Lava",
+  "speed_tier": 2,
+  "role": "Flying caster",
+  "key_stats": [
+   "INT",
+   "SPD"
+  ],
+  "stat_total": 49,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Magic",
+  "front_count": 1,
+  "back_attack": "Magic",
+  "back_count": 2,
+  "element": "Dark",
+  "notes": "Low flyer; dark magic",
+  "base_stats": {
+   "STR": 4,
+   "CON": 6,
+   "INT": 11,
+   "SPD": 9,
+   "AGI": 8,
+   "PDEF": 2,
+   "MDEF": 9
+  },
+  "lines": [
+   "R3"
+  ]
+ },
+ {
+  "class": "Demon",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Lava",
+  "speed_tier": 2,
+  "role": "Flying caster",
+  "key_stats": [
+   "INT",
+   "SPD"
+  ],
+  "stat_total": 58,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Magic",
+  "front_count": 1,
+  "back_attack": "Magic",
+  "back_count": 3,
+  "element": "Dark",
+  "notes": "Low flyer; dark magic",
+  "base_stats": {
+   "STR": 4,
+   "CON": 8,
+   "INT": 14,
+   "SPD": 10,
+   "AGI": 9,
+   "PDEF": 3,
+   "MDEF": 10
+  },
+  "lines": [
+   "R3"
+  ]
+ },
+ {
+  "class": "Archdemon",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Lava",
+  "speed_tier": 2,
+  "role": "Flying caster",
+  "key_stats": [
+   "INT",
+   "SPD"
+  ],
+  "stat_total": 68,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Magic",
+  "front_count": 2,
+  "back_attack": "Magic",
+  "back_count": 3,
+  "element": "Dark",
+  "notes": "Low flyer; dark magic",
+  "base_stats": {
+   "STR": 5,
+   "CON": 9,
+   "INT": 16,
+   "SPD": 12,
+   "AGI": 10,
+   "PDEF": 4,
+   "MDEF": 12
+  },
+  "lines": [
+   "R3"
+  ]
+ },
+ {
+  "class": "Eagle Rider",
+  "stage": 2,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Any",
+  "terrain": "Sky",
+  "speed_tier": 3,
+  "role": "Sky rider",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 53,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": "Sky-mounted",
+  "base_stats": {
+   "STR": 11,
+   "CON": 10,
+   "INT": 4,
+   "SPD": 10,
+   "AGI": 8,
+   "PDEF": 6,
+   "MDEF": 4
+  },
+  "lines": [
+   "R4"
+  ]
+ },
+ {
+  "class": "Eagle Knight",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Sky",
+  "speed_tier": 3,
+  "role": "Sky rider",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 63,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": "Sky-mounted",
+  "base_stats": {
+   "STR": 14,
+   "CON": 12,
+   "INT": 4,
+   "SPD": 12,
+   "AGI": 9,
+   "PDEF": 8,
+   "MDEF": 4
+  },
+  "lines": [
+   "R4"
+  ]
+ },
+ {
+  "class": "Eagle Lord",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Sky",
+  "speed_tier": 3,
+  "role": "Sky rider",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 73,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 2,
+  "element": null,
+  "notes": "Sky-mounted",
+  "base_stats": {
+   "STR": 16,
+   "CON": 14,
+   "INT": 5,
+   "SPD": 14,
+   "AGI": 10,
+   "PDEF": 9,
+   "MDEF": 5
+  },
+  "lines": [
+   "R4"
+  ]
+ },
+ {
+  "class": "Mermaid",
+  "stage": 2,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Any",
+  "terrain": "Water",
+  "speed_tier": 2,
+  "role": "Spellblade",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 51,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Magic",
+  "back_count": 1,
+  "element": "Water",
+  "notes": null,
+  "base_stats": {
+   "STR": 9,
+   "CON": 10,
+   "INT": 8,
+   "SPD": 6,
+   "AGI": 6,
+   "PDEF": 6,
+   "MDEF": 6
+  },
+  "lines": [
+   "R5"
+  ]
+ },
+ {
+  "class": "Siren",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Water",
+  "speed_tier": 2,
+  "role": "Spellblade",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 63,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Magic",
+  "back_count": 1,
+  "element": "Water",
+  "notes": null,
+  "base_stats": {
+   "STR": 10,
+   "CON": 12,
+   "INT": 9,
+   "SPD": 8,
+   "AGI": 8,
+   "PDEF": 8,
+   "MDEF": 8
+  },
+  "lines": [
+   "R5"
+  ]
+ },
+ {
+  "class": "Naiad",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Water",
+  "speed_tier": 2,
+  "role": "Spellblade",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 72,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Magic",
+  "back_count": 2,
+  "element": "Water",
+  "notes": null,
+  "base_stats": {
+   "STR": 12,
+   "CON": 14,
+   "INT": 10,
+   "SPD": 9,
+   "AGI": 9,
+   "PDEF": 9,
+   "MDEF": 9
+  },
+  "lines": [
+   "R5"
+  ]
+ },
+ {
+  "class": "Faerie",
+  "stage": 2,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Neutral",
+  "terrain": "Sky",
+  "speed_tier": 2,
+  "role": "Buffer",
+  "key_stats": [
+   "INT",
+   "AGI"
+  ],
+  "stat_total": 47,
+  "flex_min": 2,
+  "flex_max": 4,
+  "front_attack": "Melee",
+  "front_count": 1,
+  "back_attack": "Buff",
+  "back_count": 2,
+  "element": null,
+  "notes": "Cannot lead",
+  "base_stats": {
+   "STR": 2,
+   "CON": 5,
+   "INT": 9,
+   "SPD": 10,
+   "AGI": 11,
+   "PDEF": 2,
+   "MDEF": 8
+  },
+  "lines": [
+   "R6"
+  ]
+ },
+ {
+  "class": "Pixie",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Neutral",
+  "terrain": "Sky",
+  "speed_tier": 2,
+  "role": "Buffer",
+  "key_stats": [
+   "INT",
+   "AGI"
+  ],
+  "stat_total": 57,
+  "flex_min": 2,
+  "flex_max": 4,
+  "front_attack": "Melee",
+  "front_count": 1,
+  "back_attack": "Buff",
+  "back_count": 3,
+  "element": null,
+  "notes": "Cannot lead",
+  "base_stats": {
+   "STR": 3,
+   "CON": 6,
+   "INT": 10,
+   "SPD": 12,
+   "AGI": 14,
+   "PDEF": 3,
+   "MDEF": 9
+  },
+  "lines": [
+   "R6"
+  ]
+ },
+ {
+  "class": "Sylph",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Neutral",
+  "terrain": "Sky",
+  "speed_tier": 2,
+  "role": "Buffer",
+  "key_stats": [
+   "INT",
+   "AGI"
+  ],
+  "stat_total": 67,
+  "flex_min": 2,
+  "flex_max": 4,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Buff",
+  "back_count": 3,
+  "element": null,
+  "notes": "Cannot lead",
+  "base_stats": {
+   "STR": 4,
+   "CON": 7,
+   "INT": 12,
+   "SPD": 14,
+   "AGI": 16,
+   "PDEF": 4,
+   "MDEF": 10
+  },
+  "lines": [
+   "R6"
+  ]
+ },
+ {
+  "class": "Elfling",
+  "stage": 1,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Holy",
+  "terrain": "Snow",
+  "speed_tier": 2,
+  "role": "Archer-healer",
+  "key_stats": [
+   "AGI",
+   "INT"
+  ],
+  "stat_total": 40,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Heal",
+  "front_count": 1,
+  "back_attack": "Ranged",
+  "back_count": 2,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 6,
+   "CON": 6,
+   "INT": 6,
+   "SPD": 6,
+   "AGI": 8,
+   "PDEF": 3,
+   "MDEF": 5
+  },
+  "lines": [
+   "N1"
+  ]
+ },
+ {
+  "class": "Elf Squire",
+  "stage": 2,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Holy",
+  "terrain": "Snow",
+  "speed_tier": 2,
+  "role": "Archer-healer",
+  "key_stats": [
+   "AGI",
+   "INT"
+  ],
+  "stat_total": 52,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Heal",
+  "front_count": 1,
+  "back_attack": "Ranged",
+  "back_count": 2,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 8,
+   "CON": 8,
+   "INT": 8,
+   "SPD": 8,
+   "AGI": 10,
+   "PDEF": 4,
+   "MDEF": 6
+  },
+  "lines": [
+   "N1"
+  ]
+ },
+ {
+  "class": "Elf",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Snow",
+  "speed_tier": 2,
+  "role": "Archer-healer",
+  "key_stats": [
+   "AGI",
+   "INT"
+  ],
+  "stat_total": 60,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Heal",
+  "front_count": 1,
+  "back_attack": "Ranged",
+  "back_count": 3,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 9,
+   "CON": 9,
+   "INT": 9,
+   "SPD": 9,
+   "AGI": 12,
+   "PDEF": 4,
+   "MDEF": 8
+  },
+  "lines": [
+   "N1"
+  ]
+ },
+ {
+  "class": "Royal Elf",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Snow",
+  "speed_tier": 2,
+  "role": "Archer-healer",
+  "key_stats": [
+   "AGI",
+   "INT"
+  ],
+  "stat_total": 68,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Heal",
+  "front_count": 2,
+  "back_attack": "Ranged",
+  "back_count": 3,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 10,
+   "CON": 10,
+   "INT": 10,
+   "SPD": 10,
+   "AGI": 14,
+   "PDEF": 5,
+   "MDEF": 9
+  },
+  "lines": [
+   "N1"
+  ]
+ },
+ {
+  "class": "Trollkin",
+  "stage": 1,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Evil",
+  "terrain": "Snow",
+  "speed_tier": 1,
+  "role": "Spellblade",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 41,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Magic",
+  "back_count": 1,
+  "element": "Ice",
+  "notes": "Cold magic",
+  "base_stats": {
+   "STR": 7,
+   "CON": 8,
+   "INT": 6,
+   "SPD": 5,
+   "AGI": 5,
+   "PDEF": 5,
+   "MDEF": 5
+  },
+  "lines": [
+   "N2"
+  ]
+ },
+ {
+  "class": "Trollboy",
+  "stage": 2,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Evil",
+  "terrain": "Snow",
+  "speed_tier": 1,
+  "role": "Spellblade",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 51,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Magic",
+  "back_count": 1,
+  "element": "Ice",
+  "notes": "Cold magic",
+  "base_stats": {
+   "STR": 9,
+   "CON": 10,
+   "INT": 8,
+   "SPD": 6,
+   "AGI": 6,
+   "PDEF": 6,
+   "MDEF": 6
+  },
+  "lines": [
+   "N2"
+  ]
+ },
+ {
+  "class": "Troll",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Snow",
+  "speed_tier": 1,
+  "role": "Spellblade",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 63,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Magic",
+  "back_count": 1,
+  "element": "Ice",
+  "notes": "Cold magic",
+  "base_stats": {
+   "STR": 10,
+   "CON": 12,
+   "INT": 9,
+   "SPD": 8,
+   "AGI": 8,
+   "PDEF": 8,
+   "MDEF": 8
+  },
+  "lines": [
+   "N2"
+  ]
+ },
+ {
+  "class": "Big Troll",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Snow",
+  "speed_tier": 1,
+  "role": "Spellblade",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 72,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Magic",
+  "back_count": 2,
+  "element": "Ice",
+  "notes": "Cold magic",
+  "base_stats": {
+   "STR": 12,
+   "CON": 14,
+   "INT": 10,
+   "SPD": 9,
+   "AGI": 9,
+   "PDEF": 9,
+   "MDEF": 9
+  },
+  "lines": [
+   "N2"
+  ]
+ },
+ {
+  "class": "Gnomeboy",
+  "stage": 1,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Holy",
+  "terrain": "Mountain",
+  "speed_tier": 2,
+  "role": "Spellblade",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 41,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Magic",
+  "back_count": 1,
+  "element": "Lightning",
+  "notes": "Lightning magic undecided",
+  "base_stats": {
+   "STR": 7,
+   "CON": 8,
+   "INT": 6,
+   "SPD": 5,
+   "AGI": 5,
+   "PDEF": 5,
+   "MDEF": 5
+  },
+  "lines": [
+   "N3"
+  ]
+ },
+ {
+  "class": "Gnome",
+  "stage": 2,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Holy",
+  "terrain": "Mountain",
+  "speed_tier": 2,
+  "role": "Spellblade",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 51,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Magic",
+  "back_count": 1,
+  "element": "Lightning",
+  "notes": "Lightning magic undecided",
+  "base_stats": {
+   "STR": 9,
+   "CON": 10,
+   "INT": 8,
+   "SPD": 6,
+   "AGI": 6,
+   "PDEF": 6,
+   "MDEF": 6
+  },
+  "lines": [
+   "N3"
+  ]
+ },
+ {
+  "class": "Master Gnome",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Mountain",
+  "speed_tier": 2,
+  "role": "Spellblade",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 63,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Magic",
+  "back_count": 1,
+  "element": "Lightning",
+  "notes": "Lightning magic undecided",
+  "base_stats": {
+   "STR": 10,
+   "CON": 12,
+   "INT": 9,
+   "SPD": 8,
+   "AGI": 8,
+   "PDEF": 8,
+   "MDEF": 8
+  },
+  "lines": [
+   "N3"
+  ]
+ },
+ {
+  "class": "Mountaineer",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Mountain",
+  "speed_tier": 2,
+  "role": "Spellblade",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 72,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Magic",
+  "back_count": 2,
+  "element": "Lightning",
+  "notes": "Lightning magic undecided",
+  "base_stats": {
+   "STR": 12,
+   "CON": 14,
+   "INT": 10,
+   "SPD": 9,
+   "AGI": 9,
+   "PDEF": 9,
+   "MDEF": 9
+  },
+  "lines": [
+   "N3"
+  ]
+ },
+ {
+  "class": "Goblin",
+  "stage": 1,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Evil",
+  "terrain": "Mountain",
+  "speed_tier": 2,
+  "role": "Spellblade",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 41,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Magic",
+  "back_count": 1,
+  "element": "Dark",
+  "notes": null,
+  "base_stats": {
+   "STR": 7,
+   "CON": 8,
+   "INT": 6,
+   "SPD": 5,
+   "AGI": 5,
+   "PDEF": 5,
+   "MDEF": 5
+  },
+  "lines": [
+   "N4"
+  ]
+ },
+ {
+  "class": "Nobgoblin",
+  "stage": 2,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Evil",
+  "terrain": "Mountain",
+  "speed_tier": 2,
+  "role": "Spellblade",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 51,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Magic",
+  "back_count": 1,
+  "element": "Dark",
+  "notes": null,
+  "base_stats": {
+   "STR": 9,
+   "CON": 10,
+   "INT": 8,
+   "SPD": 6,
+   "AGI": 6,
+   "PDEF": 6,
+   "MDEF": 6
+  },
+  "lines": [
+   "N4"
+  ]
+ },
+ {
+  "class": "Hobgoblin",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Mountain",
+  "speed_tier": 2,
+  "role": "Spellblade",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 63,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Magic",
+  "back_count": 1,
+  "element": "Dark",
+  "notes": null,
+  "base_stats": {
+   "STR": 10,
+   "CON": 12,
+   "INT": 9,
+   "SPD": 8,
+   "AGI": 8,
+   "PDEF": 8,
+   "MDEF": 8
+  },
+  "lines": [
+   "N4"
+  ]
+ },
+ {
+  "class": "Bobgoblin",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Mountain",
+  "speed_tier": 2,
+  "role": "Spellblade",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 72,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Magic",
+  "back_count": 2,
+  "element": "Dark",
+  "notes": null,
+  "base_stats": {
+   "STR": 12,
+   "CON": 14,
+   "INT": 10,
+   "SPD": 9,
+   "AGI": 9,
+   "PDEF": 9,
+   "MDEF": 9
+  },
+  "lines": [
+   "N4"
+  ]
+ },
+ {
+  "class": "Wisp",
+  "stage": 1,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Evil",
+  "terrain": "Plains",
+  "speed_tier": 3,
+  "role": "Spirit",
+  "key_stats": [
+   "INT",
+   "SPD"
+  ],
+  "stat_total": 42,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 1,
+  "back_attack": "Magic",
+  "back_count": 2,
+  "element": "Dark",
+  "notes": null,
+  "base_stats": {
+   "STR": 3,
+   "CON": 4,
+   "INT": 8,
+   "SPD": 9,
+   "AGI": 8,
+   "PDEF": 2,
+   "MDEF": 8
+  },
+  "lines": [
+   "N5"
+  ]
+ },
+ {
+  "class": "Ghost",
+  "stage": 2,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Evil",
+  "terrain": "Plains",
+  "speed_tier": 3,
+  "role": "Spirit",
+  "key_stats": [
+   "INT",
+   "SPD"
+  ],
+  "stat_total": 52,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 1,
+  "back_attack": "Magic",
+  "back_count": 2,
+  "element": "Dark",
+  "notes": null,
+  "base_stats": {
+   "STR": 4,
+   "CON": 5,
+   "INT": 10,
+   "SPD": 11,
+   "AGI": 10,
+   "PDEF": 2,
+   "MDEF": 10
+  },
+  "lines": [
+   "N5"
+  ]
+ },
+ {
+  "class": "Spectre",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Plains",
+  "speed_tier": 3,
+  "role": "Spirit",
+  "key_stats": [
+   "INT",
+   "SPD"
+  ],
+  "stat_total": 63,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 1,
+  "back_attack": "Magic",
+  "back_count": 3,
+  "element": "Dark",
+  "notes": null,
+  "base_stats": {
+   "STR": 4,
+   "CON": 6,
+   "INT": 12,
+   "SPD": 14,
+   "AGI": 12,
+   "PDEF": 3,
+   "MDEF": 12
+  },
+  "lines": [
+   "N5"
+  ]
+ },
+ {
+  "class": "Niffin",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Plains",
+  "speed_tier": 3,
+  "role": "Spirit",
+  "key_stats": [
+   "INT",
+   "SPD"
+  ],
+  "stat_total": 74,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Magic",
+  "back_count": 3,
+  "element": "Dark",
+  "notes": null,
+  "base_stats": {
+   "STR": 5,
+   "CON": 7,
+   "INT": 14,
+   "SPD": 16,
+   "AGI": 14,
+   "PDEF": 4,
+   "MDEF": 14
+  },
+  "lines": [
+   "N5"
+  ]
+ },
+ {
+  "class": "Tadpole",
+  "stage": 1,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Any",
+  "terrain": "Water",
+  "speed_tier": 2,
+  "role": "Amphibian",
+  "key_stats": [
+   "AGI",
+   "INT"
+  ],
+  "stat_total": 39,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Heal",
+  "back_count": 1,
+  "element": null,
+  "notes": "Amphibious; low HP",
+  "base_stats": {
+   "STR": 5,
+   "CON": 4,
+   "INT": 6,
+   "SPD": 7,
+   "AGI": 9,
+   "PDEF": 3,
+   "MDEF": 5
+  },
+  "lines": [
+   "N6",
+   "N7"
+  ]
+ },
+ {
+  "class": "Frog",
+  "stage": 2,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Holy",
+  "terrain": "Water",
+  "speed_tier": 2,
+  "role": "Amphibian",
+  "key_stats": [
+   "AGI",
+   "INT"
+  ],
+  "stat_total": 49,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Heal",
+  "back_count": 1,
+  "element": null,
+  "notes": "Amphibious; low HP",
+  "base_stats": {
+   "STR": 6,
+   "CON": 5,
+   "INT": 8,
+   "SPD": 9,
+   "AGI": 11,
+   "PDEF": 4,
+   "MDEF": 6
+  },
+  "lines": [
+   "N6"
+  ]
+ },
+ {
+  "class": "Frog Boy",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Water",
+  "speed_tier": 2,
+  "role": "Amphibian",
+  "key_stats": [
+   "AGI",
+   "INT"
+  ],
+  "stat_total": 59,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Heal",
+  "back_count": 1,
+  "element": null,
+  "notes": "Amphibious; low HP",
+  "base_stats": {
+   "STR": 8,
+   "CON": 6,
+   "INT": 9,
+   "SPD": 10,
+   "AGI": 14,
+   "PDEF": 4,
+   "MDEF": 8
+  },
+  "lines": [
+   "N6"
+  ]
+ },
+ {
+  "class": "Frog Man",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Water",
+  "speed_tier": 2,
+  "role": "Amphibian",
+  "key_stats": [
+   "AGI",
+   "INT"
+  ],
+  "stat_total": 68,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Heal",
+  "back_count": 2,
+  "element": null,
+  "notes": "Amphibious; low HP",
+  "base_stats": {
+   "STR": 9,
+   "CON": 7,
+   "INT": 10,
+   "SPD": 12,
+   "AGI": 16,
+   "PDEF": 5,
+   "MDEF": 9
+  },
+  "lines": [
+   "N6"
+  ]
+ },
+ {
+  "class": "Toad",
+  "stage": 2,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Evil",
+  "terrain": "Water",
+  "speed_tier": 2,
+  "role": "Amphibian",
+  "key_stats": [
+   "AGI",
+   "INT"
+  ],
+  "stat_total": 49,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Heal",
+  "back_count": 1,
+  "element": null,
+  "notes": "Amphibious; low HP",
+  "base_stats": {
+   "STR": 6,
+   "CON": 5,
+   "INT": 8,
+   "SPD": 9,
+   "AGI": 11,
+   "PDEF": 4,
+   "MDEF": 6
+  },
+  "lines": [
+   "N7"
+  ]
+ },
+ {
+  "class": "Toad Boy",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Water",
+  "speed_tier": 2,
+  "role": "Amphibian",
+  "key_stats": [
+   "AGI",
+   "INT"
+  ],
+  "stat_total": 59,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Heal",
+  "back_count": 1,
+  "element": null,
+  "notes": "Amphibious; low HP",
+  "base_stats": {
+   "STR": 8,
+   "CON": 6,
+   "INT": 9,
+   "SPD": 10,
+   "AGI": 14,
+   "PDEF": 4,
+   "MDEF": 8
+  },
+  "lines": [
+   "N7"
+  ]
+ },
+ {
+  "class": "Toad Man",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Water",
+  "speed_tier": 2,
+  "role": "Amphibian",
+  "key_stats": [
+   "AGI",
+   "INT"
+  ],
+  "stat_total": 68,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Heal",
+  "back_count": 2,
+  "element": null,
+  "notes": "Amphibious; low HP",
+  "base_stats": {
+   "STR": 9,
+   "CON": 7,
+   "INT": 10,
+   "SPD": 12,
+   "AGI": 16,
+   "PDEF": 5,
+   "MDEF": 9
+  },
+  "lines": [
+   "N7"
+  ]
+ },
+ {
+  "class": "Drakeling",
+  "stage": 1,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Any",
+  "terrain": "Sky",
+  "speed_tier": 3,
+  "role": "Dragon",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 58,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Breath",
+  "back_count": 2,
+  "element": null,
+  "notes": "Flyer",
+  "base_stats": {
+   "STR": 12,
+   "CON": 14,
+   "INT": 8,
+   "SPD": 6,
+   "AGI": 4,
+   "PDEF": 8,
+   "MDEF": 6
+  },
+  "lines": [
+   "L1",
+   "L2",
+   "L3"
+  ]
+ },
+ {
+  "class": "Wyrm",
+  "stage": 2,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Varies by color",
+  "terrain": "Sky",
+  "speed_tier": 3,
+  "role": "Dragon",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 74,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Breath",
+  "back_count": 2,
+  "element": null,
+  "notes": "Flyer",
+  "base_stats": {
+   "STR": 15,
+   "CON": 18,
+   "INT": 10,
+   "SPD": 8,
+   "AGI": 5,
+   "PDEF": 10,
+   "MDEF": 8
+  },
+  "lines": [
+   "L1"
+  ]
+ },
+ {
+  "class": "Dragon",
+  "stage": 3,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Varies by color",
+  "terrain": "Sky",
+  "speed_tier": 3,
+  "role": "Dragon",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 87,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Breath",
+  "back_count": 3,
+  "element": null,
+  "notes": "Flyer",
+  "base_stats": {
+   "STR": 18,
+   "CON": 21,
+   "INT": 12,
+   "SPD": 9,
+   "AGI": 6,
+   "PDEF": 12,
+   "MDEF": 9
+  },
+  "lines": [
+   "L1"
+  ]
+ },
+ {
+  "class": "Red Dragon",
+  "stage": 4,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Varies by color",
+  "terrain": "Sky",
+  "speed_tier": 3,
+  "role": "Dragon",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 100,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Breath",
+  "back_count": 3,
+  "element": "Fire",
+  "notes": "Flyer",
+  "base_stats": {
+   "STR": 21,
+   "CON": 24,
+   "INT": 14,
+   "SPD": 10,
+   "AGI": 7,
+   "PDEF": 14,
+   "MDEF": 10
+  },
+  "lines": [
+   "L1"
+  ]
+ },
+ {
+  "class": "Blue Dragon",
+  "stage": 4,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Varies by color",
+  "terrain": "Sky",
+  "speed_tier": 3,
+  "role": "Dragon",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 100,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Breath",
+  "back_count": 3,
+  "element": "Ice",
+  "notes": "Flyer",
+  "base_stats": {
+   "STR": 21,
+   "CON": 24,
+   "INT": 14,
+   "SPD": 10,
+   "AGI": 7,
+   "PDEF": 14,
+   "MDEF": 10
+  },
+  "lines": [
+   "L1"
+  ]
+ },
+ {
+  "class": "Silver Dragon",
+  "stage": 4,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Varies by color",
+  "terrain": "Sky",
+  "speed_tier": 3,
+  "role": "Dragon",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 100,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Breath",
+  "back_count": 3,
+  "element": "Holy",
+  "notes": "Flyer",
+  "base_stats": {
+   "STR": 21,
+   "CON": 24,
+   "INT": 14,
+   "SPD": 10,
+   "AGI": 7,
+   "PDEF": 14,
+   "MDEF": 10
+  },
+  "lines": [
+   "L1"
+  ]
+ },
+ {
+  "class": "Black Dragon",
+  "stage": 4,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Varies by color",
+  "terrain": "Sky",
+  "speed_tier": 3,
+  "role": "Dragon",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 100,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Breath",
+  "back_count": 3,
+  "element": "Dark",
+  "notes": "Flyer",
+  "base_stats": {
+   "STR": 21,
+   "CON": 24,
+   "INT": 14,
+   "SPD": 10,
+   "AGI": 7,
+   "PDEF": 14,
+   "MDEF": 10
+  },
+  "lines": [
+   "L1"
+  ]
+ },
+ {
+  "class": "Serpent",
+  "stage": 2,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Any",
+  "terrain": "Water",
+  "speed_tier": 2,
+  "role": "Dragon",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 74,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Breath",
+  "back_count": 2,
+  "element": "Water",
+  "notes": null,
+  "base_stats": {
+   "STR": 15,
+   "CON": 18,
+   "INT": 10,
+   "SPD": 8,
+   "AGI": 5,
+   "PDEF": 10,
+   "MDEF": 8
+  },
+  "lines": [
+   "L2"
+  ]
+ },
+ {
+  "class": "Sea Dragon",
+  "stage": 3,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Water",
+  "speed_tier": 2,
+  "role": "Dragon",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 87,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Breath",
+  "back_count": 3,
+  "element": "Water",
+  "notes": null,
+  "base_stats": {
+   "STR": 18,
+   "CON": 21,
+   "INT": 12,
+   "SPD": 9,
+   "AGI": 6,
+   "PDEF": 12,
+   "MDEF": 9
+  },
+  "lines": [
+   "L2"
+  ]
+ },
+ {
+  "class": "Leviathan",
+  "stage": 4,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Water",
+  "speed_tier": 2,
+  "role": "Dragon",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 100,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Breath",
+  "back_count": 3,
+  "element": "Water",
+  "notes": null,
+  "base_stats": {
+   "STR": 21,
+   "CON": 24,
+   "INT": 14,
+   "SPD": 10,
+   "AGI": 7,
+   "PDEF": 14,
+   "MDEF": 10
+  },
+  "lines": [
+   "L2"
+  ]
+ },
+ {
+  "class": "Snow Snake",
+  "stage": 2,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Evil",
+  "terrain": "Snow",
+  "speed_tier": 1,
+  "role": "Dragon",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 74,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Breath",
+  "back_count": 2,
+  "element": "Ice",
+  "notes": null,
+  "base_stats": {
+   "STR": 15,
+   "CON": 18,
+   "INT": 10,
+   "SPD": 8,
+   "AGI": 5,
+   "PDEF": 10,
+   "MDEF": 8
+  },
+  "lines": [
+   "L3"
+  ]
+ },
+ {
+  "class": "Snow Serpent",
+  "stage": 3,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Snow",
+  "speed_tier": 1,
+  "role": "Dragon",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 87,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Breath",
+  "back_count": 3,
+  "element": "Ice",
+  "notes": null,
+  "base_stats": {
+   "STR": 18,
+   "CON": 21,
+   "INT": 12,
+   "SPD": 9,
+   "AGI": 6,
+   "PDEF": 12,
+   "MDEF": 9
+  },
+  "lines": [
+   "L3"
+  ]
+ },
+ {
+  "class": "Kuraokami",
+  "stage": 4,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Snow",
+  "speed_tier": 1,
+  "role": "Dragon",
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "stat_total": 100,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Breath",
+  "back_count": 3,
+  "element": "Ice",
+  "notes": null,
+  "base_stats": {
+   "STR": 21,
+   "CON": 24,
+   "INT": 14,
+   "SPD": 10,
+   "AGI": 7,
+   "PDEF": 14,
+   "MDEF": 10
+  },
+  "lines": [
+   "L3"
+  ]
+ },
+ {
+  "class": "Wolf",
+  "stage": 1,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Any",
+  "terrain": "Mountain",
+  "speed_tier": 3,
+  "role": "Breath beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 54,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Breath",
+  "back_count": 1,
+  "element": "Fire",
+  "notes": null,
+  "base_stats": {
+   "STR": 12,
+   "CON": 14,
+   "INT": 4,
+   "SPD": 8,
+   "AGI": 6,
+   "PDEF": 6,
+   "MDEF": 4
+  },
+  "lines": [
+   "L4",
+   "L5"
+  ]
+ },
+ {
+  "class": "Hellhound",
+  "stage": 2,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Evil",
+  "terrain": "Mountain",
+  "speed_tier": 3,
+  "role": "Breath beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 69,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Breath",
+  "back_count": 1,
+  "element": "Fire",
+  "notes": null,
+  "base_stats": {
+   "STR": 15,
+   "CON": 18,
+   "INT": 5,
+   "SPD": 10,
+   "AGI": 8,
+   "PDEF": 8,
+   "MDEF": 5
+  },
+  "lines": [
+   "L4"
+  ]
+ },
+ {
+  "class": "Cerberus",
+  "stage": 3,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Mountain",
+  "speed_tier": 3,
+  "role": "Breath beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 81,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Breath",
+  "back_count": 1,
+  "element": "Fire",
+  "notes": null,
+  "base_stats": {
+   "STR": 18,
+   "CON": 21,
+   "INT": 6,
+   "SPD": 12,
+   "AGI": 9,
+   "PDEF": 9,
+   "MDEF": 6
+  },
+  "lines": [
+   "L4"
+  ]
+ },
+ {
+  "class": "Cujo",
+  "stage": 4,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Mountain",
+  "speed_tier": 3,
+  "role": "Breath beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 93,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Breath",
+  "back_count": 2,
+  "element": "Fire",
+  "notes": null,
+  "base_stats": {
+   "STR": 21,
+   "CON": 24,
+   "INT": 7,
+   "SPD": 14,
+   "AGI": 10,
+   "PDEF": 10,
+   "MDEF": 7
+  },
+  "lines": [
+   "L4"
+  ]
+ },
+ {
+  "class": "Wolfhound",
+  "stage": 2,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Holy",
+  "terrain": "Mountain",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 65,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 15,
+   "CON": 18,
+   "INT": 2,
+   "SPD": 10,
+   "AGI": 8,
+   "PDEF": 8,
+   "MDEF": 4
+  },
+  "lines": [
+   "L5"
+  ]
+ },
+ {
+  "class": "Arctic Wolf",
+  "stage": 3,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Mountain",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 76,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 18,
+   "CON": 21,
+   "INT": 3,
+   "SPD": 12,
+   "AGI": 9,
+   "PDEF": 9,
+   "MDEF": 4
+  },
+  "lines": [
+   "L5"
+  ]
+ },
+ {
+  "class": "Balto",
+  "stage": 4,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Mountain",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 88,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 2,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 21,
+   "CON": 24,
+   "INT": 4,
+   "SPD": 14,
+   "AGI": 10,
+   "PDEF": 10,
+   "MDEF": 5
+  },
+  "lines": [
+   "L5"
+  ]
+ },
+ {
+  "class": "Bobcat",
+  "stage": 1,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Any",
+  "terrain": "Forest",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 51,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 12,
+   "CON": 14,
+   "INT": 2,
+   "SPD": 8,
+   "AGI": 6,
+   "PDEF": 6,
+   "MDEF": 3
+  },
+  "lines": [
+   "L6",
+   "L7"
+  ]
+ },
+ {
+  "class": "Hell Cat",
+  "stage": 2,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Evil",
+  "terrain": "Forest",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 65,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 15,
+   "CON": 18,
+   "INT": 2,
+   "SPD": 10,
+   "AGI": 8,
+   "PDEF": 8,
+   "MDEF": 4
+  },
+  "lines": [
+   "L6"
+  ]
+ },
+ {
+  "class": "Siamese",
+  "stage": 3,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Forest",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 76,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 18,
+   "CON": 21,
+   "INT": 3,
+   "SPD": 12,
+   "AGI": 9,
+   "PDEF": 9,
+   "MDEF": 4
+  },
+  "lines": [
+   "L6"
+  ]
+ },
+ {
+  "class": "Sabretooth",
+  "stage": 4,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Forest",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 88,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 2,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 21,
+   "CON": 24,
+   "INT": 4,
+   "SPD": 14,
+   "AGI": 10,
+   "PDEF": 10,
+   "MDEF": 5
+  },
+  "lines": [
+   "L6"
+  ]
+ },
+ {
+  "class": "Battle Cat",
+  "stage": 2,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Holy",
+  "terrain": "Forest",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 65,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 15,
+   "CON": 18,
+   "INT": 2,
+   "SPD": 10,
+   "AGI": 8,
+   "PDEF": 8,
+   "MDEF": 4
+  },
+  "lines": [
+   "L7"
+  ]
+ },
+ {
+  "class": "War Cat",
+  "stage": 3,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Forest",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 76,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 18,
+   "CON": 21,
+   "INT": 3,
+   "SPD": 12,
+   "AGI": 9,
+   "PDEF": 9,
+   "MDEF": 4
+  },
+  "lines": [
+   "L7"
+  ]
+ },
+ {
+  "class": "Tigress",
+  "stage": 4,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Forest",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 88,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 2,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 21,
+   "CON": 24,
+   "INT": 4,
+   "SPD": 14,
+   "AGI": 10,
+   "PDEF": 10,
+   "MDEF": 5
+  },
+  "lines": [
+   "L7"
+  ]
+ },
+ {
+  "class": "Cuttlefish",
+  "stage": 1,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Any",
+  "terrain": "Water",
+  "speed_tier": 1,
+  "role": "Water heavy",
+  "key_stats": [
+   "CON",
+   "STR"
+  ],
+  "stat_total": 53,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Magic",
+  "back_count": 1,
+  "element": "Water",
+  "notes": null,
+  "base_stats": {
+   "STR": 12,
+   "CON": 16,
+   "INT": 5,
+   "SPD": 3,
+   "AGI": 3,
+   "PDEF": 8,
+   "MDEF": 6
+  },
+  "lines": [
+   "L8",
+   "L9"
+  ]
+ },
+ {
+  "class": "Octopus",
+  "stage": 2,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Holy",
+  "terrain": "Water",
+  "speed_tier": 1,
+  "role": "Water heavy",
+  "key_stats": [
+   "CON",
+   "STR"
+  ],
+  "stat_total": 67,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Magic",
+  "back_count": 1,
+  "element": "Water",
+  "notes": null,
+  "base_stats": {
+   "STR": 15,
+   "CON": 20,
+   "INT": 6,
+   "SPD": 4,
+   "AGI": 4,
+   "PDEF": 10,
+   "MDEF": 8
+  },
+  "lines": [
+   "L8"
+  ]
+ },
+ {
+  "class": "Battle Octopus",
+  "stage": 3,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Water",
+  "speed_tier": 1,
+  "role": "Water heavy",
+  "key_stats": [
+   "CON",
+   "STR"
+  ],
+  "stat_total": 79,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Magic",
+  "back_count": 1,
+  "element": "Water",
+  "notes": null,
+  "base_stats": {
+   "STR": 18,
+   "CON": 24,
+   "INT": 8,
+   "SPD": 4,
+   "AGI": 4,
+   "PDEF": 12,
+   "MDEF": 9
+  },
+  "lines": [
+   "L8"
+  ]
+ },
+ {
+  "class": "Octolord",
+  "stage": 4,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Water",
+  "speed_tier": 1,
+  "role": "Water heavy",
+  "key_stats": [
+   "CON",
+   "STR"
+  ],
+  "stat_total": 92,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Magic",
+  "back_count": 2,
+  "element": "Water",
+  "notes": null,
+  "base_stats": {
+   "STR": 21,
+   "CON": 28,
+   "INT": 9,
+   "SPD": 5,
+   "AGI": 5,
+   "PDEF": 14,
+   "MDEF": 10
+  },
+  "lines": [
+   "L8"
+  ]
+ },
+ {
+  "class": "Kraken",
+  "stage": 2,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Evil",
+  "terrain": "Water",
+  "speed_tier": 1,
+  "role": "Water heavy",
+  "key_stats": [
+   "CON",
+   "STR"
+  ],
+  "stat_total": 67,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Magic",
+  "back_count": 1,
+  "element": "Lightning",
+  "notes": null,
+  "base_stats": {
+   "STR": 15,
+   "CON": 20,
+   "INT": 6,
+   "SPD": 4,
+   "AGI": 4,
+   "PDEF": 10,
+   "MDEF": 8
+  },
+  "lines": [
+   "L9"
+  ]
+ },
+ {
+  "class": "Electro Kraken",
+  "stage": 3,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Water",
+  "speed_tier": 1,
+  "role": "Water heavy",
+  "key_stats": [
+   "CON",
+   "STR"
+  ],
+  "stat_total": 79,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Magic",
+  "back_count": 1,
+  "element": "Lightning",
+  "notes": null,
+  "base_stats": {
+   "STR": 18,
+   "CON": 24,
+   "INT": 8,
+   "SPD": 4,
+   "AGI": 4,
+   "PDEF": 12,
+   "MDEF": 9
+  },
+  "lines": [
+   "L9"
+  ]
+ },
+ {
+  "class": "Cthulhu",
+  "stage": 4,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Water",
+  "speed_tier": 1,
+  "role": "Water heavy",
+  "key_stats": [
+   "CON",
+   "STR"
+  ],
+  "stat_total": 92,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Magic",
+  "back_count": 2,
+  "element": "Lightning",
+  "notes": null,
+  "base_stats": {
+   "STR": 21,
+   "CON": 28,
+   "INT": 9,
+   "SPD": 5,
+   "AGI": 5,
+   "PDEF": 14,
+   "MDEF": 10
+  },
+  "lines": [
+   "L9"
+  ]
+ },
+ {
+  "class": "War Bird",
+  "stage": 1,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Any",
+  "terrain": "Sky",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 51,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": "Flyer",
+  "base_stats": {
+   "STR": 12,
+   "CON": 14,
+   "INT": 2,
+   "SPD": 8,
+   "AGI": 6,
+   "PDEF": 6,
+   "MDEF": 3
+  },
+  "lines": [
+   "L10",
+   "L11"
+  ]
+ },
+ {
+  "class": "Gryphon",
+  "stage": 2,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Holy",
+  "terrain": "Sky",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 65,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": "Flyer",
+  "base_stats": {
+   "STR": 15,
+   "CON": 18,
+   "INT": 2,
+   "SPD": 10,
+   "AGI": 8,
+   "PDEF": 8,
+   "MDEF": 4
+  },
+  "lines": [
+   "L10"
+  ]
+ },
+ {
+  "class": "Cockatrice",
+  "stage": 3,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Sky",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 76,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": "Flyer",
+  "base_stats": {
+   "STR": 18,
+   "CON": 21,
+   "INT": 3,
+   "SPD": 12,
+   "AGI": 9,
+   "PDEF": 9,
+   "MDEF": 4
+  },
+  "lines": [
+   "L10"
+  ]
+ },
+ {
+  "class": "Sphinx",
+  "stage": 4,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Sky",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 88,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 2,
+  "element": null,
+  "notes": "Flyer",
+  "base_stats": {
+   "STR": 21,
+   "CON": 24,
+   "INT": 4,
+   "SPD": 14,
+   "AGI": 10,
+   "PDEF": 10,
+   "MDEF": 5
+  },
+  "lines": [
+   "L10"
+  ]
+ },
+ {
+  "class": "Deathwing",
+  "stage": 2,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Evil",
+  "terrain": "Sky",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 65,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": "Flyer",
+  "base_stats": {
+   "STR": 15,
+   "CON": 18,
+   "INT": 2,
+   "SPD": 10,
+   "AGI": 8,
+   "PDEF": 8,
+   "MDEF": 4
+  },
+  "lines": [
+   "L11"
+  ]
+ },
+ {
+  "class": "Blackwing",
+  "stage": 3,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Sky",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 76,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": "Flyer",
+  "base_stats": {
+   "STR": 18,
+   "CON": 21,
+   "INT": 3,
+   "SPD": 12,
+   "AGI": 9,
+   "PDEF": 9,
+   "MDEF": 4
+  },
+  "lines": [
+   "L11"
+  ]
+ },
+ {
+  "class": "Wraith",
+  "stage": 4,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Sky",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 88,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 2,
+  "element": null,
+  "notes": "Flyer",
+  "base_stats": {
+   "STR": 21,
+   "CON": 24,
+   "INT": 4,
+   "SPD": 14,
+   "AGI": 10,
+   "PDEF": 10,
+   "MDEF": 5
+  },
+  "lines": [
+   "L11"
+  ]
+ },
+ {
+  "class": "Bigfoot",
+  "stage": 1,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Holy",
+  "terrain": "Snow",
+  "speed_tier": 1,
+  "role": "Big tank",
+  "key_stats": [
+   "CON",
+   "PDEF"
+  ],
+  "stat_total": 55,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Magic",
+  "back_count": 1,
+  "element": "Ice",
+  "notes": "Cold magic",
+  "base_stats": {
+   "STR": 12,
+   "CON": 18,
+   "INT": 4,
+   "SPD": 3,
+   "AGI": 3,
+   "PDEF": 10,
+   "MDEF": 5
+  },
+  "lines": [
+   "L12"
+  ]
+ },
+ {
+  "class": "Yeti",
+  "stage": 2,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Holy",
+  "terrain": "Snow",
+  "speed_tier": 1,
+  "role": "Big tank",
+  "key_stats": [
+   "CON",
+   "PDEF"
+  ],
+  "stat_total": 68,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Magic",
+  "back_count": 1,
+  "element": "Ice",
+  "notes": "Cold magic",
+  "base_stats": {
+   "STR": 15,
+   "CON": 22,
+   "INT": 5,
+   "SPD": 4,
+   "AGI": 4,
+   "PDEF": 12,
+   "MDEF": 6
+  },
+  "lines": [
+   "L12"
+  ]
+ },
+ {
+  "class": "Sasquatch",
+  "stage": 3,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Snow",
+  "speed_tier": 1,
+  "role": "Big tank",
+  "key_stats": [
+   "CON",
+   "PDEF"
+  ],
+  "stat_total": 82,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Magic",
+  "back_count": 1,
+  "element": "Ice",
+  "notes": "Cold magic",
+  "base_stats": {
+   "STR": 18,
+   "CON": 27,
+   "INT": 6,
+   "SPD": 4,
+   "AGI": 4,
+   "PDEF": 15,
+   "MDEF": 8
+  },
+  "lines": [
+   "L12"
+  ]
+ },
+ {
+  "class": "Coldmiser",
+  "stage": 4,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Snow",
+  "speed_tier": 1,
+  "role": "Big tank",
+  "key_stats": [
+   "CON",
+   "PDEF"
+  ],
+  "stat_total": 97,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Magic",
+  "back_count": 2,
+  "element": "Ice",
+  "notes": "Cold magic",
+  "base_stats": {
+   "STR": 21,
+   "CON": 32,
+   "INT": 7,
+   "SPD": 5,
+   "AGI": 5,
+   "PDEF": 18,
+   "MDEF": 9
+  },
+  "lines": [
+   "L12"
+  ]
+ },
+ {
+  "class": "Goat",
+  "stage": 1,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Neutral",
+  "terrain": "Mountain",
+  "speed_tier": 2,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 51,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 12,
+   "CON": 14,
+   "INT": 2,
+   "SPD": 8,
+   "AGI": 6,
+   "PDEF": 6,
+   "MDEF": 3
+  },
+  "lines": [
+   "L13"
+  ]
+ },
+ {
+  "class": "Battle Goat",
+  "stage": 2,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Neutral",
+  "terrain": "Mountain",
+  "speed_tier": 2,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 65,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 15,
+   "CON": 18,
+   "INT": 2,
+   "SPD": 10,
+   "AGI": 8,
+   "PDEF": 8,
+   "MDEF": 4
+  },
+  "lines": [
+   "L13"
+  ]
+ },
+ {
+  "class": "Battle Ram",
+  "stage": 3,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Neutral",
+  "terrain": "Mountain",
+  "speed_tier": 2,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 76,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 18,
+   "CON": 21,
+   "INT": 3,
+   "SPD": 12,
+   "AGI": 9,
+   "PDEF": 9,
+   "MDEF": 4
+  },
+  "lines": [
+   "L13"
+  ]
+ },
+ {
+  "class": "Chupacabra",
+  "stage": 4,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Neutral",
+  "terrain": "Mountain",
+  "speed_tier": 2,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 88,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 2,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 21,
+   "CON": 24,
+   "INT": 4,
+   "SPD": 14,
+   "AGI": 10,
+   "PDEF": 10,
+   "MDEF": 5
+  },
+  "lines": [
+   "L13"
+  ]
+ },
+ {
+  "class": "Bison",
+  "stage": 1,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Evil",
+  "terrain": "Mountain",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 51,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": "Charger",
+  "base_stats": {
+   "STR": 12,
+   "CON": 14,
+   "INT": 2,
+   "SPD": 8,
+   "AGI": 6,
+   "PDEF": 6,
+   "MDEF": 3
+  },
+  "lines": [
+   "L14"
+  ]
+ },
+ {
+  "class": "Battle Bison",
+  "stage": 2,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Evil",
+  "terrain": "Mountain",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 65,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": "Charger",
+  "base_stats": {
+   "STR": 15,
+   "CON": 18,
+   "INT": 2,
+   "SPD": 10,
+   "AGI": 8,
+   "PDEF": 8,
+   "MDEF": 4
+  },
+  "lines": [
+   "L14"
+  ]
+ },
+ {
+  "class": "Battle Buffalo",
+  "stage": 3,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Mountain",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 76,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": "Charger",
+  "base_stats": {
+   "STR": 18,
+   "CON": 21,
+   "INT": 3,
+   "SPD": 12,
+   "AGI": 9,
+   "PDEF": 9,
+   "MDEF": 4
+  },
+  "lines": [
+   "L14"
+  ]
+ },
+ {
+  "class": "Gamork",
+  "stage": 4,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Evil",
+  "terrain": "Mountain",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 88,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 2,
+  "element": null,
+  "notes": "Charger",
+  "base_stats": {
+   "STR": 21,
+   "CON": 24,
+   "INT": 4,
+   "SPD": 14,
+   "AGI": 10,
+   "PDEF": 10,
+   "MDEF": 5
+  },
+  "lines": [
+   "L14"
+  ]
+ },
+ {
+  "class": "Mountain Cub",
+  "stage": 1,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Holy",
+  "terrain": "Mountain",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 51,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 12,
+   "CON": 14,
+   "INT": 2,
+   "SPD": 8,
+   "AGI": 6,
+   "PDEF": 6,
+   "MDEF": 3
+  },
+  "lines": [
+   "L15"
+  ]
+ },
+ {
+  "class": "Mountain Lion",
+  "stage": 2,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Holy",
+  "terrain": "Mountain",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 65,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 15,
+   "CON": 18,
+   "INT": 2,
+   "SPD": 10,
+   "AGI": 8,
+   "PDEF": 8,
+   "MDEF": 4
+  },
+  "lines": [
+   "L15"
+  ]
+ },
+ {
+  "class": "Lionelle",
+  "stage": 3,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Mountain",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 76,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 18,
+   "CON": 21,
+   "INT": 3,
+   "SPD": 12,
+   "AGI": 9,
+   "PDEF": 9,
+   "MDEF": 4
+  },
+  "lines": [
+   "L15"
+  ]
+ },
+ {
+  "class": "Lion-O",
+  "stage": 4,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Holy",
+  "terrain": "Mountain",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 88,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 2,
+  "element": null,
+  "notes": null,
+  "base_stats": {
+   "STR": 21,
+   "CON": 24,
+   "INT": 4,
+   "SPD": 14,
+   "AGI": 10,
+   "PDEF": 10,
+   "MDEF": 5
+  },
+  "lines": [
+   "L15"
+  ]
+ },
+ {
+  "class": "Salamander",
+  "stage": 1,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Neutral",
+  "terrain": "Water",
+  "speed_tier": 2,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 48,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": "Amphibious; low HP",
+  "base_stats": {
+   "STR": 12,
+   "CON": 11,
+   "INT": 2,
+   "SPD": 8,
+   "AGI": 6,
+   "PDEF": 6,
+   "MDEF": 3
+  },
+  "lines": [
+   "L16"
+  ]
+ },
+ {
+  "class": "Viper",
+  "stage": 2,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Neutral",
+  "terrain": "Water",
+  "speed_tier": 2,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 61,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": "Amphibious; low HP",
+  "base_stats": {
+   "STR": 15,
+   "CON": 14,
+   "INT": 2,
+   "SPD": 10,
+   "AGI": 8,
+   "PDEF": 8,
+   "MDEF": 4
+  },
+  "lines": [
+   "L16"
+  ]
+ },
+ {
+  "class": "Monitor",
+  "stage": 3,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Neutral",
+  "terrain": "Water",
+  "speed_tier": 2,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 72,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": "Amphibious; low HP",
+  "base_stats": {
+   "STR": 18,
+   "CON": 17,
+   "INT": 3,
+   "SPD": 12,
+   "AGI": 9,
+   "PDEF": 9,
+   "MDEF": 4
+  },
+  "lines": [
+   "L16"
+  ]
+ },
+ {
+  "class": "Komodo",
+  "stage": 4,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Neutral",
+  "terrain": "Water",
+  "speed_tier": 2,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 83,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 2,
+  "element": null,
+  "notes": "Amphibious; low HP",
+  "base_stats": {
+   "STR": 21,
+   "CON": 19,
+   "INT": 4,
+   "SPD": 14,
+   "AGI": 10,
+   "PDEF": 10,
+   "MDEF": 5
+  },
+  "lines": [
+   "L16"
+  ]
+ }
+]

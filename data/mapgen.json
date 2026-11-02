@@ -1,0 +1,17 @@
+{
+ "sizes": {"small": [400, 225], "medium": [800, 450], "large": [1200, 675]},
+ "amount_fractions": {"none": 0.0, "low": 0.03, "medium": 0.10, "high": 0.20},
+ "island_radius": {"small": 6, "medium": 12, "large": 20},
+ "shelf_width": 2,
+ "defaults": {
+  "size": "small",
+  "preset": "continent",
+  "terrain_amounts": {
+   "forest": "medium", "desert": "low", "snow": "medium", "mountain": "medium",
+   "swamp": "medium", "lava": "low"
+  }
+ },
+ "presets": {
+  "continent": {"land_pct": 55, "island_count": 3, "island_size": "medium", "edge_falloff": 0.9, "noise_frequency": 3.0}
+ }
+}

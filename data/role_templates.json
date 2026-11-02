@@ -1,0 +1,597 @@
+{
+ "Serf": {
+  "front_attack": "Melee",
+  "front_count": 1,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "key_stats": [
+   "CON"
+  ],
+  "flex_min": 2,
+  "flex_max": 4,
+  "primary_row": "front",
+  "base_stats": {
+   "STR": 5,
+   "CON": 6,
+   "INT": 3,
+   "SPD": 5,
+   "AGI": 5,
+   "PDEF": 3,
+   "MDEF": 3
+  }
+ },
+ "Tank": {
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "key_stats": [
+   "CON",
+   "PDEF",
+   "STR"
+  ],
+  "flex_min": 3,
+  "flex_max": 5,
+  "primary_row": "front",
+  "base_stats": {
+   "STR": 8,
+   "CON": 10,
+   "INT": 3,
+   "SPD": 4,
+   "AGI": 4,
+   "PDEF": 8,
+   "MDEF": 4
+  }
+ },
+ "Reach tank": {
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee (reach 2nd row)",
+  "back_count": 1,
+  "key_stats": [
+   "CON",
+   "PDEF",
+   "STR"
+  ],
+  "flex_min": 3,
+  "flex_max": 5,
+  "primary_row": "front",
+  "base_stats": {
+   "STR": 8,
+   "CON": 10,
+   "INT": 3,
+   "SPD": 4,
+   "AGI": 4,
+   "PDEF": 7,
+   "MDEF": 4
+  }
+ },
+ "Fighter": {
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "key_stats": [
+   "STR",
+   "AGI"
+  ],
+  "flex_min": 3,
+  "flex_max": 5,
+  "primary_row": "front",
+  "base_stats": {
+   "STR": 9,
+   "CON": 8,
+   "INT": 3,
+   "SPD": 6,
+   "AGI": 6,
+   "PDEF": 5,
+   "MDEF": 3
+  }
+ },
+ "Skirmisher": {
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Ranged",
+  "back_count": 1,
+  "key_stats": [
+   "AGI",
+   "SPD"
+  ],
+  "flex_min": 3,
+  "flex_max": 5,
+  "primary_row": "front",
+  "base_stats": {
+   "STR": 7,
+   "CON": 7,
+   "INT": 3,
+   "SPD": 7,
+   "AGI": 8,
+   "PDEF": 4,
+   "MDEF": 4
+  }
+ },
+ "Rear striker": {
+  "front_attack": "Melee (any row)",
+  "front_count": 2,
+  "back_attack": "Melee (any row)",
+  "back_count": 1,
+  "key_stats": [
+   "AGI",
+   "SPD"
+  ],
+  "flex_min": 3,
+  "flex_max": 6,
+  "primary_row": "front",
+  "base_stats": {
+   "STR": 7,
+   "CON": 6,
+   "INT": 3,
+   "SPD": 8,
+   "AGI": 9,
+   "PDEF": 3,
+   "MDEF": 4
+  }
+ },
+ "Archer": {
+  "front_attack": "Ranged",
+  "front_count": 1,
+  "back_attack": "Ranged",
+  "back_count": 2,
+  "key_stats": [
+   "AGI",
+   "STR"
+  ],
+  "flex_min": 3,
+  "flex_max": 5,
+  "primary_row": "back",
+  "base_stats": {
+   "STR": 7,
+   "CON": 6,
+   "INT": 4,
+   "SPD": 6,
+   "AGI": 8,
+   "PDEF": 3,
+   "MDEF": 4
+  }
+ },
+ "Cavalry": {
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "flex_min": 3,
+  "flex_max": 5,
+  "primary_row": "front",
+  "base_stats": {
+   "STR": 9,
+   "CON": 9,
+   "INT": 3,
+   "SPD": 8,
+   "AGI": 5,
+   "PDEF": 6,
+   "MDEF": 3
+  }
+ },
+ "Mounted archer": {
+  "front_attack": "Ranged",
+  "front_count": 1,
+  "back_attack": "Ranged",
+  "back_count": 2,
+  "key_stats": [
+   "AGI",
+   "SPD"
+  ],
+  "flex_min": 3,
+  "flex_max": 5,
+  "primary_row": "back",
+  "base_stats": {
+   "STR": 7,
+   "CON": 7,
+   "INT": 4,
+   "SPD": 8,
+   "AGI": 8,
+   "PDEF": 4,
+   "MDEF": 4
+  }
+ },
+ "Caster": {
+  "front_attack": "Magic",
+  "front_count": 1,
+  "back_attack": "Magic",
+  "back_count": 2,
+  "key_stats": [
+   "INT",
+   "MDEF"
+  ],
+  "flex_min": 3,
+  "flex_max": 5,
+  "primary_row": "back",
+  "base_stats": {
+   "STR": 3,
+   "CON": 5,
+   "INT": 9,
+   "SPD": 5,
+   "AGI": 5,
+   "PDEF": 2,
+   "MDEF": 7
+  }
+ },
+ "Debuffer": {
+  "front_attack": "Magic",
+  "front_count": 1,
+  "back_attack": "Debuff",
+  "back_count": 2,
+  "key_stats": [
+   "INT",
+   "AGI"
+  ],
+  "flex_min": 3,
+  "flex_max": 5,
+  "primary_row": "back",
+  "base_stats": {
+   "STR": 3,
+   "CON": 5,
+   "INT": 8,
+   "SPD": 6,
+   "AGI": 6,
+   "PDEF": 2,
+   "MDEF": 7
+  }
+ },
+ "Healer": {
+  "front_attack": "Melee",
+  "front_count": 1,
+  "back_attack": "Heal",
+  "back_count": 2,
+  "key_stats": [
+   "INT",
+   "MDEF"
+  ],
+  "flex_min": 3,
+  "flex_max": 5,
+  "primary_row": "back",
+  "base_stats": {
+   "STR": 3,
+   "CON": 6,
+   "INT": 8,
+   "SPD": 5,
+   "AGI": 5,
+   "PDEF": 3,
+   "MDEF": 7
+  }
+ },
+ "Fighter-healer": {
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Heal",
+  "back_count": 1,
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "flex_min": 3,
+  "flex_max": 5,
+  "primary_row": "front",
+  "base_stats": {
+   "STR": 6,
+   "CON": 7,
+   "INT": 6,
+   "SPD": 6,
+   "AGI": 6,
+   "PDEF": 5,
+   "MDEF": 5
+  }
+ },
+ "Mounted healer": {
+  "front_attack": "Melee",
+  "front_count": 1,
+  "back_attack": "Heal",
+  "back_count": 2,
+  "key_stats": [
+   "INT",
+   "SPD"
+  ],
+  "flex_min": 3,
+  "flex_max": 5,
+  "primary_row": "back",
+  "base_stats": {
+   "STR": 5,
+   "CON": 7,
+   "INT": 7,
+   "SPD": 8,
+   "AGI": 6,
+   "PDEF": 4,
+   "MDEF": 6
+  }
+ },
+ "Buffer": {
+  "front_attack": "Melee",
+  "front_count": 1,
+  "back_attack": "Buff",
+  "back_count": 2,
+  "key_stats": [
+   "INT",
+   "AGI"
+  ],
+  "flex_min": 2,
+  "flex_max": 4,
+  "primary_row": "back",
+  "base_stats": {
+   "STR": 2,
+   "CON": 4,
+   "INT": 7,
+   "SPD": 8,
+   "AGI": 9,
+   "PDEF": 2,
+   "MDEF": 6
+  }
+ },
+ "Spellblade": {
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Magic",
+  "back_count": 1,
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "flex_min": 3,
+  "flex_max": 5,
+  "primary_row": "front",
+  "base_stats": {
+   "STR": 7,
+   "CON": 8,
+   "INT": 6,
+   "SPD": 5,
+   "AGI": 5,
+   "PDEF": 5,
+   "MDEF": 5
+  }
+ },
+ "Archer-healer": {
+  "front_attack": "Heal",
+  "front_count": 1,
+  "back_attack": "Ranged",
+  "back_count": 2,
+  "key_stats": [
+   "AGI",
+   "INT"
+  ],
+  "flex_min": 3,
+  "flex_max": 5,
+  "primary_row": "back",
+  "base_stats": {
+   "STR": 6,
+   "CON": 6,
+   "INT": 6,
+   "SPD": 6,
+   "AGI": 8,
+   "PDEF": 3,
+   "MDEF": 5
+  }
+ },
+ "Spirit": {
+  "front_attack": "Melee",
+  "front_count": 1,
+  "back_attack": "Magic",
+  "back_count": 2,
+  "key_stats": [
+   "INT",
+   "SPD"
+  ],
+  "flex_min": 3,
+  "flex_max": 5,
+  "primary_row": "back",
+  "base_stats": {
+   "STR": 3,
+   "CON": 4,
+   "INT": 8,
+   "SPD": 9,
+   "AGI": 8,
+   "PDEF": 2,
+   "MDEF": 8
+  }
+ },
+ "Flying caster": {
+  "front_attack": "Magic",
+  "front_count": 1,
+  "back_attack": "Magic",
+  "back_count": 2,
+  "key_stats": [
+   "INT",
+   "SPD"
+  ],
+  "flex_min": 3,
+  "flex_max": 5,
+  "primary_row": "back",
+  "base_stats": {
+   "STR": 3,
+   "CON": 5,
+   "INT": 9,
+   "SPD": 7,
+   "AGI": 6,
+   "PDEF": 2,
+   "MDEF": 7
+  }
+ },
+ "Flying healer": {
+  "front_attack": "Magic",
+  "front_count": 1,
+  "back_attack": "Heal",
+  "back_count": 2,
+  "key_stats": [
+   "INT",
+   "MDEF"
+  ],
+  "flex_min": 3,
+  "flex_max": 5,
+  "primary_row": "back",
+  "base_stats": {
+   "STR": 3,
+   "CON": 5,
+   "INT": 8,
+   "SPD": 7,
+   "AGI": 6,
+   "PDEF": 2,
+   "MDEF": 8
+  }
+ },
+ "Sky rider": {
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "flex_min": 3,
+  "flex_max": 5,
+  "primary_row": "front",
+  "base_stats": {
+   "STR": 9,
+   "CON": 8,
+   "INT": 3,
+   "SPD": 8,
+   "AGI": 6,
+   "PDEF": 5,
+   "MDEF": 3
+  }
+ },
+ "Amphibian": {
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Heal",
+  "back_count": 1,
+  "key_stats": [
+   "AGI",
+   "INT"
+  ],
+  "flex_min": 3,
+  "flex_max": 5,
+  "primary_row": "front",
+  "base_stats": {
+   "STR": 5,
+   "CON": 4,
+   "INT": 6,
+   "SPD": 7,
+   "AGI": 9,
+   "PDEF": 3,
+   "MDEF": 5
+  }
+ },
+ "Beast": {
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "flex_min": 4,
+  "flex_max": 7,
+  "primary_row": "front",
+  "base_stats": {
+   "STR": 12,
+   "CON": 14,
+   "INT": 2,
+   "SPD": 8,
+   "AGI": 6,
+   "PDEF": 6,
+   "MDEF": 3
+  }
+ },
+ "Breath beast": {
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Breath",
+  "back_count": 1,
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "flex_min": 4,
+  "flex_max": 7,
+  "primary_row": "front",
+  "base_stats": {
+   "STR": 12,
+   "CON": 14,
+   "INT": 4,
+   "SPD": 8,
+   "AGI": 6,
+   "PDEF": 6,
+   "MDEF": 4
+  }
+ },
+ "Big tank": {
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Magic",
+  "back_count": 1,
+  "key_stats": [
+   "CON",
+   "PDEF"
+  ],
+  "flex_min": 4,
+  "flex_max": 7,
+  "primary_row": "front",
+  "base_stats": {
+   "STR": 12,
+   "CON": 18,
+   "INT": 4,
+   "SPD": 3,
+   "AGI": 3,
+   "PDEF": 10,
+   "MDEF": 5
+  }
+ },
+ "Dragon": {
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Breath",
+  "back_count": 2,
+  "key_stats": [
+   "STR",
+   "INT"
+  ],
+  "flex_min": 4,
+  "flex_max": 7,
+  "primary_row": "back",
+  "base_stats": {
+   "STR": 12,
+   "CON": 14,
+   "INT": 8,
+   "SPD": 6,
+   "AGI": 4,
+   "PDEF": 8,
+   "MDEF": 6
+  }
+ },
+ "Water heavy": {
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Magic",
+  "back_count": 1,
+  "key_stats": [
+   "CON",
+   "STR"
+  ],
+  "flex_min": 4,
+  "flex_max": 7,
+  "primary_row": "front",
+  "base_stats": {
+   "STR": 12,
+   "CON": 16,
+   "INT": 5,
+   "SPD": 3,
+   "AGI": 3,
+   "PDEF": 8,
+   "MDEF": 6
+  }
+ }
+}
