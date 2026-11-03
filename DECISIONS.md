@@ -83,7 +83,7 @@ Small calls made where the spec left a gap. Newest at the bottom. Anything here 
 - **Movement** (§8.3). Each hex costs (1.0 / 0.6 / 0.3 s by speed tier) × 4.8 ticks × the hex's time multiplier. Squads keep partial progress between ticks, and the token slides smoothly between hexes. Casualty slowdown waits for units (M2).
 - **Squad menu flow** (§5.3). Clicking a squad pauses the game (a hold) and opens its menu as a modal. Move closes the menu so the map can be clicked. The game stays held and the HUD says "Paused". Left-click adds rally points (unreachable hexes are refused with a message), right-click removes the last, clicking the last point again commits and resumes play right away (user request; the menu doesn't reopen), and Esc goes back to the menu. Closing the menu also resumes play. The spec says the menu is a modal and also that you click the map from it; this keeps both.
 - **Menu actions:** Move and Return to base work. Edit squad, Use item and Deploy are shown greyed out until M3. Ranged attack will appear for squads with range (M2).
-- **Test squad.** One placeholder squad ("Vanguard", plains, speed tier 2, from `placeholder_squad` in `data/rules.json`) stands at the Player Base. T cycles its travel type (plains, forest, mountain, swamp, snow, desert, Sky, none) for testing. This all goes away when real squads arrive in M2.
+- **Test squad.** One placeholder squad ("Vanguard", from `placeholder_squad` in `data/rules.json`) stands at the Player Base. T cycles its travel type for testing. Since session 008 its units are rolled (Knight, two Fighters, Bowman, Acolyte); the Map 1 setup (M4 session 1) replaces it.
 - **Logged to Map:** move orders (with route length and time, and the route itself as a hidden value), rally points reached, destination reached.
 
 ## Session 007 (2026-11-02)
@@ -96,3 +96,15 @@ Small calls made where the spec left a gap. Newest at the bottom. Anything here 
 - **Live preview** generates on a worker thread, so the screen stays responsive. A large map takes about 12 s while the screen keeps drawing at about 57 fps. If the settings haven't changed, the battlemap reuses the previewed map instead of generating it again.
 - **Esc menu** (§5.3): Resume, Save settings, Options (greyed out), Return to title, Quit. It pauses play. "Save settings" stores the share code in `user://settings.json`; the configurator starts from it next time, seed included.
 - **Removed** the R / P / S test keys. The configurator does their job.
+
+## Session 008 (2026-11-03): units and squads
+
+- **Rolling a unit** (§9.3, §12.2): base stats, then flex points (Flex min–max) scattered with key stats weighted ×3 (`unit_roll.flex_key_weight`). Growth chance 20–50% per non-key stat, talent 80/15/5, luck 0–20. Talent's "+10% growth chances" is read as +10 percentage points, applied at level-up (M3).
+- **Starting charisma** isn't in the spec. Placeholder: rolled 5–15 (`unit_roll.charisma`), low enough that slot growth at level 5 (needs 25) must be earned.
+- **Alignment leans** roll inside the bands: Evil 0–40, Neutral 41–59, Holy 60–100, Any 0–100. "By alignment" and "Varies by color" roll as Any.
+- **Names**: first and last names are drawn independently from the CSV's distinct values; a full name is never reused within a run (`NameBook`, one per game).
+- **Slots**: Small 1, Large 2, Tiny units share slots in pairs (an odd one takes a whole slot). Dead units keep their slots until revived. The first unit able to lead becomes the leader. A leader's earned slots stay with them. Banner bonuses come from `slot_growth.banners`, waiting for Herald and Standard-Bearer to reach the sheet.
+- **Travel-type vote** uses living units. Sheet terrains map to terrain keys in `travel_types` (Water → shallow). If every unit is Water, the type becomes `deep`: shallow and deep water both cost ×1 (`native_as` / `natives_cross` in `terrain.json`). The sheet marks the frog and lizard lines "Amphibious", but they are all Water natives, so no separate amphibious rule is needed yet. If the leader flies, a tie goes to the first tied terrain in squad order. Lava natives still can't cross lava (Lava-walker is an aura, §8.3).
+- **Casualty slowdown**: time per hex × (1 + dead units' slots ÷ the squad's slot capacity). One of five slots lost = ×1.2.
+- **Squad menu** lists the squad's units by row, with level and HP, until Edit Units arrives (M3).
+

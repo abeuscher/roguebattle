@@ -9,6 +9,7 @@ var clock: GameClock
 var log: GameLog
 var pathfinder: Pathfinder
 var squads: Array[Squad] = []
+var names: NameBook
 var settings: Dictionary  # victory, defeat, squad cap, fairness (from the configurator)
 var gold: int
 var reputation: int
@@ -22,6 +23,7 @@ func _init(game_data: GameData, game_map: MapData, game_log: GameLog, game_setti
 	rng = RngStreams.new(map.seed)
 	clock = GameClock.new(data.rules, int(data.rules["start_minute"]))
 	pathfinder = Pathfinder.new(map, data)
+	names = NameBook.new(data)
 	gold = int(data.rules["starting_gold"])
 	reputation = int(data.rules["starting_reputation"])
 	log.add(clock.tick, "system", "New map: seed %d, %s %s." % [map.seed, map.settings["preset"], map.settings["size"]],
@@ -38,17 +40,24 @@ func step() -> void:
 		_move(s)
 
 
-func add_squad(squad_name: String, at_hex: int, travel_type: String, speed_tier: int) -> Squad:
+## A squad of freshly rolled units. `members` lists [class name, row] pairs;
+## units that don't fit are skipped.
+func add_squad(squad_name: String, at_hex: int, members: Array) -> Squad:
 	var s := Squad.new(squads.size() + 1, squad_name, at_hex)
-	s.travel_type = travel_type
-	s.speed_tier = speed_tier
+	for m in members:
+		var u := Unit.roll(data, m[0], rng.get_stream("recruit"), names)
+		if s.add(data, u, m[1]):
+			log.add(clock.tick, "progression", "%s the %s joins %s." % [u.name, u.unit_class, squad_name], s.id,
+					{"stats": u.stats, "alignment": u.alignment, "charisma": u.charisma, "growth": u.growth,
+					"talent": u.talent, "luck": u.luck})
 	squads.append(s)
+	log.add(clock.tick, "map", "%s forms: travels as %s, speed tier %d." % [squad_name, s.travel_name(), s.speed_tier], s.id)
 	return s
 
 
-## Ticks to cross one hex of multiplier 1 at this speed tier (SPEC §8.3).
+## Ticks to cross one hex of multiplier 1 at this speed tier, slowed by casualties (SPEC §8.3).
 func base_ticks(s: Squad) -> float:
-	return float(data.rules["hex_seconds_by_tier"][s.speed_tier - 1]) * float(data.rules["ticks_per_real_second"])
+	return float(data.rules["hex_seconds_by_tier"][s.speed_tier - 1]) * float(data.rules["ticks_per_real_second"]) 			* s.casualty_multiplier(data)
 
 
 ## Ticks to enter hex `i`.

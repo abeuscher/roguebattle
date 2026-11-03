@@ -95,7 +95,7 @@ func test_squad_moves_at_tier_speed() -> void:
 	m.seed = 1
 	m.settings = {"preset": "continent", "size": "small"}
 	var state := GameState.new(_data, m, GameLog.new())
-	var s := state.add_squad("Test", m.index_of(Hex.from_offset(Vector2i(0, 1))), "", 2)
+	var s := state.add_squad("Test", m.index_of(Hex.from_offset(Vector2i(0, 1))), [["Militia", "front"]])  # plains, tier 2
 	var goal := m.index_of(Hex.from_offset(Vector2i(10, 1)))
 	check(state.order_move(s, PackedInt32Array([goal])), "order accepted")
 	check_eq(s.path.size(), 10, "ten hexes to go")
@@ -106,7 +106,7 @@ func test_squad_moves_at_tier_speed() -> void:
 		ticks += 1
 	check_eq(ticks, ceili(per_hex * 10 - 0.0001), "ten plains hexes at tier 2")
 	check_eq(s.hex, goal, "arrived")
-	check(state.log.filtered("map", s.id).size() == 2, "order and arrival logged")
+	check(state.log.filtered("map", s.id).size() == 3, "forming, order and arrival logged")
 	# Forest costs x1.5 for a non-native, and roads x0.75.
 	m.terrain[m.index_of(Hex.from_offset(Vector2i(11, 1)))] = _data.terrain_ids["forest"]
 	m.road[m.index_of(Hex.from_offset(Vector2i(12, 1)))] = 1

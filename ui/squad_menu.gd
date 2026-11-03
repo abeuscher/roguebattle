@@ -36,6 +36,14 @@ func setup(state: GameState, s: Squad) -> void:
 	else:
 		_info.text = "Travel type: %s · Speed tier %d\nWaiting at %s." % [s.travel_name(), s.speed_tier, state.map.hex_at(s.hex)]
 	col.add_child(_info)
+	var roster := UiStyle.label("Slots %d / %d" % [Squad.slots_filled(state.data, s.units), s.capacity(state.data)], 15,
+			Color(0.75, 0.78, 0.84))
+	for which in ["front", "back"]:
+		roster.text += "\n%s row" % which.capitalize()
+		for u in s.row(which):
+			roster.text += "\n    %s, %s, level %d%s  ·  HP %d/%d" % [u.name, u.unit_class, u.level,
+					"  (leader)" if u == s.leader else "", u.hp, u.max_hp(state.data)]
+	col.add_child(roster)
 	var at_base := s.hex == state.map.player_base
 	_button(col, "Edit squad", false, "Edit Units arrives in M3.")
 	_button(col, "Use item", false, "Items arrive in M3.")

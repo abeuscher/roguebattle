@@ -8,7 +8,25 @@
  "starting_gold": 500,
  "starting_reputation": 50,
  "hex_seconds_by_tier": [1.0, 0.6, 0.3],
- "placeholder_squad": {"name": "Vanguard", "travel_type": "plains", "speed_tier": 2},
+ "placeholder_squad": {"name": "Vanguard", "units": [["Knight", "front"], ["Fighter", "front"], ["Fighter", "front"], ["Bowman", "back"], ["Acolyte", "back"]]},
+ "hp_per_con": 10,
+ "unit_roll": {
+  "flex_key_weight": 3,
+  "growth": [0.2, 0.5],
+  "luck": [0, 20],
+  "charisma": [5, 15],
+  "alignment_leans": {"Any": [0, 100], "Evil": [0, 40], "Neutral": [41, 59], "Holy": [60, 100]}
+ },
+ "alignment_bands": {"evil_max": 40, "holy_min": 60},
+ "talents": {
+  "ordinary": {"chance": 0.80, "xp_bonus": 0.0, "growth_bonus": 0.0},
+  "gifted": {"chance": 0.15, "xp_bonus": 0.15, "growth_bonus": 0.10},
+  "prodigy": {"chance": 0.05, "xp_bonus": 0.25, "growth_bonus": 0.20}
+ },
+ "slot_growth": {"base": 5, "levels": [5, 10, 15, 20], "charisma_per_level": 5, "banners": {"Herald": 1, "Standard-Bearer": 2}},
+ "vote_weights": {"Small": 1, "Large": 2, "Tiny": 0.5, "leader": 2},
+ "travel_types": {"Plains": "plains", "Forest": "forest", "Desert": "desert", "Snow": "snow", "Mountain": "mountain", "Swamp": "swamp", "Water": "shallow", "Lava": "lava"},
+ "all_water_travel": "deep",
  "difficulty_multiplier": [1, 1.5, 2],
  "road_multiplier": 0.75
 }

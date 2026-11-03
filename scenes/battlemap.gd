@@ -10,7 +10,7 @@ signal save_settings
 
 const NIGHT := Color(0.45, 0.5, 0.78)  # map tint at night
 const CLICK_SLOP := 6.0  # a press and release closer than this is a click, not a drag
-const TEST_TRAVEL := ["plains", "forest", "mountain", "swamp", "snow", "desert", "sky", ""]
+const TEST_TRAVEL := ["plains", "forest", "mountain", "swamp", "snow", "desert", "shallow", "deep", "sky", ""]
 
 var data: GameData
 var log: GameLog
@@ -52,7 +52,7 @@ func start(game_data: GameData, game_log: GameLog, config: GameConfig, map: MapD
 	state = GameState.new(data, map, log, config.game_settings())
 	view.show_map(map, data)
 	var test: Dictionary = data.rules["placeholder_squad"]
-	state.add_squad(test["name"], map.player_base, test["travel_type"], int(test["speed_tier"]))
+	state.add_squad(test["name"], map.player_base, test["units"])
 	for s in state.squads:
 		var token := SquadToken.new()
 		token.squad = s
