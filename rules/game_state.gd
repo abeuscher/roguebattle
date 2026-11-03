@@ -615,7 +615,8 @@ func _move(s: Squad) -> void:
 		return
 	s.progress += 1.0
 	while s.is_moving() and s.progress >= step_ticks(s, s.path[0]):
-		if _squad_on(s.path[0]) != null:  # someone stands there: wait at the edge
+		var holder := _squad_on(s.path[0])
+		if holder != null and (hostile(s, holder) or s.path.size() == 1):  # can't enter, or can't stop there: wait at the edge
 			s.progress = step_ticks(s, s.path[0])
 			break
 		s.progress -= step_ticks(s, s.path[0])

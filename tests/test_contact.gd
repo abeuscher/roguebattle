@@ -109,7 +109,12 @@ func test_squads_wait_for_occupied_hexes() -> void:
 	st.order_move(a, PackedInt32Array([_at(st.map, 9, 4)]))
 	for i in 200:
 		st.step()
-	check(a.hex != b.hex, "a squad never walks onto another squad's hex")
+	check(a.hex != b.hex, "a squad never stops on another squad's hex")
+	check_eq(a.hex, _at(st.map, 9, 4), "but passes through a friendly one to its destination")
+	st.order_move(a, PackedInt32Array([_at(st.map, 7, 4)]))
+	for i in 200:
+		st.step()
+	check_eq(Hex.distance(st.map.hex_at(a.hex), st.map.hex_at(b.hex)), 1, "with its destination taken, it waits beside it")
 
 
 func test_sight() -> void:

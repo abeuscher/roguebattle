@@ -187,10 +187,39 @@ func _center_on_squad(id: int) -> void:
 
 
 func _squad_at(world: Vector2) -> Squad:
+	var found := _squads_at(world)
+	return found[0] if not found.is_empty() else null
+
+
+## Visible squads whose flags are under the point, nearest first.
+func _squads_at(world: Vector2) -> Array[Squad]:
+	var out: Array[Squad] = []
 	for s in state.squads:
 		if state.is_visible(s) and _tokens[s.id].position.distance_to(world) < MapView.HEX_SIZE * 1.2:
-			return s
-	return null
+			out.append(s)
+	out.sort_custom(func(a: Squad, b: Squad): return _tokens[a.id].position.distance_to(world) < _tokens[b.id].position.distance_to(world))
+	return out
+
+
+## Your squads open their menu; enemies show what they are.
+func _pick(s: Squad) -> void:
+	if s.side == "player":
+		_select(s)
+	else:
+		_show_enemy(s)
+
+
+## Several flags under one click: a small menu at the pointer to choose between them.
+func _choose(found: Array[Squad]) -> void:
+	var menu := PopupMenu.new()
+	menu.add_theme_font_size_override("font_size", 18)
+	for i in found.size():
+		var s := found[i]
+		menu.add_item("%d  %s" % [s.id, s.name] if s.side == "player" else "%s (%s)" % [s.name, s.role.replace("_", " ")], i)
+	menu.id_pressed.connect(func(i: int): _pick(found[i]))
+	menu.popup_hide.connect(menu.queue_free)
+	_ui.add_child(menu)
+	menu.popup(Rect2i(Vector2i(get_viewport().get_mouse_position()), Vector2i.ZERO))
 
 
 func _hex_at(world: Vector2) -> int:
@@ -470,11 +499,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			elif _firing:
 				_fire_click(world)
 			else:
-				var s := _squad_at(world)
-				if s and s.side == "player":
-					_select(s)
-				elif s:
-					_show_enemy(s)
+				var found := _squads_at(world)
+				if found.size() > 1:
+					_choose(found)
+				elif found.size() == 1:
+					_pick(found[0])
 		elif mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed and _planning:
 			_undo_point()
 		return
