@@ -122,8 +122,13 @@ func _update_help() -> void:
 func _on_view_changed() -> void:
 	view.set_zoom(camera.zoom.x)
 	hud.minimap.set_view(camera.visible_rect())
-	for token in _tokens.values():  # like building icons, tokens stay readable when zoomed out
-		token.scale = Vector2.ONE * maxf(1.0, 0.7 / camera.zoom.x)
+	for token in _tokens.values():
+		token.scale = _token_scale()
+
+
+## Like building icons, tokens stay readable when zoomed out.
+func _token_scale() -> Vector2:
+	return Vector2.ONE * maxf(1.0, 0.7 / camera.zoom.x)
 
 
 # --- Squads on the map --------------------------------------------------------
@@ -141,6 +146,7 @@ func _sync_tokens() -> void:
 			token.squad = s
 			if s.side != "player":
 				token.color = ENEMY
+			token.scale = _token_scale()  # new tokens match the current zoom
 			view.add_object(token)
 			_tokens[s.id] = token
 
