@@ -14,6 +14,8 @@ const SLIDER_COLOR := Color(0.78, 0.8, 0.85)
 var data: GameData
 var config: GameConfig
 var _controls := {}  # field key -> control
+var _sections := {}  # heading button -> its section
+var _toggle_all: Button
 var _preview := Minimap.new()
 var _status := UiStyle.label("", 15, Color(0.7, 0.72, 0.78))
 var _seed := LineEdit.new()
@@ -45,14 +47,25 @@ func setup(game_data: GameData, game_config: GameConfig) -> void:
 
 
 func _build_form() -> Control:
+	var form := VBoxContainer.new()
+	form.custom_minimum_size.x = 880
 	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(880, 0)
+	scroll.size_flags_vertical = SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	var col := VBoxContainer.new()
 	col.size_flags_horizontal = SIZE_EXPAND_FILL
 	col.add_theme_constant_override("separation", 6)
 	scroll.add_child(col)
-	col.add_child(UiStyle.label("Custom Map", 32))
+	var title_row := HBoxContainer.new()
+	var title := UiStyle.label("Custom Map", 32)
+	title.size_flags_horizontal = SIZE_EXPAND_FILL
+	title_row.add_child(title)
+	_toggle_all = UiStyle.button("", 170)
+	_toggle_all.size_flags_vertical = SIZE_SHRINK_CENTER
+	_toggle_all.pressed.connect(func(): _show_sections(not _all_open()))
+	title_row.add_child(_toggle_all)
+	form.add_child(title_row)  # stays put while the settings scroll
+	form.add_child(scroll)
 	var group := ""
 	var section: VBoxContainer
 	for f in data.config_fields:
@@ -71,7 +84,8 @@ func _build_form() -> Control:
 		control.custom_minimum_size.x = 480
 		row.add_child(control)
 		section.add_child(row)
-	return scroll
+	_update_headings()
+	return form
 
 
 ## A heading that shows or hides its section when clicked.
@@ -86,11 +100,28 @@ func _section_heading(group: String, section: Control) -> Button:
 			"icon_normal_color", "icon_hover_color", "icon_pressed_color", "icon_focus_color"]:
 		b.add_theme_color_override(state, UiStyle.ACCENT)
 	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-	b.icon = UiStyle.icon("open" if section.visible else "closed")
 	b.pressed.connect(func():
 		section.visible = not section.visible
-		b.icon = UiStyle.icon("open" if section.visible else "closed"))
+		_update_headings())
+	_sections[b] = section
 	return b
+
+
+func _show_sections(open: bool) -> void:
+	for section in _sections.values():
+		section.visible = open
+	_update_headings()
+
+
+func _all_open() -> bool:
+	return _sections.values().all(func(s: Control): return s.visible)
+
+
+## Heading arrows follow their sections; the corner button offers whichever helps more.
+func _update_headings() -> void:
+	for heading in _sections:
+		heading.icon = UiStyle.icon("open" if _sections[heading].visible else "closed")
+	_toggle_all.text = "Collapse all" if _all_open() else "Expand all"
 
 
 ## On/off fields get a check box; every other field a slider over its options,
