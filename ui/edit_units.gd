@@ -424,7 +424,13 @@ func _chip(u: Unit, mode: String, draggable: bool, cell: int, r: String, c: int)
 	chip.tooltip_text = "%s (%s), level %d. HP %d/%d.%s" % [u.name, u.unit_class, u.level, u.hp, u.max_hp(data),
 			" Drag to move." if draggable else ""]
 	chip.gui_input.connect(func(e: InputEvent):
-		if e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT and mode != "compact" and _squad:
+		if not (e is InputEventMouseButton and e.button_index == MOUSE_BUTTON_LEFT and not e.pressed):
+			return  # on release, so pressing to drag doesn't rebuild the screen under the drag
+		if mode == "compact":  # in a squad card: open the squad on this unit
+			_open(cell)
+			_unit = u
+			_refresh()
+		elif _squad:
 			_unit = u
 			_refresh())
 	return chip
