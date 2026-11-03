@@ -27,6 +27,9 @@ var _menu: SquadMenu
 var _main_menu: MainMenu
 var _battle: BattleView
 var _edit: EditUnits
+var _deploy_menu: DeployMenu
+var _confirm: ConfirmDialog
+var _deploying := false  # _selected is a squad from base whose route is being laid
 var _tokens := {}  # squad id -> SquadToken
 var _selected: Squad  # the squad whose menu or move order is open (the game is held meanwhile)
 var _planning := false  # laying rally points for _selected
@@ -49,6 +52,12 @@ func start(game_data: GameData, game_log: GameLog, config: GameConfig, map: MapD
 	camera.view_changed.connect(_on_view_changed)
 	hud.minimap.jump.connect(camera.center_on)
 	hud.squad_pressed.connect(_center_on_squad)
+	hud.edit_pressed.connect(func():
+		if _can_open() and _selected == null:
+			_open_edit())
+	hud.deploy_pressed.connect(func():
+		if _can_open() and _selected == null:
+			_open_deploy_menu())
 	get_viewport().size_changed.connect(camera.fit)
 	var started := Time.get_ticks_msec()
 	if map == null:
@@ -67,7 +76,6 @@ func start(game_data: GameData, game_log: GameLog, config: GameConfig, map: MapD
 	camera.fit()
 	camera.fit.call_deferred()  # again once the camera is live, so the minimap frame is right
 	_update_help()
-	_open_edit.call_deferred()  # the game opens on Edit Units (§4)
 	print("Battlemap ready in %d ms" % (Time.get_ticks_msec() - started))
 
 
@@ -99,7 +107,7 @@ static func darkness(minute: int) -> float:
 
 
 func _update_help() -> void:
-	var text := _info + "\nClick a squad to give orders  ·  1-9: find squad  ·  T: test squad's travel type  ·  Space: pause  ·  PgUp/PgDn: speed  ·  U: edit units  ·  L: log  ·  Esc: menu" \
+	var text := _info + "\nClick a squad to give orders  ·  1-9: find squad  ·  T: test squad's travel type  ·  Space: pause  ·  PgUp/PgDn: speed  ·  L: log  ·  Esc: menu" \
 			+ "\nWheel: zoom  ·  Drag: pan  ·  F: fit  ·  H: hidden sites and lairs  ·  G: grid  ·  O: overlay (%s)" % MapOverlay.NAMES[view.overlay]
 	var legend := MapOverlay.legend(view.overlay, state.map)
 	if legend != "":
@@ -227,6 +235,9 @@ func _close_menu() -> void:
 ## Closing the menu resumes play.
 func _end_selection() -> void:
 	_close_menu()
+	if _deploying and _selected not in state.squads:
+		_selected.hex = -1  # back at base after all
+	_deploying = false
 	if _selected != null:
 		state.clock.release()
 	_selected = null
@@ -240,7 +251,7 @@ func _start_planning() -> void:
 	_planning = true
 	_points.clear()
 	_planned.clear()
-	hud.show_banner("Move %s: left-click hexes to lay rally points, then click the last point again to commit.  Right-click: undo  ·  Esc: back" % _selected.name)
+	hud.show_banner("%s %s: left-click hexes to lay rally points, then click the last point again to commit.  Right-click: undo  ·  Esc: back" % ["Deploy" if _deploying else "Move", _selected.name])
 
 
 func _start_firing() -> void:
@@ -269,6 +280,9 @@ func _plan_click(hex: int) -> void:
 	if hex < 0:
 		return
 	if not _points.is_empty() and hex == _points[_points.size() - 1]:
+		if _deploying:
+			_confirm_deploy()
+			return
 		state.order_move(_selected, _points)  # clicking the last point again commits and resumes play
 		_end_selection()
 		return
@@ -292,8 +306,58 @@ func _undo_point() -> void:
 
 func _show_plan() -> void:
 	var eta := GameState.duration_text(state.route_ticks(_selected, _planned))
-	hud.show_banner("Move %s: %d rally point%s, %d hexes, about %s.  Click the last point again to commit  ·  Right-click: undo  ·  Esc: back" % [
-			_selected.name, _points.size(), "" if _points.size() == 1 else "s", _planned.size(), eta])
+	hud.show_banner("%s %s: %d rally point%s, %d hexes, about %s.  Click the last point again to commit  ·  Right-click: undo  ·  Esc: back" % [
+			"Deploy" if _deploying else "Move", _selected.name, _points.size(), "" if _points.size() == 1 else "s", _planned.size(), eta])
+
+
+# --- Deploying (SPEC §8.4) -----------------------------------------------------------
+
+func _open_deploy_menu() -> void:
+	_deploy_menu = DeployMenu.new()
+	_ui.add_child(_deploy_menu)
+	_deploy_menu.setup(state)
+	_deploy_menu.picked.connect(func(s: Squad):
+		_close_deploy_menu()
+		_start_deploy(s))
+	_deploy_menu.closed.connect(_close_deploy_menu)
+	state.clock.hold()
+
+
+func _close_deploy_menu() -> void:
+	_deploy_menu.queue_free()
+	_deploy_menu = null
+	state.clock.release()
+
+
+## A squad from base: lay its route from where it will appear, with the move tool.
+func _start_deploy(s: Squad) -> void:
+	if _selected == null:
+		state.clock.hold()
+	_selected = s
+	_deploying = true
+	s.hex = state.deploy_hex()
+	var at := MapView.hex_center(state.map, s.hex)
+	if not get_viewport_rect().has_point(get_canvas_transform() * at):  # bring the base into view
+		camera.center_on(at)
+	_start_planning()
+
+
+func _confirm_deploy() -> void:
+	_confirm = ConfirmDialog.new()
+	_ui.add_child(_confirm)
+	_confirm.setup("Deploy %s for %d gold?" % [_selected.name, state.deploy_cost(_selected)], "Deploy")
+	_confirm.confirmed.connect(func():
+		_close_confirm()
+		state.deploy(_selected, _points)
+		_end_selection()
+		_sync_tokens()
+		hud.set_squads(state.player_squads()))
+	_confirm.cancelled.connect(_close_confirm)  # back to laying the route
+
+
+func _close_confirm() -> void:
+	_confirm.queue_free()
+	_confirm = null
 
 
 # --- Battle, log and Esc menu ---------------------------------------------------------
@@ -319,6 +383,9 @@ func _open_edit(cell := -1) -> void:
 	_ui.add_child(_edit)
 	_edit.setup(state, cell)
 	_edit.closed.connect(_close_edit)
+	_edit.deploy.connect(func(s: Squad):
+		_close_edit()
+		_start_deploy(s))
 	state.clock.hold()
 
 
@@ -366,8 +433,13 @@ func _close_main_menu() -> void:
 
 # --- Input ------------------------------------------------------------------------
 
+## No menu or dialog is open.
+func _can_open() -> bool:
+	return not (_log_panel or _menu or _main_menu or _battle or _edit or _deploy_menu or _confirm)
+
+
 func _unhandled_input(event: InputEvent) -> void:
-	if _log_panel or _menu or _main_menu or _battle or _edit:
+	if not _can_open():
 		return
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
@@ -392,7 +464,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	var key := (event as InputEventKey).keycode
 	if _planning or _firing:
-		if key == KEY_ESCAPE:
+		if key == KEY_ESCAPE and _deploying:
+			_end_selection()
+		elif key == KEY_ESCAPE:
 			_planning = false
 			_firing = false
 			_open_menu()
@@ -411,6 +485,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			_open_log()
 		KEY_U:
 			_open_edit()
+		KEY_D:
+			_open_deploy_menu()
 		KEY_T:
 			var s := state.player_squads()[0]
 			var next: String = TEST_TRAVEL[(TEST_TRAVEL.find("sky" if s.sky else s.travel_type) + 1) % TEST_TRAVEL.size()]

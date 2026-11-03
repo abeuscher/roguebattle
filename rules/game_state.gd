@@ -94,6 +94,26 @@ func squad_cap() -> int:
 	return 5
 
 
+## Gold per day for the squad's units (§15.1): by stage, Large ×2, Tiny ×½.
+func upkeep(s: Squad) -> int:
+	var u: Dictionary = data.rules["upkeep"]
+	var total := 0.0
+	for unit in s.units:
+		var c: Dictionary = unit.info(data)
+		total += float(u["by_stage"][int(c["stage"]) - 1]) * float(u["size"][c["size"]])
+	return roundi(total)
+
+
+## Deploying costs one day of the squad's upkeep.
+func deploy_cost(s: Squad) -> int:
+	return upkeep(s)
+
+
+## The hex a deployed squad appears on: the Player Base, or the nearest free hex.
+func deploy_hex() -> int:
+	return map.player_base if _squad_on(map.player_base) == null else _free_near(map.player_base)
+
+
 ## Why the squad can't deploy, or "" if it can.
 func deploy_blocker(s: Squad) -> String:
 	if s in squads:
@@ -104,21 +124,28 @@ func deploy_blocker(s: Squad) -> String:
 		return "Its leader has fallen: revive them first."
 	if player_squads().size() >= squad_cap():
 		return "The squad cap is %d on the map at once." % squad_cap()
+	if gold < deploy_cost(s):
+		return "Not enough gold: deploying costs %d." % deploy_cost(s)
 	return ""
 
 
-## Puts a squad from base on the map at the Player Base (or the nearest free hex).
-func deploy(s: Squad) -> bool:
+## Pays the deploy cost and puts a squad from base on the map at deploy_hex(); with
+## rally points, it sets off along them at once.
+func deploy(s: Squad, points := PackedInt32Array()) -> bool:
 	if deploy_blocker(s) != "":
 		return false
-	s.hex = map.player_base if _squad_on(map.player_base) == null else _free_near(map.player_base)
+	var cost := deploy_cost(s)
+	gold -= cost
+	s.hex = deploy_hex()
 	s.path.clear()
 	s.rally.clear()
 	s.progress = 0.0
 	s.marching_home = false
 	s.entering_base = false
 	squads.append(s)
-	log.add(clock.tick, "map", "%s deploys from the Player Base." % s.name, s.id)
+	log.add(clock.tick, "economy", "%s deploys from the Player Base for %d gold." % [s.name, cost], s.id)
+	if not points.is_empty():
+		order_move(s, points)
 	return true
 
 

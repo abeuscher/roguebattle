@@ -1,9 +1,12 @@
 class_name Hud
 extends Control
 ## The battlemap HUD (SPEC §5.2): clock with day and night, game speed, pause
-## state, gold, reputation, the squad number list and the minimap.
+## state, gold, reputation, the squad number list, the minimap, and a toolbar at the
+## bottom with Edit Units and Deploy Squad.
 
 signal squad_pressed(id: int)
+signal edit_pressed
+signal deploy_pressed
 
 var minimap := Minimap.new()
 var _clock := Label.new()
@@ -13,6 +16,7 @@ var _squads := HBoxContainer.new()
 var _help := Label.new()
 var _banner := Label.new()
 var _flash_until := 0
+var _toolbar := HBoxContainer.new()
 
 
 func _ready() -> void:
@@ -45,6 +49,13 @@ func _ready() -> void:
 	_banner.add_theme_color_override("font_color", Color("#ffe08a"))
 	_banner.visible = false
 	add_child(_banner)
+	_toolbar.add_theme_constant_override("separation", 10)
+	add_child(_toolbar)
+	for entry in [["Edit Units (U)", edit_pressed], ["Deploy Squad (D)", deploy_pressed]]:
+		var b := UiStyle.button(entry[0], 210)
+		b.focus_mode = FOCUS_NONE
+		b.pressed.connect(entry[1].emit)
+		_toolbar.add_child(b)
 	resized.connect(place)
 
 
@@ -92,9 +103,14 @@ func refresh(state: GameState) -> void:
 		_banner.visible = false
 
 
-## Puts the minimap bottom-right and the help text bottom-left. Call after the map or text changes.
+## Puts the minimap bottom-right, the toolbar bottom-centre and the help text bottom-left
+## (above the toolbar if they'd overlap). Call after the map or text changes.
 func place() -> void:
 	minimap.position = size - minimap.size - Vector2(16, 16)
+	_toolbar.reset_size()
+	_toolbar.position = Vector2((size.x - _toolbar.size.x) / 2.0, size.y - _toolbar.size.y - 16)
 	_help.reset_size()
 	_help.position = Vector2(12, size.y - _help.size.y - 12)
+	if _help.position.x + _help.size.x > _toolbar.position.x:
+		_help.position.y = _toolbar.position.y - _help.size.y - 10
 

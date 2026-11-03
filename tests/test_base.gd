@@ -42,6 +42,23 @@ func test_deploy_needs_a_living_leader() -> void:
 	check(st.deploy_blocker(s).contains("leader"), "a squad without a leader can't deploy")
 
 
+func test_deploy_cost_and_route() -> void:
+	var st := _state()
+	var s: Squad = st.army.cells[1]
+	var cost := 0
+	for u in s.units:  # one day of upkeep: by stage, all Small here
+		cost += [5, 10, 20, 35][int(u.info(d)["stage"]) - 1]
+	check_eq(st.deploy_cost(s), cost, "deploying costs one day of upkeep")
+	var gold := st.gold
+	var to := st.map.index_of(Hex.from_offset(Vector2i(9, 3)))
+	check(st.deploy(s, PackedInt32Array([to])), "deploy with a destination")
+	check_eq(st.gold, gold - cost, "the cost is paid")
+	check(s.is_moving() and s.rally[-1] == to, "it sets off at once")
+	var other: Squad = st.army.cells[2]
+	st.gold = st.deploy_cost(other) - 1
+	check(st.deploy_blocker(other).contains("gold"), "not without the gold")
+
+
 func test_squad_cap() -> void:
 	var st := _state(2)
 	check(st.deploy(st.army.cells[1]), "the second squad fits under a cap of 2")

@@ -12,6 +12,7 @@ extends Control
 ## A modal: 50% dark overlay; the battlemap holds the clock while it's open.
 
 signal closed
+signal deploy(squad: Squad)  # lay its route on the map, then confirm the cost
 
 const KIND_COLORS := {"Melee": Color("#8a4a3a"), "Ranged": Color("#4f7a3a"), "Magic": Color("#3d5a9a"),
 		"Breath": Color("#8a5a2a"), "Heal": Color("#9a8a3a"), "Buff": Color("#9a8a3a"), "Debuff": Color("#6a4a8a"),
@@ -465,10 +466,8 @@ func _base_button(s: Squad, compact: bool) -> Button:
 	var go := _small("Deploy", compact, true)
 	var why := state.deploy_blocker(s)
 	go.disabled = why != ""
-	go.tooltip_text = why if why != "" else "Put the squad on the map at the Player Base."
-	go.pressed.connect(func():
-		state.deploy(s)
-		_refresh())
+	go.tooltip_text = why if why != "" else "Pick where it should head on the map; deploying costs %d gold." % state.deploy_cost(s)
+	go.pressed.connect(func(): deploy.emit(s))
 	return go
 
 
