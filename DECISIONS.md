@@ -25,5 +25,5 @@ Small calls made where the spec left a gap. Newest at the bottom. Anything here 
 
 ## After session 001 (requested by the user)
 
-- **Textured terrain.** Each terrain gets a hex tile drawn in code (`ui/terrain_tiles.gd`): its color plus one whole motif per hex (tree, peak, grass, dunes, drifts, reeds, lava rocks, cliff hatching). Water stays plain blue. Region borders follow hex edges, and no motif is cut at a border. Placeholder art until after M4.
+- **Textured terrain.** Each terrain gets a hex tile drawn in code (`ui/terrain_tiles.gd`): its color plus one whole motif per hex (tree, peak, grass, dunes, drifts, water drops, lava rocks, cliff hatching). Water stays plain blue. Region borders follow hex edges, and no motif is cut at a border. Placeholder art until after M4.
 - **Map view** draws hexes with one MultiMesh per terrain per 64×64-hex chunk, over a flat-color copy that hides gaps when zoomed far out. World hex size is 32; tiles are drawn at 48 so they stay sharp up close.

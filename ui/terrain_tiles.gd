@@ -58,10 +58,11 @@ static func draw_tile(key: String, base: Color, s: float) -> Image:
 			_fill(img, at.call([Vector2(0, -19), Vector2(6, -9), Vector2(2, -11), Vector2(-1, -8), Vector2(-6, -9)]),
 					Color("#f2f4f6"))
 		"swamp":
-			_fill(img, at.call(_ellipse(Vector2(2, 9), 12, 4.5)), Color("#4d7a80"))
-			for x in [-9, -4, 7]:
-				_fill(img, at.call([Vector2(x - 0.8, -6), Vector2(x + 0.8, -6), Vector2(x + 0.8, 7), Vector2(x - 0.8, 7)]), dark)
-				_fill(img, at.call(_ellipse(Vector2(x, -8), 1.8, 3.8)), Color("#6b4a2a"))
+			var water := Color("#4d7a80")
+			for p in [Vector2(-10, -6), Vector2(9, -2), Vector2(-1, 10)]:  # laid out like the grass
+				_fill(img, at.call(_ellipse(p + Vector2(0.8, 0.8), 4.5, 4.5)), water.darkened(0.35))  # bevel shadow
+				_fill(img, at.call(_ellipse(p, 4.5, 4.5)), water)
+				_fill(img, at.call(_ellipse(p + Vector2(-1.5, -1.5), 1.6, 1.2)), water.lightened(0.35))  # glint
 		"lava":
 			for p in [Vector2(-8, -6), Vector2(8, 4), Vector2(-3, 11)]:
 				_fill(img, at.call(_ellipse(p, 6.5, 4.5)), Color("#5a2614"))
