@@ -61,13 +61,13 @@ func add_squad(squad_name: String, at_hex: int, members: Array, side := "player"
 	return s
 
 
-## The placeholder army from rules.json until Map 1 setup (M4): its squads fill the
-## first cells, the first one stands on the Player Base, the rest wait at base (§8.4).
+## The placeholder army from rules.json until Map 1 setup (M4): its squads (named
+## after their leaders) fill the first cells, the first one stands on the Player Base, the rest wait at base (§8.4).
 func setup_army() -> void:
 	var p: Dictionary = data.rules["placeholder_army"]
 	for i in p["squads"].size():
 		var entry: Dictionary = p["squads"][i]
-		var s := _form(i + 1, entry["name"], map.player_base if i == 0 else -1, entry["units"], "player")
+		var s := _form(i + 1, "", map.player_base if i == 0 else -1, entry["units"], "player")
 		army.cells[i] = s
 		if i == 0:
 			squads.append(s)
@@ -98,11 +98,11 @@ func _form(number: int, squad_name: String, at_hex: int, members: Array, side: S
 	for m in members:
 		var u := Unit.roll(data, m[0], rng.get_stream("recruit"), names)
 		if s.add(data, u, m[1]):
-			log.add(clock.tick, "progression", "%s the %s joins %s." % [u.name, u.unit_class, squad_name], s.id,
+			log.add(clock.tick, "progression", "%s the %s joins %s." % [u.name, u.unit_class, s.name], s.id,
 					{"stats": u.stats, "alignment": u.alignment, "charisma": u.charisma, "growth": u.growth,
 					"talent": u.talent, "luck": u.luck})
 	s.morale = int(data.rules["starting_morale"])
-	log.add(clock.tick, "map", "%s forms: travels as %s, speed tier %d." % [squad_name, s.travel_name(), s.speed_tier], s.id)
+	log.add(clock.tick, "map", "%s forms: travels as %s, speed tier %d." % [s.name, s.travel_name(), s.speed_tier], s.id)
 	return s
 
 

@@ -53,14 +53,16 @@ func move(u: Unit, cell: int, to_row := "front", to_col := -1) -> bool:
 	if other:
 		_take(to, other)
 		_put(from, other, old_row, old_col)
-	if to:
-		_put(to, u, to_row, to_col if to_col >= 0 else _free_col(to, to_row))
+	_put(to, u, to_row, to_col if to_col >= 0 or to == null else _free_col(to, to_row))
 	for s in [from, to]:
 		if s and not _fits(s):
 			_restore(snap)
 			return false
 	if to and cells[cell] == null:
 		cells[cell] = to
+	for s in [from, to]:
+		if s:
+			s.refresh(data)
 	for s in [from, to]:
 		if s and s.units.is_empty():
 			cells[s.id - 1] = null

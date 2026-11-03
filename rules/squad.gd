@@ -2,6 +2,7 @@ class_name Squad
 extends RefCounted
 ## A squad (SPEC §8): its units in two rows, the leader, slots, and how it moves.
 ## Travel type and speed tier follow from the units; call refresh() after changing them.
+## A player squad is named after its leader, e.g. "Demandred (Knight)".
 
 var id: int
 var name: String
@@ -129,8 +130,10 @@ func check_slot_growth(data: GameData) -> bool:
 
 # --- Movement (§8.3) ------------------------------------------------------------
 
-## Recomputes travel type and speed tier from the living units.
+## Recomputes the name, travel type and speed tier from the units.
 func refresh(data: GameData) -> void:
+	if side == "player":
+		name = "%s (%s)" % [leader.name.get_slice(" ", 0), leader.unit_class] if leader else "Squad %d" % id
 	var alive := living()
 	if alive.is_empty():
 		return

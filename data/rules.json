@@ -14,9 +14,9 @@
  "placeholder_army": {
   "_note": "Until Map 1 setup (M4) rolls the real army. Only the first squad starts on the map (SPEC 8.4).",
   "squads": [
-   {"name": "Vanguard", "units": [["Knight", "front"], ["Fighter", "front"], ["Fighter", "front"], ["Bowman", "back"], ["Acolyte", "back"]]},
-   {"name": "Lancers", "units": [["Lancer", "front"], ["Squire", "front"], ["Squire", "front"], ["Slinger", "back"], ["Acolyte", "back"]]},
-   {"name": "Archers", "units": [["Archer", "back"], ["Soldier", "front"], ["Bowman", "back"], ["Apprentice", "back"]]}
+   {"units": [["Knight", "front"], ["Fighter", "front"], ["Fighter", "front"], ["Bowman", "back"], ["Acolyte", "back"]]},
+   {"units": [["Lancer", "front"], ["Squire", "front"], ["Squire", "front"], ["Slinger", "back"], ["Acolyte", "back"]]},
+   {"units": [["Archer", "back"], ["Soldier", "front"], ["Bowman", "back"], ["Apprentice", "back"]]}
   ],
   "pool": ["Fighter", "Bowman", "Herald", "Serf"],
   "items": {"sword": 2, "mace": 1, "bow": 1, "longbow": 1, "bronze": 3, "iron": 1, "necklace": 1, "ring": 1, "earring": 1}

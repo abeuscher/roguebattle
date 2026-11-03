@@ -186,8 +186,8 @@ func _card(cell: int) -> Control:
 	var where := "In the field" if locked else ("On the map" if s in state.squads else "At base")
 	head.add_child(_quiet(UiStyle.label(where, 13, Color("#e0a050") if locked else Color(0.6, 0.65, 0.7))))
 	col.add_child(head)
-	var lead := "Leader: %s (%s)" % [s.leader.name, s.leader.unit_class] if s.leader else "No leader: add a unit that can lead"
-	col.add_child(_quiet(UiStyle.label(lead, 13, Color(1, 0.88, 0.5) if s.leader else Color("#ff8a70"))))
+	var lead := "Led by %s" % s.leader.name if s.leader else "No leader: add a unit that can lead"
+	col.add_child(_quiet(UiStyle.label(lead, 13, Color(0.7, 0.73, 0.78) if s.leader else Color("#ff8a70"))))
 	for r in ["front", "back"]:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 4)
