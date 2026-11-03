@@ -645,7 +645,7 @@ func _blocks_healing(u: Unit) -> bool:
 ## A stat with statuses, auras and Last stand applied. `vs` is the attack being
 ## defended against, for effects like Aerie (+PDEF against ranged).
 func stat(u: Unit, s: String, vs := "") -> float:
-	var v := float(u.stats[s])
+	var v := float(u.stat(data, s))
 	for st in _status.get(u, {}):
 		v *= float(cfg["statuses"][st].get("stats", {}).get(s, 1.0))
 	for e in _effects_on(u):

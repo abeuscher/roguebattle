@@ -26,6 +26,7 @@ var _log_panel: LogPanel
 var _menu: SquadMenu
 var _main_menu: MainMenu
 var _battle: BattleView
+var _edit: EditUnits
 var _tokens := {}  # squad id -> SquadToken
 var _selected: Squad  # the squad whose menu or move order is open (the game is held meanwhile)
 var _planning := false  # laying rally points for _selected
@@ -56,16 +57,9 @@ func start(game_data: GameData, game_log: GameLog, config: GameConfig, map: MapD
 			map.settings["size"], map.width, map.height, config.to_code()]
 	state = GameState.new(data, map, log, config.game_settings())
 	view.show_map(map, data)
-	var test: Dictionary = data.rules["placeholder_squad"]
-	state.add_squad(test["name"], map.player_base, test["units"])
+	state.setup_army()
 	state.place_enemies()
-	for s in state.squads:
-		var token := SquadToken.new()
-		token.squad = s
-		if s.side != "player":
-			token.color = ENEMY
-		view.add_object(token)
-		_tokens[s.id] = token
+	_sync_tokens()
 	hud.set_squads(state.player_squads())
 	hud.minimap.set_map(map, data)
 	hud.place()
@@ -101,7 +95,7 @@ static func darkness(minute: int) -> float:
 
 
 func _update_help() -> void:
-	var text := _info + "\nClick a squad to give orders  ·  1-9: find squad  ·  T: test squad's travel type  ·  Space: pause  ·  PgUp/PgDn: speed  ·  L: log  ·  Esc: menu" \
+	var text := _info + "\nClick a squad to give orders  ·  1-9: find squad  ·  T: test squad's travel type  ·  Space: pause  ·  PgUp/PgDn: speed  ·  U: edit units  ·  L: log  ·  Esc: menu" \
 			+ "\nWheel: zoom  ·  Drag: pan  ·  F: fit  ·  H: hidden sites and lairs  ·  G: grid  ·  O: overlay (%s)" % MapOverlay.NAMES[view.overlay]
 	var legend := MapOverlay.legend(view.overlay, state.map)
 	if legend != "":
@@ -118,12 +112,21 @@ func _on_view_changed() -> void:
 
 # --- Squads on the map --------------------------------------------------------
 
-## Drops tokens of squads that left the map (wiped out or driven off).
+## Adds tokens for squads new on the map and drops those of squads that left it
+## (wiped out, driven off, or emptied in Edit Units).
 func _sync_tokens() -> void:
 	for id in _tokens.keys():
 		if not state.squads.any(func(s: Squad): return s.id == id):
 			_tokens[id].queue_free()
 			_tokens.erase(id)
+	for s in state.squads:
+		if not _tokens.has(s.id):
+			var token := SquadToken.new()
+			token.squad = s
+			if s.side != "player":
+				token.color = ENEMY
+			view.add_object(token)
+			_tokens[s.id] = token
 
 
 ## Places each token, sliding smoothly between hexes as the squad moves. Enemies show
@@ -301,6 +304,23 @@ func _close_battle(text: String) -> void:
 	_sync_tokens()
 
 
+func _open_edit() -> void:
+	_edit = EditUnits.new()
+	_ui.add_child(_edit)
+	_edit.setup(state)
+	_edit.closed.connect(_close_edit)
+	state.clock.hold()
+
+
+func _close_edit() -> void:
+	_edit.queue_free()
+	_edit = null
+	state.after_edit()
+	_sync_tokens()
+	hud.set_squads(state.player_squads())
+	state.clock.release()
+
+
 func _open_log() -> void:
 	_log_panel = LogPanel.new()
 	_ui.add_child(_log_panel)
@@ -337,7 +357,7 @@ func _close_main_menu() -> void:
 # --- Input ------------------------------------------------------------------------
 
 func _unhandled_input(event: InputEvent) -> void:
-	if _log_panel or _menu or _main_menu or _battle:
+	if _log_panel or _menu or _main_menu or _battle or _edit:
 		return
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
@@ -379,6 +399,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			state.set_speed_index(state.clock.speed_index - 1)
 		KEY_L:
 			_open_log()
+		KEY_U:
+			_open_edit()
 		KEY_T:
 			var s := state.player_squads()[0]
 			var next: String = TEST_TRAVEL[(TEST_TRAVEL.find("sky" if s.sky else s.travel_type) + 1) % TEST_TRAVEL.size()]

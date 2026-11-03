@@ -1,0 +1,19 @@
+{
+ "_note": "Items (SPEC §15.2). All numbers are placeholders. 'use': any, melee (a unit with a Melee attack in either row), archer (the archer tag). Prices arrive with shops.",
+ "slots": ["weapon", "armor", "jewelry"],
+ "items": {
+  "dagger":   {"name": "Dagger",   "slot": "weapon",  "use": "melee",  "stats": {"STR": 1, "AGI": 2}},
+  "sword":    {"name": "Sword",    "slot": "weapon",  "use": "melee",  "stats": {"STR": 2, "AGI": 1}},
+  "club":     {"name": "Club",     "slot": "weapon",  "use": "melee",  "stats": {"STR": 3, "AGI": -1}},
+  "mace":     {"name": "Mace",     "slot": "weapon",  "use": "melee",  "stats": {"STR": 3}},
+  "bow":      {"name": "Bow",      "slot": "weapon",  "use": "archer", "stats": {"STR": 2}},
+  "longbow":  {"name": "Longbow",  "slot": "weapon",  "use": "archer", "stats": {"STR": 2}, "range": 1},
+  "bronze":   {"name": "Bronze armor", "slot": "armor", "use": "any", "stats": {"PDEF": 2}},
+  "iron":     {"name": "Iron armor",   "slot": "armor", "use": "any", "stats": {"PDEF": 4}},
+  "steel":    {"name": "Steel armor",  "slot": "armor", "use": "any", "stats": {"PDEF": 6}},
+  "necklace": {"name": "Necklace", "slot": "jewelry", "use": "any",    "stats": {"CON": 2}},
+  "ring":     {"name": "Ring",     "slot": "jewelry", "use": "any",    "stats": {"INT": 2}},
+  "earring":  {"name": "Earring",  "slot": "jewelry", "use": "any",    "stats": {"AGI": 2}},
+  "bracelet": {"name": "Bracelet", "slot": "jewelry", "use": "any",    "stats": {"PDEF": 2}}
+ }
+}

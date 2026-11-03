@@ -36,15 +36,15 @@ static func offense(data: GameData, u: Unit) -> float:
 	var per_hit: float
 	match Battle.base_kind(kind):
 		"Magic", "Dispel":
-			per_hit = maxf(1.0, u.stats["INT"] - ref["MDEF"])
+			per_hit = maxf(1.0, u.stat(data, "INT") - ref["MDEF"])
 		"Breath":
-			per_hit = maxf(1.0, (u.stats["STR"] + u.stats["INT"]) * 0.5 - ref["MDEF"] * 0.5)
+			per_hit = maxf(1.0, (u.stat(data, "STR") + u.stat(data, "INT")) * 0.5 - ref["MDEF"] * 0.5)
 		"Heal":
-			per_hit = u.stats["INT"] * float(data.battle["heal_int_share"])
+			per_hit = u.stat(data, "INT") * float(data.battle["heal_int_share"])
 		"Buff", "Debuff", "Ward":
 			per_hit = float(t["support_share"]) * maxf(1.0, ref["STR"] - ref["PDEF"])
 		_:
-			per_hit = maxf(1.0, u.stats["STR"] - ref["PDEF"])
+			per_hit = maxf(1.0, u.stat(data, "STR") - ref["PDEF"])
 	return per_hit * attacks * float(t["group"].get(Battle.group_of(kind), 1.0))
 
 
@@ -53,7 +53,7 @@ static func durability(data: GameData, u: Unit) -> float:
 	if not u.is_alive():
 		return 0.0
 	var ref := yardstick(data)
-	var incoming := 0.5 * maxf(1.0, ref["STR"] - u.stats["PDEF"]) + 0.5 * maxf(1.0, ref["INT"] - u.stats["MDEF"])
+	var incoming := 0.5 * maxf(1.0, ref["STR"] - u.stat(data, "PDEF")) + 0.5 * maxf(1.0, ref["INT"] - u.stat(data, "MDEF"))
 	return u.hp / incoming
 
 

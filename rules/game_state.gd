@@ -8,7 +8,8 @@ var rng: RngStreams
 var clock: GameClock
 var log: GameLog
 var pathfinder: Pathfinder
-var squads: Array[Squad] = []
+var squads: Array[Squad] = []  # every squad on the map
+var army: Army  # the player's squads, on the map or at base, the recruit pool and items
 var names: NameBook
 var settings: Dictionary  # victory, defeat, squad cap, fairness (from the configurator)
 var gold: int
@@ -30,6 +31,7 @@ func _init(game_data: GameData, game_map: MapData, game_log: GameLog, game_setti
 	names = NameBook.new(data)
 	gold = int(data.rules["starting_gold"])
 	reputation = int(data.rules["starting_reputation"])
+	army = Army.new(data)
 	log.add(clock.tick, "system", "New map: seed %d, %s %s." % [map.seed, map.settings["preset"], map.settings["size"]],
 			-1, {"settings": map.settings, "game": settings})
 
@@ -54,6 +56,41 @@ func step() -> void:
 ## units that don't fit are skipped. Player squads are numbered from 1, others from 101.
 func add_squad(squad_name: String, at_hex: int, members: Array, side := "player") -> Squad:
 	var number := 1 + squads.filter(func(o: Squad): return o.side == side).size() + (0 if side == "player" else 100)
+	var s := _form(number, squad_name, at_hex, members, side)
+	squads.append(s)
+	return s
+
+
+## The placeholder army from rules.json until Map 1 setup (M4): its squads fill the
+## first cells, the first one stands on the Player Base, the rest wait at base (§8.4).
+func setup_army() -> void:
+	var p: Dictionary = data.rules["placeholder_army"]
+	for i in p["squads"].size():
+		var entry: Dictionary = p["squads"][i]
+		var s := _form(i + 1, entry["name"], map.player_base if i == 0 else -1, entry["units"], "player")
+		army.cells[i] = s
+		if i == 0:
+			squads.append(s)
+	for c in p["pool"]:
+		var u := Unit.roll(data, c, rng.get_stream("recruit"), names)
+		army.pool.append(u)
+		log.add(clock.tick, "progression", "%s the %s waits in the recruit pool." % [u.name, u.unit_class])
+	army.stash = p["items"].duplicate()
+
+
+## Squads can be changed at the Player Base, or while waiting there off the map.
+func can_edit(s: Squad) -> bool:
+	return s not in squads or (s.hex == map.player_base and not s.is_moving() and not s.marching_home)
+
+
+## After Edit Units: squads emptied there leave the map.
+func after_edit() -> void:
+	for s in squads.duplicate():
+		if s.side == "player" and s not in army.squads():
+			squads.erase(s)
+
+
+func _form(number: int, squad_name: String, at_hex: int, members: Array, side: String) -> Squad:
 	var s := Squad.new(number, squad_name, at_hex)
 	s.side = side
 	for m in members:
@@ -63,7 +100,6 @@ func add_squad(squad_name: String, at_hex: int, members: Array, side := "player"
 					{"stats": u.stats, "alignment": u.alignment, "charisma": u.charisma, "growth": u.growth,
 					"talent": u.talent, "luck": u.luck})
 	s.morale = int(data.rules["starting_morale"])
-	squads.append(s)
 	log.add(clock.tick, "map", "%s forms: travels as %s, speed tier %d." % [squad_name, s.travel_name(), s.speed_tier], s.id)
 	return s
 
@@ -295,14 +331,18 @@ func can_fire(s: Squad) -> bool:
 	return false
 
 
-## 2 hexes, or 3 from high ground (mountains, towers).
+## 2 hexes, or 3 from high ground (mountains, towers); a longbow adds its range.
 func fire_range(s: Squad) -> int:
 	var r: Dictionary = data.rules["ranged_attack"]
 	var high: bool = data.terrains[map.terrain[s.hex]]["key"] in r["high_ground_terrains"]
 	for b in map.buildings:
 		if b["hex"] == s.hex and b["type"] in r["high_ground_buildings"]:
 			high = true
-	return int(r["high_ground_range"]) if high else int(r["range"])
+	var extra := 0
+	for u in s.living():
+		for slot in u.items:
+			extra = maxi(extra, int(data.items["items"][u.items[slot]].get("range", 0)))
+	return (int(r["high_ground_range"]) if high else int(r["range"])) + extra
 
 
 ## Visible hostile squads within range, if the squad has ranged units and its cooldown is over.

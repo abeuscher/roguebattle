@@ -162,6 +162,8 @@ func test_fire_range() -> void:
 	st.map.terrain[archers.hex] = d.terrain_ids["plains"]
 	st.map.buildings.append({"type": "tower", "hex": archers.hex, "shop": false, "hint": false, "hidden": false, "kind": "", "road": false})
 	check_eq(st.fire_range(archers), 3, "3 from a tower")
+	archers.at("back", 0).items["weapon"] = "longbow"
+	check_eq(st.fire_range(archers), 4, "a longbow adds 1 (§11.2)")
 	var melee := _ours(st, 11, 7, [["Knight", "front"], ["Fighter", "front"]])
 	check(not st.can_fire(melee), "a squad without ranged or magic units can't fire")
 	check(st.fire_targets(melee).is_empty(), "so it has no targets")

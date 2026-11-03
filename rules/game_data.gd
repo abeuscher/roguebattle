@@ -9,6 +9,7 @@ var rules: Dictionary = {}
 var battle: Dictionary = {}         # battle formulas and matchups
 var mechanics: Dictionary = {}      # the sheet's Mechanics tab: name -> rule, numbers, used_by
 var enemy: Dictionary = {}          # enemy roles and squad builds
+var items: Dictionary = {}          # item slots and items (§15.2)
 var tag_cache: Dictionary = {}      # "class|tag" -> bool, filled by Unit.has_tag
 var threat_ref: Dictionary = {}     # average stage-2 base stats, filled by Threat.reference
 var terrains: Array = []            # index = terrain id
@@ -30,6 +31,7 @@ static func load_dir(dir: String = "res://data") -> GameData:
 	d.battle = _read_json(dir.path_join("battle.json"))
 	d.mechanics = _read_json(dir.path_join("mechanics.json"))
 	d.enemy = _read_json(dir.path_join("enemy.json"))
+	d.items = _read_json(dir.path_join("items.json"))
 	d.terrains = _read_json(dir.path_join("terrain.json"))
 	for i in d.terrains.size():
 		d.terrain_ids[d.terrains[i]["key"]] = i
