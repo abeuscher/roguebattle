@@ -18,6 +18,7 @@ var pending: Battle  # a battle waiting to be fought; the map holds until it's r
 var revealed := {}  # building index -> true for hidden sites and lairs a squad has seen
 var _contact_until := {}  # "player id:enemy id" -> tick before which the pair won't fight again
 var _moved := {}  # squads that entered a new hex this tick
+var _building_at := {}  # hex -> index in map.buildings
 
 
 func _init(game_data: GameData, game_map: MapData, game_log: GameLog, game_settings := {}) -> void:
@@ -32,6 +33,11 @@ func _init(game_data: GameData, game_map: MapData, game_log: GameLog, game_setti
 	gold = int(data.rules["starting_gold"])
 	reputation = int(data.rules["starting_reputation"])
 	army = Army.new(data)
+	for i in map.buildings.size():
+		var b: Dictionary = map.buildings[i]
+		b["owner"] = data.buildings[b["type"]].get("owner", "neutral")
+		b["away"] = false  # nomads that moved out of sight until the next half day
+		_building_at[b["hex"]] = i
 	log.add(clock.tick, "system", "New map: seed %d, %s %s." % [map.seed, map.settings["preset"], map.settings["size"]],
 			-1, {"settings": map.settings, "game": settings})
 
@@ -44,12 +50,16 @@ func step() -> void:
 	for event in clock.step():
 		if event == "new_day":
 			log.add(clock.tick, "system", "Day %d begins." % clock.day())
-		# Noon income, nomad moves and daily healing arrive in M3.
+			_rest()
+		elif event == "half_day":
+			_move_nomads()
+		# Noon income and upkeep arrive with the economy (M3 session 4).
 	_moved.clear()
 	for s in squads.duplicate():
 		_move(s)
 		if s.entering_base and s.hex == map.player_base:
 			return_to_base(s)
+	_capture()
 	_reveal_sites()
 	_check_contact()
 
@@ -80,6 +90,151 @@ func setup_army() -> void:
 	for id in p["items"]:
 		for i in int(p["items"][id]):
 			army.add_item(id)
+
+
+# --- Buildings (SPEC §6.5) ---------------------------------------------------------------
+
+## The building on a hex, or {} if none (hidden sites count only once revealed;
+## nomads that moved out of sight don't count).
+func building_at(i: int) -> Dictionary:
+	if not _building_at.has(i):
+		return {}
+	var b: Dictionary = map.buildings[_building_at[i]]
+	if b["away"] or (b["hidden"] and not revealed.has(_building_at[i])):
+		return {}
+	return b
+
+
+## A building's numbers for a squad: [defense, HP healed per day]. Towns and towers
+## (and nomads, as towns) give more to squads of their alignment; a base gives its own side.
+func building_effect(b: Dictionary, s: Squad) -> Array:
+	var info: Dictionary = data.buildings[b["type"]]
+	if info.has("own_base"):
+		var own: bool = info["owner"] == ("player" if s.side == "player" else "enemy")
+		return [float(info["own_base"]["defense"]), float(info["own_base"]["rest"])] if own else [0.0, 0.0]
+	if not info.has("defense"):
+		return [0.0, 0.0]
+	var k := 1 if info.get("aligned", "") == s.alignment_band(data) else 0
+	return [float(info["defense"][k]), float(info["rest"][k])]
+
+
+func building_defense(s: Squad) -> float:
+	var b := building_at(s.hex)
+	return building_effect(b, s)[0] if not b.is_empty() else 0.0
+
+
+## Liberation (§6.5): a player squad with a living ground unit that stays in an enemy-held
+## town or tower for 60 ticks takes it; Sapper lines take it twice as fast.
+func _capture() -> void:
+	var c: Dictionary = data.rules["capture"]
+	for s in player_squads():
+		var b := building_at(s.hex)
+		if s.is_moving() or b.is_empty() or not data.buildings[b["type"]].get("capturable", false) or b["owner"] == "player" \
+				or not s.living().any(func(u: Unit): return not u.has_tag(data, "flyer")):
+			s.capture_ticks = 0.0
+			continue
+		var sapper := s.living().any(func(u: Unit): return u.has_tag(data, "sapper"))
+		s.capture_ticks += float(c["sapper_speed"]) if sapper else 1.0
+		if s.capture_ticks >= float(c["ticks"]):
+			s.capture_ticks = 0.0
+			b["owner"] = "player"
+			log.add(clock.tick, "map", "%s liberates the %s at %s." % [s.name, data.buildings[b["type"]]["name"].to_lower(), map.hex_at(s.hex)], s.id)
+
+
+## Share of the capture done by squads on a building's hex (0 if none).
+func capture_progress(b: Dictionary) -> float:
+	var best := 0.0
+	for s in player_squads():
+		if s.hex == b["hex"]:
+			best = maxf(best, s.capture_ticks / float(data.rules["capture"]["ticks"]))
+	return best
+
+
+## Daily rest (§6.5): squads in buildings heal their living units by the building's
+## share of max HP; squads and recruits at the Player Base rest as in their own base.
+func _rest() -> void:
+	for s in squads:
+		var b := building_at(s.hex)
+		if not b.is_empty():
+			_heal_share(s.living(), building_effect(b, s)[1])
+	var base: float = data.buildings["player_base"]["own_base"]["rest"]
+	for s in army.squads():
+		if s not in squads:
+			_heal_share(s.living(), base)
+	_heal_share(army.pool.filter(func(u: Unit): return u.is_alive()), base)
+
+
+func _heal_share(units: Array, share: float) -> void:
+	if share <= 0.0:
+		return
+	for u in units:
+		u.hp = mini(u.max_hp(data), u.hp + maxi(1, roundi(u.max_hp(data) * share)))
+
+
+## Nomads (§6.5) move 4–6 hexes every half day over the terrains they can camp on,
+## never onto another building or a squad; each move has a 20% chance to stay out of
+## sight until the next half day.
+func _move_nomads() -> void:
+	var r := rng.get_stream("nomads")
+	for i in map.buildings.size():
+		var b: Dictionary = map.buildings[i]
+		if b["type"] != "nomads":
+			continue
+		var info: Dictionary = data.buildings["nomads"]
+		var spots := nomad_spots(b["hex"])
+		if spots.is_empty():
+			continue
+		_building_at.erase(b["hex"])
+		b["hex"] = spots[r.randi() % spots.size()]
+		_building_at[b["hex"]] = i
+		b["away"] = r.randf() < float(info["hide_chance"])
+		log.add(clock.tick, "map", "Nomads move on.", -1, {"to": str(map.hex_at(b["hex"])), "out_of_sight": b["away"]})
+
+
+## Hexes 4–6 steps from `from` reachable through nomad terrain, free of buildings and squads.
+func nomad_spots(from: int) -> Array:
+	var info: Dictionary = data.buildings["nomads"]
+	var allowed := {}
+	for key in info["terrains"]:
+		allowed[data.terrain_ids[key]] = true
+	var lo := int(info["move_hexes"][0])
+	var hi := int(info["move_hexes"][1])
+	var dist := {from: 0}
+	var frontier := [from]
+	var out := []
+	for step_n in hi:
+		var next := []
+		for h in frontier:
+			for n in map.neighbor_indices(h):
+				if dist.has(n) or not allowed.has(map.terrain[n]):
+					continue
+				dist[n] = step_n + 1
+				next.append(n)
+				if step_n + 1 >= lo and not _building_at.has(n) and _squad_on(n) == null:
+					out.append(n)
+		frontier = next
+	return out
+
+
+## A town's hint about the nearest unseen hidden site within range: "to the northeast,
+## about 12 hexes away", or "".
+func hint(b: Dictionary) -> String:
+	if not b.get("hint", false):
+		return ""
+	var at := map.hex_at(b["hex"])
+	var best := -1
+	for i in map.buildings.size():
+		var o: Dictionary = map.buildings[i]
+		if o["type"] == "hidden_site" and not revealed.has(i):
+			var d := Hex.distance(at, map.hex_at(o["hex"]))
+			if d <= int(data.rules["capture"]["hint_range"]) and (best < 0 or d < Hex.distance(at, map.hex_at(map.buildings[best]["hex"]))):
+				best = i
+	if best < 0:
+		return ""
+	var delta := Hex.to_pixel(map.hex_at(map.buildings[best]["hex"]), 1.0) - Hex.to_pixel(at, 1.0)
+	var names := ["east", "southeast", "south", "southwest", "west", "northwest", "north", "northeast"]
+	var dir: String = names[posmod(roundi(delta.angle() / (PI / 4.0)), 8)]
+	return "Travellers speak of something hidden to the %s, about %d hexes away." % [dir, Hex.distance(at, map.hex_at(map.buildings[best]["hex"]))]
 
 
 # --- Base and deployment (SPEC §8.4, §6.5 Player Base, §15.1 services) ----------------
@@ -502,6 +657,7 @@ func start_battle(player: Squad, enemy: Squad, defender: Squad) -> Battle:
 	var info: Dictionary = data.terrains[map.terrain[defender.hex]]
 	var b := Battle.new(data, player, enemy, info["key"], clock.is_day(), rng.get_stream("battle"), settings.get("fairness", "both"))
 	b.attacker = 0 if defender == enemy else 1
+	b.defense = [building_defense(player), building_defense(enemy)]
 	log.add(clock.tick, "battle", "Battle: %s against %s on %s. The enemy looks %s." % [player.name, enemy.name, info["name"],
 			Threat.label(data, player, enemy).to_lower()], player.id)
 	return b

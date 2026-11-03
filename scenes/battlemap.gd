@@ -31,6 +31,7 @@ var _edit: EditUnits
 var _deploy_menu: DeployMenu
 var _confirm: ConfirmDialog
 var _deploying := false  # _selected is a squad from base whose route is being laid
+var _building_popup: BuildingPopup
 var _cursor_flag: SquadToken  # while laying a route, the squad's flag replaces the mouse pointer
 var _tokens := {}  # squad id -> SquadToken
 var _selected: Squad  # the squad whose menu or move order is open (the game is held meanwhile)
@@ -152,6 +153,10 @@ func _update_tokens() -> void:
 		if not _shown_sites.has(i):
 			_shown_sites[i] = true
 			view.reveal(state.map.buildings[i]["hex"])
+	for i in state.map.buildings.size():
+		var b: Dictionary = state.map.buildings[i]
+		if b["type"] in ["town", "tower", "nomads"]:
+			view.update_building(i, b["hex"], not b["away"], b["owner"] == "player", state.capture_progress(b))
 	var stacks := {}  # hex -> squads standing there, in id order
 	for s in state.squads:
 		if not s.is_moving():
@@ -218,14 +223,21 @@ func _pick(s: Squad) -> void:
 		_show_enemy(s)
 
 
-## Several flags under one click: a small menu at the pointer to choose between them.
-func _choose(found: Array[Squad]) -> void:
+## Several flags (or flags over a building) under one click: a small menu at the pointer
+## to choose between them.
+func _choose(found: Array[Squad], building: Dictionary) -> void:
 	var menu := PopupMenu.new()
 	menu.add_theme_font_size_override("font_size", 18)
 	for i in found.size():
 		var s := found[i]
 		menu.add_item("%d  %s" % [s.id, s.name] if s.side == "player" else "%s (%s)" % [s.name, s.role.replace("_", " ")], i)
-	menu.id_pressed.connect(func(i: int): _pick(found[i]))
+	if not building.is_empty():
+		menu.add_item(state.data.buildings[building["type"]]["name"], found.size())
+	menu.id_pressed.connect(func(i: int):
+		if i < found.size():
+			_pick(found[i])
+		else:
+			_open_building(building))
 	menu.popup_hide.connect(menu.queue_free)
 	_ui.add_child(menu)
 	menu.popup(Rect2i(Vector2i(get_viewport().get_mouse_position()), Vector2i.ZERO))
@@ -366,6 +378,17 @@ func _update_cursor() -> void:
 		_cursor_flag.position = get_viewport().get_mouse_position() - Vector2(0, 10)
 
 
+func _open_building(b: Dictionary) -> void:
+	_building_popup = BuildingPopup.new()
+	_ui.add_child(_building_popup)
+	_building_popup.setup(state, b)
+	_building_popup.closed.connect(func():
+		_building_popup.queue_free()
+		_building_popup = null
+		state.clock.release())
+	state.clock.hold()
+
+
 # --- Deploying (SPEC §8.4) -----------------------------------------------------------
 
 func _open_deploy_menu() -> void:
@@ -491,7 +514,7 @@ func _close_main_menu() -> void:
 
 ## No menu or dialog is open.
 func _can_open() -> bool:
-	return not (_log_panel or _menu or _main_menu or _battle or _edit or _deploy_menu or _confirm)
+	return not (_log_panel or _menu or _main_menu or _battle or _edit or _deploy_menu or _confirm or _building_popup)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -509,10 +532,13 @@ func _unhandled_input(event: InputEvent) -> void:
 				_fire_click(world)
 			else:
 				var found := _squads_at(world)
-				if found.size() > 1:
-					_choose(found)
+				var building := state.building_at(_hex_at(world))
+				if found.size() + (0 if building.is_empty() else 1) > 1:
+					_choose(found, building)
 				elif found.size() == 1:
 					_pick(found[0])
+				elif not building.is_empty():
+					_open_building(building)
 		elif mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed and _planning:
 			_undo_point()
 		return

@@ -275,6 +275,24 @@ func _build_objects(map: MapData) -> void:
 		_icon_sprites.append(icon)
 
 
+## Moves, shows or hides a building's icon (nomads) and sets its marker: the owner's
+## pennant and liberation progress. `i` indexes map.buildings.
+func update_building(i: int, hex: int, shown: bool, owned: bool, progress: float) -> void:
+	var icon := _icon_sprites[i]
+	icon.position = Hex.to_pixel(_map.hex_at(hex), HEX_SIZE)
+	if icon not in _secret_at.values():
+		icon.visible = shown
+	var marker: BuildingMarker = icon.get_node_or_null("Marker")
+	if marker == null and (owned or progress > 0.0):
+		marker = BuildingMarker.new()
+		marker.name = "Marker"
+		marker.position = icon.offset
+		icon.add_child(marker)
+	if marker:
+		marker.owned = owned
+		marker.progress = progress
+
+
 ## Shows a hidden site or lair icon once a squad has seen it.
 func reveal(hex: int) -> void:
 	_revealed[hex] = true

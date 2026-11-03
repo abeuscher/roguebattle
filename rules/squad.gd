@@ -21,6 +21,7 @@ var progress := 0.0  # ticks spent so far toward entering path[0]
 var morale := 50  # 0-100, hidden (§12.2); what moves it arrives in M4
 var marching_home := false  # lost its leader: heads for base on its own (§11.3)
 var entering_base := false  # leaves the map when it reaches the Player Base (§8.4)
+var capture_ticks := 0.0  # time spent so far liberating the building it stands in (§6.5)
 
 
 func _init(squad_id: int, squad_name: String, at_hex: int) -> void:
@@ -31,6 +32,25 @@ func _init(squad_id: int, squad_name: String, at_hex: int) -> void:
 
 func is_moving() -> bool:
 	return not path.is_empty()
+
+
+## The average of its units' alignment, the leader counted twice (§10).
+func alignment() -> float:
+	if units.is_empty():
+		return 50.0
+	var total := 0.0
+	for u in units:
+		total += u.alignment * (2 if u == leader else 1)
+	return total / (units.size() + (1 if leader else 0))
+
+
+## "holy", "evil" or "neutral", with the unit bands of §9.2.
+func alignment_band(data: GameData) -> String:
+	var bands: Dictionary = data.rules["alignment_bands"]
+	var a := alignment()
+	if a <= float(bands["evil_max"]):
+		return "evil"
+	return "holy" if a >= float(bands["holy_min"]) else "neutral"
 
 
 func travel_name() -> String:
