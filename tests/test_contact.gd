@@ -70,7 +70,7 @@ func test_adjacency_triggers_battle() -> void:
 	var tick := st.clock.tick
 	st.step()
 	check_eq(st.clock.tick, tick, "the map holds while a battle is pending")
-	var text := st.resolve_pending()
+	var text: String = st.resolve_pending()["text"]
 	check(text.contains("fought"), "a summary comes back: " + text)
 	check(st.pending == null, "the battle is resolved")
 
@@ -172,7 +172,9 @@ func test_ranged_attack() -> void:
 	var ours := _ours(st, 10)
 	var theirs := _theirs(st, 12)
 	var spot := theirs.hex
-	var text := st.fire(ours, theirs)
+	st.fire(ours, theirs)
+	check(st.pending != null and st.pending.ranged_only, "a ranged attack waits for the battle view like contact")
+	var text: String = st.resolve_pending()["text"]
 	check(text.contains("fired on"), "a summary comes back: " + text)
 	check_eq(theirs.hex, spot, "no push-back after a ranged attack")
 	check(st.fire_targets(ours).is_empty(), "the squad must reload")
@@ -197,3 +199,24 @@ func test_only_ranged_units_act() -> void:
 			check(b.fires_at_range(e["unit"]), "%s (%s) acted in a ranged attack" % [e["unit"].name, e["unit"].unit_class])
 	var out := b.finish()
 	check_eq(out["pushed"], -1, "no push-back")
+
+
+func test_battle_log_lines() -> void:
+	var st := _state()
+	var ours := _ours(st, 10)
+	var theirs := _theirs(st, 11)
+	var b := st.start_battle(ours, theirs, theirs)
+	b.run()
+	var acts := b.events.filter(func(e): return e["type"] != "round")
+	st.pending = b
+	st.resolve_pending()
+	var lines := st.log.filtered("battle").map(func(e): return e["text"])
+	check("-- Round 1 --" in lines, "rounds are marked")
+	for e in acts:
+		var line := b.log_line(e)
+		check(line in lines, "every action is logged: " + line)
+		check(line.begins_with("[%s]" % b.sides[e["side"]].name), "tagged with the acting squad: " + line)
+	var attack: Dictionary = acts.filter(func(e): return e["type"] == "attack")[0]
+	check(attack["text"].contains("(%s)" % attack["unit"].unit_class), "names carry the class: " + attack["text"])
+	var logged: Dictionary = st.log.filtered("battle").filter(func(e): return e["text"] == b.log_line(attack))[0]
+	check(logged["hidden"].has("hit_chance") and logged["hidden"].has("roll"), "hit chance and roll are kept as hidden values")

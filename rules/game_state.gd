@@ -220,15 +220,18 @@ func _pair(p: Squad, e: Squad) -> String:
 	return "%d:%d" % [p.id, e.id]
 
 
-## Fights the pending battle to the end and applies the outcome. Returns a short summary.
-func resolve_pending() -> String:
+## Fights the pending battle to the end (the battle view may have played it already)
+## and applies the outcome. Returns end_battle's outcome plus a short summary as "text".
+func resolve_pending() -> Dictionary:
 	var b := pending
 	pending = null
 	b.run()
 	var key := _pair(b.sides[0], b.sides[1])
 	var out := end_battle(b)
-	_contact_until[key] = clock.tick + int(data.enemy["contact_cooldown_ticks"])
-	return battle_summary(b, out)
+	if not b.ranged_only:
+		_contact_until[key] = clock.tick + int(data.enemy["contact_cooldown_ticks"])
+	out["text"] = battle_summary(b, out)
+	return out
 
 
 static func battle_summary(b: Battle, out: Dictionary) -> String:
@@ -240,6 +243,8 @@ static func battle_summary(b: Battle, out: Dictionary) -> String:
 			text += " %s was wiped out." % who[side]
 		elif out["leader_dead"][side]:
 			text += " %s lost its leader." % who[side]
+	if out["retreated"] >= 0:
+		text += " %s retreated." % who[out["retreated"]]
 	if out["pushed"] >= 0:
 		text += " %s was pushed back." % who[out["pushed"]]
 	return text
@@ -313,16 +318,15 @@ func fire_targets(s: Squad) -> Array[Squad]:
 
 
 ## A ranged map attack: only Ranged and Magic units on both sides act, no push-back.
-## Starts the squad's 120-tick cooldown. Returns a short summary.
-func fire(s: Squad, target: Squad) -> String:
+## Starts the squad's 120-tick cooldown and leaves the battle pending, like contact.
+func fire(s: Squad, target: Squad) -> void:
 	var b := start_battle(s, target, target)
 	b.ranged_only = true
 	for side in 2:
 		for u in b.sides[side].living():
 			b._join(u)
 	s.fire_ready = clock.tick + int(data.rules["ranged_attack"]["cooldown_ticks"])
-	b.run()
-	return battle_summary(b, end_battle(b))
+	pending = b
 
 
 # --- Battles (SPEC §11) ------------------------------------------------------------
@@ -343,7 +347,7 @@ func start_battle(player: Squad, enemy: Squad, defender: Squad) -> Battle:
 ## and the side that lost more of its HP is pushed back.
 func end_battle(b: Battle) -> Dictionary:
 	for e in b.events:
-		log.add(clock.tick, "battle", e["text"], b.sides[0].id)
+		log.add(clock.tick, "battle", b.log_line(e), b.sides[0].id, e.get("hidden", {}))
 	var out := b.finish()
 	for side in 2:
 		var s := b.sides[side]

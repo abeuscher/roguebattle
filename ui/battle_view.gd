@@ -1,0 +1,424 @@
+class_name BattleView
+extends Control
+## The battle screen (SPEC §4 Battle and Battle result, §11.3). The two squads face off,
+## back rows outside, and each action plays out in turn order with a running log.
+## Pause, speed, tactic, retreat and skip; at the end a result panel with the outcome
+## and, when a beaten enemy is shaken, the offer to drive it off (§11.6).
+## A modal: 50% dark overlay; the battlemap holds the clock while it's open.
+
+signal finished(text: String)
+
+const FIELD := Vector2(1400, 600)
+const CARD := Vector2(200, 104)
+const GAP := 10.0
+const EDGE := 40.0  # back rows' distance from the field's sides
+const ROW_GAP := 34.0  # between a squad's back and front rows
+const SIDE_COLORS := [Color("#3b6fd6"), Color("#c8402f")]
+const LOG_COLORS := ["#a8c4ff", "#ffaa9a"]
+const TACTIC_TIPS := {"best": "Each unit hits the target it hurts most", "strong": "Focus the strongest enemy",
+		"weak": "Focus the weakest enemy", "leader": "Focus the enemy leader"}
+
+var state: GameState
+var battle: Battle
+var _view: Dictionary  # data.battle["view"]: pacing
+var _ground := Panel.new()
+var _field := Control.new()  # cards and floating numbers, placed by hand
+var _cards := {}  # Unit -> Card
+var _shown := 0  # events played so far
+var _wait := 0.0
+var _speed := 0
+var _paused := false
+var _ended := false  # the battle has no turns left
+var _done := false  # the result is showing
+var _retreat_asked := false
+var _round := UiStyle.label("", 28, UiStyle.ACCENT)
+var _ticker := RichTextLabel.new()
+var _controls := HBoxContainer.new()
+var _pause_btn: Button
+var _speed_btn: Button
+var _retreat_btn: Button
+var _tactic := OptionButton.new()
+
+
+func setup(game_state: GameState, b: Battle) -> void:
+	state = game_state
+	battle = b
+	_view = state.data.battle["view"]
+	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	var shade := ColorRect.new()
+	shade.color = Color(0, 0, 0, 0.5)
+	shade.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	add_child(shade)
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	add_child(center)
+	var panel := PanelContainer.new()
+	panel.add_theme_stylebox_override("panel", UiStyle.box(UiStyle.PANEL, 16))
+	center.add_child(panel)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 10)
+	panel.add_child(col)
+	col.add_child(_header())
+	_ground.custom_minimum_size = FIELD
+	_ground.add_theme_stylebox_override("panel", UiStyle.box(Color(battle.terrain["color"]).darkened(0.72), 0))
+	_ground.clip_contents = true
+	col.add_child(_ground)
+	_ground.add_child(_field)
+	_round.position = Vector2(FIELD.x / 2.0 - 70, 16)
+	_round.custom_minimum_size.x = 140
+	_round.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_field.add_child(_round)
+	for side in 2:
+		for u in battle.sides[side].units:
+			_add_card(u, side)
+	_layout(false)
+	_ticker.custom_minimum_size = Vector2(FIELD.x, 150)
+	_ticker.bbcode_enabled = true
+	_ticker.scroll_following = true
+	_ticker.add_theme_font_size_override("normal_font_size", 15)
+	col.add_child(_ticker)
+	col.add_child(_controls)
+	_build_controls()
+
+
+func _header() -> HBoxContainer:
+	var row := HBoxContainer.new()
+	var a := battle.sides[0]
+	var e := battle.sides[1]
+	var title := UiStyle.label("%s  vs  %s" % [a.name, e.name], 24)
+	title.size_flags_horizontal = SIZE_EXPAND_FILL
+	row.add_child(title)
+	var what := "Ranged attack" if battle.ranged_only else "%s attacks" % battle.sides[battle.attacker].name
+	row.add_child(UiStyle.label("%s  ·  %s  ·  %s" % [battle.terrain["name"], "Day" if battle.daytime else "Night", what], 18, Color(0.75, 0.78, 0.82)))
+	return row
+
+
+func _build_controls() -> void:
+	_controls.add_theme_constant_override("separation", 12)
+	_pause_btn = UiStyle.button("Pause (Space)", 190)
+	_pause_btn.pressed.connect(_toggle_pause)
+	_controls.add_child(_pause_btn)
+	_speed_btn = UiStyle.button("", 130)
+	_speed_btn.pressed.connect(func():
+		_speed = (_speed + 1) % _view["speeds"].size()
+		_update_speed())
+	_controls.add_child(_speed_btn)
+	_update_speed()
+	_controls.add_child(UiStyle.label("Tactic", 18))
+	for t in Battle.TACTICS:
+		_tactic.add_item(t.capitalize())
+		_tactic.set_item_tooltip(_tactic.item_count - 1, TACTIC_TIPS[t])
+	_tactic.select(Battle.TACTICS.find(battle.tactics[0]))
+	_tactic.custom_minimum_size = Vector2(140, 44)
+	_tactic.item_selected.connect(func(i: int): battle.tactics[0] = Battle.TACTICS[i])
+	_controls.add_child(_tactic)
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = SIZE_EXPAND_FILL
+	_controls.add_child(spacer)
+	_retreat_btn = UiStyle.button("", 200)
+	_retreat_btn.pressed.connect(func():
+		_retreat_asked = true
+		_retreat_btn.disabled = true
+		_retreat_btn.text = "Retreating...")
+	_controls.add_child(_retreat_btn)
+	_update_retreat()
+	var skip := UiStyle.button("Skip to end", 170)
+	skip.pressed.connect(_skip)
+	_controls.add_child(skip)
+
+
+func _update_speed() -> void:
+	var v := float(_view["speeds"][_speed])
+	_speed_btn.text = "Speed ×%s" % (str(int(v)) if v == int(v) else str(v))
+
+
+func _update_retreat() -> void:
+	_retreat_btn.text = "Retreat (%d%%)" % roundi(battle.retreat_chance(0) * 100)
+	_retreat_btn.disabled = battle.ranged_only
+	_retreat_btn.tooltip_text = "No retreat from a ranged attack" if battle.ranged_only \
+			else "On success the squad steps back 1 hex and each unit loses 1 charisma. On failure it loses its next action."
+
+
+func _toggle_pause() -> void:
+	_paused = not _paused
+	_pause_btn.text = "Resume (Space)" if _paused else "Pause (Space)"
+
+
+# --- Playing the battle ---------------------------------------------------------------
+
+func _process(delta: float) -> void:
+	if battle == null or _done or _paused:
+		return
+	_wait -= delta * float(_view["speeds"][_speed])
+	if _wait > 0.0:
+		return
+	if _shown < battle.events.size():
+		_wait = _play(battle.events[_shown], true)
+		_shown += 1
+	elif _ended or battle.is_over():
+		_finish()
+	elif _retreat_asked:
+		_retreat_asked = false
+		battle.retreat(0)
+		_update_retreat()
+	else:
+		_ended = not battle.step()
+
+
+func _skip() -> void:
+	battle.run()
+	while _shown < battle.events.size():
+		_play(battle.events[_shown], false)
+		_shown += 1
+	_finish()
+
+
+## Shows one event; returns how long to wait before the next (at speed ×1).
+func _play(e: Dictionary, animate: bool) -> float:
+	_log(e)
+	var beat := float(_view["beat"])
+	match e["type"]:
+		"round":
+			_round.text = "Round %d" % e["round"]
+			return float(_view["round_pause"])
+		"attack":
+			var card: Card = _cards[e["target"]]
+			if animate:
+				_lunge(_cards[e["unit"]], card)
+			if not e["hit"]:
+				_float(card, "miss", Color(0.8, 0.8, 0.8), animate)
+				return beat
+			card.hp = maxi(0, card.hp - int(e["damage"]))
+			_float(card, "-%d%s" % [e["damage"], "!" if e["crit"] else ""], Color("#ffd24a") if e["crit"] else Color("#ff6b5a"), animate, 30 if e["crit"] else 24)
+			if animate:
+				card.flash(Color(1, 0.2, 0.15))
+			return beat
+		"heal":
+			var card: Card = _cards[e["target"]]
+			card.hp = mini(card.max_hp, card.hp + int(e["amount"]))
+			_float(card, "+%d" % e["amount"], Color("#7ee08a"), animate)
+			if animate:
+				card.flash(Color(0.3, 1, 0.4))
+		"status":
+			var card: Card = _cards[e["unit"]]
+			card.hp = clampi(card.hp + int(e.get("amount", 0)), 0, card.max_hp)
+			card.statuses = battle.statuses_of(e["unit"])
+			var word: String = "resisted" if e.get("resisted", false) else str(e["status"]).replace("_up", " up").replace("_", " ")
+			_float(card, word, Color("#d7a6ff"), animate, 18)
+		"move":
+			_layout(animate)
+		"raise":
+			_add_card(e["target"], battle.side_of(e["target"]))
+			_layout(animate)
+		"wait":
+			return beat * 0.6
+	return beat * 0.8
+
+
+func _log(e: Dictionary) -> void:
+	var line := battle.log_line(e).replace("[", "[lb]")
+	if e["type"] == "round":
+		_ticker.append_text("[color=#ffe08a]%s[/color]\n" % line)
+	else:
+		_ticker.append_text("[color=%s]%s[/color]\n" % [LOG_COLORS[maxi(0, e["side"])], line])
+
+
+func _add_card(u: Unit, side: int) -> void:
+	var c := Card.new()
+	c.unit = u
+	c.color = SIDE_COLORS[side]
+	c.leader = u == battle.sides[side].leader
+	c.hp = u.hp
+	c.max_hp = u.max_hp(state.data)
+	var kind := battle.attack_kind(u)
+	c.title = u.unit_class
+	c.subtitle = "" if u.name == u.unit_class else u.name
+	c.attack = "%s ×%d" % [kind, battle.attack_count(u)]
+	c.size = CARD
+	_field.add_child(c)
+	_cards[u] = c
+
+
+## Places every card: each squad's back row at the outside, front rows facing each other;
+## a row's units stack top to bottom by position.
+func _layout(animate: bool) -> void:
+	for side in 2:
+		for r in ["front", "back"]:
+			var units := battle.sides[side].row(r)
+			units.sort_custom(func(a: Unit, b: Unit): return a.col < b.col)
+			var inner: bool = r == "front"
+			var x := EDGE + (CARD.x + ROW_GAP if inner else 0.0)
+			if side == 1:
+				x = FIELD.x - x - CARD.x
+			var top := (FIELD.y - units.size() * (CARD.y + GAP) + GAP) / 2.0 + 20.0
+			for i in units.size():
+				var c: Card = _cards[units[i]]
+				var at := Vector2(x, top + i * (CARD.y + GAP))
+				c.home = at
+				if animate:
+					create_tween().tween_property(c, "position", at, 0.3 / _speed_now())
+				else:
+					c.position = at
+
+
+func _speed_now() -> float:
+	return float(_view["speeds"][_speed])
+
+
+func _lunge(c: Card, target: Card) -> void:
+	var step := 40.0 * signf(target.home.x - c.home.x)
+	var t := c.create_tween()
+	var d := float(_view["beat"]) * 0.3 / _speed_now()
+	t.tween_property(c, "position:x", c.home.x + step, d).set_ease(Tween.EASE_OUT)
+	t.tween_property(c, "position:x", c.home.x, d).set_ease(Tween.EASE_IN)
+
+
+## A number or word that rises from a card and fades.
+func _float(c: Card, text: String, color: Color, animate: bool, font_size := 24) -> void:
+	if not animate:
+		return
+	var l := UiStyle.label(text, font_size, color)
+	l.add_theme_color_override("font_outline_color", Color.BLACK)
+	l.add_theme_constant_override("outline_size", 6)
+	l.position = c.home + Vector2(CARD.x / 2.0 - 16, 24)
+	_field.add_child(l)
+	var d := float(_view["beat"]) * 1.4 / _speed_now()
+	var t := l.create_tween().set_parallel()
+	t.tween_property(l, "position:y", l.position.y - 44, d)
+	t.tween_property(l, "modulate:a", 0.0, d).set_delay(d * 0.4)
+	t.chain().tween_callback(l.queue_free)
+
+
+# --- The result ---------------------------------------------------------------------
+
+func _finish() -> void:
+	_done = true
+	for c in _controls.get_children():
+		if c is BaseButton:
+			c.disabled = true
+	var out := state.resolve_pending()
+	var player := battle.sides[0]
+	var enemy := battle.sides[1]
+	var box := PanelContainer.new()
+	var style := UiStyle.box(Color(0.08, 0.09, 0.12, 0.96), 24)
+	style.set_border_width_all(2)
+	style.border_color = UiStyle.OUTLINE
+	box.add_theme_stylebox_override("panel", style)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 12)
+	col.custom_minimum_size.x = 640
+	box.add_child(col)
+	col.add_child(UiStyle.label(_outcome(out), 28, UiStyle.ACCENT))
+	for side in 2:
+		var s := battle.sides[side]
+		var text := "%s lost %d%% of its HP." % [s.name, roundi(out["hp_lost"][side] * 100)]
+		var fallen := s.living(false).map(func(u: Unit): return u.name)
+		text += " Fallen: %s." % ", ".join(fallen) if not fallen.is_empty() else " No one fell."
+		if out["leader_dead"][side] and not out["wiped"][side]:
+			text += " It lost its leader and marches home." if side == 0 else " It lost its leader."
+		var l := UiStyle.label(text, 17, Color(LOG_COLORS[side]))
+		l.autowrap_mode = TextServer.AUTOWRAP_WORD
+		col.add_child(l)
+	if out["pushed"] >= 0:
+		col.add_child(UiStyle.label("%s is pushed back." % battle.sides[out["pushed"]].name, 17))
+	var note := UiStyle.label("", 17, UiStyle.ACCENT)
+	var buttons := HBoxContainer.new()
+	buttons.add_theme_constant_override("separation", 12)
+	buttons.alignment = BoxContainer.ALIGNMENT_END
+	var chance := state.drive_off_chance(player, enemy)
+	if chance > 0.0 and not out["wiped"][1] and out["retreated"] < 0 and out["hp_lost"][1] > out["hp_lost"][0] and enemy in state.squads:
+		var drive := UiStyle.button("Demand they flee (%d%%)" % roundi(chance * 100), 280)
+		drive.pressed.connect(func():
+			drive.disabled = true
+			note.text = "%s flees the map." % enemy.name if state.drive_off(player, enemy) else "%s refuses to flee." % enemy.name)
+		buttons.add_child(drive)
+	col.add_child(note)
+	var go := UiStyle.button("Continue", 200, true)
+	go.pressed.connect(func(): finished.emit(out["text"]))
+	buttons.add_child(go)
+	col.add_child(buttons)
+	var dim := ColorRect.new()
+	dim.color = Color(0, 0, 0, 0.45)
+	dim.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	_ground.add_child(dim)
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	_ground.add_child(center)
+	center.add_child(box)
+	go.grab_focus.call_deferred()
+
+
+func _outcome(out: Dictionary) -> String:
+	var who := [battle.sides[0].name, battle.sides[1].name]
+	if out["wiped"][1]:
+		return "Victory: %s is wiped out" % who[1]
+	if out["wiped"][0]:
+		return "Defeat: %s is wiped out" % who[0]
+	if out["retreated"] == 0:
+		return "%s retreats" % who[0]
+	if out["pushed"] == 1:
+		return "Won: %s falls back" % who[1]
+	if out["pushed"] == 0:
+		return "Lost: %s falls back" % who[0]
+	return "An even fight"
+
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if not event.is_pressed():
+		return
+	var key := (event as InputEventKey).keycode
+	if key == KEY_SPACE and not _done:
+		_toggle_pause()
+	get_viewport().set_input_as_handled()
+
+
+## One unit on the field: class, name, attack, HP bar and statuses.
+class Card extends Control:
+	var unit: Unit
+	var color := Color.WHITE
+	var leader := false
+	var title := ""
+	var subtitle := ""
+	var attack := ""
+	var home := Vector2.ZERO
+	var max_hp := 1
+	var hp := 0:
+		set(v):
+			hp = v
+			queue_redraw()
+	var statuses: Array = []:
+		set(v):
+			statuses = v
+			queue_redraw()
+	var _flash := Color(0, 0, 0, 0)
+
+	func flash(c: Color) -> void:
+		_flash = c
+		var t := create_tween()
+		t.tween_method(func(a: float):
+			_flash.a = a
+			queue_redraw(), 0.7, 0.0, 0.35)
+
+	func _draw() -> void:
+		var font := ThemeDB.fallback_font
+		var dead := hp <= 0
+		var r := Rect2(Vector2.ZERO, size)
+		draw_rect(r, Color(0.13, 0.15, 0.19) if not dead else Color(0.1, 0.1, 0.11))
+		draw_rect(Rect2(0, 0, 6, size.y), color if not dead else color.darkened(0.6))
+		draw_rect(r, Color(1, 0.88, 0.5) if leader and not dead else Color(0.35, 0.38, 0.44), false, 2.0)
+		var ink := Color.WHITE if not dead else Color(0.45, 0.45, 0.48)
+		draw_string(font, Vector2(16, 24), title, HORIZONTAL_ALIGNMENT_LEFT, size.x - 70, 17, ink)
+		if leader:
+			draw_string(font, Vector2(size.x - 62, 22), "Leader", HORIZONTAL_ALIGNMENT_RIGHT, 52, 12, Color(1, 0.88, 0.5))
+		draw_string(font, Vector2(16, 42), subtitle, HORIZONTAL_ALIGNMENT_LEFT, size.x - 24, 13, ink.darkened(0.3))
+		var line3 := ", ".join(statuses) if not statuses.is_empty() else attack
+		draw_string(font, Vector2(16, 60), line3, HORIZONTAL_ALIGNMENT_LEFT, size.x - 24, 13,
+				Color("#d7a6ff") if not statuses.is_empty() else ink.darkened(0.2))
+		var bar := Rect2(16, 70, size.x - 32, 14)
+		draw_rect(bar, Color(0.05, 0.05, 0.06))
+		var share := float(hp) / max_hp
+		var fill := Color("#5fbf5a") if share > 0.5 else (Color("#e0b03a") if share > 0.25 else Color("#d9533f"))
+		draw_rect(Rect2(bar.position, Vector2(bar.size.x * share, bar.size.y)), fill)
+		draw_string(font, Vector2(16, 98), "Fallen" if dead else "%d / %d HP" % [hp, max_hp], HORIZONTAL_ALIGNMENT_LEFT, -1, 13, ink)
+		if _flash.a > 0.0:
+			draw_rect(r, _flash)

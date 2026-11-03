@@ -139,6 +139,7 @@
   "Pride Lion": "str_down", "Golden Lion": "str_down", "Siren": "charm", "Naiad": "charm"},
  "raise_dead": {"base_class": "Serf", "name": "Skeleton", "bonus_stats": 3, "bonus_die": 4, "element": "Dark"},
  "retreat": {"base": 50, "per_tier": 20, "range": [10, 90]},
+ "view": {"beat": 0.6, "round_pause": 0.8, "speeds": [1, 2, 4]},
  "push_back": {"on_travel_terrain": 1, "otherwise": 2},
  "drive_off": {"morale_below": 25, "halved_from": 10},
  "threat": {"support_share": 0.5, "group": {"row": 2.0, "all": 3.0, "cleave 2": 1.6, "pierce": 1.6, "chain 3": 2.0}},

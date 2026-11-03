@@ -3,7 +3,7 @@ extends Node2D
 ## The battlemap (SPEC §5): map view, camera, clock, HUD, minimap, log, squad
 ## orders and the Esc menu. For now one test squad stands at the Player Base and
 ## the enemy's squads stand at their posts; real army setup arrives in M3 and M4.
-## Battles resolve at once with a result banner until the battle view (M2 session 7).
+## Contact and ranged attacks open the battle view; the map holds until it closes.
 
 signal to_title
 signal quit_game
@@ -25,6 +25,7 @@ var _ui := CanvasLayer.new()
 var _log_panel: LogPanel
 var _menu: SquadMenu
 var _main_menu: MainMenu
+var _battle: BattleView
 var _tokens := {}  # squad id -> SquadToken
 var _selected: Squad  # the squad whose menu or move order is open (the game is held meanwhile)
 var _planning := false  # laying rally points for _selected
@@ -82,9 +83,8 @@ func _process(delta: float) -> void:
 		state.step()
 		if state.pending:
 			break
-	if state.pending:
-		hud.show_banner(state.resolve_pending(), 6.0)
-		_sync_tokens()
+	if state.pending and _battle == null:
+		_open_battle()
 	night.color = Color.WHITE.lerp(NIGHT, darkness(state.clock.minute_of_day()))
 	_update_tokens()
 	_update_paths()
@@ -241,10 +241,8 @@ func _fire_click(world: Vector2) -> void:
 	if target == null or target not in state.fire_targets(_selected):
 		hud.show_banner("Pick a visible enemy squad within %d hexes.  Esc: back" % state.fire_range(_selected))
 		return
-	var text := state.fire(_selected, target)
+	state.fire(_selected, target)
 	_end_selection()
-	hud.show_banner(text, 6.0)
-	_sync_tokens()
 
 
 ## Clicking an enemy shows what it is and how it compares with your first squad.
@@ -285,7 +283,23 @@ func _show_plan() -> void:
 			_selected.name, _points.size(), "" if _points.size() == 1 else "s", _planned.size(), eta])
 
 
-# --- Log and Esc menu -------------------------------------------------------------
+# --- Battle, log and Esc menu ---------------------------------------------------------
+
+func _open_battle() -> void:
+	_battle = BattleView.new()
+	_ui.add_child(_battle)
+	_battle.setup(state, state.pending)
+	_battle.finished.connect(_close_battle)
+	state.clock.hold()
+
+
+func _close_battle(text: String) -> void:
+	_battle.queue_free()
+	_battle = null
+	state.clock.release()
+	hud.show_banner(text, 5.0)
+	_sync_tokens()
+
 
 func _open_log() -> void:
 	_log_panel = LogPanel.new()
@@ -323,7 +337,7 @@ func _close_main_menu() -> void:
 # --- Input ------------------------------------------------------------------------
 
 func _unhandled_input(event: InputEvent) -> void:
-	if _log_panel or _menu or _main_menu:
+	if _log_panel or _menu or _main_menu or _battle:
 		return
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton

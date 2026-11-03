@@ -9,6 +9,8 @@ extends RefCounted
 const TACTICS := ["best", "strong", "weak", "leader"]
 const PHYSICAL := ["Melee", "Ranged"]
 const MAGICAL := ["Magic", "Dispel", "Breath"]
+const VERBS := {"Melee": ["strikes", "swings at"], "Ranged": ["shoots", "shoots at"], "Magic": ["blasts", "casts at"],
+		"Dispel": ["dispels", "casts at"], "Breath": ["breathes on", "breathes at"], "Debuff": ["curses", "casts at"]}
 
 var data: GameData
 var cfg: Dictionary  # data.battle
@@ -38,6 +40,7 @@ var _used := {}  # "trait:unit id" -> true for once-per-battle effects
 var _lose_turn := [false, false]  # a failed retreat costs the side its next action
 var _skeletons: Array[Unit] = []
 var _prd_cache := {}  # crit chance -> ramp step
+var _last_roll := 0  # the last hit roll, for the log's hidden values (0 = streak breaker)
 
 
 func _init(game_data: GameData, player: Squad, enemy: Squad, terrain_key: String, is_day: bool,
@@ -87,6 +90,7 @@ func step() -> bool:
 			_queue = turn_order(round == 1)
 			if _queue.is_empty():
 				return false
+			_record({"type": "round", "round": round, "text": "Round %d" % round})
 			_start_round()
 			if is_over():
 				return false
@@ -273,7 +277,7 @@ func _start_round() -> void:
 			if share > 0.0 and u.hp < u.max_hp(data) and not _blocks_healing(u):
 				var amount := mini(maxi(1, roundi(u.max_hp(data) * share)), u.max_hp(data) - u.hp)
 				u.hp += amount
-				_record({"type": "heal", "unit": u, "target": u, "amount": amount, "text": "%s regenerates %d HP." % [u.name, amount]})
+				_record({"type": "heal", "unit": u, "target": u, "amount": amount, "text": "%s regenerates %d HP." % [_n(u), amount]})
 
 
 func _turn(u: Unit) -> void:
@@ -295,11 +299,11 @@ func _act(u: Unit) -> void:
 		return
 	if _lose_turn[side]:
 		_lose_turn[side] = false
-		_record({"type": "wait", "unit": u, "text": "%s's squad is still recovering from the failed retreat." % u.name})
+		_record({"type": "wait", "unit": u, "text": "%s's squad is still recovering from the failed retreat." % _n(u)})
 		return
 	for s in _status[u]:
 		if cfg["statuses"][s].get("skip", false):
-			_record({"type": "wait", "unit": u, "text": "%s can't act (%s)." % [u.name, s]})
+			_record({"type": "wait", "unit": u, "text": "%s can't act (%s)." % [_n(u), s]})
 			return
 	_try_raise_dead(u, side)
 	var kind := attack_kind(u)
@@ -308,14 +312,14 @@ func _act(u: Unit) -> void:
 		if base in cfg["statuses"][s].get("blocks", []):
 			if cfg["statuses"][s].get("once", false):
 				_status[u].erase(s)
-			_record({"type": "wait", "unit": u, "text": "%s's %s is cancelled (%s)." % [u.name, base.to_lower(), s]})
+			_record({"type": "wait", "unit": u, "text": "%s's %s is cancelled (%s)." % [_n(u), base.to_lower(), s]})
 			return
 	for s in _status[u]:
 		if rng.randf() < float(cfg["statuses"][s].get("lose_attack", 0.0)):
-			_record({"type": "wait", "unit": u, "text": "%s is stunned by the shock." % u.name})
+			_record({"type": "wait", "unit": u, "text": "%s is stunned by the shock." % _n(u)})
 			return
 	if base in ["Magic", "Dispel"] and round == 1 and sides[1 - side].living().any(func(o: Unit): return o.has_trait(data, "Nullify")):
-		_record({"type": "wait", "unit": u, "text": "%s's magic fizzles (Nullify)." % u.name})
+		_record({"type": "wait", "unit": u, "text": "%s's magic fizzles (Nullify)." % _n(u)})
 		return
 	if _status[u].has("charm"):
 		_status[u].erase("charm")
@@ -332,7 +336,7 @@ func _act(u: Unit) -> void:
 		"Ward":
 			for a in sides[side].living():
 				_status[a]["ward"] = u
-			_record({"type": "status", "unit": u, "status": "ward", "text": "%s wards the squad against magic." % u.name})
+			_record({"type": "status", "unit": u, "status": "ward", "text": "%s wards the squad against magic." % _n(u)})
 		"Debuff":
 			_debuff(u, side, group_of(kind) == "row")
 		_:
@@ -402,15 +406,17 @@ func _guarded(squad: Squad, t: Unit) -> Unit:
 func _attack(u: Unit, base: String, t: Unit, mult := 1.0, note := "") -> void:
 	if not t.is_alive():
 		return
+	var chance := hit_chance(u, t, base)
 	var hit := roll_hit(u, t, base)
 	if hit and t.has_trait(data, "Mirage") and not _used.has("mirage:%d" % t.get_instance_id()):
 		_used["mirage:%d" % t.get_instance_id()] = true
 		hit = false
 		note = "Mirage" if note == "" else note
-	var event := {"type": "attack", "unit": u, "target": t, "kind": base, "hit": hit, "crit": false, "damage": 0, "killed": false}
-	var prefix := "%s (%s)" % [u.name, note] if note != "" else u.name
+	var event := {"type": "attack", "unit": u, "target": t, "kind": base, "hit": hit, "crit": false, "damage": 0, "killed": false,
+			"hidden": {"hit_chance": roundi(chance), "roll": _last_roll if hit or note != "Mirage" else "Mirage"}}
+	var prefix := "%s (%s)" % [_n(u), note] if note != "" else _n(u)
 	if not hit:
-		event["text"] = "%s misses %s." % [prefix, t.name]
+		event["text"] = "%s %s %s and misses." % [prefix, VERBS[base][1], _n(t)]
 		_record(event)
 		return
 	var crit := roll_crit(u)
@@ -419,8 +425,9 @@ func _attack(u: Unit, base: String, t: Unit, mult := 1.0, note := "") -> void:
 	var amount := maxi(1, roundi(dmg))
 	t.hp = maxi(0, t.hp - amount)
 	event.merge({"crit": crit, "damage": amount, "killed": not t.is_alive()}, true)
-	event["text"] = "%s hits %s for %d%s.%s" % [prefix, t.name, amount, " (critical)" if crit else "",
-			" %s falls." % t.name if not t.is_alive() else ""]
+	event["hidden"]["modifiers"] = modifiers(u, t, base)
+	event["text"] = "%s %s %s for %d%s: %s." % [prefix, VERBS[base][0], _n(t), amount, ", a critical hit" if crit else "",
+			"%s falls" % t.name if not t.is_alive() else "%d/%d HP left" % [t.hp, t.max_hp(data)]]
 	_record(event)
 	_lifesteal(u, base, amount)
 	if not t.is_alive():
@@ -429,7 +436,7 @@ func _attack(u: Unit, base: String, t: Unit, mult := 1.0, note := "") -> void:
 	for s in _status[t].keys():
 		if cfg["statuses"][s].get("wake_on_hit", false):
 			_status[t].erase(s)
-			_record({"type": "status", "unit": t, "status": s, "text": "%s wakes up." % t.name})
+			_record({"type": "status", "unit": t, "status": s, "text": "%s wakes up." % _n(t)})
 	if base == "Dispel":
 		add_status(t, "dispelled", u)
 	var inflict := on_hit_status(u, base)
@@ -453,7 +460,7 @@ func _lifesteal(u: Unit, base: String, amount: int) -> void:
 		var heal := mini(roundi(amount * float(rule["lifesteal"])), u.max_hp(data) - u.hp)
 		if heal > 0:
 			u.hp += heal
-			_record({"type": "heal", "unit": u, "target": u, "amount": heal, "text": "%s drains %d HP." % [u.name, heal]})
+			_record({"type": "heal", "unit": u, "target": u, "amount": heal, "text": "%s drains %d HP." % [_n(u), heal]})
 
 
 ## Pushback (trait, once per battle) and Battering (aura, front row in round one):
@@ -471,7 +478,7 @@ func _pushback(u: Unit, t: Unit) -> void:
 	if behind:
 		behind.row = "front"
 	t.row = "back"
-	_record({"type": "move", "unit": t, "text": "%s is knocked into the back row." % t.name})
+	_record({"type": "move", "unit": t, "text": "%s is knocked into the back row." % _n(t)})
 
 
 func _heal(u: Unit, side: int, whole_row := false) -> void:
@@ -480,7 +487,7 @@ func _heal(u: Unit, side: int, whole_row := false) -> void:
 		if a.hp < a.max_hp(data) and not _blocks_healing(a) and (hurt == null or _hp_share(a) < _hp_share(hurt)):
 			hurt = a
 	if hurt == null:
-		_record({"type": "wait", "unit": u, "text": "%s has no one to heal." % u.name})
+		_record({"type": "wait", "unit": u, "text": "%s has no one to heal." % _n(u)})
 		return
 	var targets: Array[Unit] = [hurt]
 	if whole_row:
@@ -490,7 +497,7 @@ func _heal(u: Unit, side: int, whole_row := false) -> void:
 		if amount <= 0:
 			continue
 		t.hp += amount
-		_record({"type": "heal", "unit": u, "target": t, "amount": amount, "text": "%s heals %s for %d." % [u.name, t.name, amount]})
+		_record({"type": "heal", "unit": u, "target": t, "amount": amount, "text": "%s heals %s for %d." % [_n(u), _n(t), amount]})
 
 
 func heal_amount(u: Unit) -> int:
@@ -502,11 +509,11 @@ func heal_amount(u: Unit) -> int:
 func _buff(u: Unit, side: int) -> void:
 	var s: String = cfg["buffers"].get(u.unit_class, "")
 	if s == "":
-		_record({"type": "wait", "unit": u, "text": "%s waits." % u.name})
+		_record({"type": "wait", "unit": u, "text": "%s waits." % _n(u)})
 		return
 	for a in sides[side].living():
 		_status[a][s] = u
-	_record({"type": "status", "unit": u, "status": s, "text": "%s raises the squad's %s." % [u.name, s.trim_suffix("_up").to_upper()]})
+	_record({"type": "status", "unit": u, "status": s, "text": "%s raises the squad's %s." % [_n(u), s.trim_suffix("_up").to_upper()]})
 
 
 ## Debuff: one enemy, or with (row) every unit of the enemy's front row (back once it's empty).
@@ -515,7 +522,7 @@ func _debuff(u: Unit, side: int, whole_row := false) -> void:
 	var enemy := sides[1 - side]
 	var targets := enemy.living()
 	if s == "" or targets.is_empty():
-		_record({"type": "wait", "unit": u, "text": "%s waits." % u.name})
+		_record({"type": "wait", "unit": u, "text": "%s waits." % _n(u)})
 		return
 	if whole_row:
 		var front := enemy.row("front").filter(func(t: Unit): return t.is_alive())
@@ -528,9 +535,9 @@ func _debuff(u: Unit, side: int, whole_row := false) -> void:
 	var t := pick_target(u, "Magic", targets, tactics[side])
 	if roll_hit(u, t, "Magic"):
 		if not add_status(t, s, u):
-			_record({"type": "wait", "unit": u, "text": "%s's spell has no further effect on %s." % [u.name, t.name]})
+			_record({"type": "wait", "unit": u, "text": "%s's spell has no further effect on %s." % [_n(u), _n(t)]})
 	else:
-		_record({"type": "attack", "unit": u, "target": t, "kind": "Debuff", "hit": false, "text": "%s misses %s." % [u.name, t.name]})
+		_record({"type": "attack", "unit": u, "target": t, "kind": "Debuff", "hit": false, "text": "%s casts at %s and misses." % [_n(u), _n(t)]})
 
 
 func _hp_share(u: Unit) -> float:
@@ -538,7 +545,22 @@ func _hp_share(u: Unit) -> float:
 
 
 func _record(event: Dictionary) -> void:
+	event["round"] = round
+	if not event.has("side"):
+		event["side"] = side_of(event["unit"]) if event.has("unit") else -1
 	events.append(event)
+
+
+## "Galad Traemane (Knight)".
+func _n(u: Unit) -> String:
+	return u.name if u.name == u.unit_class else "%s (%s)" % [u.name, u.unit_class]
+
+
+## An event as a log line: rounds as headers, actions tagged with the acting squad.
+func log_line(e: Dictionary) -> String:
+	if e["type"] == "round":
+		return "-- Round %d --" % e["round"]
+	return "[%s] %s" % [sides[e["side"]].name, e["text"]] if e["side"] >= 0 else e["text"]
 
 
 ## Share of a side's starting HP it has lost so far.
@@ -561,21 +583,26 @@ func add_status(u: Unit, s: String, by: Unit = null) -> bool:
 	if _status[u].has(s):
 		return false
 	if info.get("resisted_by", "") == u.terrain(data):
-		_record({"type": "status", "unit": u, "status": s, "resisted": true, "text": "%s resists %s." % [u.name, label]})
+		_record({"type": "status", "unit": u, "status": s, "resisted": true, "text": "%s resists %s." % [_n(u), label]})
 		return false
 	if info.get("harmful", false) and _effects_on(u).any(func(e): return e.get("debuff_immune", false)):
-		_record({"type": "status", "unit": u, "status": s, "resisted": true, "text": "%s shrugs off %s (Discipline)." % [u.name, label]})
+		_record({"type": "status", "unit": u, "status": s, "resisted": true, "text": "%s shrugs off %s (Discipline)." % [_n(u), label]})
 		return false
 	if info.has("attacks"):
 		_attacks[u] = maxi(0, _attacks[u] + int(info["attacks"]))
 	_status[u][s] = null
-	var text := "%s inflicts %s on %s." % [by.name, label, u.name] if by else "%s is affected by %s." % [u.name, label]
+	var text := "%s inflicts %s on %s." % [_n(by), label, _n(u)] if by else "%s is affected by %s." % [_n(u), label]
 	_record({"type": "status", "unit": u, "status": s, "by": by, "text": text})
 	return true
 
 
 func has_status(u: Unit, s: String) -> bool:
 	return _status.get(u, {}).has(s)
+
+
+## The unit's statuses for display, e.g. ["poison", "pdef up"].
+func statuses_of(u: Unit) -> Array:
+	return _status.get(u, {}).keys().map(func(s: String): return s.replace("_up", " up").replace("_", " "))
 
 
 ## Removes every harmful status (Cleanse).
@@ -601,8 +628,8 @@ func _tick_statuses(u: Unit) -> void:
 		var change := roundi(u.max_hp(data) * share)
 		u.hp = clampi(u.hp + change, 0, u.max_hp(data))
 		_record({"type": "status", "unit": u, "status": s, "amount": change,
-				"text": "%s %s %d HP from %s.%s" % [u.name, "loses" if change < 0 else "regains", absi(change), s,
-				" %s falls." % u.name if not u.is_alive() else ""]})
+				"text": "%s %s %d HP from %s.%s" % [_n(u), "loses" if change < 0 else "regains", absi(change), s,
+				" %s falls." % _n(u) if not u.is_alive() else ""]})
 		if not u.is_alive():
 			_grave_pact(u)
 			return
@@ -669,7 +696,7 @@ func _try_raise_dead(u: Unit, side: int) -> void:
 		return
 	_used[key] = true
 	_add_skeleton(squad, "front", squad.next_col("front"))
-	_record({"type": "raise", "unit": u, "target": _skeletons[-1], "text": "%s raises a Skeleton." % u.name})
+	_record({"type": "raise", "unit": u, "target": _skeletons[-1], "text": "%s raises a Skeleton." % _n(u)})
 
 
 ## Grave pact (aura): the side's first fallen unit rises as a Skeleton in its place.
@@ -683,7 +710,7 @@ func _grave_pact(fallen: Unit) -> void:
 	var spot := fallen.col
 	fallen.col = squad.next_col(fallen.row) + 100  # the dead keep their slot but give up the position
 	_add_skeleton(squad, fallen.row, spot)
-	_record({"type": "raise", "unit": fallen, "target": _skeletons[-1], "text": "%s rises again as a Skeleton." % fallen.name})
+	_record({"type": "raise", "unit": fallen, "target": _skeletons[-1], "text": "%s rises again as a Skeleton." % _n(fallen)})
 
 
 func _add_skeleton(squad: Squad, row: String, col: int) -> void:
@@ -717,10 +744,10 @@ func retreat_chance(side: int) -> float:
 func retreat(side: int) -> bool:
 	if rng.randf() < retreat_chance(side):
 		retreated = side
-		_record({"type": "retreat", "side": side, "success": true, "text": "%s retreats." % sides[side].name})
+		_record({"type": "retreat", "side": side, "success": true, "text": "The squad retreats."})
 		return true
 	_lose_turn[side] = true
-	_record({"type": "retreat", "side": side, "success": false, "text": "%s fails to retreat." % sides[side].name})
+	_record({"type": "retreat", "side": side, "success": false, "text": "The squad tries to retreat and fails; it loses its next action."})
 	return false
 
 
@@ -864,6 +891,18 @@ func _taken_multiplier(u: Unit, t: Unit, base: String) -> float:
 	return m
 
 
+## Each damage multiplier that isn't ×1, for the log's hidden values.
+func modifiers(u: Unit, t: Unit, base: String) -> Dictionary:
+	var out := {}
+	var all := {"terrain": terrain_modifier(u), "day": day_modifier(u), "matchup": matchup_modifier(u, t),
+			"traits and auras": _dealt_multiplier(u, t, base), "element": element_multiplier(attack_element(u, base), element(t)),
+			"building": 1.0 - defense[side_of(t)], "taken": _taken_multiplier(u, t, base)}
+	for k in all:
+		if not is_equal_approx(all[k], 1.0):
+			out[k] = snappedf(all[k], 0.01)
+	return out
+
+
 ## Home terrain, day and night, and matchups, multiplied together.
 func modifier(u: Unit, t: Unit) -> float:
 	return terrain_modifier(u) * day_modifier(u) * matchup_modifier(u, t)
@@ -937,11 +976,15 @@ func roll_hit(u: Unit, t: Unit, base := "Melee") -> bool:
 	var hit: bool
 	if fair[side_of(u)]:
 		if _misses[u] >= int(cfg["streak_breaker_misses"]):
+			_last_roll = 0
 			hit = true
 		else:
-			hit = (rng.randi_range(1, 100) + rng.randi_range(1, 100)) / 2.0 <= chance
+			var roll := (rng.randi_range(1, 100) + rng.randi_range(1, 100)) / 2.0
+			_last_roll = roundi(roll)
+			hit = roll <= chance
 	else:
-		hit = rng.randi_range(1, 100) <= chance
+		_last_roll = rng.randi_range(1, 100)
+		hit = _last_roll <= chance
 	_misses[u] = 0 if hit else _misses[u] + 1
 	return hit
 

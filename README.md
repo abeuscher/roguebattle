@@ -10,7 +10,7 @@ Open the folder in Godot 4.5.1 and press F5, or:
 godot --path .
 ```
 
-Title → Start → Configurator (every map setting, live preview, seed, share code) → summary → battlemap. On the battlemap: click the test squad to see its rolled units, choose Move, click hexes to lay rally points and click the last one again to commit. Space pauses, PgUp/PgDn change speed, L opens the log, Esc opens the menu, the minimap jumps the view. Wheel zooms, drag pans, F fits, H shows or hides hidden sites and lairs, G toggles the hex grid, O cycles debug overlays, T changes the test squad's travel type. Enemy squads (red flags, marked with their role's initial) show only within sight; move next to one to fight, or choose Ranged attack in the squad menu. Battles resolve at once with a result banner until the battle view arrives.
+Title → Start → Configurator (every map setting, live preview, seed, share code) → summary → battlemap. On the battlemap: click the test squad to see its rolled units, choose Move, click hexes to lay rally points and click the last one again to commit. Space pauses, PgUp/PgDn change speed, L opens the log, Esc opens the menu, the minimap jumps the view. Wheel zooms, drag pans, F fits, H shows or hides hidden sites and lairs, G toggles the hex grid, O cycles debug overlays, T changes the test squad's travel type. Enemy squads (red flags, marked with their role's initial) show only within sight; move next to one to fight, or choose Ranged attack in the squad menu. Battles open the battle view: watch it play out, pause with Space, change tactic, retreat or skip to the end. L shows the full battle log; tick "Show hidden values" for hit chances, rolls and modifiers.
 
 ## Run the tests
 

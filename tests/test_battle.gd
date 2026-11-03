@@ -38,12 +38,12 @@ func test_turn_order_by_speed() -> void:
 	slow.stats["SPD"] = 5
 	var b := _battle([slow], [fast])
 	b.run()
-	check_eq(b.events[0]["unit"], fast, "the faster unit acts first")
+	check_eq(_acts(b)[0]["unit"], fast, "the faster unit acts first")
 	var c := _battle([_unit("Knight", "front", "A")], [_unit("Knight", "front", "B")])
 	c.first_side = 1
 	c.sides[0].units[0].stats["SPD"] = 20
 	c.run()
-	check_eq(c.side_of(c.events[0]["unit"]), 1, "a side that resisted recruitment takes its first round first")
+	check_eq(c.side_of(_acts(c)[0]["unit"]), 1, "a side that resisted recruitment takes its first round first")
 
 
 func test_row_attack_counts() -> void:
@@ -54,7 +54,7 @@ func test_row_attack_counts() -> void:
 	var b := _battle([front, back], [wall])
 	b.run()
 	var count := {front: 0, back: 0}
-	for e in b.events:
+	for e in _acts(b):
 		if count.has(e["unit"]):
 			count[e["unit"]] += 1
 	check_eq(count[front], 2, "front-row Fighter attacks twice")
@@ -71,7 +71,7 @@ func test_rounds_interleave() -> void:
 		u.hp = 100000
 	var b := _battle([a], [b2])
 	b.run()
-	var who := b.events.map(func(e): return e["unit"].name)
+	var who := _acts(b).map(func(e): return e["unit"].name)
 	check_eq(who, ["A", "B", "A", "B"], "each round every unit acts once, fastest first")
 
 
@@ -220,7 +220,7 @@ func test_spread_and_crit_damage() -> void:
 		var b := _battle([f], [k], "forest", seed)
 		var base := b.expected_damage(f, k, "Melee")
 		b.run()
-		for e in b.events:
+		for e in _acts(b):
 			if e["unit"] == f and e["hit"]:
 				var m := base * (1.5 if e["crit"] else 1.0)
 				check(e["damage"] >= floori(m * 0.9) and e["damage"] <= ceili(m * 1.1), "damage within ±10%% (%d of %.1f)" % [e["damage"], m])
@@ -269,3 +269,8 @@ func test_battle_runs_to_an_end() -> void:
 	again.run()
 	twice.run()
 	check_eq(again.events.map(func(x): return x["text"]), twice.events.map(func(x): return x["text"]), "same seed, same battle")
+
+
+## Events without the round headers.
+func _acts(b: Battle) -> Array:
+	return b.events.filter(func(e): return e["type"] != "round")
