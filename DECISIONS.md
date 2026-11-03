@@ -108,3 +108,17 @@ Small calls made where the spec left a gap. Newest at the bottom. Anything here 
 - **Casualty slowdown**: time per hex × (1 + dead units' slots ÷ the squad's slot capacity). One of five slots lost = ×1.2.
 - **Squad menu** lists the squad's units by row, with level and HP, until Edit Units arrives (M3).
 
+## Session 009 (2026-11-03): battle rules core
+
+- **Battle numbers** live in `data/battle.json`: hit and crit, spread, breath and heal shares, terrain, day/night, element and matchup multipliers.
+- **Turn order** (§11.3): rounds. Each round every living unit with attacks left acts once, highest Speed first; equal Speed is settled by a seeded random draw made at the start of the battle. A side that resisted recruitment goes first in round one. The battle ends when all attacks are spent or one side is down.
+- **Targeting** (§11.3): plain Melee hits the front row, the back row only once the front is empty (from either row). Ranged, Magic, Breath, "Melee (any row)" and "Melee (reach 2nd row)" hit any row until the Mechanics tab defines reach and group attacks. Breath is single-target for now.
+- **Tactics** are in already (targeting needs one): Best = most expected damage (ties: lowest HP), Strong = highest stat total (threat rating replaces it in session 3), Weak = lowest HP, Leader = the leader if reachable, else Best. Both sides default to Best.
+- **Damage** (§11.4): weapons, armor and spell power count as 0 until items (M3). Breath = (STR + INT) × 0.5 × modifiers − MDEF × 0.5. Healing = INT ± spread, given to the ally missing the largest share of HP. Element multipliers apply to Magic and Breath only, as §11.4 writes them. Building defense multiplies damage taken by (1 − bonus); which bonus applies arrives with buildings (M3).
+- **Hit chance**: 85% + AGI difference, minus 0.5% per target luck point (§12.2 dodge), then clamped 50–95%. Heals never miss.
+- **Fairer dice** (§12.1): two-dice average for hits, a guaranteed hit after 3 misses in a row, and ramping crits using a pseudo-random distribution (chance C × n on the n-th try since the last crit, C chosen so the average is the listed chance). With the configurator's "Player only" setting, the enemy rolls plain dice.
+- **Home terrain**: matches the battle hex's terrain or what it counts as (frozen lake = snow; any water = home for Water units). Difficulty-3 terrain gives −15% to non-natives. Flyers (Sky) get neither.
+- **Matchup tags** (archer, mounted, spear, flyer, large, falconer, dragonslayer) are by role, class, sheet terrain or size in `battle.json`, since the sheet has no such columns. Mounted = Cavalry, Mounted archer, Mounted healer and Sky rider roles plus Valkyrie and Muse; spear = Spearman and Centurion; flyer = Sky terrain (so Angels and Imps, "low flyers" on other terrains, don't count). Falconer and Dragonslayer wait for the sheet.
+- **Buff and Debuff** actions just wait until statuses arrive (session 3).
+- **Balance check**: with placeholder data an even stage 2–3 fight costs each side about 12–16% of its HP, short of the 35–50% target. Session 4 tunes the data with the sim.
+

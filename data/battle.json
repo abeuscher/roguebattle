@@ -1,0 +1,36 @@
+{
+ "hit_base": 85,
+ "hit_per_agi": 1,
+ "hit_range": [50, 95],
+ "crit_base": 5,
+ "crit_multiplier": 1.5,
+ "luck_crit_per_point": 0.5,
+ "luck_dodge_per_point": 0.5,
+ "spread": 0.1,
+ "streak_breaker_misses": 3,
+ "breath_stat_share": 0.5,
+ "breath_mdef_share": 0.5,
+ "heal_int_share": 1.0,
+ "home_terrain_bonus": 0.15,
+ "hard_terrain_penalty": 0.15,
+ "day_night_bonus": 0.15,
+ "element_opposite": 1.5,
+ "element_same": 0.75,
+ "element_pairs": [["Fire", "Ice"], ["Water", "Lightning"], ["Earth", "Wind"], ["Holy", "Dark"]],
+ "matchups": [
+  {"attacker": "archer", "target": "flyer", "multiplier": 1.5},
+  {"attacker": "falconer", "target": "flyer", "multiplier": 2.0},
+  {"attacker": "mounted", "target": "mounted", "multiplier": 1.5},
+  {"attacker": "spear", "target": "mounted", "multiplier": 1.5},
+  {"attacker": "dragonslayer", "target": "large", "multiplier": 1.5}
+ ],
+ "tags": {
+  "flyer": {"terrains": ["Sky"]},
+  "large": {"sizes": ["Large"]},
+  "archer": {"roles": ["Archer", "Mounted archer", "Archer-healer"]},
+  "mounted": {"roles": ["Cavalry", "Mounted archer", "Mounted healer", "Sky rider"], "classes": ["Valkyrie", "Muse"]},
+  "spear": {"classes": ["Spearman", "Centurion"]},
+  "falconer": {"classes": ["Falconer"]},
+  "dragonslayer": {"classes": ["Dragonslayer"]}
+ }
+}

@@ -6,6 +6,7 @@ var units: Dictionary = {}          # class name -> class dict
 var lines: Dictionary = {}          # line id -> Array of stages, each an Array of class names
 var role_templates: Dictionary = {}
 var rules: Dictionary = {}
+var battle: Dictionary = {}         # battle formulas and matchups
 var terrains: Array = []            # index = terrain id
 var terrain_ids: Dictionary = {}    # key -> terrain id
 var mapgen: Dictionary = {}
@@ -22,6 +23,7 @@ static func load_dir(dir: String = "res://data") -> GameData:
 	d.lines = _read_json(dir.path_join("lines.json"))
 	d.role_templates = _read_json(dir.path_join("role_templates.json"))
 	d.rules = _read_json(dir.path_join("rules.json"))
+	d.battle = _read_json(dir.path_join("battle.json"))
 	d.terrains = _read_json(dir.path_join("terrain.json"))
 	for i in d.terrains.size():
 		d.terrain_ids[d.terrains[i]["key"]] = i
