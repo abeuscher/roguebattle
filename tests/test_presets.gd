@@ -42,7 +42,7 @@ func _landmasses(m: MapData, min_size: int) -> int:
 	land.resize(m.size())
 	for i in m.size():
 		land[i] = 0 if _data.terrains[m.terrain[i]].get("water", false) or m.terrain[i] == _data.terrain_ids["air_gap"] else 1
-	var sizes: PackedInt32Array = MapGen.components(m, land)[1]
+	var sizes: PackedInt32Array = m.components(land)[1]
 	return Array(sizes).filter(func(s): return s >= min_size).size()
 
 
@@ -50,7 +50,7 @@ func test_all_land_reachable_on_foot() -> void:
 	for preset in PRESETS:
 		for seed in [1, 2]:
 			var m := _map(preset, seed)
-			var comp: PackedInt32Array = MapGen.components(m, MapGen.ground_passable(m, _data))[0]
+			var comp: PackedInt32Array = m.components(MapGen.ground_passable(m, _data))[0]
 			var regions := {}
 			for i in m.size():
 				if _is_ground(m.terrain[i]):
@@ -84,9 +84,11 @@ func test_floating_isles() -> void:
 		check_eq(_count(m, "deep") + _count(m, "shallow"), 0, "floating isles: no water")
 		var bridges := 0
 		for i in m.size():
-			if m.road[i]:
-				check_eq(m.terrain[i], _data.terrain_ids["air_gap"], "floating isles: bridges span air gaps")
+			if m.road[i] and _data.terrains[m.terrain[i]].get("impassable", false):
 				bridges += 1
+				if m.terrain[i] != _data.terrain_ids["air_gap"]:
+					check(false, "floating isles: bridge over %s" % _data.terrains[m.terrain[i]]["key"])
+					break
 		check(bridges > 0, "floating isles: has bridges")
 
 

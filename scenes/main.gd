@@ -46,7 +46,7 @@ func _generate(seed: int) -> void:
 	var map := MapGen.generate(data, seed, {"preset": presets[_preset % presets.size()], "size": sizes[_size % sizes.size()]})
 	view.show_map(map, data)
 	_world = MapView.world_size(map)
-	label.text = "Seed %d  ·  %s  ·  %s %dx%d  ·  %d ms  ·  Wheel: zoom  ·  Drag: pan  ·  F: fit  ·  R: new map  ·  P: preset  ·  S: size" % [
+	label.text = "Seed %d  ·  %s  ·  %s %dx%d  ·  %d ms  ·  Wheel: zoom  ·  Drag: pan  ·  F: fit  ·  R: new map  ·  P: preset  ·  S: size  ·  H: hidden sites and lairs" % [
 			seed, map.settings["preset"].capitalize(), map.settings["size"], map.width, map.height, Time.get_ticks_msec() - started]
 	log.add(0, "system", "Map generated: seed %d, %s" % [seed, JSON.stringify(map.settings)])
 	_fit()
@@ -58,6 +58,7 @@ func _fit() -> void:
 	camera.zoom = Vector2.ONE * _fit_zoom
 	# Hex (0, 0) is centered on the world origin, so the map starts half a hex up and left.
 	camera.position = _world / 2.0 - Vector2(MapView.HEX_SIZE * Hex.SQRT3 / 2.0, MapView.HEX_SIZE)
+	view.set_zoom(camera.zoom.x)
 
 
 func _zoom_at(screen_point: Vector2, factor: float) -> void:
@@ -66,6 +67,7 @@ func _zoom_at(screen_point: Vector2, factor: float) -> void:
 	camera.force_update_scroll()
 	var after := get_canvas_transform().affine_inverse() * screen_point
 	camera.position += before - after
+	view.set_zoom(camera.zoom.x)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -94,3 +96,5 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_S:
 				_size += 1
 				_generate(_seed)
+			KEY_H:
+				view.show_secrets = not view.show_secrets

@@ -1,0 +1,10 @@
+{
+ "player_base": {"name": "Player Base", "terrains": ["plains", "forest", "snow", "desert"]},
+ "enemy_base": {"name": "Enemy Base", "terrains": ["plains", "forest", "snow", "desert"]},
+ "town": {"name": "Town", "terrains": ["plains", "forest", "snow", "desert"], "shop_chance": 0.5, "hint_chance": 0.3},
+ "tower": {"name": "Tower", "terrains": ["plains", "forest", "snow", "desert", "mountain", "swamp", "frozen_lake"], "shop_chance": 0.3},
+ "temple": {"name": "Temple", "terrains": ["plains", "forest", "snow", "desert", "mountain", "swamp", "frozen_lake"], "high_ground": true},
+ "nomads": {"name": "Nomads", "terrains": ["plains", "forest", "snow", "desert", "swamp", "frozen_lake"], "shop_chance": 1.0},
+ "hidden_site": {"name": "Hidden site", "terrains": ["plains", "forest", "snow", "desert", "mountain", "swamp", "frozen_lake"],
+  "kinds": ["treasure", "card", "secret_temple", "rare_recruit", "lair"]}
+}

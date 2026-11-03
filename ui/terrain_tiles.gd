@@ -28,13 +28,34 @@ static func bridge(color: Color, s: float) -> Texture2D:
 	var img := Image.create_empty(size.x, size.y, false, Image.FORMAT_RGBA8)
 	img.fill(Color(color, 0.0))
 	var c := Vector2(size) / 2.0
-	_fill(img, _hex(c, s * 0.8), color)
+	fill(img, hex_points(c, s * 0.8), color)
 	var k := s / 32.0
 	for y in [-12, -4, 4, 12]:
-		_fill(img, PackedVector2Array([c + Vector2(-21, y - 0.7) * k, c + Vector2(21, y - 0.7) * k,
+		fill(img, PackedVector2Array([c + Vector2(-21, y - 0.7) * k, c + Vector2(21, y - 0.7) * k,
 				c + Vector2(21, y + 0.7) * k, c + Vector2(-21, y + 0.7) * k]), color.darkened(0.35))
 	img.generate_mipmaps()
 	return ImageTexture.create_from_image(img)
+
+
+## Road art: index 0-5 run from the hex center to the edge facing Hex.DIRECTIONS[k],
+## index 6 is the center disc. A road hex draws the disc plus one piece per road neighbor.
+static func road_pieces(color: Color, s: float) -> Array[Texture2D]:
+	var size := tile_size(s)
+	var c := Vector2(size) / 2.0
+	var half_width := s * 0.14
+	var out: Array[Texture2D] = []
+	for k in 7:
+		var img := Image.create_empty(size.x, size.y, false, Image.FORMAT_RGBA8)
+		img.fill(Color(color, 0.0))
+		if k < 6:
+			var to := Hex.to_pixel(Hex.DIRECTIONS[k], s) * 0.5 * 1.04  # just past the edge so pieces meet
+			var side := to.orthogonal().normalized() * half_width
+			fill(img, PackedVector2Array([c + side, c + to + side, c + to - side, c - side]), color)
+		else:
+			fill(img, PackedVector2Array(ellipse(c, half_width, half_width)), color)
+		img.generate_mipmaps()
+		out.append(ImageTexture.create_from_image(img))
+	return out
 
 
 static func draw_tile(key: String, base: Color, s: float) -> Image:
@@ -48,53 +69,53 @@ static func draw_tile(key: String, base: Color, s: float) -> Image:
 		for p: Vector2 in points:
 			out.append(c + p * k)
 		return out
-	_fill(img, _hex(c, s + BLEED), base)
+	fill(img, hex_points(c, s + BLEED), base)
 	var dark := base.darkened(0.25)
 	match key:
 		"plains":
 			for p in [Vector2(-10, -7), Vector2(9, -3), Vector2(-1, 10)]:
 				for blade in [[-3, -4], [0, -7], [3, -4]]:
-					_fill(img, at.call([p + Vector2(blade[0] - 1, 2), p + Vector2(blade[0] + 1, 2),
+					fill(img, at.call([p + Vector2(blade[0] - 1, 2), p + Vector2(blade[0] + 1, 2),
 							p + Vector2(blade[0] * 1.4, blade[1])]), dark)
 		"forest":
-			_fill(img, at.call([Vector2(-2, 7), Vector2(2, 7), Vector2(2, 15), Vector2(-2, 15)]), Color("#5a3d22"))
-			_fill(img, at.call([Vector2(0, -8), Vector2(14, 10), Vector2(-14, 10)]), base.darkened(0.4))
-			_fill(img, at.call([Vector2(0, -18), Vector2(11, 1), Vector2(-11, 1)]), base.darkened(0.4))
-			_fill(img, at.call([Vector2(0, -18), Vector2(0, 1), Vector2(-11, 1)]), base.darkened(0.2))
+			fill(img, at.call([Vector2(-2, 7), Vector2(2, 7), Vector2(2, 15), Vector2(-2, 15)]), Color("#5a3d22"))
+			fill(img, at.call([Vector2(0, -8), Vector2(14, 10), Vector2(-14, 10)]), base.darkened(0.4))
+			fill(img, at.call([Vector2(0, -18), Vector2(11, 1), Vector2(-11, 1)]), base.darkened(0.4))
+			fill(img, at.call([Vector2(0, -18), Vector2(0, 1), Vector2(-11, 1)]), base.darkened(0.2))
 		"desert":
 			for p in [Vector2(-8, 0), Vector2(9, -7), Vector2(4, 12)]:
-				_fill(img, at.call(_arc(p, 8.0, 2.0, PI * 1.15, PI * 1.85)), dark)
+				fill(img, at.call(_arc(p, 8.0, 2.0, PI * 1.15, PI * 1.85)), dark)
 		"snow":
 			for p in [Vector2(-8, 8), Vector2(8, -2)]:
-				_fill(img, at.call(_arc(p, 7.0, 7.0, PI, TAU)), Color("#cbd8e2"))
+				fill(img, at.call(_arc(p, 7.0, 7.0, PI, TAU)), Color("#cbd8e2"))
 		"mountain":
-			_fill(img, at.call([Vector2(0, -19), Vector2(20, 14), Vector2(-20, 14)]), base.darkened(0.1))
-			_fill(img, at.call([Vector2(0, -19), Vector2(20, 14), Vector2(3, 14)]), base.darkened(0.35))
-			_fill(img, at.call([Vector2(0, -19), Vector2(6, -9), Vector2(2, -11), Vector2(-1, -8), Vector2(-6, -9)]),
+			fill(img, at.call([Vector2(0, -19), Vector2(20, 14), Vector2(-20, 14)]), base.darkened(0.1))
+			fill(img, at.call([Vector2(0, -19), Vector2(20, 14), Vector2(3, 14)]), base.darkened(0.35))
+			fill(img, at.call([Vector2(0, -19), Vector2(6, -9), Vector2(2, -11), Vector2(-1, -8), Vector2(-6, -9)]),
 					Color("#f2f4f6"))
 		"swamp":
 			var water := Color("#4d7a80")
 			for p in [Vector2(-10, -6), Vector2(9, -2), Vector2(-1, 10)]:  # laid out like the grass
-				_fill(img, at.call(_ellipse(p + Vector2(0.8, 0.8), 4.5, 4.5)), water.darkened(0.35))  # bevel shadow
-				_fill(img, at.call(_ellipse(p, 4.5, 4.5)), water)
-				_fill(img, at.call(_ellipse(p + Vector2(-1.5, -1.5), 1.6, 1.2)), water.lightened(0.35))  # glint
+				fill(img, at.call(ellipse(p + Vector2(0.8, 0.8), 4.5, 4.5)), water.darkened(0.35))  # bevel shadow
+				fill(img, at.call(ellipse(p, 4.5, 4.5)), water)
+				fill(img, at.call(ellipse(p + Vector2(-1.5, -1.5), 1.6, 1.2)), water.lightened(0.35))  # glint
 		"lava":
 			for p in [Vector2(-8, -6), Vector2(8, 4), Vector2(-3, 11)]:
-				_fill(img, at.call(_ellipse(p, 6.5, 4.5)), Color("#5a2614"))
+				fill(img, at.call(ellipse(p, 6.5, 4.5)), Color("#5a2614"))
 			for p in [Vector2(6, -9), Vector2(-10, 5), Vector2(11, 12)]:
-				_fill(img, at.call(_ellipse(p, 2.2, 2.2)), Color("#ffd23f"))
+				fill(img, at.call(ellipse(p, 2.2, 2.2)), Color("#ffd23f"))
 		"frozen_lake":
 			var glint := base.lightened(0.6)
 			for p in [Vector2(-9, -5), Vector2(7, 6)]:
-				_fill(img, at.call([p + Vector2(-6, 3), p + Vector2(-5, 4.5), p + Vector2(6, -3), p + Vector2(5, -4.5)]), glint)
-				_fill(img, at.call([p + Vector2(-1, 5), p + Vector2(0, 6), p + Vector2(5, 2.5), p + Vector2(4, 1.5)]), glint)
+				fill(img, at.call([p + Vector2(-6, 3), p + Vector2(-5, 4.5), p + Vector2(6, -3), p + Vector2(5, -4.5)]), glint)
+				fill(img, at.call([p + Vector2(-1, 5), p + Vector2(0, 6), p + Vector2(5, 2.5), p + Vector2(4, 1.5)]), glint)
 		"cliff":
 			for x in [-14, -6, 2, 10]:
-				_fill(img, at.call([Vector2(x, 12), Vector2(x + 3, 12), Vector2(x + 9, -12), Vector2(x + 6, -12)]), dark)
+				fill(img, at.call([Vector2(x, 12), Vector2(x + 3, 12), Vector2(x + 9, -12), Vector2(x + 6, -12)]), dark)
 	return img
 
 
-static func _hex(c: Vector2, s: float) -> PackedVector2Array:
+static func hex_points(c: Vector2, s: float) -> PackedVector2Array:
 	var out := PackedVector2Array()
 	for i in 6:
 		var a := deg_to_rad(60 * i - 30)
@@ -102,7 +123,7 @@ static func _hex(c: Vector2, s: float) -> PackedVector2Array:
 	return out
 
 
-static func _ellipse(c: Vector2, rx: float, ry: float) -> Array:
+static func ellipse(c: Vector2, rx: float, ry: float) -> Array:
 	var out := []
 	for i in 16:
 		var a := TAU * i / 16.0
@@ -122,7 +143,7 @@ static func _arc(c: Vector2, r: float, width: float, a0: float, a1: float) -> Ar
 
 
 ## Paints a polygon over the image with antialiased edges.
-static func _fill(img: Image, poly: PackedVector2Array, color: Color) -> void:
+static func fill(img: Image, poly: PackedVector2Array, color: Color) -> void:
 	var lo := poly[0]
 	var hi := poly[0]
 	for p in poly:

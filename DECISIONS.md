@@ -40,3 +40,17 @@ Small calls made where the spec left a gap. Newest at the bottom. Anything here 
 - **Frozen lakes** (user request) are their own terrain, light blue, only in Tundra: about 15% of the snow, cut out as blobs. Same difficulty as snow, and `"native_as": "snow"` in `data/terrain.json` means snow natives count as native there too. Later movement and battle rules must read `native_as`.
 - **Volcanic ash plains** are plain plains; there is no ash terrain in §6.3. Volcanic adds 8 short lava flows running down from the mountains.
 - **Large maps take about 5–6 s** to generate (medium about 2.8 s). That's at the edge of the spec's "a few seconds"; worth another pass if it bothers anyone.
+
+## Session 003 (2026-11-02)
+
+- **Bases come first.** The spec lists bases and goal as layer 7, but roads (layer 5) must link the spawn and goal, so bases are placed before the other buildings. Default spawn side: player west, enemy east (`spawn_side`: west, east, north, south). Each base goes in the outer 12% of buildable land on its side, near the middle of that side.
+- **Goal = Enemy Base** for now. "Reach the goal" will use the same hex until the configurator says otherwise.
+- **Building counts** at medium density on a small map: 16 towns, 10 towers, 4 temples, 2 nomad camps, 8 hidden sites (placeholders). Counts scale with map area and with density (none 0, low ×0.5, medium ×1, high ×1.5).
+- **Quadrants.** Towns, towers and temples are split n/4 per quadrant; the remainder goes to random quadrants, so counts stay within one of each other.
+- **Temples** prefer high ground (mountains or hexes next to them) in their quadrant, falling back to any land.
+- **Order inside layer 4:** temples, towns, towers, then roads, then nomads (they need roads for their 50% road bias) and hidden sites (they must be off-road).
+- **Roads** link the visible buildings (bases, towns, towers, temples) with a minimum spanning tree per landmass, plus 15% extra short links for loops at "main" (50% at "full"). Routes favor plains, avoid forest, swamp and mountains, and reuse existing roads. They stop at the open sea, lava and cliffs, and cross rivers by bridge. Islands get their own networks; roads don't cross the shallow channels between them. Fords on rougher settings are not done yet.
+- **Hidden-site roads** run from the site to the nearest existing road (none when road coverage is "none").
+- **Lairs** pick a home terrain from the sheet's Terrain column (Water lairs sit in shallows, Sky lairs on mountains, Lava lairs on lava), at least 4 hexes from roads and 15 (scaled by map width) from both bases. Danger = distance from the Player Base ÷ distance between bases, clamped to 0–1.
+- **Rule 3 (§6.5):** any terrain region of 0.4% of the map or more (360 hexes on small) with no building or lair gets a lair (or a tower if neutrals are off). This adds about 3–7 lairs on top of the density count. At 0.2% it added far more.
+- **Speed.** Small maps take about 1.1 s, medium about 5 s, large about 11 s. Large is well past "a few seconds". Most of the cost is plain GDScript loops over every hex; it needs a dedicated speed pass (see ROADMAP).

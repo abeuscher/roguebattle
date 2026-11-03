@@ -1,8 +1,9 @@
 class_name MapGen
 extends RefCounted
 ## Builds a map from settings plus seed. Layers run in order (SPEC §6.2) and
-## each reads the ones before it. So far: size, land shape, terrain features
-## (with rivers and lava flows), and a pass that keeps all land reachable on foot.
+## each reads the ones before it: size, land shape, terrain features (with
+## rivers and lava flows), a pass that keeps all land reachable on foot, then
+## buildings, roads and lairs (MapPlaces).
 
 var data: GameData
 var map: MapData
@@ -31,6 +32,7 @@ static func generate(game_data: GameData, game_seed: int, overrides: Dictionary 
 	g._rivers()
 	g._lava_flows()
 	g._ensure_reachable()
+	MapPlaces.place_all(g.map, game_data, g.settings, g.rng)
 	return g.map
 
 
@@ -65,33 +67,6 @@ static func terrain_flags(game_data: GameData, flag: String) -> PackedByteArray:
 	for t in game_data.terrains:
 		out.append(1 if t.get(flag, false) else 0)
 	return out
-
-
-## Connected regions of marked hexes: component id per hex (-1 if unmarked), and their sizes.
-static func components(m: MapData, marked: PackedByteArray) -> Array:
-	var comp := PackedInt32Array()
-	comp.resize(m.size())
-	comp.fill(-1)
-	var sizes := PackedInt32Array()
-	var nb := m.neighbors
-	for start in m.size():
-		if not marked[start] or comp[start] >= 0:
-			continue
-		var id := sizes.size()
-		var count := 0
-		var stack := PackedInt32Array([start])
-		comp[start] = id
-		while not stack.is_empty():
-			var i := stack[stack.size() - 1]
-			stack.resize(stack.size() - 1)
-			count += 1
-			for k in range(i * 6, i * 6 + 6):
-				var n := nb[k]
-				if n >= 0 and marked[n] and comp[n] < 0:
-					comp[n] = id
-					stack.append(n)
-		sizes.append(count)
-	return [comp, sizes]
 
 
 func _id(key: String) -> int:
@@ -170,7 +145,7 @@ func _land_shape() -> void:
 		_keep_landmasses(land, int(settings["min_island_hexes"]), false)
 	var sea := _id(settings["sea"])
 	var shelf_width := int(settings["shelf_width"]) if sea == _id("deep") else 0
-	var shelf := _distance_from(land, shelf_width)
+	var shelf := map.distance_from(land, shelf_width)
 	var plains := _id("plains")
 	var shallow := _id("shallow")
 	for i in map.size():
@@ -224,7 +199,7 @@ func _islands_elevation() -> PackedFloat32Array:
 
 ## Drops landmasses smaller than `min_size`, or all but the largest.
 func _keep_landmasses(land: PackedByteArray, min_size: int, largest_only: bool) -> void:
-	var result := components(map, land)
+	var result := map.components(land)
 	var comp: PackedInt32Array = result[0]
 	var sizes: PackedInt32Array = result[1]
 	if sizes.is_empty():
@@ -237,7 +212,7 @@ func _keep_landmasses(land: PackedByteArray, min_size: int, largest_only: bool) 
 
 func _add_islands(land: PackedByteArray) -> void:
 	var radius := float(data.mapgen["island_radius"][settings["island_size"]]) * map.width / 400.0
-	var gap := _distance_from(land, int(radius * 2 + 4))
+	var gap := map.distance_from(land, int(radius * 2 + 4))
 	var shape := _field("islands", 40.0)
 	var centers: Array[Vector2i] = []
 	for n in int(settings["island_count"]):
@@ -264,29 +239,6 @@ func _grow_island(land: PackedByteArray, center: Vector2i, radius: float, shape:
 			var i := map.index_of(h)
 			if Hex.distance(h, center) < radius * (0.6 + 0.7 * shape[i]):
 				land[i] = 1
-
-
-## Steps from the nearest marked hex, up to `limit`; -1 beyond it (and 0 on marked hexes).
-func _distance_from(marked: PackedByteArray, limit: int) -> PackedInt32Array:
-	var dist := PackedInt32Array()
-	dist.resize(map.size())
-	dist.fill(-1)
-	var frontier := PackedInt32Array()
-	for i in map.size():
-		if marked[i]:
-			dist[i] = 0
-			frontier.append(i)
-	var nb := map.neighbors
-	for step in range(1, limit + 1):
-		var next := PackedInt32Array()
-		for i in frontier:
-			for k in range(i * 6, i * 6 + 6):
-				var n := nb[k]
-				if n >= 0 and dist[n] < 0:
-					dist[n] = step
-					next.append(n)
-		frontier = next
-	return dist
 
 
 # --- Layer 3: terrain features ---------------------------------------------
@@ -408,7 +360,7 @@ func _distance_to_water() -> PackedInt32Array:
 	water.resize(map.size())
 	for i in map.size():
 		water[i] = 1 if _is_water(map.terrain[i]) else 0
-	return _distance_from(water, map.width + map.height)
+	return map.distance_from(water, map.width + map.height)
 
 
 ## Up to `count` random hexes passing `ok`, at least `spacing` apart.
@@ -463,7 +415,7 @@ func _downhill(start: int, dist: PackedInt32Array, max_len: int) -> PackedInt32A
 ## a pass, lava a gap, and air gaps get a bridge (terrain.json "crossing").
 func _ensure_reachable() -> void:
 	var passable := ground_passable(map, data)
-	var comp: PackedInt32Array = components(map, passable)[0]
+	var comp: PackedInt32Array = map.components(passable)[0]
 	var land_count := {}
 	for i in map.size():
 		if comp[i] >= 0 and not _is_water(map.terrain[i]):

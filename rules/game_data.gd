@@ -9,6 +9,7 @@ var rules: Dictionary = {}
 var terrains: Array = []            # index = terrain id
 var terrain_ids: Dictionary = {}    # key -> terrain id
 var mapgen: Dictionary = {}
+var buildings: Dictionary = {}      # building type -> placement rules
 var first_names: PackedStringArray = []
 var last_names: PackedStringArray = []
 
@@ -24,6 +25,7 @@ static func load_dir(dir: String = "res://data") -> GameData:
 	for i in d.terrains.size():
 		d.terrain_ids[d.terrains[i]["key"]] = i
 	d.mapgen = _read_json(dir.path_join("mapgen.json"))
+	d.buildings = _read_json(dir.path_join("buildings.json"))
 	d._load_names(dir.path_join("unit-names.csv"))
 	return d
 
