@@ -159,7 +159,7 @@ func _buildings() -> void:
 		var bits := mask[map.terrain[i]]
 		if bits == 0:
 			continue
-		var q := _quadrant(i)
+		var q := map.quadrant(i)
 		for j in types.size():
 			if bits & (1 << j):
 				pools[j][q].append(i)
@@ -190,10 +190,6 @@ func _buildings() -> void:
 				var info: Dictionary = data.buildings[type]
 				_add(type, i, {"shop": rng.randf() < float(info.get("shop_chance", 0.0)),
 						"hint": rng.randf() < float(info.get("hint_chance", 0.0))})
-
-
-func _quadrant(i: int) -> int:
-	return (1 if i % map.width >= map.width / 2 else 0) + (2 if i / map.width >= map.height / 2 else 0)
 
 
 func _near_terrain(i: int, t: int) -> bool:
@@ -244,8 +240,7 @@ func _roads() -> void:
 		edges.append_array(_network(groups[r], loops))
 	edges.sort_custom(func(x, y): return x[0] < y[0])  # short roads first, so long ones reuse them
 	for e in edges:
-		for i in _road_path(e[1], e[2]):
-			map.road[i] = 1
+		map.lay_road(_road_path(e[1], e[2]))
 
 
 ## Minimum spanning tree over the nodes (by hex distance), plus `loops` x nodes extra short links.
@@ -433,10 +428,12 @@ func _road_to_nearest_road(start: int, ok: PackedByteArray) -> bool:
 					continue
 				parent[n] = i
 				if map.road[n]:
+					var path := PackedInt32Array([n])
 					var c := i
 					while c >= 0:
-						map.road[c] = 1
+						path.append(c)
 						c = parent[c]
+					map.lay_road(path)
 					return true
 				next.append(n)
 		frontier = next

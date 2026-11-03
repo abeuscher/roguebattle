@@ -66,7 +66,7 @@ func test_quadrants_balanced() -> void:
 			var q := [0, 0, 0, 0]
 			for b in _of_type(m, type):
 				var i: int = b["hex"]
-				q[(1 if i % m.width >= m.width / 2 else 0) + (2 if i / m.width >= m.height / 2 else 0)] += 1
+				q[m.quadrant(i)] += 1
 			check(q.max() - q.min() <= 1, "seed %d %s per quadrant %s" % [seed, type, q])
 
 
@@ -105,7 +105,7 @@ func test_roads_connect_visible_buildings() -> void:
 		var networks := {}
 		for b in m.buildings:
 			if b["type"] in MapPlaces.VISIBLE:
-				check(m.road[b["hex"]] == 1, "%s: %s has no road" % [preset, b["type"]])
+				check(m.road[b["hex"]] != 0, "%s: %s has no road" % [preset, b["type"]])
 				networks[comp[b["hex"]]] = true
 		check_eq(networks.size(), 1, "%s: road networks linking visible buildings" % preset)
 
@@ -135,7 +135,21 @@ func test_no_roads_setting() -> void:
 		if m.road[i] and not _data.terrains[m.terrain[i]].get("impassable", false):
 			land_roads += 1
 	check_eq(land_roads, 0, "road coverage none leaves only river bridges")
-	check(_map("continent", 1, {"road_coverage": "full"}).road.count(1) > _map().road.count(1), "full coverage adds roads")
+	var road_hexes := func(map: MapData) -> int:
+		return map.road.size() - map.road.count(0)
+	check(road_hexes.call(_map("continent", 1, {"road_coverage": "full"})) > road_hexes.call(_map()), "full coverage adds roads")
+
+
+func test_roads_are_linked_paths() -> void:
+	var m := _map()
+	for i in m.size():
+		var r := m.road[i]
+		for k in 6:
+			if r & (1 << k):
+				var n := m.neighbors[i * 6 + k]
+				check(n >= 0 and m.road[n] & (1 << ((k + 3) % 6)), "road link at %s isn't returned" % m.hex_at(i))
+				if n < 0 or not (m.road[n] & (1 << ((k + 3) % 6))):
+					return
 
 
 func test_hidden_sites_off_road() -> void:

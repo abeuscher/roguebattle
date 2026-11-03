@@ -1,6 +1,6 @@
 extends Node2D
 ## Temporary start screen for M1: shows a generated map.
-## Wheel zooms at the cursor, drag pans, F fits, R makes a new map,
+## Wheel zooms at the cursor, drag pans, F fits, R makes a new map, G grid, O overlays,
 ## P cycles presets, S cycles sizes.
 ## Replaced by the battlemap and configurator later in M1.
 
@@ -15,6 +15,8 @@ var _world := Vector2.ONE
 var _fit_zoom := 1.0
 var _dragging := false
 var _seed := 0
+var _map: MapData
+var _info := ""
 var _preset := 0
 var _size := 0
 
@@ -43,13 +45,22 @@ func _generate(seed: int) -> void:
 	var presets: Array = data.mapgen["presets"].keys()
 	var sizes: Array = data.mapgen["sizes"].keys()
 	var started := Time.get_ticks_msec()
-	var map := MapGen.generate(data, seed, {"preset": presets[_preset % presets.size()], "size": sizes[_size % sizes.size()]})
-	view.show_map(map, data)
-	_world = MapView.world_size(map)
-	label.text = "Seed %d  ·  %s  ·  %s %dx%d  ·  %d ms  ·  Wheel: zoom  ·  Drag: pan  ·  F: fit  ·  R: new map  ·  P: preset  ·  S: size  ·  H: hidden sites and lairs" % [
-			seed, map.settings["preset"].capitalize(), map.settings["size"], map.width, map.height, Time.get_ticks_msec() - started]
-	log.add(0, "system", "Map generated: seed %d, %s" % [seed, JSON.stringify(map.settings)])
+	_map = MapGen.generate(data, seed, {"preset": presets[_preset % presets.size()], "size": sizes[_size % sizes.size()]})
+	view.show_map(_map, data)
+	_world = MapView.world_size(_map)
+	_info = "Seed %d  ·  %s  ·  %s %dx%d  ·  %d ms" % [seed, _map.settings["preset"].capitalize(),
+			_map.settings["size"], _map.width, _map.height, Time.get_ticks_msec() - started]
+	_update_label()
+	log.add(0, "system", "Map generated: seed %d, %s" % [seed, JSON.stringify(_map.settings)])
 	_fit()
+
+
+func _update_label() -> void:
+	var text := _info + "\nWheel: zoom  ·  Drag: pan  ·  F: fit  ·  R: new map  ·  P: preset  ·  S: size  ·  H: hidden sites and lairs  ·  G: grid  ·  O: overlay (%s)" % MapOverlay.NAMES[view.overlay]
+	var legend := MapOverlay.legend(view.overlay, _map)
+	if legend != "":
+		text += "\n" + legend
+	label.text = text
 
 
 func _fit() -> void:
@@ -98,3 +109,8 @@ func _unhandled_input(event: InputEvent) -> void:
 				_generate(_seed)
 			KEY_H:
 				view.show_secrets = not view.show_secrets
+			KEY_G:
+				view.show_grid = not view.show_grid
+			KEY_O:
+				view.overlay = MapOverlay.MODES[(MapOverlay.MODES.find(view.overlay) + 1) % MapOverlay.MODES.size()]
+				_update_label()

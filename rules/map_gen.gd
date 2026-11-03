@@ -337,7 +337,7 @@ func _rivers() -> void:
 		var bridge := rng.randf() < 0.5
 		for j in range(spacing / 2, path.size(), spacing):
 			if bridge:
-				map.road[path[j]] = 1
+				map.road[path[j]] |= MapData.ROAD_STANDALONE
 			else:
 				map.terrain[path[j]] = _id("shallow")
 			bridge = not bridge
@@ -466,12 +466,21 @@ func _ensure_reachable() -> void:
 			best[c] = i
 	for c in best:
 		var i: int = best[c]
+		var bridged := false  # was the previous step a bridge?
+		var prev := -1
 		while i >= 0 and comp[i] != main:
+			var bridge := false
 			if not passable[i]:
 				var crossing: String = data.terrains[map.terrain[i]]["crossing"]
 				if crossing == "bridge":
-					map.road[i] = 1
+					bridge = true
 				else:
 					map.terrain[i] = _id(crossing)
 				passable[i] = 1
+			if prev >= 0 and (bridge or bridged):
+				map.link_road(prev, i)  # bridges link to each other and to the land at each end
+			bridged = bridge
+			prev = i
 			i = parent[i]
+		if bridged and i >= 0:
+			map.link_road(prev, i)

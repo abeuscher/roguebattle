@@ -10,7 +10,7 @@ Open the folder in Godot 4.5.1 and press F5, or:
 godot --path .
 ```
 
-For now the game shows a generated map. Wheel zooms, drag pans, F fits, R makes a new map, P cycles presets, S cycles sizes, H shows or hides hidden sites and lairs.
+For now the game shows a generated map. Wheel zooms, drag pans, F fits, R makes a new map, P cycles presets, S cycles sizes, H shows or hides hidden sites and lairs, G toggles the hex grid, O cycles debug overlays.
 
 ## Run the tests
 

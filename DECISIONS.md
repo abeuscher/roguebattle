@@ -53,3 +53,12 @@ Small calls made where the spec left a gap. Newest at the bottom. Anything here 
 - **Lairs** pick a home terrain from the sheet's Terrain column (Water lairs sit in shallows, Sky lairs on mountains, Lava lairs on lava), at least 4 hexes from roads and 15 (scaled by map width) from both bases. Danger = distance from the Player Base ÷ distance between bases, clamped to 0–1.
 - **Rule 3 (§6.5):** any terrain region of 0.4% of the map or more (360 hexes on small) with no building or lair gets a lair (or a tower if neutrals are off). This adds about 3–7 lairs on top of the density count. At 0.2% it added far more.
 - **Speed.** Small maps take about 1.1 s, medium about 5 s, large about 11 s. The user confirmed this is fine: the spec's "a few seconds" means not minutes, so no speed pass is planned.
+
+## Session 004 (2026-11-02)
+
+- **Raised land.** Land hexes draw a short earth-colored face under each lower edge that meets water (0.3 hex deep), and a deeper one over air gaps (0.9 hex, Floating Isles). Cliffs draw the same face onto any lower neighbor. Mountains aren't raised; their peaks are objects instead.
+- **Objects.** Trees (two variants) and peaks (two variants) are upright sprites drawn over forest and mountain hexes, with a little per-hex jitter for variety. They're batched in full-width strips two rows tall, drawn top to bottom, so lower objects overlap higher ones. Buildings and lairs are sprites in the same sorted layer. A hex with a building or lair gets no tree or peak.
+- **Road links.** `MapData.road` now records which neighbors each road hex connects to (bits 0–5), so only real road links are drawn. 64 marks a road hex with no links (a lone river bridge). Any nonzero value still means "road here".
+- **Movement cost rule** lives in `rules/movement.gd` (§8.3): difficulty 1/2/3 cost ×1/×1.5/×2 (`difficulty_multiplier` in `data/rules.json`), the squad's travel type counts as 1, roads ×0.75 for non-Sky, Sky ×1 everywhere. Impassable terrain can only be crossed by bridge. The movement overlay shows a ground squad with no native terrain.
+- **Debug overlays** (§19.2): terrain, movement cost, roads, buildings per quadrant (counts in the HUD), lair danger. The sight-radius overlay waits for squads (M2). Trees and peaks hide while an overlay is on. In the viewer, O cycles overlays and G toggles the grid; the debug panel (M4) will call the same `MapView.overlay` and `MapView.show_grid`.
+- **Frame time** on a large map with vsync off: about 2.6 ms zoomed all the way out, 0.4 ms zoomed in.

@@ -2,6 +2,8 @@ class_name MapData
 extends RefCounted
 ## A generated map: terrain per hex in a width x height odd-r rectangle.
 
+const ROAD_STANDALONE := 64
+
 # Offset-space steps matching Hex.DIRECTIONS, for even and odd rows.
 const _EVEN_ROW := [Vector2i(1, 0), Vector2i(0, -1), Vector2i(-1, -1), Vector2i(-1, 0), Vector2i(-1, 1), Vector2i(0, 1)]
 const _ODD_ROW := [Vector2i(1, 0), Vector2i(1, -1), Vector2i(0, -1), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(1, 1)]
@@ -11,7 +13,10 @@ var height: int
 var seed: int
 var settings: Dictionary
 var terrain: PackedByteArray  # terrain id per hex, index = row * width + col
-var road: PackedByteArray  # 1 = road; a road on impassable terrain is a bridge
+## Nonzero = road; a road on impassable terrain is a bridge. Bits 0-5 mark which
+## neighbors (Hex.DIRECTIONS order) the road runs to; ROAD_STANDALONE marks a road
+## hex with no links yet (a lone river bridge).
+var road: PackedByteArray
 var rivers: Array[PackedInt32Array] = []  # hex indices from source to mouth
 ## Each: {type, hex, shop, hint, hidden, kind, road}. Bases are buildings too.
 var buildings: Array[Dictionary] = []
@@ -54,6 +59,28 @@ func hex_at(index: int) -> Vector2i:
 func in_bounds(h: Vector2i) -> bool:
 	var o := Hex.to_offset(h)
 	return o.x >= 0 and o.x < width and o.y >= 0 and o.y < height
+
+
+## Lays road along a path of adjacent hexes, linking each step.
+func lay_road(path: PackedInt32Array) -> void:
+	if path.size() == 1:
+		road[path[0]] |= ROAD_STANDALONE
+	for j in path.size() - 1:
+		link_road(path[j], path[j + 1])
+
+
+## Joins two adjacent hexes by road.
+func link_road(a: int, b: int) -> void:
+	for k in 6:
+		if neighbors[a * 6 + k] == b:
+			road[a] |= 1 << k
+			road[b] |= 1 << ((k + 3) % 6)  # the opposite direction
+			return
+
+
+## Which quarter of the map a hex is in: 0 NW, 1 NE, 2 SW, 3 SE.
+func quadrant(index: int) -> int:
+	return (1 if index % width >= width / 2 else 0) + (2 if index / width >= height / 2 else 0)
 
 
 ## Steps from the nearest marked hex, up to `limit`; -1 beyond it (and 0 on marked hexes).
