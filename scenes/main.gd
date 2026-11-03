@@ -209,9 +209,8 @@ func _plan_click(hex: int) -> void:
 	if hex < 0:
 		return
 	if not _points.is_empty() and hex == _points[_points.size() - 1]:
-		state.order_move(_selected, _points)  # clicking the last point again commits
-		_planning = false
-		_open_menu()
+		state.order_move(_selected, _points)  # clicking the last point again commits and resumes play
+		_end_selection()
 		return
 	var leg := state.pathfinder.find(_points[_points.size() - 1] if not _points.is_empty() else _selected.hex,
 			hex, _selected.travel_type, _selected.sky)
