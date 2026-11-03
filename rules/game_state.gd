@@ -48,7 +48,7 @@ func step() -> void:
 	_moved.clear()
 	for s in squads.duplicate():
 		_move(s)
-		if s.entering_base and _at_base_door(s):
+		if s.entering_base and s.hex == map.player_base:
 			return_to_base(s)
 	_reveal_sites()
 	_check_contact()
@@ -109,9 +109,9 @@ func deploy_cost(s: Squad) -> int:
 	return upkeep(s)
 
 
-## The hex a deployed squad appears on: the Player Base, or the nearest free hex.
+## The hex a deployed squad appears on: the Player Base (your squads can share a hex).
 func deploy_hex() -> int:
-	return map.player_base if _squad_on(map.player_base) == null else _free_near(map.player_base)
+	return map.player_base
 
 
 ## Why the squad can't deploy, or "" if it can.
@@ -152,7 +152,7 @@ func deploy(s: Squad, points := PackedInt32Array()) -> bool:
 ## A squad standing on the Player Base can go in; elsewhere it marches there and goes
 ## in on arrival.
 func send_home(s: Squad) -> void:
-	if _at_base_door(s):
+	if s.hex == map.player_base:
 		return_to_base(s)
 	elif order_move(s, PackedInt32Array([map.player_base])):
 		s.entering_base = true
@@ -161,14 +161,6 @@ func send_home(s: Squad) -> void:
 func return_to_base(s: Squad) -> void:
 	_leave_map(s)
 	log.add(clock.tick, "map", "%s returns to the Player Base." % s.name, s.id)
-
-
-## On the base, or next to it while another squad holds it.
-func _at_base_door(s: Squad) -> bool:
-	if s.hex == map.player_base:
-		return true
-	var holder := _squad_on(map.player_base)
-	return holder != null and holder != s and Hex.distance(map.hex_at(s.hex), map.hex_at(map.player_base)) <= 1
 
 
 func _leave_map(s: Squad) -> void:
@@ -569,7 +561,7 @@ func _push(s: Squad, from: int, steps: int) -> void:
 	for i in steps:
 		var best := -1
 		for n in map.neighbor_indices(s.hex):
-			if pathfinder.hex_cost(n, s.travel_type, s.sky) == INF or _occupied(n, s):
+			if pathfinder.hex_cost(n, s.travel_type, s.sky) == INF or _hostile_at(n, s):
 				continue
 			if best < 0 or Hex.distance(map.hex_at(n), origin) > Hex.distance(map.hex_at(best), origin):
 				best = n
@@ -580,9 +572,10 @@ func _push(s: Squad, from: int, steps: int) -> void:
 		log.add(clock.tick, "battle", "%s is pushed back to %s." % [s.name, map.hex_at(s.hex)], s.id)
 
 
-func _occupied(i: int, except: Squad) -> bool:
+## Whether a squad hostile to s stands on the hex. Your squads can share hexes; hostile ones can't.
+func _hostile_at(i: int, s: Squad) -> bool:
 	for o in squads:
-		if o != except and o.hex == i:
+		if o.hex == i and hostile(s, o):
 			return true
 	return false
 
@@ -615,8 +608,7 @@ func _move(s: Squad) -> void:
 		return
 	s.progress += 1.0
 	while s.is_moving() and s.progress >= step_ticks(s, s.path[0]):
-		var holder := _squad_on(s.path[0])
-		if holder != null and (hostile(s, holder) or s.path.size() == 1):  # can't enter, or can't stop there: wait at the edge
+		if _hostile_at(s.path[0], s):  # an enemy holds it: wait at the edge
 			s.progress = step_ticks(s, s.path[0])
 			break
 		s.progress -= step_ticks(s, s.path[0])

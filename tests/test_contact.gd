@@ -102,19 +102,18 @@ func test_same_side_and_cooldown() -> void:
 		check(st2.pending != null, "and fights again after the cooldown if still adjacent")
 
 
-func test_squads_wait_for_occupied_hexes() -> void:
+func test_friendly_squads_share_hexes() -> void:
 	var st := _state()
 	var a := _ours(st, 5)
 	var b := _ours(st, 7)
 	st.order_move(a, PackedInt32Array([_at(st.map, 9, 4)]))
 	for i in 200:
 		st.step()
-	check(a.hex != b.hex, "a squad never stops on another squad's hex")
-	check_eq(a.hex, _at(st.map, 9, 4), "but passes through a friendly one to its destination")
+	check_eq(a.hex, _at(st.map, 9, 4), "a squad passes through a friendly squad's hex")
 	st.order_move(a, PackedInt32Array([_at(st.map, 7, 4)]))
 	for i in 200:
 		st.step()
-	check_eq(Hex.distance(st.map.hex_at(a.hex), st.map.hex_at(b.hex)), 1, "with its destination taken, it waits beside it")
+	check_eq(a.hex, b.hex, "and can stop on it: your squads share hexes")
 
 
 func test_sight() -> void:

@@ -24,8 +24,7 @@ func test_deploy() -> void:
 	check_eq(st.deploy_blocker(waiting), "", "it can deploy")
 	check(st.deploy(waiting), "deploy")
 	check(waiting in st.squads, "it's on the map")
-	check(waiting.hex != st.map.player_base, "the base hex is taken by the first squad, so it stands beside it")
-	check_eq(Hex.distance(st.map.hex_at(waiting.hex), st.map.hex_at(st.map.player_base)), 1, "right next to the base")
+	check_eq(waiting.hex, st.map.player_base, "it shares the base hex with the first squad")
 	check(st.deploy_blocker(waiting) != "", "it can't deploy twice")
 
 

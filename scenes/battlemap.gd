@@ -12,6 +12,7 @@ signal save_settings
 const NIGHT := Color(0.45, 0.5, 0.78)  # map tint at night
 const ENEMY := Color("#c8402f")
 const CLICK_SLOP := 6.0  # a press and release closer than this is a click, not a drag
+const STACK_SPREAD := 16.0  # world units between flags of squads standing on the same hex
 const TEST_TRAVEL := ["plains", "forest", "mountain", "swamp", "snow", "desert", "shallow", "deep", "sky", ""]
 
 var data: GameData
@@ -143,17 +144,25 @@ func _sync_tokens() -> void:
 			_tokens[s.id] = token
 
 
-## Places each token, sliding smoothly between hexes as the squad moves. Enemies show
-## only within sight (SPEC §8.5); hidden sites appear once seen.
+## Places each token, sliding smoothly between hexes as the squad moves; squads standing
+## on the same hex fan out side by side. Enemies show only within sight (SPEC §8.5);
+## hidden sites appear once seen.
 func _update_tokens() -> void:
 	for i in state.revealed:
 		if not _shown_sites.has(i):
 			_shown_sites[i] = true
 			view.reveal(state.map.buildings[i]["hex"])
+	var stacks := {}  # hex -> squads standing there, in id order
+	for s in state.squads:
+		if not s.is_moving():
+			stacks[s.hex] = stacks.get(s.hex, []) + [s]
 	for s in state.squads:
 		var token: SquadToken = _tokens[s.id]
 		var at := MapView.hex_center(state.map, s.hex)
-		if s.is_moving():
+		if not s.is_moving():
+			var stack: Array = stacks[s.hex]
+			at.x += (stack.find(s) - (stack.size() - 1) / 2.0) * STACK_SPREAD
+		else:
 			var t := clampf((s.progress + state.clock.fraction()) / state.step_ticks(s, s.path[0]), 0.0, 1.0)
 			at = at.lerp(MapView.hex_center(state.map, s.path[0]), t)
 		token.position = at
