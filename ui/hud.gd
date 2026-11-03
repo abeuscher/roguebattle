@@ -3,12 +3,16 @@ extends Control
 ## The battlemap HUD (SPEC §5.2): clock with day and night, game speed, pause
 ## state, gold, reputation, the squad number list and the minimap.
 
+signal squad_pressed(id: int)
+
 var minimap := Minimap.new()
 var _clock := Label.new()
 var _speed := Label.new()
 var _money := Label.new()
-var _squads := Label.new()
+var _squads := HBoxContainer.new()
 var _help := Label.new()
+var _banner := Label.new()
+var _flash_until := 0
 
 
 func _ready() -> void:
@@ -22,9 +26,11 @@ func _ready() -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 40)
 	bar.add_child(row)
-	for label in [_clock, _speed, _squads]:
+	for label in [_clock, _speed]:
 		label.add_theme_font_size_override("font_size", 20)
 		row.add_child(label)
+	_squads.add_theme_constant_override("separation", 6)
+	row.add_child(_squads)
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = SIZE_EXPAND_FILL
 	row.add_child(spacer)
@@ -34,7 +40,33 @@ func _ready() -> void:
 	_help.add_theme_stylebox_override("normal", _box(Color(0.07, 0.09, 0.11, 0.75), 6))
 	_help.add_theme_font_size_override("font_size", 13)
 	add_child(_help)
+	_banner.add_theme_stylebox_override("normal", _box(Color(0.12, 0.1, 0.04, 0.92), 10))
+	_banner.add_theme_font_size_override("font_size", 18)
+	_banner.add_theme_color_override("font_color", Color("#ffe08a"))
+	_banner.visible = false
+	add_child(_banner)
 	resized.connect(place)
+
+
+## One button per squad, labelled with its number (click centers the map on it).
+func set_squads(squads: Array[Squad]) -> void:
+	for child in _squads.get_children():
+		child.queue_free()
+	for s in squads:
+		var b := Button.new()
+		b.text = "%d %s" % [s.id, s.name]
+		b.focus_mode = FOCUS_NONE
+		b.pressed.connect(func(): squad_pressed.emit(s.id))
+		_squads.add_child(b)
+
+
+## A message under the top bar; with `seconds`, it disappears after that long.
+func show_banner(text: String, seconds := 0.0) -> void:
+	_banner.text = text
+	_banner.visible = text != ""
+	_banner.reset_size()
+	_banner.position = Vector2((size.x - _banner.size.x) / 2.0, 62)
+	_flash_until = Time.get_ticks_msec() + int(seconds * 1000) if seconds > 0.0 else 0
 
 
 func set_help(text: String) -> void:
@@ -48,11 +80,16 @@ func refresh(state: GameState) -> void:
 	if state.clock.paused:
 		_speed.text = "PAUSED  (Space)"
 		_speed.add_theme_color_override("font_color", Color("#ff9b6a"))
+	elif not state.clock.is_running():
+		_speed.text = "Paused while planning"
+		_speed.add_theme_color_override("font_color", Color("#ffe08a"))
 	else:
 		_speed.text = "%s  x%s" % [state.speed_name(), state.clock.speed()]
 		_speed.remove_theme_color_override("font_color")
 	_money.text = "Gold %d   ·   Reputation %d" % [state.gold, state.reputation]
-	_squads.text = "Squads: none yet"
+	if _flash_until > 0 and Time.get_ticks_msec() > _flash_until:
+		_flash_until = 0
+		_banner.visible = false
 
 
 ## Puts the minimap bottom-right and the help text bottom-left. Call after the map or text changes.

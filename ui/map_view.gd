@@ -36,6 +36,7 @@ var show_grid := false:
 			_build_grid()
 		_grid_layer.visible = value
 
+var paths := PathView.new()  # routes, drawn over everything else
 var _map: MapData
 var _data: GameData
 var _tiles: Array[Texture2D] = []
@@ -67,7 +68,7 @@ func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	_object_layer.y_sort_enabled = true
 	_grid_layer.visible = false
-	for layer in [_terrain_layer, _relief_layer, _road_layer, _overlay_layer, _grid_layer, _object_layer]:
+	for layer in [_terrain_layer, _relief_layer, _road_layer, _overlay_layer, _grid_layer, _object_layer, paths]:
 		add_child(layer)
 
 
@@ -92,11 +93,24 @@ func show_map(map: MapData, data: GameData) -> void:
 		_build_grid()
 
 
+## Adds a map object (such as a squad token) to the layer sorted by screen Y.
+## Cleared by show_map().
+func add_object(node: Node2D) -> void:
+	_object_layer.add_child(node)
+
+
+## World position of a hex's center.
+static func hex_center(map: MapData, i: int) -> Vector2:
+	return Hex.to_pixel(map.hex_at(i), HEX_SIZE)
+
+
 ## Keeps icons readable when zoomed far out.
 func set_zoom(zoom: float) -> void:
 	var s := HEX_SIZE / TEXTURE_HEX_SIZE * ICON_SCALE * maxf(1.0, ICON_MIN_SCREEN / zoom)
 	for icon in _icon_sprites:
 		icon.scale = Vector2(s, s)
+	paths.zoom = zoom
+	paths.queue_redraw()
 
 
 ## World-space size of the whole map.

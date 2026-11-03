@@ -72,3 +72,16 @@ Small calls made where the spec left a gap. Newest at the bottom. Anything here 
 - **Logged to System:** new map (settings as hidden values), day changes, game speed changes, pause and resume.
 - **The log** opens with L as a modal (50% dark overlay, pauses play), with category and squad filters and a "show hidden values" debug toggle. The squad filter lists the squads that appear in the log.
 - **Esc main menu** (§5.3) waits for the title and start screens (session 7). Keys 1–9 and the squad number list wait for squads (session 6).
+
+## Session 006 (2026-11-02)
+
+- **Pathfinding** (`rules/pathfinder.gd`, §6.1). Two steps:
+  1. Region to region. The map is cut into 16×16 blocks, each split into the connected areas a squad can walk (regions). One Dijkstra back from the goal's region gives the region route. A link between regions is priced at their center distance × the cheaper of their average terrain cost and the cheapest border crossing, so road crossings make cheap links and the route follows roads.
+  2. Hex to hex. A* inside the blocks of that route plus a one-block margin, guessing straight-line distance.
+
+  Routes come out within about 10% of a whole-map search. A long route (300+ hexes) on a medium map takes about 125 ms. The region graph is built once per travel profile (about 0.6–0.8 s on medium, the first time a profile is used). I tried steering the hex search with region costs to make it faster: it was 4× faster but routes were up to 28% worse and ignored roads, so I dropped it.
+- **Movement** (§8.3). Each hex costs (1.0 / 0.6 / 0.3 s by speed tier) × 4.8 ticks × the hex's time multiplier. Squads keep partial progress between ticks, and the token slides smoothly between hexes. Casualty slowdown waits for units (M2).
+- **Squad menu flow** (§5.3). Clicking a squad pauses the game (a hold) and opens its menu as a modal. Move closes the menu so the map can be clicked. The game stays held and the HUD says "Paused while planning". Left-click adds rally points (unreachable hexes are refused with a message), right-click removes the last, clicking the last point again commits, and Esc goes back to the menu. Closing the menu resumes play. The spec says the menu is a modal and also that you click the map from it; this keeps both.
+- **Menu actions:** Move and Return to base work. Edit squad, Use item and Deploy are shown greyed out until M3. Ranged attack will appear for squads with range (M2).
+- **Test squad.** One placeholder squad ("Vanguard", plains, speed tier 2, from `placeholder_squad` in `data/rules.json`) stands at the Player Base. T cycles its travel type (plains, forest, mountain, swamp, snow, desert, Sky, none) for testing. This all goes away when real squads arrive in M2.
+- **Logged to Map:** move orders (with route length and time, and the route itself as a hidden value), rally points reached, destination reached.

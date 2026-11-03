@@ -7,6 +7,8 @@
  "start_minute": 480,
  "starting_gold": 500,
  "starting_reputation": 50,
+ "hex_seconds_by_tier": [1.0, 0.6, 0.3],
+ "placeholder_squad": {"name": "Vanguard", "travel_type": "plains", "speed_tier": 2},
  "difficulty_multiplier": [1, 1.5, 2],
  "road_multiplier": 0.75
 }

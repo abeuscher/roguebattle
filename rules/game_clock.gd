@@ -56,6 +56,11 @@ func advance(real_seconds: float) -> int:
 	return n
 
 
+## How far into the next tick real time has got (0..1), for smooth drawing between ticks.
+func fraction() -> float:
+	return _carry if is_running() else 0.0
+
+
 ## Moves time on by one tick and returns the scheduled events it reaches.
 func step() -> PackedStringArray:
 	tick += 1
