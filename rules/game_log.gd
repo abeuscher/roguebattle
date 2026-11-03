@@ -4,7 +4,7 @@ extends RefCounted
 ## hidden values kept apart so the debug toggle can show them.
 
 const CATEGORIES := ["battle", "map", "economy", "progression", "system"]
-const TICKS_PER_DAY := 1440  # 1 tick = 1 in-game minute (SPEC §7)
+const TICKS_PER_DAY := GameClock.TICKS_PER_DAY
 
 var entries: Array[Dictionary] = []
 var _file: FileAccess

@@ -2,7 +2,11 @@
  "size_slots": {"Small": 1, "Large": 2, "Tiny": 0.5},
  "ticks_per_real_second": 4.8,
  "game_speeds": [0.25, 0.5, 1, 2, 4],
+ "game_speed_names": ["Ultra slow", "Slow", "Normal", "Fast", "Ultra fast"],
  "default_speed_index": 2,
+ "start_minute": 480,
+ "starting_gold": 500,
+ "starting_reputation": 50,
  "difficulty_multiplier": [1, 1.5, 2],
  "road_multiplier": 0.75
 }

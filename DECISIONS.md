@@ -62,3 +62,13 @@ Small calls made where the spec left a gap. Newest at the bottom. Anything here 
 - **Movement cost rule** lives in `rules/movement.gd` (§8.3): difficulty 1/2/3 cost ×1/×1.5/×2 (`difficulty_multiplier` in `data/rules.json`), the squad's travel type counts as 1, roads ×0.75 for non-Sky, Sky ×1 everywhere. Impassable terrain can only be crossed by bridge. The movement overlay shows a ground squad with no native terrain.
 - **Debug overlays** (§19.2): terrain, movement cost, roads, buildings per quadrant (counts in the HUD), lair danger. The sight-radius overlay waits for squads (M2). Trees and peaks hide while an overlay is on. In the viewer, O cycles overlays and G toggles the grid; the debug panel (M4) will call the same `MapView.overlay` and `MapView.show_grid`.
 - **Frame time** on a large map with vsync off: about 2.6 ms zoomed all the way out, 0.4 ms zoomed in.
+
+## Session 005 (2026-11-02)
+
+- **Clock** (`rules/game_clock.gd`): 4.8 ticks per real second × game speed, with fractions carried between frames. The game starts on Day 1 at 08:00 (`start_minute`, placeholder). `step()` reports scheduled events: new day and half day at 00:00, noon and half day at 12:00, dawn at 06:00, dusk at 18:00. Noon income, nomad moves and daily healing hook in during M3.
+- **Pause vs holds.** Space sets the player's pause. Open menus (and later battles) place a hold, which stops time whatever the pause says and restores the previous state when released.
+- **Game state** (`rules/game_state.gd`) holds the map, clock, log, RNG streams, gold (500) and reputation (50). Scenes only read it and pass input in.
+- **Night tint.** The map tints blue at night, with an hour of dusk after 18:00 and of dawn before 06:00. The HUD isn't tinted.
+- **Logged to System:** new map (settings as hidden values), day changes, game speed changes, pause and resume.
+- **The log** opens with L as a modal (50% dark overlay, pauses play), with category and squad filters and a "show hidden values" debug toggle. The squad filter lists the squads that appear in the log.
+- **Esc main menu** (§5.3) waits for the title and start screens (session 7). Keys 1–9 and the squad number list wait for squads (session 6).
