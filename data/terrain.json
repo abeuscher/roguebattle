@@ -5,9 +5,9 @@
  {"key": "snow", "name": "Snow and ice", "difficulty": 2, "color": "#eef2f5"},
  {"key": "mountain", "name": "Mountain", "difficulty": 3, "color": "#8a7f72"},
  {"key": "swamp", "name": "Swamp", "difficulty": 3, "color": "#5f6e44"},
- {"key": "shallow", "name": "Shallow water", "difficulty": 3, "color": "#5fa3c9"},
- {"key": "deep", "name": "Deep water", "impassable": true, "color": "#2a5c8f"},
- {"key": "lava", "name": "Lava", "impassable": true, "color": "#d9481c"},
- {"key": "cliff", "name": "Cliffs", "impassable": true, "color": "#4b433b"},
- {"key": "air_gap", "name": "Air gap", "impassable": true, "color": "#c9dcf0"}
+ {"key": "shallow", "name": "Shallow water", "difficulty": 3, "water": true, "color": "#5fa3c9"},
+ {"key": "deep", "name": "Deep water", "impassable": true, "water": true, "crossing": "shallow", "color": "#2a5c8f"},
+ {"key": "lava", "name": "Lava", "impassable": true, "crossing": "plains", "color": "#d9481c"},
+ {"key": "cliff", "name": "Cliffs", "impassable": true, "crossing": "mountain", "color": "#4b433b"},
+ {"key": "air_gap", "name": "Air gap", "impassable": true, "crossing": "bridge", "color": "#c9dcf0"}
 ]

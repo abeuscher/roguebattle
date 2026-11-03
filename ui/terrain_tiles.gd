@@ -22,6 +22,21 @@ static func build(data: GameData, s: float) -> Array[Texture2D]:
 	return out
 
 
+## A plank deck drawn over the hex, for bridges.
+static func bridge(color: Color, s: float) -> Texture2D:
+	var size := tile_size(s)
+	var img := Image.create_empty(size.x, size.y, false, Image.FORMAT_RGBA8)
+	img.fill(Color(color, 0.0))
+	var c := Vector2(size) / 2.0
+	_fill(img, _hex(c, s * 0.8), color)
+	var k := s / 32.0
+	for y in [-12, -4, 4, 12]:
+		_fill(img, PackedVector2Array([c + Vector2(-21, y - 0.7) * k, c + Vector2(21, y - 0.7) * k,
+				c + Vector2(21, y + 0.7) * k, c + Vector2(-21, y + 0.7) * k]), color.darkened(0.35))
+	img.generate_mipmaps()
+	return ImageTexture.create_from_image(img)
+
+
 static func draw_tile(key: String, base: Color, s: float) -> Image:
 	var size := tile_size(s)
 	var img := Image.create_empty(size.x, size.y, false, Image.FORMAT_RGBA8)

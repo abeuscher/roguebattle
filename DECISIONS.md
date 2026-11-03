@@ -27,3 +27,16 @@ Small calls made where the spec left a gap. Newest at the bottom. Anything here 
 
 - **Textured terrain.** Each terrain gets a hex tile drawn in code (`ui/terrain_tiles.gd`): its color plus one whole motif per hex (tree, peak, grass, dunes, drifts, water drops, lava rocks, cliff hatching). Water stays plain blue. Region borders follow hex edges, and no motif is cut at a border. Placeholder art until after M4.
 - **Map view** draws hexes with one MultiMesh per terrain per 64×64-hex chunk, over a flat-color copy that hides gaps when zoomed far out. World hex size is 32; tiles are drawn at 48 so they stay sharp up close.
+
+## Session 002 (2026-11-02)
+
+- **Reachable on foot, always.** After generation, every landmass is joined to the largest by the cheapest crossing: deep water becomes a shallow ford, cliffs become a mountain pass, lava gets a gap, air gaps get a bridge (`crossing` in `data/terrain.json`). Islands are reachable by slow shallow channels, which punishes ground armies without making the map unwinnable.
+- **Bridges are roads.** `MapData.road` marks road hexes; a road on impassable terrain is a bridge. Session 3 adds land roads to the same layer.
+- **Rivers** are 1-hex-wide deep water running from inland to the sea, winding along a noise field. They can join. Crossings alternate bridge and ford every 18 hexes (placeholder). Continent has 2 rivers, River Valley 8, Islands 1.
+- **Cliffs** are now a terrain amount (default low). They take the crests of the mountain ranges, so they form spines inside ranges; reachability cuts passes through them.
+- **Islands / Floating Isles** split the map between 2–4 (or 3–5) island centers with a wandering water or air channel between them. Floating Isles use air gaps instead of sea, with no shallows.
+- **Archipelago** cuts the land with a network of thin straits and keeps islands as small as 6 hexes.
+- **Deep Forest / Tundra** scale one terrain's amount up (`terrain_scale`), since the spec's levels stop at high.
+- **Tundra's frozen lakes** are drawn as snow and ice: §6.3 has one terrain for both, so there is no separate lake feature.
+- **Volcanic ash plains** are plain plains; there is no ash terrain in §6.3. Volcanic adds 8 short lava flows running down from the mountains.
+- **Large maps take about 5–6 s** to generate (medium about 2.8 s). That's at the edge of the spec's "a few seconds"; worth another pass if it bothers anyone.

@@ -6,6 +6,7 @@ static func build(map: MapData, data: GameData) -> Image:
 	var colors: Array[Color] = []
 	for t in data.terrains:
 		colors.append(Color(t["color"]))
+	var bridge := Color(data.mapgen["bridge_color"])
 	var w := map.width * 2 + 1
 	var h := map.height * 2
 	var bytes := PackedByteArray()
@@ -13,7 +14,7 @@ static func build(map: MapData, data: GameData) -> Image:
 	for i in map.size():
 		var row := i / map.width
 		var x := (i % map.width) * 2 + (row & 1)
-		var c := colors[map.terrain[i]]
+		var c := bridge if map.road[i] and data.terrains[map.terrain[i]].get("impassable", false) else colors[map.terrain[i]]
 		for dy in 2:
 			var p := ((row * 2 + dy) * w + x) * 3
 			for dx in 2:

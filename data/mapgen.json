@@ -2,16 +2,47 @@
  "sizes": {"small": [400, 225], "medium": [800, 450], "large": [1200, 675]},
  "amount_fractions": {"none": 0.0, "low": 0.03, "medium": 0.10, "high": 0.20},
  "island_radius": {"small": 6, "medium": 12, "large": 20},
- "shelf_width": 2,
+ "bridge_color": "#8a5a2b",
  "defaults": {
   "size": "small",
   "preset": "continent",
   "terrain_amounts": {
    "forest": "medium", "desert": "low", "snow": "medium", "mountain": "medium",
-   "swamp": "medium", "lava": "low"
-  }
+   "swamp": "medium", "lava": "low", "cliff": "low"
+  },
+  "terrain_scale": {},
+  "shape": "continent",
+  "sea": "deep",
+  "shelf_width": 2,
+  "edge_falloff": 0.9,
+  "center_falloff": 1.0,
+  "channel_width": 6,
+  "strait_cut": 0,
+  "noise_frequency": 3.0,
+  "island_count": 0,
+  "island_size": "medium",
+  "min_island_hexes": 30,
+  "rivers": 0,
+  "river_crossing_spacing": 18,
+  "lava_flows": 0,
+  "lava_flow_length": 30
  },
  "presets": {
-  "continent": {"land_pct": 55, "island_count": 3, "island_size": "medium", "edge_falloff": 0.9, "noise_frequency": 3.0}
+  "continent": {"land_pct": 55, "island_count": 3, "rivers": 2},
+  "islands": {"shape": "islands", "land_pct": 40, "centers": [2, 4], "edge_falloff": 0.4,
+   "noise_frequency": 4.0, "min_island_hexes": 150, "rivers": 1},
+  "archipelago": {"shape": "scatter", "land_pct": 30, "edge_falloff": 0.5, "noise_frequency": 10.0, "strait_cut": 0.72,
+   "min_island_hexes": 6, "shelf_width": 4, "terrain_amounts": {"lava": "none", "cliff": "none"}},
+  "floating_isles": {"shape": "islands", "sea": "air_gap", "land_pct": 45, "centers": [3, 5],
+   "edge_falloff": 0.4, "noise_frequency": 4.0, "min_island_hexes": 150, "shelf_width": 0},
+  "highlands": {"land_pct": 60, "terrain_amounts": {"mountain": "high", "cliff": "medium"},
+   "terrain_scale": {"mountain": 2}},
+  "river_valley": {"land_pct": 62, "rivers": 8, "terrain_amounts": {"cliff": "none"}},
+  "deep_forest": {"land_pct": 58, "terrain_amounts": {"forest": "high", "mountain": "low", "swamp": "low",
+   "snow": "low", "desert": "none", "lava": "none", "cliff": "none"}, "terrain_scale": {"forest": 3.5}},
+  "tundra": {"land_pct": 58, "terrain_amounts": {"snow": "high", "desert": "none", "lava": "none", "forest": "low"},
+   "terrain_scale": {"snow": 3}},
+  "volcanic": {"land_pct": 55, "terrain_amounts": {"lava": "medium", "mountain": "high", "snow": "low", "desert": "none"},
+   "lava_flows": 8}
  }
 }

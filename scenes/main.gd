@@ -1,6 +1,7 @@
 extends Node2D
 ## Temporary start screen for M1: shows a generated map.
-## Wheel zooms at the cursor, drag pans, F fits, R makes a new map.
+## Wheel zooms at the cursor, drag pans, F fits, R makes a new map,
+## P cycles presets, S cycles sizes.
 ## Replaced by the battlemap and configurator later in M1.
 
 const MAX_ZOOM := 2.5
@@ -13,6 +14,9 @@ var label := Label.new()
 var _world := Vector2.ONE
 var _fit_zoom := 1.0
 var _dragging := false
+var _seed := 0
+var _preset := 0
+var _size := 0
 
 
 func _ready() -> void:
@@ -23,19 +27,27 @@ func _ready() -> void:
 	add_child(camera)
 	var hud := CanvasLayer.new()
 	add_child(hud)
-	label.position = Vector2(16, 12)
+	var backing := StyleBoxFlat.new()
+	backing.bg_color = Color(0.07, 0.09, 0.11, 0.8)
+	backing.set_content_margin_all(8)
+	backing.set_corner_radius_all(4)
+	label.add_theme_stylebox_override("normal", backing)
+	label.position = Vector2(12, 10)
 	hud.add_child(label)
 	get_viewport().size_changed.connect(_fit)
 	_generate(randi())
 
 
 func _generate(seed: int) -> void:
+	_seed = seed
+	var presets: Array = data.mapgen["presets"].keys()
+	var sizes: Array = data.mapgen["sizes"].keys()
 	var started := Time.get_ticks_msec()
-	var map := MapGen.generate(data, seed)
+	var map := MapGen.generate(data, seed, {"preset": presets[_preset % presets.size()], "size": sizes[_size % sizes.size()]})
 	view.show_map(map, data)
 	_world = MapView.world_size(map)
-	label.text = "Seed %d  ·  %s %dx%d  ·  %d ms  ·  Wheel: zoom  ·  Drag: pan  ·  F: fit  ·  R: new map" % [
-			seed, map.settings["preset"], map.width, map.height, Time.get_ticks_msec() - started]
+	label.text = "Seed %d  ·  %s  ·  %s %dx%d  ·  %d ms  ·  Wheel: zoom  ·  Drag: pan  ·  F: fit  ·  R: new map  ·  P: preset  ·  S: size" % [
+			seed, map.settings["preset"].capitalize(), map.settings["size"], map.width, map.height, Time.get_ticks_msec() - started]
 	log.add(0, "system", "Map generated: seed %d, %s" % [seed, JSON.stringify(map.settings)])
 	_fit()
 
@@ -76,3 +88,9 @@ func _unhandled_input(event: InputEvent) -> void:
 				_generate(randi())
 			KEY_F:
 				_fit()
+			KEY_P:
+				_preset += 1
+				_generate(_seed)
+			KEY_S:
+				_size += 1
+				_generate(_seed)

@@ -7,7 +7,9 @@ const TEXTURE_HEX_SIZE := 48.0  # texels, so tiles stay sharp when zoomed in
 const CHUNK := 64  # hexes per chunk side
 
 var _tiles: Array[Texture2D] = []
+var _bridge: Texture2D
 var _quad: ArrayMesh
+var _impassable: Array[bool] = []
 
 
 func show_map(map: MapData, data: GameData) -> void:
@@ -15,6 +17,9 @@ func show_map(map: MapData, data: GameData) -> void:
 		child.queue_free()
 	if _tiles.is_empty():
 		_tiles = TerrainTiles.build(data, TEXTURE_HEX_SIZE)
+		_bridge = TerrainTiles.bridge(Color(data.mapgen["bridge_color"]), TEXTURE_HEX_SIZE)
+		for t in data.terrains:
+			_impassable.append(t.get("impassable", false))
 		_quad = _make_quad(Vector2(TerrainTiles.tile_size(TEXTURE_HEX_SIZE)) * HEX_SIZE / TEXTURE_HEX_SIZE)
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	add_child(_underlay(map, data))
@@ -41,24 +46,34 @@ func _underlay(map: MapData, data: GameData) -> Sprite2D:
 
 func _build_chunk(map: MapData, cx: int, cy: int) -> void:
 	var by_terrain := {}
+	var bridges := PackedVector2Array()
 	for row in range(cy, mini(cy + CHUNK, map.height)):
 		for col in range(cx, mini(cx + CHUNK, map.width)):
-			var t := map.terrain[row * map.width + col]
+			var i := row * map.width + col
+			var t := map.terrain[i]
+			var p := Hex.to_pixel(Hex.from_offset(Vector2i(col, row)), HEX_SIZE)
 			if not by_terrain.has(t):
 				by_terrain[t] = PackedVector2Array()
-			by_terrain[t].append(Hex.to_pixel(Hex.from_offset(Vector2i(col, row)), HEX_SIZE))
+			by_terrain[t].append(p)
+			if map.road[i] and _impassable[t]:
+				bridges.append(p)
 	for t in by_terrain:
-		var points: PackedVector2Array = by_terrain[t]
-		var mm := MultiMesh.new()
-		mm.transform_format = MultiMesh.TRANSFORM_2D
-		mm.mesh = _quad
-		mm.instance_count = points.size()
-		for i in points.size():
-			mm.set_instance_transform_2d(i, Transform2D(0.0, points[i]))
-		var inst := MultiMeshInstance2D.new()
-		inst.multimesh = mm
-		inst.texture = _tiles[t]
-		add_child(inst)
+		_add_instances(by_terrain[t], _tiles[t])
+	if not bridges.is_empty():
+		_add_instances(bridges, _bridge)
+
+
+func _add_instances(points: PackedVector2Array, texture: Texture2D) -> void:
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_2D
+	mm.mesh = _quad
+	mm.instance_count = points.size()
+	for i in points.size():
+		mm.set_instance_transform_2d(i, Transform2D(0.0, points[i]))
+	var inst := MultiMeshInstance2D.new()
+	inst.multimesh = mm
+	inst.texture = texture
+	add_child(inst)
 
 
 static func _make_quad(size: Vector2) -> ArrayMesh:

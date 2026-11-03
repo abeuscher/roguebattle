@@ -25,6 +25,10 @@ func _initialize() -> void:
 	files.sort()
 	for file in files:
 		var script: GDScript = load("res://tests/" + file)
+		if script == null or not script.can_instantiate():
+			failed += 1
+			print("FAIL %s (script failed to load)" % file)
+			continue
 		for m in script.get_script_method_list():
 			var name: String = m["name"]
 			if not name.begins_with("test_") or (filter != "" and filter not in file + "." + name):

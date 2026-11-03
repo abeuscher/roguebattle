@@ -36,11 +36,11 @@ func test_land_fraction() -> void:
 
 func test_terrain_amounts() -> void:
 	var land := float(_land_count(_map))
-	var fractions: Dictionary = _data.mapgen["amount_fractions"]
 	for key in _map.settings["terrain_amounts"]:
-		var want: float = fractions[_map.settings["terrain_amounts"][key]]
+		var want := MapGen.target_fraction(_data, _map.settings, key)
 		var got := _count(_map, key) / land
-		check(absf(got - want) < 0.01, "%s: %.3f of land, want %.3f" % [key, got, want])
+		# Rivers and reachability cuts move a little terrain around.
+		check(absf(got - want) < 0.02, "%s: %.3f of land, want %.3f" % [key, got, want])
 	check(_count(_map, "plains") / land > 0.3, "plains are the default ground")
 
 
@@ -63,8 +63,12 @@ func test_border_is_water() -> void:
 func test_shallows_border_land() -> void:
 	var deep: int = _data.terrain_ids["deep"]
 	var shallow: int = _data.terrain_ids["shallow"]
+	var river := {}
+	for path in _map.rivers:
+		for i in path:
+			river[i] = true
 	for i in _map.size():
-		if _map.terrain[i] == deep:
+		if _map.terrain[i] == deep and not river.has(i):
 			for n in _map.neighbor_indices(i):
 				if _map.terrain[n] != deep and _map.terrain[n] != shallow:
 					check(false, "deep water touches land at %s" % _map.hex_at(i))

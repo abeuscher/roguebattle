@@ -28,4 +28,5 @@ Real-time squad strategy game in Godot 4.5.1 (GDScript). The design is `SPEC.md`
 
 - Tests: `tools\run_tests.ps1` (optional name filter as first argument). Must be green before a session closes.
 - Map images: `godot --headless --path . -s res://tools/map_preview.gd -- <seed> [size] [preset] [out.png]`, then look at the PNG.
+- A script that fails to parse makes a headless `-s` run sit idle forever. Wrap ad-hoc runs in `timeout`, and use `--check-only -s res://path.gd` to find the error. The project treats some warnings (such as Variant-inferred `:=`) as errors.
 - The user playtests only at milestones (SPEC §23). Check your own work in between.

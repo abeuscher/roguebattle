@@ -11,6 +11,8 @@ var height: int
 var seed: int
 var settings: Dictionary
 var terrain: PackedByteArray  # terrain id per hex, index = row * width + col
+var road: PackedByteArray  # 1 = road; a road on impassable terrain is a bridge
+var rivers: Array[PackedInt32Array] = []  # hex indices from source to mouth
 var neighbors: PackedInt32Array  # 6 per hex in Hex.DIRECTIONS order, -1 off the map
 
 
@@ -18,6 +20,7 @@ func _init(w: int, h: int) -> void:
 	width = w
 	height = h
 	terrain.resize(w * h)
+	road.resize(w * h)
 	neighbors.resize(w * h * 6)
 	var i := 0
 	for row in h:
