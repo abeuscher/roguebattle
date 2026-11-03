@@ -316,7 +316,7 @@ func test_wipe_out_and_march_home() -> void:
 	ours.units[0].hp = 0
 	theirs.leader.hp = 0
 	st.end_battle(b)
-	check_eq(ours.hex, st.map.player_base, "a wiped-out squad goes back to base")
+	check(ours not in st.squads, "a wiped-out squad is carried back to base, off the map")
 	check(theirs.marching_home and theirs.is_moving(), "a squad that lost its leader marches home")
 	check_eq(theirs.rally[-1], st.map.enemy_base, "to its own base")
 	var st2 := _state()

@@ -201,3 +201,11 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - Opened with U on the battlemap.
 - **Squad names** (not in the spec; the user's interim choice): a player squad is named after its leader's first name and class, "Demandred (Knight)", shown after its number ("#1 Demandred (Knight)") and wherever squads are named (HUD, battles, log). The name follows the leader when it changes; a squad without a leader is "Squad N". Enemy squads keep their role names. Editable names may come later.
 - **Fix**: a unit dragged to the recruit pool was dropped from the army instead of joining the pool.
+
+## Session 016 (2026-11-03): Player Base and deployment
+
+- **The game opens on Edit Units** (§4) over the paused battlemap; Done starts play. Only the first squad starts on the map (§8.4, §18).
+- **Deploy** from Edit Units (a Deploy button on each at-base squad's card and in its detail). It needs a living leader and room under the squad cap (configurator, default 5). The squad appears on the Player Base, or the nearest free hex if another squad holds it.
+- **Return**: a squad standing on the Player Base goes in at once (Return in Edit Units, or Return to base in the squad menu). From anywhere else, Return to base marches it home and it goes in on arrival; any new move order cancels that. If another squad holds the base hex, arriving next to it counts. A squad whose leader fell marches home and goes in the same way. A wiped-out squad is carried straight into the base, off the map.
+- **Services at base** (§15.1, `rules.json` `services`): heal a unit to full for 20 gold, revive a fallen unit for 50 × stage, with buttons in the unit panel and "Heal and revive all" in the squad detail. Revive restores full HP. Only for units at base (squads off the map, and the recruit pool); squads must go in first. Free healing over time at base (15% per day, §6.5) comes with building rest next session.
+- **Squad menu**: Edit squad opens Edit Units on that squad when it's at the Player Base. The old placeholder Deploy button is gone, since deploying happens from base in Edit Units.

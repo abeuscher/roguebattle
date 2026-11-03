@@ -6,7 +6,9 @@ extends Control
 ## pool. The gutter's Items tab lists every item the army owns, worn ones greyed with
 ## who has them; drag a free item onto a unit or an item slot, and drag a worn one back
 ## to the list to take it off. Squads out in the field are locked until they're back at
-## the Player Base.
+## the Player Base. The Player Base's services live here too: deploy a squad waiting at
+## base (up to the squad cap), send one standing on the base back in, and pay to heal or
+## revive units at base.
 ## A modal: 50% dark overlay; the battlemap holds the clock while it's open.
 
 signal closed
@@ -29,10 +31,12 @@ var _tab := "recruits"  # the gutter shows "recruits" or "items"
 var _tabs := {}  # tab -> Button
 var _targets: Array = []  # [Control, Unit] that take items, dimmed while an item they can't wear is dragged
 var _status := UiStyle.label("", 16, UiStyle.ACCENT)
+var _gold := UiStyle.label("", 18, UiStyle.ACCENT)
 var _back: Button
 
 
-func setup(game_state: GameState) -> void:
+## Opens on the army overview, or on the squad in `cell`.
+func setup(game_state: GameState, cell := -1) -> void:
 	state = game_state
 	army = state.army
 	data = state.data
@@ -59,6 +63,7 @@ func setup(game_state: GameState) -> void:
 	top.add_child(_back)
 	_title.size_flags_horizontal = SIZE_EXPAND_FILL
 	top.add_child(_title)
+	top.add_child(_gold)
 	var close := UiStyle.button("Done (U)", 170, true)
 	close.pressed.connect(func(): closed.emit())
 	top.add_child(close)
@@ -71,7 +76,7 @@ func setup(game_state: GameState) -> void:
 	body.add_child(_main)
 	body.add_child(_gutter())
 	col.add_child(_status)
-	_refresh()
+	_open(cell)
 
 
 ## The recruit pool on the right; dropping a unit here sends it to the pool.
@@ -122,6 +127,7 @@ func _refresh() -> void:
 		c.queue_free()
 	_targets.clear()
 	_back.visible = _squad != null
+	_gold.text = "Gold %d  ·  On the map %d / %d" % [state.gold, state.player_squads().size(), state.squad_cap()]
 	_title.text = "Edit Units" if _squad == null else "Edit Units  ·  #%d %s" % [_squad.id, _squad.name]
 	if _squad:
 		_main.add_child(_detail())
@@ -185,6 +191,9 @@ func _card(cell: int) -> Control:
 	head.add_child(spacer)
 	var where := "In the field" if locked else ("On the map" if s in state.squads else "At base")
 	head.add_child(_quiet(UiStyle.label(where, 13, Color("#e0a050") if locked else Color(0.6, 0.65, 0.7))))
+	var go := _base_button(s, true)
+	if go:
+		head.add_child(go)
 	col.add_child(head)
 	var lead := "Led by %s" % s.leader.name if s.leader else "No leader: add a unit that can lead"
 	col.add_child(_quiet(UiStyle.label(lead, 13, Color(0.7, 0.73, 0.78) if s.leader else Color("#ff8a70"))))
@@ -215,7 +224,25 @@ func _detail() -> Control:
 	var facts := "%s  ·  speed %d  ·  slots %s / %d" % [s.travel_name(), s.speed_tier, _num(Squad.slots_filled(data, s.units)), s.capacity(data)]
 	if locked:
 		facts += "  ·  In the field: edit it back at the Player Base"
-	box.add_child(UiStyle.label(facts, 16, Color("#e0a050") if locked else Color(0.75, 0.78, 0.82)))
+	var bar := HBoxContainer.new()
+	bar.add_theme_constant_override("separation", 12)
+	box.add_child(bar)
+	bar.add_child(UiStyle.label(facts, 16, Color("#e0a050") if locked else Color(0.75, 0.78, 0.82)))
+	var go := _base_button(s, false)
+	if go:
+		bar.add_child(go)
+	var cost := 0
+	for u in s.units:
+		cost += state.heal_cost(u) + state.revive_cost(u)
+	if cost > 0 and not locked and s not in state.squads:
+		var all := _small("Heal and revive all (%d g)" % cost, false)
+		all.disabled = cost > state.gold
+		all.tooltip_text = "Not enough gold." if all.disabled else "Heals every hurt unit to full and revives the fallen."
+		all.pressed.connect(func():
+			for u in s.units:
+				state.restore(u)
+			_refresh())
+		bar.add_child(all)
 	var cols := s.capacity(data)
 	for u in s.units:
 		cols = maxi(cols, u.col + 1)
@@ -275,7 +302,19 @@ func _unit_panel(locked: bool) -> Control:
 		who.add_child(lead)
 	elif not c["can_lead"]:
 		who.add_child(UiStyle.label("Can't lead", 14, Color(0.6, 0.62, 0.66)))
-	who.add_child(UiStyle.label("HP %d / %d" % [u.hp, u.max_hp(data)] + ("  (fallen: needs reviving)" if not u.is_alive() else ""), 16))
+	var hp_line := HBoxContainer.new()
+	hp_line.add_theme_constant_override("separation", 12)
+	who.add_child(hp_line)
+	hp_line.add_child(UiStyle.label("HP %d / %d" % [u.hp, u.max_hp(data)] + ("  (fallen)" if not u.is_alive() else ""), 16))
+	var cost := state.heal_cost(u) + state.revive_cost(u)
+	if cost > 0:
+		var fix := _small("%s (%d g)" % ["Revive" if not u.is_alive() else "Heal to full", cost], false)
+		fix.disabled = not state.at_base(u) or cost > state.gold
+		fix.tooltip_text = "Only at the Player Base." if not state.at_base(u) else ("Not enough gold." if cost > state.gold else "")
+		fix.pressed.connect(func():
+			state.restore(u)
+			_refresh())
+		hp_line.add_child(fix)
 	who.add_child(UiStyle.label("Alignment %d (%s)  ·  Charisma %d" % [u.alignment, u.alignment_band(data), u.charisma], 16))
 	var grid := GridContainer.new()
 	grid.columns = 4
@@ -408,6 +447,36 @@ func _item_label(id: String) -> String:
 	if item.has("range"):
 		parts.append("range +%d" % int(item["range"]))
 	return "%s: %s" % [item["name"], ", ".join(parts)]
+
+
+# --- Base actions ---------------------------------------------------------------------
+
+## Deploy for a squad at base, Return for one standing on the Player Base; null otherwise.
+func _base_button(s: Squad, compact: bool) -> Button:
+	if s in state.squads:
+		if not state.can_edit(s):
+			return null
+		var back := _small("Return", compact)
+		back.tooltip_text = "Take the squad off the map, into the Player Base."
+		back.pressed.connect(func():
+			state.return_to_base(s)
+			_refresh())
+		return back
+	var go := _small("Deploy", compact, true)
+	var why := state.deploy_blocker(s)
+	go.disabled = why != ""
+	go.tooltip_text = why if why != "" else "Put the squad on the map at the Player Base."
+	go.pressed.connect(func():
+		state.deploy(s)
+		_refresh())
+	return go
+
+
+func _small(text: String, compact: bool, action := false) -> Button:
+	var b := UiStyle.button(text, 0.0, action)
+	b.custom_minimum_size = Vector2(0, 28 if compact else 36)
+	b.add_theme_font_size_override("font_size", 13 if compact else 15)
+	return b
 
 
 # --- Units and dragging -------------------------------------------------------------

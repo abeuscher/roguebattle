@@ -20,6 +20,7 @@ var rally := PackedInt32Array()  # rally points still ahead, each also on the pa
 var progress := 0.0  # ticks spent so far toward entering path[0]
 var morale := 50  # 0-100, hidden (§12.2); what moves it arrives in M4
 var marching_home := false  # lost its leader: heads for base on its own (§11.3)
+var entering_base := false  # leaves the map when it reaches the Player Base (§8.4)
 
 
 func _init(squad_id: int, squad_name: String, at_hex: int) -> void:

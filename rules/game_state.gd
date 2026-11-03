@@ -46,8 +46,10 @@ func step() -> void:
 			log.add(clock.tick, "system", "Day %d begins." % clock.day())
 		# Noon income, nomad moves and daily healing arrive in M3.
 	_moved.clear()
-	for s in squads:
+	for s in squads.duplicate():
 		_move(s)
+		if s.entering_base and _at_base_door(s):
+			return_to_base(s)
 	_reveal_sites()
 	_check_contact()
 
@@ -78,6 +80,108 @@ func setup_army() -> void:
 	for id in p["items"]:
 		for i in int(p["items"][id]):
 			army.add_item(id)
+
+
+# --- Base and deployment (SPEC §8.4, §6.5 Player Base, §15.1 services) ----------------
+
+## Squads on the map at once, from the configurator (default 5).
+func squad_cap() -> int:
+	if settings.has("squad_cap"):
+		return int(settings["squad_cap"])
+	for f in data.config_fields:
+		if f["key"] == "squad_cap":
+			return int(f["default"])
+	return 5
+
+
+## Why the squad can't deploy, or "" if it can.
+func deploy_blocker(s: Squad) -> String:
+	if s in squads:
+		return "Already on the map."
+	if s.leader == null:
+		return "It needs a leader."
+	if not s.leader.is_alive():
+		return "Its leader has fallen: revive them first."
+	if player_squads().size() >= squad_cap():
+		return "The squad cap is %d on the map at once." % squad_cap()
+	return ""
+
+
+## Puts a squad from base on the map at the Player Base (or the nearest free hex).
+func deploy(s: Squad) -> bool:
+	if deploy_blocker(s) != "":
+		return false
+	s.hex = map.player_base if _squad_on(map.player_base) == null else _free_near(map.player_base)
+	s.path.clear()
+	s.rally.clear()
+	s.progress = 0.0
+	s.marching_home = false
+	s.entering_base = false
+	squads.append(s)
+	log.add(clock.tick, "map", "%s deploys from the Player Base." % s.name, s.id)
+	return true
+
+
+## A squad standing on the Player Base can go in; elsewhere it marches there and goes
+## in on arrival.
+func send_home(s: Squad) -> void:
+	if _at_base_door(s):
+		return_to_base(s)
+	elif order_move(s, PackedInt32Array([map.player_base])):
+		s.entering_base = true
+
+
+func return_to_base(s: Squad) -> void:
+	_leave_map(s)
+	log.add(clock.tick, "map", "%s returns to the Player Base." % s.name, s.id)
+
+
+## On the base, or next to it while another squad holds it.
+func _at_base_door(s: Squad) -> bool:
+	if s.hex == map.player_base:
+		return true
+	var holder := _squad_on(map.player_base)
+	return holder != null and holder != s and Hex.distance(map.hex_at(s.hex), map.hex_at(map.player_base)) <= 1
+
+
+func _leave_map(s: Squad) -> void:
+	squads.erase(s)
+	s.hex = -1
+	s.path.clear()
+	s.rally.clear()
+	s.progress = 0.0
+	s.marching_home = false
+	s.entering_base = false
+
+
+## Healing and revival are bought at base: for units at base or in the pool.
+func at_base(u: Unit) -> bool:
+	var s := army.squad_of(u)
+	return s == null or s not in squads
+
+
+func heal_cost(u: Unit) -> int:
+	return int(data.rules["services"]["heal"]) if u.is_alive() and u.hp < u.max_hp(data) else 0
+
+
+func revive_cost(u: Unit) -> int:
+	return int(data.rules["services"]["revive_per_stage"]) * int(u.info(data)["stage"]) if not u.is_alive() else 0
+
+
+## Heals a hurt unit to full, or revives a fallen one at full HP, for gold. False if
+## the unit isn't at base, needs nothing, or the gold is short.
+func restore(u: Unit) -> bool:
+	var cost := heal_cost(u) + revive_cost(u)
+	if cost == 0 or cost > gold or not at_base(u):
+		return false
+	var revived := not u.is_alive()
+	gold -= cost
+	u.hp = u.max_hp(data)
+	var s := army.squad_of(u)
+	if s:
+		s.refresh(data)
+	log.add(clock.tick, "economy", "%s %s for %d gold." % [u.name, "is revived" if revived else "is healed", cost], s.id if s else -1)
+	return true
 
 
 ## Squads can be changed at the Player Base, or while waiting there off the map.
@@ -143,6 +247,7 @@ func order_move(s: Squad, points: PackedInt32Array) -> bool:
 	var route := plan(s, points)
 	if route.is_empty() and not points.is_empty():
 		return false
+	s.entering_base = false
 	s.path = route
 	s.rally = points.duplicate()
 	s.progress = 0.0
@@ -398,7 +503,7 @@ func end_battle(b: Battle) -> Dictionary:
 			s.path.clear()
 			s.rally.clear()
 			if side == 0:
-				s.hex = map.player_base
+				_leave_map(s)
 				log.add(clock.tick, "battle", "%s is wiped out and carried back to base." % s.name, s.id)
 			else:
 				squads.erase(s)
@@ -413,6 +518,7 @@ func end_battle(b: Battle) -> Dictionary:
 		if out["leader_dead"][side] and not s.marching_home:
 			s.marching_home = true
 			order_move(s, PackedInt32Array([map.player_base if side == 0 else map.enemy_base]))
+			s.entering_base = side == 0
 			log.add(clock.tick, "battle", "%s lost its leader and marches home." % s.name, s.id)
 	return out
 

@@ -67,6 +67,7 @@ func start(game_data: GameData, game_log: GameLog, config: GameConfig, map: MapD
 	camera.fit()
 	camera.fit.call_deferred()  # again once the camera is live, so the minimap frame is right
 	_update_help()
+	_open_edit.call_deferred()  # the game opens on Edit Units (§4)
 	print("Battlemap ready in %d ms" % (Time.get_ticks_msec() - started))
 
 
@@ -79,6 +80,9 @@ func _process(delta: float) -> void:
 			break
 	if state.pending and _battle == null:
 		_open_battle()
+	if _tokens.size() != state.squads.size():  # a squad went into the base, or left the map
+		_sync_tokens()
+		hud.set_squads(state.player_squads())
 	night.color = Color.WHITE.lerp(NIGHT, darkness(state.clock.minute_of_day()))
 	_update_tokens()
 	_update_paths()
@@ -203,8 +207,14 @@ func _open_menu() -> void:
 	_menu.move.connect(_start_planning)
 	_menu.fire.connect(_start_firing)
 	_menu.return_to_base.connect(func():
-		state.order_move(_selected, PackedInt32Array([state.map.player_base]))
-		_end_selection())
+		state.send_home(_selected)
+		_end_selection()
+		_sync_tokens()
+		hud.set_squads(state.player_squads()))
+	_menu.edit.connect(func():
+		var cell := _selected.id - 1
+		_end_selection()
+		_open_edit(cell))
 	_menu.closed.connect(_end_selection)
 
 
@@ -304,10 +314,10 @@ func _close_battle(text: String) -> void:
 	_sync_tokens()
 
 
-func _open_edit() -> void:
+func _open_edit(cell := -1) -> void:
 	_edit = EditUnits.new()
 	_ui.add_child(_edit)
-	_edit.setup(state)
+	_edit.setup(state, cell)
 	_edit.closed.connect(_close_edit)
 	state.clock.hold()
 

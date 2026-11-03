@@ -37,7 +37,7 @@ Goal: a generated map the player can look at, and one squad they can move.
 | # | Session | Spec | Verify | Status |
 | --- | --- | --- | --- | --- |
 | 1 | **Edit Units.** Army overview 4×4, recruit pool gutter, drag and drop, squad detail, items screen (minimal) | §4 Edit Units, §15.2 | Tests: moves respect slots and rows; screenshots | Done |
-| 2 | **Base and deployment.** Game opens on Edit Units, Player Base, deploy and return, squad cap, revive and heal at base | §4, §8.4, §6.5 Player Base | Tests: cap and deploy rules; screenshot |  |
+| 2 | **Base and deployment.** Game opens on Edit Units, Player Base, deploy and return, squad cap, revive and heal at base | §4, §8.4, §6.5 Player Base | Tests: cap and deploy rules; screenshot | Done |
 | 3 | **Buildings and liberation.** Capture timer, Sapper speed, ground-only capture, building popup, defense and healing in buildings, nomad movement | §6.5 | Tests: capture timing, healing per day, nomad rules |  |
 | 4 | **Economy and shops.** Income and upkeep at noon, liberation bonus, services, consumables, Serf purchase, going broke | §15.1, §16 Serfs | Tests: a scripted day's ledger matches hand-worked numbers |  |
 | 5 | **Reputation, charisma, alignment.** All change events, price scaling, recruit chance factor | §9.5, §9.6, §10 | Tests per event |  |

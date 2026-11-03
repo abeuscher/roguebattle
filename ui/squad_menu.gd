@@ -6,6 +6,7 @@ extends Control
 signal move
 signal fire
 signal return_to_base
+signal edit
 signal closed
 
 var _info := Label.new()
@@ -46,7 +47,8 @@ func setup(state: GameState, s: Squad) -> void:
 					"  (leader)" if u == s.leader else "", u.hp, u.max_hp(state.data)]
 	col.add_child(roster)
 	var at_base := s.hex == state.map.player_base
-	_button(col, "Edit squad", false, "Edit Units arrives in M3.")
+	_button(col, "Edit squad", state.can_edit(s), "Open the squad in Edit Units." if state.can_edit(s) else "Only at the Player Base.") \
+			.pressed.connect(func(): edit.emit())
 	_button(col, "Use item", false, "Items arrive in M3.")
 	_button(col, "Move", true, "Click hexes to lay rally points.").pressed.connect(func(): move.emit())
 	var targets := state.fire_targets(s)
@@ -58,8 +60,8 @@ func setup(state: GameState, s: Squad) -> void:
 	elif targets.is_empty():
 		why = "No visible enemy within %d hexes." % state.fire_range(s)
 	_button(col, "Ranged attack", targets.size() > 0, why if why != "" else "Click an enemy squad within %d hexes." % state.fire_range(s)) 			.pressed.connect(func(): fire.emit())
-	_button(col, "Return to base", not at_base, "").pressed.connect(func(): return_to_base.emit())
-	_button(col, "Deploy", false, "Deployment arrives in M3." if at_base else "Only at the Player Base.")
+	_button(col, "Return to base", true, "Go into the Player Base." if at_base else "March to the Player Base and go in on arrival.") \
+			.pressed.connect(func(): return_to_base.emit())
 	_button(col, "Close (Esc)", true, "").pressed.connect(func(): closed.emit())
 
 
