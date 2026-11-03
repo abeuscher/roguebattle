@@ -1,14 +1,15 @@
 class_name Army
 extends RefCounted
 ## The player's army (SPEC §4 Edit Units, §8.2): up to 16 squads in a numbered grid,
-## the unassigned recruit pool and the item stash. A squad's number is its cell + 1.
+## the unassigned recruit pool and the items it owns. A squad's number is its cell + 1.
 ## Moves never put a squad over its slots; a squad that loses its leader takes the
 ## best unit left that can lead.
 
 var data: GameData
 var cells: Array = []  # Squad or null per grid cell
 var pool: Array[Unit] = []
-var stash := {}  # item id -> count
+var items: Array[Dictionary] = []  # every item owned, one entry each ({uid, id}), worn or free (§15.2)
+var _next_item := 1
 
 
 func _init(game_data: GameData) -> void:
@@ -80,32 +81,64 @@ func set_leader(u: Unit) -> bool:
 	return true
 
 
-## Equips an item from the stash ("" takes the slot's item off). The old item goes back
-## to the stash. Extra HP from an item heals the unit by that much; losing it caps HP.
-func equip(u: Unit, slot: String, item_id: String) -> bool:
-	if item_id != "":
-		var item: Dictionary = data.items["items"][item_id]
-		if item["slot"] != slot or int(stash.get(item_id, 0)) <= 0 or not u.can_use(data, item_id):
-			return false
+## Adds a new item to the army's inventory and returns it.
+func add_item(item_id: String) -> Dictionary:
+	var item := {"uid": _next_item, "id": item_id}
+	_next_item += 1
+	items.append(item)
+	return item
+
+
+## Every unit in the army: in squads and in the pool.
+func units() -> Array[Unit]:
+	var out: Array[Unit] = []
+	for s in squads():
+		out.append_array(s.units)
+	out.append_array(pool)
+	return out
+
+
+## The unit wearing the item, or null if it's free.
+func holder(item: Dictionary) -> Unit:
+	for u in units():
+		for slot in u.items:
+			if u.items[slot]["uid"] == item["uid"]:
+				return u
+	return null
+
+
+## Whether u can wear the item: its class allows it (melee weapons, bows).
+func fits(u: Unit, item: Dictionary) -> bool:
+	return u.can_use(data, item["id"])
+
+
+## Puts the item on u in its slot, taking it off whoever wore it; u's old item in that
+## slot goes back to the inventory. Extra HP from items heals the unit by that much.
+func equip(u: Unit, item: Dictionary) -> bool:
+	if not fits(u, item):
+		return false
+	var slot: String = data.items["items"][item["id"]]["slot"]
+	var from := holder(item)
+	if from == u:
+		return true
+	if from:
+		unequip(from, slot)
 	var before := u.max_hp(data)
-	if u.items.has(slot):
-		stash[u.items[slot]] = int(stash.get(u.items[slot], 0)) + 1
-		u.items.erase(slot)
-	if item_id != "":
-		stash[item_id] = int(stash[item_id]) - 1
-		u.items[slot] = item_id
-	if u.is_alive():
-		u.hp = clampi(u.hp + maxi(0, u.max_hp(data) - before), 1, u.max_hp(data))
+	u.items[slot] = item
+	_heal_gain(u, before)
 	return true
 
 
-## Items in the stash that fit this unit's slot.
-func choices(u: Unit, slot: String) -> Array[String]:
-	var out: Array[String] = []
-	for id in stash:
-		if int(stash[id]) > 0 and data.items["items"][id]["slot"] == slot and u.can_use(data, id):
-			out.append(id)
-	return out
+## Takes the slot's item off; it goes back to the inventory. Losing HP caps HP.
+func unequip(u: Unit, slot: String) -> void:
+	var before := u.max_hp(data)
+	u.items.erase(slot)
+	_heal_gain(u, before)
+
+
+func _heal_gain(u: Unit, before: int) -> void:
+	if u.is_alive():
+		u.hp = clampi(u.hp + maxi(0, u.max_hp(data) - before), 1, u.max_hp(data))
 
 
 # --- Helpers --------------------------------------------------------------------------

@@ -16,7 +16,7 @@ var row := "front"  # "front" or "back"
 var col := 0  # position in the row, left to right; a back-row unit stands behind the front-row unit in its column
 var extra_slots := 0  # slots earned as a leader (§8.2)
 var element := ""  # overrides the class's element when set (Skeletons)
-var items := {}  # slot (weapon, armor, jewelry) -> item id (§15.2)
+var items := {}  # slot (weapon, armor, jewelry) -> the item worn ({uid, id}, §15.2)
 # Hidden (§12.2)
 var growth := {}  # non-key stat -> chance to grow per level, before talent
 var talent := "ordinary"
@@ -62,7 +62,7 @@ func max_hp(data: GameData) -> int:
 func stat(data: GameData, s: String) -> int:
 	var v := int(stats[s])
 	for slot in items:
-		v += int(data.items["items"][items[slot]]["stats"].get(s, 0))
+		v += int(data.items["items"][items[slot]["id"]]["stats"].get(s, 0))
 	return v
 
 

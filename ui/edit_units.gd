@@ -3,7 +3,10 @@ extends Control
 ## Edit Units (SPEC §4): the army overview (a 4×4 grid of squad cards) with the recruit
 ## pool in a gutter on the right; click a card for the squad detail (front and back rows,
 ## the selected unit's stats, leader and items). Drag units between squads, rows and the
-## pool. Squads out in the field are locked until they're back at the Player Base.
+## pool. The gutter's Items tab lists every item the army owns, worn ones greyed with
+## who has them; drag a free item onto a unit or an item slot, and drag a worn one back
+## to the list to take it off. Squads out in the field are locked until they're back at
+## the Player Base.
 ## A modal: 50% dark overlay; the battlemap holds the clock while it's open.
 
 signal closed
@@ -22,7 +25,9 @@ var _unit: Unit  # selected in the detail view
 var _title := UiStyle.label("Edit Units", 26)
 var _main := VBoxContainer.new()
 var _pool := VBoxContainer.new()
-var _pool_title := UiStyle.label("", 18)
+var _tab := "recruits"  # the gutter shows "recruits" or "items"
+var _tabs := {}  # tab -> Button
+var _targets: Array = []  # [Control, Unit] that take items, dimmed while an item they can't wear is dragged
 var _status := UiStyle.label("", 16, UiStyle.ACCENT)
 var _back: Button
 
@@ -78,7 +83,17 @@ func _gutter() -> Control:
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 8)
 	box.add_child(col)
-	col.add_child(_pool_title)
+	var tabs := HBoxContainer.new()
+	tabs.add_theme_constant_override("separation", 6)
+	col.add_child(tabs)
+	for t in ["recruits", "items"]:
+		var b := UiStyle.button("", 134)
+		b.toggle_mode = true
+		b.pressed.connect(func():
+			_tab = t
+			_refresh())
+		tabs.add_child(b)
+		_tabs[t] = b
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -105,15 +120,22 @@ func _refresh() -> void:
 		c.queue_free()
 	for c in _pool.get_children():
 		c.queue_free()
+	_targets.clear()
 	_back.visible = _squad != null
 	_title.text = "Edit Units" if _squad == null else "Edit Units  ·  #%d %s" % [_squad.id, _squad.name]
 	if _squad:
 		_main.add_child(_detail())
 	else:
 		_main.add_child(_overview())
-	_pool_title.text = "Recruit pool (%d)" % army.pool.size()
+	_tabs["recruits"].text = "Recruits (%d)" % army.pool.size()
+	_tabs["items"].text = "Items (%d)" % army.items.size()
+	for t in _tabs:
+		_tabs[t].set_pressed_no_signal(t == _tab)
+	if _tab == "items":
+		_item_list()
+		return
 	for u in army.pool:
-		_pool.add_child(_chip(u, "wide", true))
+		_pool.add_child(_chip(u, "wide", true, -1, "", -1))
 	if army.pool.is_empty():
 		_pool.add_child(UiStyle.label("Drag units here to take them out of a squad.", 14, Color(0.6, 0.62, 0.66)))
 
@@ -176,7 +198,7 @@ func _card(cell: int) -> Control:
 		var units := s.row(r)
 		units.sort_custom(func(a: Unit, b: Unit): return a.col < b.col)
 		for u in units:
-			row.add_child(_chip(u, "compact", not locked))
+			row.add_child(_chip(u, "compact", not locked, cell, "", -1))
 		col.add_child(row)
 	col.add_child(_quiet(UiStyle.label("%s  ·  speed %d  ·  slots %s / %d" % [s.travel_name(), s.speed_tier,
 			_num(Squad.slots_filled(data, s.units)), s.capacity(data)], 13, Color(0.7, 0.73, 0.78))))
@@ -219,7 +241,7 @@ func _slot(s: Squad, r: String, c: int, locked: bool) -> Control:
 		slot.set_drag_forwarding(Callable(), _can_drop.bind(_cell, r, c), _drop.bind(_cell, r, c))
 	var u := s.at(r, c)
 	if u:
-		slot.add_child(_chip(u, "slot", not locked))
+		slot.add_child(_chip(u, "slot", not locked, _cell, r, c))
 	return slot
 
 
@@ -283,34 +305,99 @@ func _unit_panel(locked: bool) -> Control:
 	row.add_child(gear)
 	gear.add_child(UiStyle.label("Items", 18))
 	for slot in data.items["slots"]:
-		gear.add_child(_item_picker(u, slot, locked))
+		gear.add_child(_item_box(u, slot, locked))
+	if not locked:
+		gear.add_child(UiStyle.label("Drag items here from the Items tab.", 13, Color(0.55, 0.58, 0.62)))
 	return panel
 
 
-func _item_picker(u: Unit, slot: String, locked: bool) -> Control:
+## One of the unit's item slots: the item worn (drag it away, or ×), or an empty outline.
+func _item_box(u: Unit, slot: String, locked: bool) -> Control:
 	var line := HBoxContainer.new()
 	line.add_theme_constant_override("separation", 10)
 	var l := UiStyle.label(slot.capitalize(), 15, Color(0.65, 0.68, 0.72))
 	l.custom_minimum_size.x = 70
 	line.add_child(l)
-	var pick := OptionButton.new()
-	pick.custom_minimum_size = Vector2(260, 38)
-	var ids: Array[String] = [""]
-	pick.add_item("None")
-	if u.items.has(slot):
-		ids.append(u.items[slot])
-		pick.add_item(_item_label(u.items[slot]))
-		pick.select(1)
-	for id in army.choices(u, slot):
-		if id != u.items.get(slot, ""):
-			ids.append(id)
-			pick.add_item("%s  (%d)" % [_item_label(id), int(army.stash[id])])
-	pick.disabled = locked
-	pick.item_selected.connect(func(i: int):
-		army.equip(u, slot, ids[i])
-		_refresh())
-	line.add_child(pick)
+	var box := PanelContainer.new()
+	var item: Dictionary = u.items.get(slot, {})
+	var style := UiStyle.box(Color(0.15, 0.17, 0.21) if item else Color(0, 0, 0, 0), 8)
+	style.set_border_width_all(2 if item else 1)
+	style.border_color = UiStyle.OUTLINE if item else Color(0.3, 0.32, 0.37)
+	box.add_theme_stylebox_override("panel", style)
+	box.custom_minimum_size = Vector2(330, 44)
+	line.add_child(box)
+	var inner := HBoxContainer.new()
+	inner.mouse_filter = MOUSE_FILTER_IGNORE
+	box.add_child(inner)
+	var text := _quiet(UiStyle.label(_item_label(item["id"]) if item else "Empty", 15, Color.WHITE if item else Color(0.45, 0.47, 0.52)))
+	text.size_flags_horizontal = SIZE_EXPAND_FILL
+	inner.add_child(text)
+	if locked:
+		return line
+	box.set_drag_forwarding(_drag_item.bind(item, u) if item else Callable(), _can_drop_item.bind(u, slot), _drop_item.bind(u))
+	_targets.append([box, u, slot])
+	if item:
+		box.mouse_default_cursor_shape = CURSOR_DRAG
+		box.tooltip_text = "Drag to another unit, or back to the Items tab to take it off."
+		var off := Button.new()
+		off.text = "×"
+		off.flat = true
+		off.tooltip_text = "Take it off"
+		off.pressed.connect(func():
+			army.unequip(u, slot)
+			_refresh())
+		inner.add_child(off)
 	return line
+
+
+## The gutter's Items tab: every item by slot, free ones first.
+func _item_list() -> void:
+	if army.items.is_empty():
+		_pool.add_child(UiStyle.label("No items yet. Shops and hidden sites will have some.", 14, Color(0.6, 0.62, 0.66)))
+	for slot in data.items["slots"]:
+		var of_slot := army.items.filter(func(i: Dictionary): return data.items["items"][i["id"]]["slot"] == slot)
+		if of_slot.is_empty():
+			continue
+		of_slot.sort_custom(func(a: Dictionary, b: Dictionary):
+			var fa := army.holder(a) == null
+			var fb := army.holder(b) == null
+			return fa and not fb if fa != fb else a["id"] < b["id"])
+		_pool.add_child(UiStyle.label(slot.to_upper(), 13, Color(0.6, 0.62, 0.66)))
+		for item in of_slot:
+			_pool.add_child(_item_row(item))
+
+
+func _item_row(item: Dictionary) -> Control:
+	var who := army.holder(item)
+	var row := PanelContainer.new()
+	var style := UiStyle.box(Color(0.15, 0.17, 0.21) if who == null else Color(0.1, 0.11, 0.13), 8)
+	style.set_border_width_all(1)
+	style.border_color = UiStyle.OUTLINE if who == null else Color(0.22, 0.24, 0.28)
+	row.add_theme_stylebox_override("panel", style)
+	var col := VBoxContainer.new()
+	col.mouse_filter = MOUSE_FILTER_IGNORE
+	col.add_theme_constant_override("separation", 0)
+	row.add_child(col)
+	col.add_child(_quiet(UiStyle.label(_item_label(item["id"]), 15, Color.WHITE if who == null else Color(0.5, 0.52, 0.56))))
+	if who == null:
+		row.mouse_default_cursor_shape = CURSOR_DRAG
+		row.tooltip_text = "Drag onto a unit or an item slot."
+		row.set_drag_forwarding(_drag_item.bind(item, null), Callable(), Callable())
+		return row
+	var sq := army.squad_of(who)
+	var where := "#%d %s" % [sq.id, sq.name] if sq else "recruit pool"
+	col.add_child(_quiet(UiStyle.label("On %s (%s), %s" % [who.name, who.unit_class, where], 12, Color(0.5, 0.52, 0.56))))
+	row.tooltip_text = "Click to go to %s." % who.name
+	row.mouse_default_cursor_shape = CURSOR_POINTING_HAND
+	row.gui_input.connect(func(e: InputEvent):
+		if e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT:
+			if sq:
+				_open(sq.id - 1)
+			_unit = who
+			if sq == null and _squad == null:
+				_status.text = "%s is in the recruit pool: open any squad to see them." % who.name
+			_refresh())
+	return row
 
 
 func _item_label(id: String) -> String:
@@ -325,12 +412,15 @@ func _item_label(id: String) -> String:
 
 # --- Units and dragging -------------------------------------------------------------
 
-func _chip(u: Unit, mode: String, draggable: bool) -> Control:
+## A unit; dropping a unit on it acts like dropping on its place (cell, row, position),
+## and dropping an item on it equips the item.
+func _chip(u: Unit, mode: String, draggable: bool, cell: int, r: String, c: int) -> Control:
 	var chip := Chip.new()
 	chip.setup(data, u, mode, army.squad_of(u), KIND_COLORS)
 	chip.selected = u == _unit and mode != "compact"
 	if draggable:
-		chip.set_drag_forwarding(_drag.bind(u), Callable(), Callable())
+		chip.set_drag_forwarding(_drag.bind(u), _can_drop_on_chip.bind(u, cell, r, c), _drop_on_chip.bind(u, cell, r, c))
+		_targets.append([chip, u, ""])
 	chip.tooltip_text = "%s (%s), level %d. HP %d/%d.%s" % [u.name, u.unit_class, u.level, u.hp, u.max_hp(data),
 			" Drag to move." if draggable else ""]
 	chip.gui_input.connect(func(e: InputEvent):
@@ -348,7 +438,56 @@ func _drag(_at: Vector2, u: Unit) -> Variant:
 	return {"unit": u}
 
 
+func _drag_item(_at: Vector2, item: Dictionary, from: Unit) -> Variant:
+	var preview := UiStyle.label(data.items["items"][item["id"]]["name"], 16)
+	preview.add_theme_stylebox_override("normal", UiStyle.box(Color(0.15, 0.17, 0.21, 0.9), 8))
+	set_drag_preview(preview)
+	var slot: String = data.items["items"][item["id"]]["slot"]
+	for t in _targets:
+		var ok: bool = army.fits(t[1], item) and (t[2] == "" or t[2] == slot)
+		t[0].modulate = Color.WHITE if ok else Color(1, 1, 1, 0.3)
+	return {"item": item, "from": from}
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_DRAG_END:
+		for t in _targets:
+			if is_instance_valid(t[0]):
+				t[0].modulate = Color.WHITE
+
+
+func _can_drop_item(_at: Vector2, what: Variant, u: Unit, slot := "") -> bool:
+	if not (what is Dictionary and what.has("item")):
+		return false
+	var s := army.squad_of(u)
+	return army.fits(u, what["item"]) and (slot == "" or data.items["items"][what["item"]["id"]]["slot"] == slot) \
+			and (s == null or state.can_edit(s))
+
+
+func _drop_item(_at: Vector2, what: Variant, u: Unit) -> void:
+	army.equip(u, what["item"])
+	_status.text = ""
+	_refresh()
+
+
+func _can_drop_on_chip(at: Vector2, what: Variant, u: Unit, cell: int, r: String, c: int) -> bool:
+	if what is Dictionary and what.has("item"):
+		return _can_drop_item(at, what, u)
+	return _can_drop(at, what, cell, r, c) and what["unit"] != u
+
+
+func _drop_on_chip(at: Vector2, what: Variant, u: Unit, cell: int, r: String, c: int) -> void:
+	if what.has("item"):
+		_drop_item(at, what, u)
+	elif cell == -1:
+		_drop(at, what, -1, "", -1)
+	else:
+		_drop(at, what, cell, u.row if r != "" else "", u.col if r != "" else -1)
+
+
 func _can_drop(_at: Vector2, what: Variant, cell: int, _r: String, _c: int) -> bool:
+	if what is Dictionary and what.has("item"):
+		return cell == -1 and what["from"] != null  # a worn item dropped on the gutter comes off
 	if not (what is Dictionary and what.has("unit")):
 		return false
 	var target: Squad = army.cells[cell] if cell >= 0 else null
@@ -357,6 +496,11 @@ func _can_drop(_at: Vector2, what: Variant, cell: int, _r: String, _c: int) -> b
 
 ## A drop on a card picks the row from the unit's attacks; a drop on a slot uses that slot.
 func _drop(_at: Vector2, what: Variant, cell: int, r: String, c: int) -> void:
+	if what.has("item"):
+		var from: Unit = what["from"]
+		army.unequip(from, data.items["items"][what["item"]["id"]]["slot"])
+		_refresh()
+		return
 	var u: Unit = what["unit"]
 	if r == "":
 		r = preferred_row(data, u)

@@ -75,7 +75,9 @@ func setup_army() -> void:
 		var u := Unit.roll(data, c, rng.get_stream("recruit"), names)
 		army.pool.append(u)
 		log.add(clock.tick, "progression", "%s the %s waits in the recruit pool." % [u.name, u.unit_class])
-	army.stash = p["items"].duplicate()
+	for id in p["items"]:
+		for i in int(p["items"][id]):
+			army.add_item(id)
 
 
 ## Squads can be changed at the Player Base, or while waiting there off the map.
@@ -341,7 +343,7 @@ func fire_range(s: Squad) -> int:
 	var extra := 0
 	for u in s.living():
 		for slot in u.items:
-			extra = maxi(extra, int(data.items["items"][u.items[slot]].get("range", 0)))
+			extra = maxi(extra, int(data.items["items"][u.items[slot]["id"]].get("range", 0)))
 	return (int(r["high_ground_range"]) if high else int(r["range"])) + extra
 
 
