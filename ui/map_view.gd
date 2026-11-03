@@ -20,11 +20,11 @@ void vertex() {
 }
 """
 
-var show_secrets := true:  # hidden sites and lairs (debug viewing)
+var show_secrets := false:  # all hidden sites and lairs (debug viewing); otherwise only revealed ones show
 	set(value):
 		show_secrets = value
-		for icon in _secret_icons:
-			icon.visible = value
+		for h in _secret_at:
+			_secret_at[h].visible = value or _revealed.has(h)
 var overlay := "":
 	set(value):
 		overlay = value
@@ -61,7 +61,8 @@ var _grid_layer := Node2D.new()
 var _object_layer := Node2D.new()
 var _strips: Array[Node2D] = []
 var _icon_sprites: Array[Sprite2D] = []
-var _secret_icons: Array[Sprite2D] = []
+var _secret_at := {}  # hex -> hidden site or lair icon
+var _revealed := {}  # hexes whose secret icon a squad has seen
 
 
 func _ready() -> void:
@@ -80,7 +81,8 @@ func show_map(map: MapData, data: GameData) -> void:
 			child.queue_free()
 	_strips.clear()
 	_icon_sprites.clear()
-	_secret_icons.clear()
+	_secret_at.clear()
+	_revealed.clear()
 	if _tiles.is_empty():
 		_load_art(data)
 	_terrain_layer.add_child(_underlay(map, data))
@@ -268,9 +270,16 @@ func _build_objects(map: MapData) -> void:
 		icon.position = Hex.to_pixel(map.hex_at(entry[0]), HEX_SIZE)
 		if entry[1] in ["hidden_site", "lair"]:
 			icon.visible = show_secrets
-			_secret_icons.append(icon)
+			_secret_at[entry[0]] = icon
 		_object_layer.add_child(icon)
 		_icon_sprites.append(icon)
+
+
+## Shows a hidden site or lair icon once a squad has seen it.
+func reveal(hex: int) -> void:
+	_revealed[hex] = true
+	if _secret_at.has(hex):
+		_secret_at[hex].visible = true
 
 
 func _build_overlay() -> void:

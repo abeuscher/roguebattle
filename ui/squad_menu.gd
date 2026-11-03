@@ -4,6 +4,7 @@ extends Control
 ## overlay, and the game stays paused while it's open.
 
 signal move
+signal fire
 signal return_to_base
 signal closed
 
@@ -48,6 +49,15 @@ func setup(state: GameState, s: Squad) -> void:
 	_button(col, "Edit squad", false, "Edit Units arrives in M3.")
 	_button(col, "Use item", false, "Items arrive in M3.")
 	_button(col, "Move", true, "Click hexes to lay rally points.").pressed.connect(func(): move.emit())
+	var targets := state.fire_targets(s)
+	var why := ""
+	if not state.can_fire(s):
+		why = "No ranged or magic units in position."
+	elif state.clock.tick < s.fire_ready:
+		why = "Reloading: ready in %s." % GameState.duration_text(s.fire_ready - state.clock.tick)
+	elif targets.is_empty():
+		why = "No visible enemy within %d hexes." % state.fire_range(s)
+	_button(col, "Ranged attack", targets.size() > 0, why if why != "" else "Click an enemy squad within %d hexes." % state.fire_range(s)) 			.pressed.connect(func(): fire.emit())
 	_button(col, "Return to base", not at_base, "").pressed.connect(func(): return_to_base.emit())
 	_button(col, "Deploy", false, "Deployment arrives in M3." if at_base else "Only at the Player Base.")
 	_button(col, "Close (Esc)", true, "").pressed.connect(func(): closed.emit())

@@ -9,7 +9,7 @@ var selected := false:
 	set(value):
 		selected = value
 		queue_redraw()
-var color := Color("#3b6fd6")
+var color := Color("#3b6fd6")  # player blue; enemies are red
 
 
 func _draw() -> void:
@@ -25,4 +25,5 @@ func _draw() -> void:
 	draw_colored_polygon(flag, color)
 	draw_polyline(flag + PackedVector2Array([top]), Color("#1c2333"), 2.0)
 	var font := ThemeDB.fallback_font
-	draw_string(font, top + Vector2(7, 16), str(squad.id), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color.WHITE)
+	var label := str(squad.id) if squad.side == "player" else squad.role.left(1).to_upper()  # enemies show their role's initial
+	draw_string(font, top + Vector2(7, 16), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color.WHITE)

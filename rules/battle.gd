@@ -20,6 +20,7 @@ var fair := [true, true]  # fairer dice per side (§12.1)
 var defense := [0.0, 0.0]  # building defense bonus per side (§6.5)
 var tactics := ["best", "best"]
 var first_side := -1  # a side that takes its whole first round first (neutrals that resisted recruitment)
+var ranged_only := false  # a ranged map attack: only Ranged and Magic units act, no push-back (§11.2)
 var rng: RandomNumberGenerator
 var events: Array[Dictionary] = []
 var retreated := -1  # the side that got away
@@ -59,11 +60,16 @@ func _init(game_data: GameData, player: Squad, enemy: Squad, terrain_key: String
 
 
 func _join(u: Unit) -> void:
-	_attacks[u] = attack_count(u)
+	_attacks[u] = attack_count(u) if not ranged_only or fires_at_range(u) else 0
 	_misses[u] = 0
 	_since_crit[u] = 0
 	_tiebreak[u] = rng.randf()
 	_status[u] = {}
+
+
+## Whether the unit's current attack works in a ranged map attack.
+func fires_at_range(u: Unit) -> bool:
+	return base_kind(attack_kind(u)) in data.rules["ranged_attack"]["attack_kinds"]
 
 
 ## Plays to the end.
@@ -741,7 +747,7 @@ func finish() -> Dictionary:
 				for u in s.living():
 					if _covers(e, u):
 						u.hp = mini(u.max_hp(data), u.hp + roundi(u.max_hp(data) * float(e["after_battle_heal"])))
-	if retreated < 0 and not out["wiped"].has(true) and out["hp_lost"][0] != out["hp_lost"][1]:
+	if retreated < 0 and not ranged_only and not out["wiped"].has(true) and out["hp_lost"][0] != out["hp_lost"][1]:
 		out["pushed"] = 0 if out["hp_lost"][0] > out["hp_lost"][1] else 1
 	for s in sides:
 		s.refresh(data)

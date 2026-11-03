@@ -8,6 +8,8 @@
  "starting_gold": 500,
  "starting_reputation": 50,
  "starting_morale": 50,
+ "sight": {"base": 7, "flying": 2, "on_travel_terrain": 1, "off_travel_terrain": -1, "target_terrain": {"mountain": -2, "forest": -1}, "range": [5, 10]},
+ "ranged_attack": {"range": 2, "high_ground_range": 3, "high_ground_terrains": ["mountain"], "high_ground_buildings": ["tower"], "cooldown_ticks": 120, "attack_kinds": ["Ranged", "Magic"]},
  "hex_seconds_by_tier": [1.0, 0.6, 0.3],
  "placeholder_squad": {"name": "Vanguard", "units": [["Knight", "front"], ["Fighter", "front"], ["Fighter", "front"], ["Bowman", "back"], ["Acolyte", "back"]]},
  "hp_per_con": 3,

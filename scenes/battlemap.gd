@@ -1,14 +1,16 @@
 class_name Battlemap
 extends Node2D
 ## The battlemap (SPEC §5): map view, camera, clock, HUD, minimap, log, squad
-## orders and the Esc menu. For now one test squad stands at the Player Base;
-## real squads arrive with army setup in M2 and M3.
+## orders and the Esc menu. For now one test squad stands at the Player Base and
+## the enemy's squads stand at their posts; real army setup arrives in M3 and M4.
+## Battles resolve at once with a result banner until the battle view (M2 session 7).
 
 signal to_title
 signal quit_game
 signal save_settings
 
 const NIGHT := Color(0.45, 0.5, 0.78)  # map tint at night
+const ENEMY := Color("#c8402f")
 const CLICK_SLOP := 6.0  # a press and release closer than this is a click, not a drag
 const TEST_TRAVEL := ["plains", "forest", "mountain", "swamp", "snow", "desert", "shallow", "deep", "sky", ""]
 
@@ -26,6 +28,8 @@ var _main_menu: MainMenu
 var _tokens := {}  # squad id -> SquadToken
 var _selected: Squad  # the squad whose menu or move order is open (the game is held meanwhile)
 var _planning := false  # laying rally points for _selected
+var _firing := false  # choosing a ranged-attack target for _selected
+var _shown_sites := {}  # building index -> true once its icon is revealed
 var _points := PackedInt32Array()
 var _planned := PackedInt32Array()  # route through _points
 var _press_at := Vector2.ZERO
@@ -53,12 +57,15 @@ func start(game_data: GameData, game_log: GameLog, config: GameConfig, map: MapD
 	view.show_map(map, data)
 	var test: Dictionary = data.rules["placeholder_squad"]
 	state.add_squad(test["name"], map.player_base, test["units"])
+	state.place_enemies()
 	for s in state.squads:
 		var token := SquadToken.new()
 		token.squad = s
+		if s.side != "player":
+			token.color = ENEMY
 		view.add_object(token)
 		_tokens[s.id] = token
-	hud.set_squads(state.squads)
+	hud.set_squads(state.player_squads())
 	hud.minimap.set_map(map, data)
 	hud.place()
 	camera.world = MapView.world_size(map)
@@ -73,6 +80,11 @@ func _process(delta: float) -> void:
 		return
 	for i in state.clock.advance(delta):
 		state.step()
+		if state.pending:
+			break
+	if state.pending:
+		hud.show_banner(state.resolve_pending(), 6.0)
+		_sync_tokens()
 	night.color = Color.WHITE.lerp(NIGHT, darkness(state.clock.minute_of_day()))
 	_update_tokens()
 	_update_paths()
@@ -106,8 +118,21 @@ func _on_view_changed() -> void:
 
 # --- Squads on the map --------------------------------------------------------
 
-## Places each token, sliding smoothly between hexes as the squad moves.
+## Drops tokens of squads that left the map (wiped out or driven off).
+func _sync_tokens() -> void:
+	for id in _tokens.keys():
+		if not state.squads.any(func(s: Squad): return s.id == id):
+			_tokens[id].queue_free()
+			_tokens.erase(id)
+
+
+## Places each token, sliding smoothly between hexes as the squad moves. Enemies show
+## only within sight (SPEC §8.5); hidden sites appear once seen.
 func _update_tokens() -> void:
+	for i in state.revealed:
+		if not _shown_sites.has(i):
+			_shown_sites[i] = true
+			view.reveal(state.map.buildings[i]["hex"])
 	for s in state.squads:
 		var token: SquadToken = _tokens[s.id]
 		var at := MapView.hex_center(state.map, s.hex)
@@ -116,6 +141,7 @@ func _update_tokens() -> void:
 			at = at.lerp(MapView.hex_center(state.map, s.path[0]), t)
 		token.position = at
 		token.selected = s == _selected
+		token.visible = state.is_visible(s)
 
 
 func _update_paths() -> void:
@@ -139,13 +165,13 @@ func _line(start: int, route: PackedInt32Array) -> PackedVector2Array:
 
 
 func _center_on_squad(id: int) -> void:
-	if id >= 1 and id <= state.squads.size():
+	if _tokens.has(id) and id < 100:
 		camera.center_on(_tokens[id].position)
 
 
 func _squad_at(world: Vector2) -> Squad:
 	for s in state.squads:
-		if _tokens[s.id].position.distance_to(world) < MapView.HEX_SIZE * 1.2:
+		if state.is_visible(s) and _tokens[s.id].position.distance_to(world) < MapView.HEX_SIZE * 1.2:
 			return s
 	return null
 
@@ -172,6 +198,7 @@ func _open_menu() -> void:
 	_ui.add_child(_menu)
 	_menu.setup(state, _selected)
 	_menu.move.connect(_start_planning)
+	_menu.fire.connect(_start_firing)
 	_menu.return_to_base.connect(func():
 		state.order_move(_selected, PackedInt32Array([state.map.player_base]))
 		_end_selection())
@@ -191,6 +218,7 @@ func _end_selection() -> void:
 		state.clock.release()
 	_selected = null
 	_planning = false
+	_firing = false
 	hud.show_banner("")
 
 
@@ -200,6 +228,30 @@ func _start_planning() -> void:
 	_points.clear()
 	_planned.clear()
 	hud.show_banner("Move %s: left-click hexes to lay rally points, then click the last point again to commit.  Right-click: undo  ·  Esc: back" % _selected.name)
+
+
+func _start_firing() -> void:
+	_close_menu()
+	_firing = true
+	hud.show_banner("Ranged attack with %s: click an enemy squad within %d hexes.  Esc: back" % [_selected.name, state.fire_range(_selected)])
+
+
+func _fire_click(world: Vector2) -> void:
+	var target := _squad_at(world)
+	if target == null or target not in state.fire_targets(_selected):
+		hud.show_banner("Pick a visible enemy squad within %d hexes.  Esc: back" % state.fire_range(_selected))
+		return
+	var text := state.fire(_selected, target)
+	_end_selection()
+	hud.show_banner(text, 6.0)
+	_sync_tokens()
+
+
+## Clicking an enemy shows what it is and how it compares with your first squad.
+func _show_enemy(s: Squad) -> void:
+	var own := state.player_squads()
+	var label := Threat.label(state.data, own[0], s).to_lower() if not own.is_empty() else ""
+	hud.show_banner("%s (%s): %d units. It looks %s." % [s.name, s.role.replace("_", " "), s.living().size(), label], 3.0)
 
 
 func _plan_click(hex: int) -> void:
@@ -281,19 +333,24 @@ func _unhandled_input(event: InputEvent) -> void:
 			var world := get_canvas_transform().affine_inverse() * mb.position
 			if _planning:
 				_plan_click(_hex_at(world))
+			elif _firing:
+				_fire_click(world)
 			else:
 				var s := _squad_at(world)
-				if s:
+				if s and s.side == "player":
 					_select(s)
+				elif s:
+					_show_enemy(s)
 		elif mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed and _planning:
 			_undo_point()
 		return
 	if not (event is InputEventKey and event.is_pressed()):
 		return
 	var key := (event as InputEventKey).keycode
-	if _planning:
+	if _planning or _firing:
 		if key == KEY_ESCAPE:
 			_planning = false
+			_firing = false
 			_open_menu()
 		get_viewport().set_input_as_handled()
 		return
@@ -309,7 +366,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		KEY_L:
 			_open_log()
 		KEY_T:
-			var s := state.squads[0]
+			var s := state.player_squads()[0]
 			var next: String = TEST_TRAVEL[(TEST_TRAVEL.find("sky" if s.sky else s.travel_type) + 1) % TEST_TRAVEL.size()]
 			s.sky = next == "sky"
 			s.travel_type = "" if s.sky else next
