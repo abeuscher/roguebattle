@@ -27,7 +27,7 @@ func test_rolls_stay_in_range() -> void:
 				check(u.stats[s] >= int(c["base_stats"][s]), "%s never loses base %s" % [class_name_, s])
 				total += u.stats[s]
 			check(total - base >= int(c["flex_min"]) and total - base <= int(c["flex_max"]), "%s flex within range" % class_name_)
-			check_eq(u.hp, u.stats["CON"] * 10, "HP is CON x 10")
+			check_eq(u.hp, u.stats["CON"] * int(d.rules["hp_per_con"]), "HP is CON x hp_per_con")
 			check(u.luck >= 0 and u.luck <= 20, "luck 0-20")
 			check(u.alignment >= 0 and u.alignment <= 100, "alignment 0-100")
 			for s in u.growth:

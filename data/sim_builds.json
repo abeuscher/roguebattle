@@ -1,0 +1,14 @@
+{
+ "_about": "Squad builds for the battle sim (tools/battle_sim.gd). Map 1 style: a stage 3 leader plus four stage 2 Serf-line units (SPEC §18). Each entry is [class, row]; the first unit able to lead leads.",
+ "vanguard": [["Knight", "front"], ["Fighter", "front"], ["Fighter", "front"], ["Bowman", "back"], ["Acolyte", "back"]],
+ "shieldwall": [["Soldier", "front"], ["Fighter", "front"], ["Squire", "front"], ["Bowman", "back"], ["Acolyte", "back"]],
+ "spears": [["Spearman", "front"], ["Fighter", "front"], ["Squire", "front"], ["Bowman", "back"], ["Acolyte", "back"]],
+ "berserkers": [["Berserker", "front"], ["Fighter", "front"], ["Slinger", "front"], ["Bowman", "back"], ["Apprentice", "back"]],
+ "lancers": [["Lancer", "front"], ["Squire", "front"], ["Squire", "front"], ["Bowman", "back"], ["Acolyte", "back"]],
+ "skirmish": [["Rogue", "front"], ["Slinger", "front"], ["Fighter", "front"], ["Bowman", "back"], ["Apprentice", "back"]],
+ "ronin": [["Ronin", "front"], ["Slinger", "front"], ["Fighter", "front"], ["Bowman", "back"], ["Acolyte", "back"]],
+ "archers": [["Archer", "back"], ["Fighter", "front"], ["Squire", "front"], ["Bowman", "back"], ["Acolyte", "back"]],
+ "casters": [["Mage", "back"], ["Fighter", "front"], ["Fighter", "front"], ["Squire", "front"], ["Apprentice", "back"]],
+ "clerics": [["Cleric", "back"], ["Fighter", "front"], ["Fighter", "front"], ["Squire", "front"], ["Apprentice", "back"]],
+ "witches": [["Witch", "back"], ["Fighter", "front"], ["Slinger", "front"], ["Apprentice", "back"], ["Acolyte", "back"]]
+}

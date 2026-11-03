@@ -10,7 +10,7 @@
  "starting_morale": 50,
  "hex_seconds_by_tier": [1.0, 0.6, 0.3],
  "placeholder_squad": {"name": "Vanguard", "units": [["Knight", "front"], ["Fighter", "front"], ["Fighter", "front"], ["Bowman", "back"], ["Acolyte", "back"]]},
- "hp_per_con": 10,
+ "hp_per_con": 3,
  "unit_roll": {
   "flex_key_weight": 3,
   "growth": [0.2, 0.5],

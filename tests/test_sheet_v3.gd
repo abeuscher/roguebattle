@@ -153,11 +153,11 @@ func test_heal_row_ward_dispel() -> void:
 	var templar := _unit("Templar", "back")  # Heal (row)
 	var a := _unit("Knight", "front", "A")
 	var b2 := _unit("Knight", "front", "B")
-	a.hp -= 50
-	b2.hp -= 20
+	a.hp -= 10
+	b2.hp -= 5
 	var b := _battle([a, b2, templar], [_unit("Fighter")])
 	b._turn(templar)
-	check(a.hp > a.max_hp(d) - 50 and b2.hp > b2.max_hp(d) - 20, "heal (row) heals the whole row")
+	check(a.hp > a.max_hp(d) - 10 and b2.hp > b2.max_hp(d) - 5, "heal (row) heals the whole row")
 	var elf := _unit("Elf")  # front action Ward
 	var k := _unit("Knight")
 	var mage := _unit("Mage", "back")
@@ -269,12 +269,12 @@ func test_riposte_drain_regenerate() -> void:
 	b._attack(f, "Melee", sword)
 	check(b.events.any(func(e): return e["unit"] == sword and e.get("type") == "attack"), "riposte counters a melee hit")
 	var bat := _unit("Vampire Bats")
-	bat.hp = 10
+	bat.hp = 2
 	bat.stats["STR"] = 200
 	var c := _battle([bat], [_tough(_unit("Knight"))])
 	c._misses[bat] = 3
 	c._attack(bat, "Melee", c.sides[1].units[0])
-	check(bat.hp > 10, "drain heals from damage dealt")
+	check(bat.hp > 2, "drain heals from damage dealt")
 	var troll := _unit("Trollboy")
 	troll.hp -= 30
 	var t := _battle([troll], [_unit("Fighter")])
@@ -415,7 +415,7 @@ func test_special_auras() -> void:
 	check(g.sides[0].units.all(func(u: Unit): return u.name != "Skeleton"), "and leaves after the battle")
 	var spirit := _unit("Spiritaur")  # Remount: mounted units heal 10% after battle
 	var squire := _unit("Squire")
-	squire.hp -= 40
+	squire.hp -= 10
 	var r := _battle([spirit, squire], [_unit("Knight")])
 	var hp := squire.hp
 	r.finish()

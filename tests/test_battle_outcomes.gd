@@ -270,7 +270,7 @@ func test_outcome_report() -> void:
 	var a := _unit("Knight", "front", "A")
 	var z := _unit("Knight", "front", "Z")
 	var c := _battle([a], [z])
-	z.hp -= 50
+	z.hp -= 10
 	var out2 := c.finish()
 	check_eq(out2["pushed"], 1, "the side that lost the larger share is pushed")
 
@@ -291,7 +291,7 @@ func test_push_back_on_the_map() -> void:
 	var ours := st.add_squad("Ours", st.map.index_of(Hex.from_offset(Vector2i(5, 2))), [["Knight", "front"]])
 	var theirs := st.add_squad("Theirs", st.map.index_of(Hex.from_offset(Vector2i(6, 2))), [["Knight", "front"]])
 	var b := st.start_battle(ours, theirs, theirs)
-	ours.units[0].hp -= 60
+	ours.units[0].hp -= 10
 	var before := st.map.hex_at(ours.hex)
 	st.end_battle(b)
 	check_eq(Hex.distance(st.map.hex_at(ours.hex), before), 1, "pushed 1 hex on its own travel terrain (plains)")
@@ -303,7 +303,7 @@ func test_push_back_on_the_map() -> void:
 	var o2 := st2.add_squad("Ours", swamp, [["Knight", "front"]])
 	var t2 := st2.add_squad("Theirs", st2.map.index_of(Hex.from_offset(Vector2i(6, 2))), [["Knight", "front"]])
 	var b2 := st2.start_battle(o2, t2, t2)
-	o2.units[0].hp -= 60
+	o2.units[0].hp -= 10
 	st2.end_battle(b2)
 	check_eq(Hex.distance(st2.map.hex_at(o2.hex), Hex.from_offset(Vector2i(5, 2))), 2, "pushed 2 hexes off its travel terrain")
 
@@ -354,10 +354,21 @@ func test_threat() -> void:
 	check(Threat.unit(d, knight) > Threat.unit(d, serf), "a knight is more threatening than a serf")
 	var full := Threat.unit(d, knight)
 	knight.hp /= 2
-	check(absf(Threat.unit(d, knight) - full / 2.0) < 0.01, "threat scales with HP left")
+	check(absf(Threat.unit(d, knight) - full / sqrt(2.0)) < 0.01, "threat scales with HP left")
 	var a := _squad([_unit("Knight"), _unit("Fighter")])
 	check_eq(Threat.label(d, a, _squad([_unit("Knight"), _unit("Fighter")])), "Even", "equal squads: Even")
 	check_eq(Threat.label(d, a, _squad([_unit("Serf")])), "Weaker", "a lone serf: Weaker")
 	var big := _squad([_unit("Dragon"), _unit("Dragon"), _unit("Knight")])
 	check(Threat.label(d, a, big) in ["Stronger", "Dangerous"], "dragons: Stronger or Dangerous")
 	check_eq(Threat.label(d, _squad([_unit("Serf")]), big), "Dangerous", "dragons against a serf: Dangerous")
+
+
+# --- Sim -------------------------------------------------------------------------------
+
+func test_sim_runs_and_hits_the_rout_target() -> void:
+	var builds: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/sim_builds.json"))
+	var r := BattleSim.run(d, builds["vanguard"], builds["shieldwall"], 60, 7)
+	check_eq(r["trials"], 60, "ran every trial")
+	check(absf(r["win_a"] + r["win_b"] + r["draws"] - 1.0) < 0.001, "shares add up")
+	check(r["loser_hp_lost"] >= 0.30 and r["loser_hp_lost"] <= 0.55, "an even fight costs the loser about 35-50%% of its HP (%.0f%%)" % (r["loser_hp_lost"] * 100))
+	check(r["win_a"] <= 0.65 and r["win_b"] <= 0.65, "these two builds are even (%.0f%% / %.0f%%)" % [r["win_a"] * 100, r["win_b"] * 100])

@@ -37,6 +37,15 @@ python tools/xlsx_to_json.py [path/to/sheet.xlsx]
 
 This reads `data/units-landwar-v3.xlsx` and rewrites `data/units.json`, `lines.json`, `role_templates.json` and `mechanics.json`, and lists any sheet problems in `data/data_report.txt`. It needs `openpyxl` (`pip install openpyxl`).
 
+## Battle sim
+
+```
+godot --headless --path . -s res://tools/battle_sim.gd -- vanguard shieldwall 500
+godot --headless --path . -s res://tools/battle_sim.gd -- all 100
+```
+
+Squad builds live in `data/sim_builds.json`. One pair reports win rates, the HP each side loses in the first battle and how many battles it takes to rout the loser. `all` plays every pair (about 1.5 minutes at 100 trials) and checks the balance targets of SPEC §12.4.
+
 ## Preview a map
 
 ```

@@ -31,6 +31,7 @@ var _attacks := {}  # Unit -> attacks left
 var _misses := {}  # Unit -> misses in a row
 var _since_crit := {}  # Unit -> attacks since its last crit
 var _tiebreak := {}  # Unit -> random value that settles equal Speed
+var _side := {}  # Unit -> 0 or 1
 var _status := {}  # Unit -> {status: the unit whose next turn ends it, or null}
 var _used := {}  # "trait:unit id" -> true for once-per-battle effects
 var _lose_turn := [false, false]  # a failed retreat costs the side its next action
@@ -49,6 +50,8 @@ func _init(game_data: GameData, player: Squad, enemy: Squad, terrain_key: String
 	fair = [true, fairness == "both"]
 	for side in 2:
 		_auras[side] = _aura_effects(sides[side].leader)
+		for u in sides[side].units:
+			_side[u] = side
 	for side in 2:
 		for u in sides[side].living():
 			_start_hp[side] += u.hp
@@ -97,18 +100,22 @@ func is_over() -> bool:
 ## units with a round-one extra attack (Volley, Stampede) act a second time at the end.
 func turn_order(first_round := false) -> Array[Unit]:
 	var order: Array[Unit] = []
+	var speed := {}
+	var early := {}
 	for side in 2:
 		for u in sides[side].living():
 			if _attacks.get(u, 0) > 0:
 				order.append(u)
+				speed[u] = stat(u, "SPD")
+				early[u] = first_round and _strikes_first(u)
 	order.sort_custom(func(a: Unit, b: Unit) -> bool:
 		if first_round:
 			if first_side >= 0 and side_of(a) != side_of(b):
 				return side_of(a) == first_side
-			if _strikes_first(a) != _strikes_first(b):
-				return _strikes_first(a)
-		if stat(a, "SPD") != stat(b, "SPD"):
-			return stat(a, "SPD") > stat(b, "SPD")
+			if early[a] != early[b]:
+				return early[a]
+		if speed[a] != speed[b]:
+			return speed[a] > speed[b]
 		return _tiebreak[a] > _tiebreak[b])
 	if first_round:
 		for u in order.duplicate():
@@ -127,7 +134,9 @@ func _strikes_first(u: Unit) -> bool:
 
 
 func side_of(u: Unit) -> int:
-	return 0 if u in sides[0].units else 1
+	if not _side.has(u):
+		_side[u] = 0 if u in sides[0].units else 1
+	return _side[u]
 
 
 ## The unit's attack from its row (§8.1), e.g. "Breath (row)".

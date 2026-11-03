@@ -76,6 +76,13 @@ func has_trait(data: GameData, trait_name: String) -> bool:
 ## Tags (flyer, mounted, archer, wolf...) from data/battle.json: by role, class, sheet
 ## terrain, size, trait, or the class being listed under a Mechanics-tab entry.
 func has_tag(data: GameData, tag: String) -> bool:
+	var key := unit_class + "|" + tag
+	if not data.tag_cache.has(key):
+		data.tag_cache[key] = _tagged(data, tag)
+	return data.tag_cache[key]
+
+
+func _tagged(data: GameData, tag: String) -> bool:
 	var rule: Dictionary = data.battle["tags"].get(tag, {})
 	var c := info(data)
 	if unit_class in rule.get("not_classes", []):

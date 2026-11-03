@@ -229,13 +229,14 @@ func test_spread_and_crit_damage() -> void:
 func test_heal() -> void:
 	var healer := _unit("Acolyte", "back")
 	var hurt := _unit("Knight", "front", "Hurt")
-	hurt.hp = 50
+	hurt.hp = 10
 	var b := _battle([hurt, healer], [_unit("Fighter")])
 	var before := hurt.hp
 	b._heal(healer, 0)
 	var gain := hurt.hp - before
 	var int_: int = healer.stats["INT"]
-	check(gain >= floori(int_ * 0.9) and gain <= ceili(int_ * 1.1), "heals about INT (%d)" % gain)
+	var share: float = d.battle["heal_int_share"]
+	check(gain >= floori(int_ * share * 0.9) and gain <= ceili(int_ * share * 1.1), "heals about INT x heal share (%d)" % gain)
 	check_eq(b.events[-1]["target"], hurt, "heals the most hurt ally")
 
 

@@ -8,6 +8,8 @@ var role_templates: Dictionary = {}
 var rules: Dictionary = {}
 var battle: Dictionary = {}         # battle formulas and matchups
 var mechanics: Dictionary = {}      # the sheet's Mechanics tab: name -> rule, numbers, used_by
+var tag_cache: Dictionary = {}      # "class|tag" -> bool, filled by Unit.has_tag
+var threat_ref: Dictionary = {}     # average stage-2 base stats, filled by Threat.reference
 var terrains: Array = []            # index = terrain id
 var terrain_ids: Dictionary = {}    # key -> terrain id
 var mapgen: Dictionary = {}
