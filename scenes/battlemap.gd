@@ -30,6 +30,7 @@ var _edit: EditUnits
 var _deploy_menu: DeployMenu
 var _confirm: ConfirmDialog
 var _deploying := false  # _selected is a squad from base whose route is being laid
+var _cursor_flag: SquadToken  # while laying a route, the squad's flag replaces the mouse pointer
 var _tokens := {}  # squad id -> SquadToken
 var _selected: Squad  # the squad whose menu or move order is open (the game is held meanwhile)
 var _planning := false  # laying rally points for _selected
@@ -91,6 +92,7 @@ func _process(delta: float) -> void:
 	if _tokens.size() != state.squads.size():  # a squad went into the base, or left the map
 		_sync_tokens()
 		hud.set_squads(state.player_squads())
+	_update_cursor()
 	night.color = Color.WHITE.lerp(NIGHT, darkness(state.clock.minute_of_day()))
 	_update_tokens()
 	_update_paths()
@@ -308,6 +310,22 @@ func _show_plan() -> void:
 	var eta := GameState.duration_text(state.route_ticks(_selected, _planned))
 	hud.show_banner("%s %s: %d rally point%s, %d hexes, about %s.  Click the last point again to commit  ·  Right-click: undo  ·  Esc: back" % [
 			"Deploy" if _deploying else "Move", _selected.name, _points.size(), "" if _points.size() == 1 else "s", _planned.size(), eta])
+
+
+## While laying a route, the mouse pointer is the squad's flag, its pole on the hex under it.
+func _update_cursor() -> void:
+	var want := _planning and _confirm == null and _menu == null
+	if want and _cursor_flag == null:
+		_cursor_flag = SquadToken.new()
+		_cursor_flag.squad = _selected
+		_ui.add_child(_cursor_flag)
+		Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
+	elif not want and _cursor_flag:
+		_cursor_flag.queue_free()
+		_cursor_flag = null
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	if _cursor_flag:
+		_cursor_flag.position = get_viewport().get_mouse_position() - Vector2(0, 10)
 
 
 # --- Deploying (SPEC §8.4) -----------------------------------------------------------
