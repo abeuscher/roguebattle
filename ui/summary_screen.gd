@@ -39,7 +39,7 @@ func setup(config: GameConfig) -> void:
 	var b := UiStyle.button("Back", 160)
 	b.pressed.connect(func(): back.emit())
 	buttons.add_child(b)
-	var go := UiStyle.button("Start", 200)
+	var go := UiStyle.button("Start", 240, true)
 	go.pressed.connect(func(): confirm.emit())
 	buttons.add_child(go)
 	go.grab_focus.call_deferred()

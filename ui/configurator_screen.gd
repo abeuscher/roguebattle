@@ -8,6 +8,8 @@ extends Control
 signal back
 signal next(map: MapData)  # the previewed map, or null if it doesn't match the settings yet
 
+const OPEN_SECTIONS := ["Size", "Land shape", "Terrain"]  # the rest start collapsed
+
 var data: GameData
 var config: GameConfig
 var _controls := {}  # field key -> control
@@ -29,8 +31,9 @@ func setup(game_data: GameData, game_config: GameConfig) -> void:
 	UiStyle.backdrop(self)
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
-	for side in ["left", "right", "top", "bottom"]:
+	for side in ["left", "right", "top"]:
 		margin.add_theme_constant_override("margin_" + side, 28)
+	margin.add_theme_constant_override("margin_bottom", 64)
 	add_child(margin)
 	var columns := HBoxContainer.new()
 	columns.add_theme_constant_override("separation", 32)
@@ -48,26 +51,49 @@ func _build_form() -> Control:
 	col.size_flags_horizontal = SIZE_EXPAND_FILL
 	col.add_theme_constant_override("separation", 6)
 	scroll.add_child(col)
-	col.add_child(UiStyle.label("Configure the map", 32))
+	col.add_child(UiStyle.label("Custom Map", 32))
 	var group := ""
+	var section: VBoxContainer
 	for f in data.config_fields:
 		if f["group"] != group:
 			group = f["group"]
-			var heading := UiStyle.label(group, 20, UiStyle.ACCENT)
-			heading.custom_minimum_size.y = 40
-			heading.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
-			col.add_child(heading)
+			section = VBoxContainer.new()
+			section.add_theme_constant_override("separation", 6)
+			section.visible = group in OPEN_SECTIONS
+			col.add_child(_section_heading(group, section))
+			col.add_child(section)
 		var row := HBoxContainer.new()
 		var name := UiStyle.label(f["label"], 16)
 		name.custom_minimum_size.x = 340
 		row.add_child(name)
 		var control := _control_for(f)
-		control.custom_minimum_size.x = 320
+		control.custom_minimum_size.x = 480
 		row.add_child(control)
-		col.add_child(row)
+		section.add_child(row)
 	return scroll
 
 
+## A heading that shows or hides its section when clicked.
+func _section_heading(group: String, section: Control) -> Button:
+	var b := Button.new()
+	b.text = group
+	b.flat = true
+	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	b.custom_minimum_size.y = 40
+	b.add_theme_font_size_override("font_size", 20)
+	for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color",
+			"icon_normal_color", "icon_hover_color", "icon_pressed_color", "icon_focus_color"]:
+		b.add_theme_color_override(state, UiStyle.ACCENT)
+	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	b.icon = UiStyle.icon("open" if section.visible else "closed")
+	b.pressed.connect(func():
+		section.visible = not section.visible
+		b.icon = UiStyle.icon("open" if section.visible else "closed"))
+	return b
+
+
+## On/off fields get a check box; every other field a slider over its options,
+## with the chosen value read out on the right.
 func _control_for(f: Dictionary) -> Control:
 	var key: String = f["key"]
 	var opts := GameConfig.options(f)
@@ -76,29 +102,38 @@ func _control_for(f: Dictionary) -> Control:
 		box.toggled.connect(func(on: bool): _changed(key, on))
 		_controls[key] = box
 		return box
-	if f.has("range"):
-		var row := HBoxContainer.new()
-		var slider := HSlider.new()
-		slider.min_value = f["range"][0]
-		slider.max_value = f["range"][1]
-		slider.step = f["range"][2]
-		slider.size_flags_horizontal = SIZE_EXPAND_FILL
-		slider.size_flags_vertical = SIZE_SHRINK_CENTER
-		var value := UiStyle.label("", 16)
-		value.custom_minimum_size.x = 48
-		slider.value_changed.connect(func(v: float):
-			value.text = str(int(v))
-			_changed(key, v))
-		row.add_child(slider)
-		row.add_child(value)
-		_controls[key] = slider
-		return row
-	var pick := OptionButton.new()
-	for i in opts.size():
-		pick.add_item(str(f["labels"][i]) if f.has("labels") else str(opts[i]).capitalize())
-	pick.item_selected.connect(func(i: int): _changed(key, opts[i]))
-	_controls[key] = pick
-	return pick
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 14)
+	var slider := HSlider.new()
+	slider.max_value = opts.size() - 1
+	slider.step = 1
+	slider.tick_count = opts.size() if opts.size() <= 12 else 0
+	slider.ticks_on_borders = true
+	slider.size_flags_horizontal = SIZE_EXPAND_FILL
+	slider.size_flags_vertical = SIZE_SHRINK_CENTER
+	var value := UiStyle.label("", 16)
+	value.custom_minimum_size.x = 200
+	slider.value_changed.connect(func(i: float):
+		value.text = _readout(f, int(i))
+		_changed(key, opts[int(i)]))
+	row.add_child(slider)
+	row.add_child(value)
+	_controls[key] = slider
+	return row
+
+
+## How a slider shows option i: its label, its number, or its name (map size adds its hexes).
+func _readout(f: Dictionary, i: int) -> String:
+	if f.has("labels"):
+		return str(f["labels"][i])
+	var v: Variant = GameConfig.options(f)[i]
+	if v is String:
+		var text: String = v.capitalize()
+		if f["key"] == "size":
+			var dims: Array = data.mapgen["sizes"][v]
+			text += "  ·  %d × %d" % [dims[0], dims[1]]
+		return text
+	return str(int(v)) if float(v) == floorf(float(v)) else str(v)
 
 
 func _build_side() -> Control:
@@ -111,7 +146,10 @@ func _build_side() -> Control:
 	col.add_child(_preview)
 	col.add_child(_status)
 	var seed_row := HBoxContainer.new()
-	seed_row.add_child(UiStyle.label("Seed", 18))
+	seed_row.add_theme_constant_override("separation", 10)
+	var seed_label := UiStyle.label("Seed", 18)
+	seed_label.custom_minimum_size.x = 110
+	seed_row.add_child(seed_label)
 	_seed.custom_minimum_size.x = 260
 	_seed.text_submitted.connect(func(_t): _read_seed())
 	_seed.focus_exited.connect(_read_seed)
@@ -124,16 +162,19 @@ func _build_side() -> Control:
 	seed_row.add_child(randomize)
 	col.add_child(seed_row)
 	var code_row := HBoxContainer.new()
-	code_row.add_child(UiStyle.label("Share code", 18))
+	code_row.add_theme_constant_override("separation", 10)
+	var code_label := UiStyle.label("Share code", 18)
+	code_label.custom_minimum_size.x = 110
+	code_row.add_child(code_label)
 	_code.custom_minimum_size.x = 360
 	_code.text_submitted.connect(func(_t): _apply_code())
 	code_row.add_child(_code)
-	var copy := UiStyle.button("Copy", 90)
+	var copy := UiStyle.button("Copy", 120, false, "copy")
 	copy.pressed.connect(func():
 		DisplayServer.clipboard_set(_code.text)
 		_status.text = "Share code copied.")
 	code_row.add_child(copy)
-	var apply := UiStyle.button("Apply", 90)
+	var apply := UiStyle.button("Apply", 120, false, "apply")
 	apply.pressed.connect(_apply_code)
 	code_row.add_child(apply)
 	col.add_child(code_row)
@@ -141,11 +182,12 @@ func _build_side() -> Control:
 	spacer.size_flags_vertical = SIZE_EXPAND_FILL
 	col.add_child(spacer)
 	var buttons := HBoxContainer.new()
-	buttons.add_theme_constant_override("separation", 12)
+	buttons.add_theme_constant_override("separation", 16)
+	buttons.alignment = BoxContainer.ALIGNMENT_END
 	var b := UiStyle.button("Back", 160)
 	b.pressed.connect(func(): back.emit())
 	buttons.add_child(b)
-	var go := UiStyle.button("Next", 200)
+	var go := UiStyle.button("Next", 240, true)
 	go.pressed.connect(func(): next.emit(_built_map if _built_key == _key() else null))
 	buttons.add_child(go)
 	col.add_child(buttons)
@@ -170,10 +212,9 @@ func _refresh_controls() -> void:
 		if c is CheckBox:
 			c.button_pressed = v
 		elif c is HSlider:
-			c.value = v
-			(c.get_parent().get_child(1) as Label).text = str(int(v))
-		elif c is OptionButton:
-			c.selected = GameConfig._index_of(GameConfig.options(f), v)
+			var i := GameConfig._index_of(GameConfig.options(f), v)
+			c.value = i
+			(c.get_parent().get_child(1) as Label).text = _readout(f, i)
 		c.set_block_signals(false)
 	_seed.text = str(config.seed)
 	_code.text = config.to_code()

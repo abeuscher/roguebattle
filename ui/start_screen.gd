@@ -18,7 +18,7 @@ func setup() -> void:
 	var title := UiStyle.label("LANDWAR", 64, Color("#f4ead2"))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(title)
-	var start := UiStyle.button("Start Game", 300)
+	var start := UiStyle.button("Start Game", 300, true)
 	start.pressed.connect(func(): start_game.emit())
 	col.add_child(start)
 	var options := UiStyle.button("Options", 300)
