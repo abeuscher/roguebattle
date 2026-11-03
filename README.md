@@ -35,7 +35,7 @@ After editing the spreadsheet in `data/`:
 python tools/xlsx_to_json.py [path/to/sheet.xlsx]
 ```
 
-This rewrites `data/units.json`, `lines.json` and `role_templates.json`, and lists any sheet problems in `data/data_report.txt`. It needs `openpyxl` (`pip install openpyxl`).
+This reads `data/units-landwar-v3.xlsx` and rewrites `data/units.json`, `lines.json`, `role_templates.json` and `mechanics.json`, and lists any sheet problems in `data/data_report.txt`. It needs `openpyxl` (`pip install openpyxl`).
 
 ## Preview a map
 

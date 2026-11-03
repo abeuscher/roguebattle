@@ -13,6 +13,7 @@ var hp := 0
 var alignment := 50  # 0-100
 var charisma := 0  # 0-100
 var row := "front"  # "front" or "back"
+var col := 0  # position in the row, left to right; a back-row unit stands behind the front-row unit in its column
 var extra_slots := 0  # slots earned as a leader (§8.2)
 var element := ""  # overrides the class's element when set (Skeletons)
 # Hidden (§12.2)
@@ -66,6 +67,28 @@ func info(data: GameData) -> Dictionary:
 
 func slots(data: GameData) -> float:
 	return data.slots_for(info(data))
+
+
+func has_trait(data: GameData, trait_name: String) -> bool:
+	return trait_name in info(data)["traits"]
+
+
+## Tags (flyer, mounted, archer, wolf...) from data/battle.json: by role, class, sheet
+## terrain, size, trait, or the class being listed under a Mechanics-tab entry.
+func has_tag(data: GameData, tag: String) -> bool:
+	var rule: Dictionary = data.battle["tags"].get(tag, {})
+	var c := info(data)
+	if unit_class in rule.get("not_classes", []):
+		return false
+	if c["role"] in rule.get("roles", []) or unit_class in rule.get("classes", []) 			or c["terrain"] in rule.get("terrains", []) or c["size"] in rule.get("sizes", []):
+		return true
+	for t in rule.get("traits", []):
+		if t in c["traits"]:
+			return true
+	for m in rule.get("mechanics", []):
+		if unit_class in data.mechanics[m]["used_by"]:
+			return true
+	return false
 
 
 ## The sheet's terrain for this class: Plains, Forest, ..., Water, Sky.

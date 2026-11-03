@@ -77,14 +77,15 @@ func test_rounds_interleave() -> void:
 
 func test_melee_targets_front_first() -> void:
 	var b := _battle([_unit("Fighter")], [_unit("Knight", "front", "F"), _unit("Bowman", "back", "K")])
-	var targets := b.reachable("Melee", b.sides[1])
+	var me := b.sides[0].units[0]
+	var targets := b.reachable(me, "Melee", b.sides[1])
 	check_eq(targets.size(), 1, "melee reaches only the front row")
 	check_eq(targets[0].name, "F", "the front unit")
-	check_eq(b.reachable("Magic", b.sides[1]).size(), 2, "magic reaches any row")
-	check_eq(b.reachable("Ranged", b.sides[1]).size(), 2, "ranged reaches any row")
-	check_eq(b.reachable("Melee (any row)", b.sides[1]).size(), 2, "melee (any row) reaches any row")
+	check_eq(b.reachable(me, "Magic", b.sides[1]).size(), 2, "magic reaches any row")
+	check_eq(b.reachable(me, "Ranged", b.sides[1]).size(), 2, "ranged reaches any row")
+	check_eq(b.reachable(me, "Melee (any row)", b.sides[1]).size(), 2, "melee (any row) reaches any row")
 	b.sides[1].units[0].hp = 0
-	check_eq(b.reachable("Melee", b.sides[1])[0].name, "K", "the back row once the front is empty")
+	check_eq(b.reachable(me, "Melee", b.sides[1])[0].name, "K", "the back row once the front is empty")
 
 
 func test_physical_damage() -> void:
@@ -119,9 +120,9 @@ func test_element() -> void:
 		if d.units[c]["element"] == "Ice" and ice == "":
 			ice = c
 	var b := _battle([_unit(fire)], [_unit(ice)])
-	check_eq(b.element_multiplier(b.sides[0].units[0], b.sides[1].units[0]), 1.5, "fire against ice")
-	check_eq(b.element_multiplier(b.sides[0].units[0], _unit(fire)), 0.75, "fire against fire")
-	check_eq(b.element_multiplier(b.sides[0].units[0], _unit("Knight")), 1.0, "no element, no change")
+	check_eq(b.element_multiplier(b.element(b.sides[0].units[0]), b.element(b.sides[1].units[0])), 1.5, "fire against ice")
+	check_eq(b.element_multiplier(b.element(b.sides[0].units[0]), b.element(_unit(fire))), 0.75, "fire against fire")
+	check_eq(b.element_multiplier(b.element(b.sides[0].units[0]), b.element(_unit("Knight"))), 1.0, "no element, no change")
 
 
 func test_terrain_and_day() -> void:
@@ -245,7 +246,7 @@ func test_tactics() -> void:
 	var tough := _unit("Fighter", "front", "Tough")
 	var a := _unit("Fighter")
 	var b := _battle([a], [lead, weak, tough])
-	var targets := b.reachable("Melee", b.sides[1])
+	var targets := b.reachable(a, "Melee", b.sides[1])
 	check_eq(b.pick_target(a, "Melee", targets, "weak").name, "Weak", "Weak focuses the lowest HP")
 	check_eq(b.pick_target(a, "Melee", targets, "leader").name, "Lead", "Leader focuses the leader")
 	check_eq(b.pick_target(a, "Melee", targets, "strong").name, "Lead", "Strong focuses the highest stat total")
@@ -256,7 +257,7 @@ func test_tactics() -> void:
 
 func test_battle_runs_to_an_end() -> void:
 	var a := [_unit("Knight"), _unit("Fighter"), _unit("Fighter"), _unit("Bowman", "back"), _unit("Acolyte", "back")]
-	var e := [_unit("Soldier"), _unit("Fighter"), _unit("Militia"), _unit("Archer", "back"), _unit("Apprentice", "back")]
+	var e := [_unit("Soldier"), _unit("Fighter"), _unit("Slinger"), _unit("Archer", "back"), _unit("Apprentice", "back")]
 	var b := _battle(a, e, "plains", 12)
 	b.run()
 	check(not b.events.is_empty(), "something happened")

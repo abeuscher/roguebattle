@@ -28,6 +28,7 @@
  "vote_weights": {"Small": 1, "Large": 2, "Tiny": 0.5, "leader": 2},
  "travel_types": {"Plains": "plains", "Forest": "forest", "Desert": "desert", "Snow": "snow", "Mountain": "mountain", "Swamp": "swamp", "Water": "shallow", "Lava": "lava"},
  "all_water_travel": "deep",
+ "amphibious_travel": "amphibious",
  "difficulty_multiplier": [1, 1.5, 2],
  "road_multiplier": 0.75
 }

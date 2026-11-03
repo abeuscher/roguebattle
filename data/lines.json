@@ -26,7 +26,7 @@
   ],
   [
    "Centurion",
-   "Zweihander"
+   "Dragonslayer"
   ]
  ],
  "3": [
@@ -54,7 +54,7 @@
    "Berserker"
   ],
   [
-   "Evil One"
+   "Reaver"
   ]
  ],
  "5": [
@@ -65,10 +65,10 @@
    "Fighter"
   ],
   [
-   "Beast Man"
+   "Tamer"
   ],
   [
-   "Beast Master"
+   "Beastlord"
   ]
  ],
  "6": [
@@ -163,10 +163,10 @@
    "Bowman"
   ],
   [
-   "Ninja"
+   "Shade"
   ],
   [
-   "Ninja Master"
+   "Nightblade"
   ]
  ],
  "13": [
@@ -174,7 +174,7 @@
    "Serf"
   ],
   [
-   "Militia"
+   "Slinger"
   ],
   [
    "Swordfighter"
@@ -188,7 +188,7 @@
    "Serf"
   ],
   [
-   "Militia"
+   "Slinger"
   ],
   [
    "Skirmisher"
@@ -202,13 +202,13 @@
    "Serf"
   ],
   [
-   "Militia"
+   "Slinger"
   ],
   [
-   "Samurai"
+   "Ronin"
   ],
   [
-   "Samurai Master"
+   "Kensei"
   ]
  ],
  "16": [
@@ -236,7 +236,7 @@
    "Valkyrie"
   ],
   [
-   "Muse"
+   "Warsinger"
   ]
  ],
  "18": [
@@ -266,7 +266,8 @@
   ],
   [
    "Fire Mage",
-   "Ice Mage",
+   "Wind Mage",
+   "Earth Mage",
    "Lightning Mage"
   ]
  ],
@@ -278,10 +279,10 @@
    "Apprentice"
   ],
   [
-   "Wizard"
+   "Occultist"
   ],
   [
-   "Sorcerer"
+   "Necromancer"
   ]
  ],
  "21": [
@@ -296,6 +297,104 @@
   ],
   [
    "Sorceress"
+  ]
+ ],
+ "22": [
+  [
+   "Serf"
+  ],
+  [
+   "Slinger"
+  ],
+  [
+   "Spellbreaker"
+  ],
+  [
+   "Witch Hunter"
+  ]
+ ],
+ "23": [
+  [
+   "Serf"
+  ],
+  [
+   "Bowman"
+  ],
+  [
+   "Falconer"
+  ],
+  [
+   "Hawkmaster"
+  ]
+ ],
+ "24": [
+  [
+   "Serf"
+  ],
+  [
+   "Squire"
+  ],
+  [
+   "Herald"
+  ],
+  [
+   "Standard-Bearer"
+  ]
+ ],
+ "25": [
+  [
+   "Serf"
+  ],
+  [
+   "Fighter"
+  ],
+  [
+   "Sapper"
+  ],
+  [
+   "Siege Engineer"
+  ]
+ ],
+ "26": [
+  [
+   "Serf"
+  ],
+  [
+   "Acolyte"
+  ],
+  [
+   "Quartermaster"
+  ],
+  [
+   "Provisioner"
+  ]
+ ],
+ "27": [
+  [
+   "Serf"
+  ],
+  [
+   "Slinger"
+  ],
+  [
+   "Smuggler"
+  ],
+  [
+   "Fence"
+  ]
+ ],
+ "28": [
+  [
+   "Serf"
+  ],
+  [
+   "Apprentice"
+  ],
+  [
+   "Seer"
+  ],
+  [
+   "Oracle"
   ]
  ],
  "L1": [
@@ -348,13 +447,13 @@
    "Wolf"
   ],
   [
+   "Ember Wolf"
+  ],
+  [
    "Hellhound"
   ],
   [
-   "Cerberus"
-  ],
-  [
-   "Cujo"
+   "Hellmaw"
   ]
  ],
  "L5": [
@@ -368,7 +467,7 @@
    "Arctic Wolf"
   ],
   [
-   "Balto"
+   "Winter Wolf"
   ]
  ],
  "L6": [
@@ -379,7 +478,7 @@
    "Hell Cat"
   ],
   [
-   "Siamese"
+   "Shadow Cat"
   ],
   [
    "Sabretooth"
@@ -390,13 +489,13 @@
    "Bobcat"
   ],
   [
-   "Battle Cat"
+   "Prowler"
   ],
   [
    "War Cat"
   ],
   [
-   "Tigress"
+   "White Tiger"
   ]
  ],
  "L8": [
@@ -424,7 +523,7 @@
    "Electro Kraken"
   ],
   [
-   "Cthulhu"
+   "Abyssal Kraken"
   ]
  ],
  "L10": [
@@ -435,7 +534,7 @@
    "Gryphon"
   ],
   [
-   "Cockatrice"
+   "Royal Gryphon"
   ],
   [
    "Sphinx"
@@ -446,13 +545,13 @@
    "War Bird"
   ],
   [
-   "Deathwing"
+   "Stormhawk"
   ],
   [
-   "Blackwing"
+   "Roc"
   ],
   [
-   "Wraith"
+   "Storm Roc"
   ]
  ],
  "L12": [
@@ -466,7 +565,7 @@
    "Sasquatch"
   ],
   [
-   "Coldmiser"
+   "Abominable"
   ]
  ],
  "L13": [
@@ -494,21 +593,21 @@
    "Battle Buffalo"
   ],
   [
-   "Gamork"
+   "Earthshaker"
   ]
  ],
  "L15": [
   [
-   "Mountain Cub"
+   "Lion Cub"
   ],
   [
-   "Mountain Lion"
+   "Lion"
   ],
   [
-   "Lionelle"
+   "Pride Lion"
   ],
   [
-   "Lion-O"
+   "Golden Lion"
   ]
  ],
  "L16": [
@@ -516,13 +615,27 @@
    "Salamander"
   ],
   [
-   "Viper"
+   "Cinder Lizard"
   ],
   [
-   "Monitor"
+   "Magma Lizard"
   ],
   [
-   "Komodo"
+   "Basilisk"
+  ]
+ ],
+ "L17": [
+  [
+   "Mudling"
+  ],
+  [
+   "Stoneguard"
+  ],
+  [
+   "Monolith"
+  ],
+  [
+   "Colossus"
   ]
  ],
  "N1": [
@@ -592,7 +705,7 @@
    "Spectre"
   ],
   [
-   "Niffin"
+   "Banshee"
   ]
  ],
  "N6": [
@@ -620,7 +733,7 @@
    "Toad Boy"
   ],
   [
-   "Toad Man"
+   "Toad Shaman"
   ]
  ],
  "R1": [
@@ -680,13 +793,52 @@
  ],
  "R6": [
   [
+   "Sprite"
+  ],
+  [
    "Faerie"
   ],
   [
-   "Pixie"
+   "Faerie Queen"
+  ]
+ ],
+ "R7": [
+  [
+   "Gustling"
   ],
   [
-   "Sylph"
+   "Zephyr"
+  ],
+  [
+   "Djinn"
+  ]
+ ],
+ "T1": [
+  [
+   "Rat"
+  ],
+  [
+   "Giant Rat"
+  ],
+  [
+   "Rat Pack"
+  ],
+  [
+   "Rat King"
+  ]
+ ],
+ "T2": [
+  [
+   "Bat"
+  ],
+  [
+   "Bat Swarm"
+  ],
+  [
+   "Vampire Bats"
+  ],
+  [
+   "Night Terror"
   ]
  ]
 }

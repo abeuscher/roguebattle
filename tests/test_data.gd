@@ -38,7 +38,7 @@ func test_lines_resolve() -> void:
 
 
 func test_next_classes() -> void:
-	check_eq(d.next_classes("Fighter"), PackedStringArray(["Soldier", "Spearman", "Knight", "Berserker", "Beast Man"]),
+	check_eq(d.next_classes("Fighter"), PackedStringArray(["Soldier", "Spearman", "Knight", "Berserker", "Tamer", "Sapper"]),
 			"Fighter promotes to")
 	check_eq(d.next_classes("Soldier"), PackedStringArray(["Sentinel", "Champion"]), "Soldier promotes to")
 

@@ -50,6 +50,27 @@ func living(alive := true) -> Array[Unit]:
 	return out
 
 
+# --- Positions ---------------------------------------------------------------------
+
+func next_col(which: String) -> int:
+	var c := 0
+	for u in row(which):
+		c = maxi(c, u.col + 1)
+	return c
+
+
+func at(which: String, column: int) -> Unit:
+	for u in units:
+		if u.row == which and u.col == column:
+			return u
+	return null
+
+
+## The unit in the other row at the same position: behind a front-row unit, or in front of a back-row one.
+func across(u: Unit) -> Unit:
+	return at("back" if u.row == "front" else "front", u.col)
+
+
 # --- Slots (§8.2) -----------------------------------------------------------------
 
 ## Slots the given units fill: Small 1, Large 2, and Tiny units share a slot in pairs.
@@ -74,11 +95,13 @@ func can_add(data: GameData, u: Unit) -> bool:
 	return slots_filled(data, after) <= capacity(data)
 
 
-## Adds a unit if it fits. The first unit that can lead becomes the leader.
+## Adds a unit if it fits, at the next free position of its row. The first unit
+## that can lead becomes the leader.
 func add(data: GameData, u: Unit, unit_row := "front") -> bool:
 	if not can_add(data, u):
 		return false
 	u.row = unit_row
+	u.col = next_col(unit_row)
 	units.append(u)
 	if leader == null and u.info(data)["can_lead"]:
 		leader = u
@@ -118,17 +141,19 @@ func refresh(data: GameData) -> void:
 
 ## The weighted vote: Small 1, leader and Large 2, Tiny ½. Sky wins only if every
 ## unit flies; otherwise flyers don't vote. Ties go to the leader's terrain.
-## An all-water squad gets the deep-water travel type. Returns a travel key or "sky".
+## A squad of water natives and amphibians can cross deep water; an all-amphibious
+## squad also moves freely on land. Returns a travel key or "sky".
 static func travel_vote(data: GameData, members: Array[Unit], squad_leader: Unit) -> String:
 	var keys: Dictionary = data.rules["travel_types"]
 	var weights: Dictionary = data.rules["vote_weights"]
-	var terrains := members.map(func(u: Unit): return u.terrain(data))
-	if terrains.all(func(t: String): return t == "Sky"):
+	if members.all(func(u: Unit): return u.has_tag(data, "flyer")):
 		return "sky"
+	if members.all(func(u: Unit): return u.has_tag(data, "amphibious")):
+		return data.rules["amphibious_travel"]
 	var tally := {}
 	for u in members:
 		var t := u.terrain(data)
-		if t == "Sky":
+		if u.has_tag(data, "flyer"):
 			continue
 		var w := float(weights["leader"]) if u == squad_leader else float(weights[u.info(data)["size"]])
 		tally[t] = tally.get(t, 0.0) + w
@@ -138,7 +163,7 @@ static func travel_vote(data: GameData, members: Array[Unit], squad_leader: Unit
 			best = t
 	if squad_leader and tally.has(squad_leader.terrain(data)) and tally[squad_leader.terrain(data)] == tally[best]:
 		best = squad_leader.terrain(data)
-	if terrains.all(func(t: String): return t == "Water"):
+	if members.all(func(u: Unit): return u.terrain(data) == "Water" or u.has_tag(data, "amphibious")):
 		return data.rules["all_water_travel"]
 	return keys[best]
 

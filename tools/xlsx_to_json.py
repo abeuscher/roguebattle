@@ -2,8 +2,8 @@
 
 Usage: python tools/xlsx_to_json.py [path/to/sheet.xlsx]
 
-Writes data/units.json, data/lines.json, data/role_templates.json and
-data/data_report.txt. Problems in the sheet are reported, never fixed.
+Writes data/units.json, data/lines.json, data/role_templates.json,
+data/mechanics.json and data/data_report.txt. Problems in the sheet are reported, never fixed.
 """
 import json
 import re
@@ -14,7 +14,7 @@ import openpyxl
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
-DEFAULT_SHEETS = ["units-landwar-v3.xlsx", "unit-table-final.xlsx"]
+DEFAULT_SHEETS = ["units-landwar-v3.xlsx"]
 STATS = ["STR", "CON", "INT", "SPD", "AGI", "PDEF", "MDEF"]
 # Columns SPEC §9.1 expects. Missing ones are reported, not invented.
 EXPECTED = ["Class", "Stage", "Line(s)", "Size", "Slots", "Can lead", "Alignment lean",
@@ -48,6 +48,12 @@ def convert_row(row):
             value = value.strip()
         if header in LIST_COLUMNS:
             value = [s.strip() for s in (value or "").split(LIST_COLUMNS[header]) if s.strip()]
+            if header == "Traits":  # "Mounted: x1.5 ...; Charge: first attack x1.5" -> ["Mounted", "Charge"]
+                value = [t.split(":")[0].strip() for t in value if t[0].isupper()]  # lower case continues the previous trait
+        elif header == "Leader aura" and value:
+            name, _, text = value.partition(":")
+            unit["leader_aura_text"] = text.strip()
+            value = name.strip()
         elif header == "Can lead":
             value = value == "Yes"
         unit[snake(header)] = value
@@ -148,7 +154,18 @@ def main():
         if u.get("role") not in roles:
             problems.append(f"'{u['class']}': role '{u.get('role')}' has no template.")
 
+    mechanics = {}
+    _, mech_rows = read_rows(wb["Mechanics"])
+    for r in mech_rows:
+        used = [c.strip() for c in str(r.get("Used by") or "").split(",") if c.strip()]
+        mechanics[str(r["Mechanic"]).strip()] = {"category": r.get("Category"), "rule": r.get("Rule"),
+                                                 "numbers": r.get("Placeholder numbers"), "used_by": used}
+        for c in used:
+            if c not in {u["class"] for u in units} and c != "All units":
+                problems.append(f"Mechanics '{r['Mechanic']}' lists '{c}', which has no row.")
+
     write(DATA / "units.json", units)
+    write(DATA / "mechanics.json", mechanics)
     write(DATA / "lines.json", {k: lines[k] for k in sorted(lines, key=line_sort_key)})
     write(DATA / "role_templates.json", roles)
     report = [f"Source: {sheet.name}", f"Classes: {len(units)}", f"Lines: {len(lines)}",

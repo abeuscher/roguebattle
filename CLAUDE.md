@@ -12,7 +12,7 @@ Real-time squad strategy game in Godot 4.5.1 (GDScript). The design is `SPEC.md`
 ## Code rules
 
 - **Rules stay separate from scene nodes.** Everything in `rules/` is plain classes (RefCounted or static) that never touch the scene tree, so tests and the headless sim can run them. Scenes in `scenes/` and `ui/` only display state and pass on input.
-- **Content lives in data.** Never hard-code a stat, price, class or tunable number. Put it in `data/*.json` (placeholders are fine). Unit data comes from the spreadsheet via `python tools/xlsx_to_json.py`; never hand-edit `units.json`, `lines.json` or `role_templates.json`.
+- **Content lives in data.** Never hard-code a stat, price, class or tunable number. Put it in `data/*.json` (placeholders are fine). Unit data comes from the spreadsheet via `python tools/xlsx_to_json.py`; never hand-edit `units.json`, `lines.json`, `role_templates.json` or `mechanics.json`. The sheet is `data/units-landwar-v3.xlsx`; trait and aura numbers the game uses live in `data/battle.json`.
 - **Everything is seeded and logged.** Randomness comes from `RngStreams` (one stream per system, derived from the game seed). Events go to `GameLog`.
 - Scenes are built mostly in code with small `.tscn` files.
 

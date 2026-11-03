@@ -21,6 +21,10 @@
   "back_count": 1,
   "element": null,
   "notes": "Every soldier starts here",
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 5,
    "CON": 6,
@@ -51,7 +55,14 @@
    "18",
    "19",
    "20",
-   "21"
+   "21",
+   "22",
+   "23",
+   "24",
+   "25",
+   "26",
+   "27",
+   "28"
   ]
  },
  {
@@ -77,6 +88,10 @@
   "back_count": 1,
   "element": null,
   "notes": null,
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 11,
    "CON": 10,
@@ -91,7 +106,8 @@
    "2",
    "3",
    "4",
-   "5"
+   "5",
+   "25"
   ]
  },
  {
@@ -117,6 +133,12 @@
   "back_count": 1,
   "element": null,
   "notes": null,
+  "traits": [
+   "Mounted"
+  ],
+  "leader_aura": null,
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
    "STR": 11,
    "CON": 11,
@@ -129,7 +151,8 @@
   "lines": [
    "6",
    "7",
-   "8"
+   "8",
+   "24"
   ]
  },
  {
@@ -155,6 +178,12 @@
   "back_count": 2,
   "element": null,
   "notes": null,
+  "traits": [
+   "Anti-air"
+  ],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 9,
    "CON": 8,
@@ -168,11 +197,12 @@
    "9",
    "10",
    "11",
-   "12"
+   "12",
+   "23"
   ]
  },
  {
-  "class": "Militia",
+  "class": "Slinger",
   "stage": 2,
   "size": "Small",
   "slots": 1,
@@ -194,6 +224,10 @@
   "back_count": 1,
   "element": null,
   "notes": null,
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": "Militia",
   "base_stats": {
    "STR": 9,
    "CON": 9,
@@ -206,7 +240,9 @@
   "lines": [
    "13",
    "14",
-   "15"
+   "15",
+   "22",
+   "27"
   ]
  },
  {
@@ -232,6 +268,10 @@
   "back_count": 2,
   "element": null,
   "notes": null,
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 4,
    "CON": 8,
@@ -244,7 +284,8 @@
   "lines": [
    "16",
    "17",
-   "18"
+   "18",
+   "26"
   ]
  },
  {
@@ -270,6 +311,10 @@
   "back_count": 2,
   "element": null,
   "notes": null,
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 4,
    "CON": 6,
@@ -282,7 +327,8 @@
   "lines": [
    "19",
    "20",
-   "21"
+   "21",
+   "28"
   ]
  },
  {
@@ -309,6 +355,11 @@
   "back_count": 1,
   "element": null,
   "notes": null,
+  "traits": [],
+  "leader_aura_text": "squad +10% PDEF",
+  "leader_aura": "Hold the line",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 12,
    "CON": 15,
@@ -346,13 +397,20 @@
   "back_count": 2,
   "element": null,
   "notes": null,
+  "traits": [
+   "Guard"
+  ],
+  "leader_aura_text": "squad +10% PDEF",
+  "leader_aura": "Hold the line",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 14,
-   "CON": 18,
-   "INT": 5,
-   "SPD": 7,
-   "AGI": 7,
-   "PDEF": 14,
+   "STR": 13,
+   "CON": 19,
+   "INT": 4,
+   "SPD": 6,
+   "AGI": 6,
+   "PDEF": 17,
    "MDEF": 7
   },
   "lines": [
@@ -382,14 +440,21 @@
   "back_count": 2,
   "element": null,
   "notes": null,
+  "traits": [
+   "Last stand"
+  ],
+  "leader_aura_text": "squad +10% PDEF",
+  "leader_aura": "Hold the line",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 16,
-   "CON": 14,
-   "INT": 5,
-   "SPD": 10,
+   "STR": 17,
+   "CON": 15,
+   "INT": 4,
+   "SPD": 9,
    "AGI": 10,
-   "PDEF": 9,
-   "MDEF": 5
+   "PDEF": 10,
+   "MDEF": 4
   },
   "lines": [
    "1"
@@ -418,7 +483,14 @@
   "back_attack": "Melee (reach 2nd row)",
   "back_count": 1,
   "element": null,
-  "notes": "Anti-cavalry",
+  "notes": null,
+  "traits": [
+   "Brace"
+  ],
+  "leader_aura_text": "squad takes -25% damage from Mounted",
+  "leader_aura": "Brace",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 12,
    "CON": 15,
@@ -455,7 +527,14 @@
   "back_attack": "Melee (reach 2nd row)",
   "back_count": 2,
   "element": null,
-  "notes": "Anti-cavalry",
+  "notes": null,
+  "traits": [
+   "Brace"
+  ],
+  "leader_aura_text": "squad takes -25% damage from Mounted",
+  "leader_aura": "Brace",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 14,
    "CON": 18,
@@ -470,7 +549,7 @@
   ]
  },
  {
-  "class": "Zweihander",
+  "class": "Dragonslayer",
   "stage": 4,
   "size": "Small",
   "slots": 1,
@@ -491,13 +570,20 @@
   "back_attack": "Melee",
   "back_count": 2,
   "element": null,
-  "notes": "Anti-cavalry",
+  "notes": null,
+  "traits": [
+   "Giant-killer"
+  ],
+  "leader_aura_text": "squad takes -25% damage from Mounted",
+  "leader_aura": "Brace",
+  "xp_rate": 1,
+  "formerly": "Echo Knight",
   "base_stats": {
-   "STR": 16,
-   "CON": 14,
-   "INT": 5,
-   "SPD": 10,
-   "AGI": 10,
+   "STR": 18,
+   "CON": 13,
+   "INT": 4,
+   "SPD": 9,
+   "AGI": 11,
    "PDEF": 9,
    "MDEF": 5
   },
@@ -520,7 +606,7 @@
    "PDEF",
    "STR"
   ],
-  "stat_total": 61,
+  "stat_total": 62,
   "flex_min": 3,
   "flex_max": 5,
   "front_attack": "Melee",
@@ -529,14 +615,19 @@
   "back_count": 1,
   "element": null,
   "notes": "Stronger by day",
+  "traits": [],
+  "leader_aura_text": "squad +10% damage by day",
+  "leader_aura": "Holy vow",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 12,
-   "CON": 15,
-   "INT": 4,
+   "CON": 14,
+   "INT": 7,
    "SPD": 6,
    "AGI": 6,
-   "PDEF": 12,
-   "MDEF": 6
+   "PDEF": 10,
+   "MDEF": 7
   },
   "lines": [
    "3"
@@ -566,14 +657,19 @@
   "back_count": 2,
   "element": "Holy",
   "notes": "Stronger by day",
+  "traits": [],
+  "leader_aura_text": "squad +10% damage by day",
+  "leader_aura": "Holy vow",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 14,
-   "CON": 18,
-   "INT": 5,
+   "CON": 16,
+   "INT": 8,
    "SPD": 7,
    "AGI": 7,
-   "PDEF": 14,
-   "MDEF": 7
+   "PDEF": 12,
+   "MDEF": 8
   },
   "lines": [
    "3"
@@ -593,7 +689,7 @@
    "STR",
    "AGI"
   ],
-  "stat_total": 60,
+  "stat_total": 59,
   "flex_min": 3,
   "flex_max": 5,
   "front_attack": "Melee",
@@ -601,22 +697,27 @@
   "back_attack": "Melee",
   "back_count": 1,
   "element": null,
-  "notes": "Stronger at night; Vampyre by item",
+  "notes": "Stronger at night",
+  "traits": [],
+  "leader_aura_text": "squad +15% STR, -10% PDEF",
+  "leader_aura": "Frenzy",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 14,
-   "CON": 12,
+   "STR": 16,
+   "CON": 11,
    "INT": 4,
    "SPD": 9,
-   "AGI": 9,
-   "PDEF": 8,
-   "MDEF": 4
+   "AGI": 8,
+   "PDEF": 6,
+   "MDEF": 5
   },
   "lines": [
    "4"
   ]
  },
  {
-  "class": "Evil One",
+  "class": "Reaver",
   "stage": 4,
   "size": "Small",
   "slots": 1,
@@ -637,22 +738,29 @@
   "back_attack": "Melee",
   "back_count": 2,
   "element": "Dark",
-  "notes": "Stronger at night; Vampyre by item",
+  "notes": "Stronger at night",
+  "traits": [
+   "Bloodthirst"
+  ],
+  "leader_aura_text": "squad +15% STR, -10% PDEF",
+  "leader_aura": "Frenzy",
+  "xp_rate": 1,
+  "formerly": "Evil One",
   "base_stats": {
-   "STR": 16,
-   "CON": 14,
+   "STR": 19,
+   "CON": 13,
    "INT": 5,
    "SPD": 10,
-   "AGI": 10,
-   "PDEF": 9,
-   "MDEF": 5
+   "AGI": 9,
+   "PDEF": 7,
+   "MDEF": 6
   },
   "lines": [
    "4"
   ]
  },
  {
-  "class": "Beast Man",
+  "class": "Tamer",
   "stage": 3,
   "size": "Small",
   "slots": 1,
@@ -674,13 +782,20 @@
   "back_count": 1,
   "element": null,
   "notes": "Recruits large beasts",
+  "traits": [
+   "Tamer"
+  ],
+  "leader_aura_text": "beasts in squad +1 front attack",
+  "leader_aura": "Pack lead",
+  "xp_rate": 1,
+  "formerly": "Beast Man",
   "base_stats": {
-   "STR": 14,
-   "CON": 12,
-   "INT": 4,
+   "STR": 13,
+   "CON": 13,
+   "INT": 5,
    "SPD": 9,
    "AGI": 9,
-   "PDEF": 8,
+   "PDEF": 7,
    "MDEF": 4
   },
   "lines": [
@@ -688,7 +803,7 @@
   ]
  },
  {
-  "class": "Beast Master",
+  "class": "Beastlord",
   "stage": 4,
   "size": "Small",
   "slots": 1,
@@ -710,13 +825,20 @@
   "back_count": 2,
   "element": null,
   "notes": "Recruits large beasts",
+  "traits": [
+   "Tamer"
+  ],
+  "leader_aura_text": "beasts in squad +1 front attack",
+  "leader_aura": "Pack lead",
+  "xp_rate": 1,
+  "formerly": "Beast Master",
   "base_stats": {
-   "STR": 16,
-   "CON": 14,
-   "INT": 5,
+   "STR": 15,
+   "CON": 15,
+   "INT": 6,
    "SPD": 10,
    "AGI": 10,
-   "PDEF": 9,
+   "PDEF": 8,
    "MDEF": 5
   },
   "lines": [
@@ -737,22 +859,30 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 65,
+  "stat_total": 64,
   "flex_min": 3,
   "flex_max": 5,
   "front_attack": "Melee",
-  "front_count": 3,
+  "front_count": 2,
   "back_attack": "Melee",
   "back_count": 1,
   "element": null,
   "notes": "Charge",
+  "traits": [
+   "Mounted",
+   "Charge"
+  ],
+  "leader_aura_text": "squad acts first in round 1",
+  "leader_aura": "Charge order",
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
-   "STR": 14,
+   "STR": 15,
    "CON": 14,
-   "INT": 4,
-   "SPD": 12,
-   "AGI": 8,
-   "PDEF": 9,
+   "INT": 3,
+   "SPD": 11,
+   "AGI": 7,
+   "PDEF": 10,
    "MDEF": 4
   },
   "lines": [
@@ -777,18 +907,26 @@
   "flex_min": 3,
   "flex_max": 5,
   "front_attack": "Melee",
-  "front_count": 3,
+  "front_count": 2,
   "back_attack": "Melee",
   "back_count": 2,
   "element": null,
   "notes": "Charge",
+  "traits": [
+   "Mounted",
+   "Charge"
+  ],
+  "leader_aura_text": "squad acts first in round 1",
+  "leader_aura": "Charge order",
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
-   "STR": 16,
+   "STR": 17,
    "CON": 16,
-   "INT": 5,
-   "SPD": 14,
-   "AGI": 9,
-   "PDEF": 10,
+   "INT": 4,
+   "SPD": 13,
+   "AGI": 8,
+   "PDEF": 12,
    "MDEF": 5
   },
   "lines": [
@@ -815,9 +953,16 @@
   "front_attack": "Ranged",
   "front_count": 1,
   "back_attack": "Ranged",
-  "back_count": 3,
+  "back_count": 2,
   "element": null,
   "notes": null,
+  "traits": [
+   "Mounted"
+  ],
+  "leader_aura_text": "enemy squad -1 speed tier for 10s after battle",
+  "leader_aura": "Harass",
+  "xp_rate": 1.5,
+  "formerly": null,
   "base_stats": {
    "STR": 10,
    "CON": 10,
@@ -851,9 +996,16 @@
   "front_attack": "Ranged",
   "front_count": 2,
   "back_attack": "Ranged",
-  "back_count": 3,
+  "back_count": 2,
   "element": null,
   "notes": null,
+  "traits": [
+   "Mounted"
+  ],
+  "leader_aura_text": "enemy squad -1 speed tier for 10s after battle",
+  "leader_aura": "Harass",
+  "xp_rate": 1.5,
+  "formerly": null,
   "base_stats": {
    "STR": 12,
    "CON": 12,
@@ -881,22 +1033,30 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 65,
+  "stat_total": 61,
   "flex_min": 3,
   "flex_max": 5,
   "front_attack": "Melee",
-  "front_count": 3,
+  "front_count": 2,
   "back_attack": "Melee",
   "back_count": 1,
   "element": null,
   "notes": "Fast in rough terrain",
+  "traits": [
+   "Mounted",
+   "Pathfinder"
+  ],
+  "leader_aura_text": "squad ignores forest/hill penalties",
+  "leader_aura": "Pathfinder",
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
-   "STR": 14,
-   "CON": 14,
-   "INT": 4,
-   "SPD": 12,
-   "AGI": 8,
-   "PDEF": 9,
+   "STR": 11,
+   "CON": 11,
+   "INT": 5,
+   "SPD": 13,
+   "AGI": 11,
+   "PDEF": 6,
    "MDEF": 4
   },
   "lines": [
@@ -917,22 +1077,30 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 75,
+  "stat_total": 72,
   "flex_min": 3,
   "flex_max": 5,
   "front_attack": "Melee",
-  "front_count": 3,
+  "front_count": 2,
   "back_attack": "Melee",
   "back_count": 2,
   "element": null,
   "notes": "Fast in rough terrain",
+  "traits": [
+   "Mounted",
+   "Pathfinder"
+  ],
+  "leader_aura_text": "squad ignores forest/hill penalties",
+  "leader_aura": "Pathfinder",
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
-   "STR": 16,
-   "CON": 16,
-   "INT": 5,
-   "SPD": 14,
-   "AGI": 9,
-   "PDEF": 10,
+   "STR": 13,
+   "CON": 13,
+   "INT": 6,
+   "SPD": 15,
+   "AGI": 13,
+   "PDEF": 7,
    "MDEF": 5
   },
   "lines": [
@@ -962,6 +1130,13 @@
   "back_count": 3,
   "element": null,
   "notes": null,
+  "traits": [
+   "Anti-air"
+  ],
+  "leader_aura_text": "back row +1 attack in round 1",
+  "leader_aura": "Volley",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 10,
    "CON": 9,
@@ -998,6 +1173,13 @@
   "back_count": 3,
   "element": null,
   "notes": null,
+  "traits": [
+   "Anti-air"
+  ],
+  "leader_aura_text": "back row +1 attack in round 1",
+  "leader_aura": "Volley",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 12,
    "CON": 10,
@@ -1025,23 +1207,30 @@
    "AGI",
    "STR"
   ],
-  "stat_total": 56,
+  "stat_total": 55,
   "flex_min": 3,
   "flex_max": 5,
   "front_attack": "Ranged",
   "front_count": 1,
   "back_attack": "Ranged",
-  "back_count": 3,
+  "back_count": 2,
   "element": null,
   "notes": "Armor-piercing",
+  "traits": [
+   "Armor-piercing"
+  ],
+  "leader_aura_text": "enemy front row -10% AGI",
+  "leader_aura": "Pin",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 10,
+   "STR": 13,
    "CON": 9,
-   "INT": 6,
-   "SPD": 9,
-   "AGI": 12,
-   "PDEF": 4,
-   "MDEF": 6
+   "INT": 4,
+   "SPD": 7,
+   "AGI": 10,
+   "PDEF": 7,
+   "MDEF": 5
   },
   "lines": [
    "10"
@@ -1067,17 +1256,24 @@
   "front_attack": "Ranged",
   "front_count": 2,
   "back_attack": "Ranged",
-  "back_count": 3,
+  "back_count": 2,
   "element": null,
   "notes": "Armor-piercing",
+  "traits": [
+   "Armor-piercing"
+  ],
+  "leader_aura_text": "enemy front row -10% AGI",
+  "leader_aura": "Pin",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 12,
-   "CON": 10,
-   "INT": 7,
-   "SPD": 10,
-   "AGI": 14,
-   "PDEF": 5,
-   "MDEF": 7
+   "STR": 15,
+   "CON": 11,
+   "INT": 5,
+   "SPD": 8,
+   "AGI": 12,
+   "PDEF": 8,
+   "MDEF": 6
   },
   "lines": [
    "10"
@@ -1106,14 +1302,21 @@
   "back_count": 1,
   "element": null,
   "notes": null,
+  "traits": [
+   "Execute"
+  ],
+  "leader_aura_text": "enemy cannot counter in round 1",
+  "leader_aura": "Ambush",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 10,
+   "STR": 11,
    "CON": 9,
-   "INT": 4,
+   "INT": 3,
    "SPD": 12,
-   "AGI": 14,
+   "AGI": 15,
    "PDEF": 4,
-   "MDEF": 6
+   "MDEF": 5
   },
   "lines": [
    "11"
@@ -1142,21 +1345,28 @@
   "back_count": 2,
   "element": null,
   "notes": null,
+  "traits": [
+   "Execute"
+  ],
+  "leader_aura_text": "enemy cannot counter in round 1",
+  "leader_aura": "Ambush",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 12,
+   "STR": 13,
    "CON": 10,
-   "INT": 5,
+   "INT": 4,
    "SPD": 14,
-   "AGI": 16,
+   "AGI": 17,
    "PDEF": 5,
-   "MDEF": 7
+   "MDEF": 6
   },
   "lines": [
    "11"
   ]
  },
  {
-  "class": "Ninja",
+  "class": "Shade",
   "stage": 3,
   "size": "Small",
   "slots": 1,
@@ -1178,21 +1388,28 @@
   "back_count": 1,
   "element": null,
   "notes": "Night bonus",
+  "traits": [
+   "Night evasion"
+  ],
+  "leader_aura_text": "squad hidden on the map at night",
+  "leader_aura": "Night march",
+  "xp_rate": 1,
+  "formerly": "Ninja",
   "base_stats": {
-   "STR": 10,
-   "CON": 9,
-   "INT": 4,
-   "SPD": 12,
+   "STR": 9,
+   "CON": 8,
+   "INT": 7,
+   "SPD": 14,
    "AGI": 14,
-   "PDEF": 4,
-   "MDEF": 6
+   "PDEF": 3,
+   "MDEF": 4
   },
   "lines": [
    "12"
   ]
  },
  {
-  "class": "Ninja Master",
+  "class": "Nightblade",
   "stage": 4,
   "size": "Small",
   "slots": 1,
@@ -1214,14 +1431,21 @@
   "back_count": 2,
   "element": "Dark",
   "notes": "Night bonus",
+  "traits": [
+   "Night evasion"
+  ],
+  "leader_aura_text": "squad hidden on the map at night",
+  "leader_aura": "Night march",
+  "xp_rate": 1,
+  "formerly": "Ninja Master",
   "base_stats": {
-   "STR": 12,
-   "CON": 10,
-   "INT": 5,
-   "SPD": 14,
+   "STR": 11,
+   "CON": 9,
+   "INT": 8,
+   "SPD": 16,
    "AGI": 16,
-   "PDEF": 5,
-   "MDEF": 7
+   "PDEF": 4,
+   "MDEF": 5
   },
   "lines": [
    "12"
@@ -1241,7 +1465,7 @@
    "STR",
    "AGI"
   ],
-  "stat_total": 60,
+  "stat_total": 58,
   "flex_min": 3,
   "flex_max": 5,
   "front_attack": "Melee",
@@ -1250,14 +1474,21 @@
   "back_count": 1,
   "element": null,
   "notes": null,
+  "traits": [
+   "Riposte"
+  ],
+  "leader_aura_text": "squad +10% AGI",
+  "leader_aura": "Drill",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 14,
-   "CON": 12,
+   "CON": 10,
    "INT": 4,
-   "SPD": 9,
-   "AGI": 9,
-   "PDEF": 8,
-   "MDEF": 4
+   "SPD": 10,
+   "AGI": 11,
+   "PDEF": 6,
+   "MDEF": 3
   },
   "lines": [
    "13"
@@ -1286,14 +1517,21 @@
   "back_count": 2,
   "element": null,
   "notes": null,
+  "traits": [
+   "Riposte"
+  ],
+  "leader_aura_text": "squad +10% AGI",
+  "leader_aura": "Drill",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 16,
-   "CON": 14,
+   "CON": 12,
    "INT": 5,
-   "SPD": 10,
-   "AGI": 10,
-   "PDEF": 9,
-   "MDEF": 5
+   "SPD": 12,
+   "AGI": 13,
+   "PDEF": 7,
+   "MDEF": 4
   },
   "lines": [
    "13"
@@ -1322,6 +1560,11 @@
   "back_count": 1,
   "element": null,
   "notes": "Opening volley",
+  "traits": [],
+  "leader_aura_text": "squad +15% dodge vs ranged",
+  "leader_aura": "Screen",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 10,
    "CON": 10,
@@ -1358,6 +1601,11 @@
   "back_count": 2,
   "element": null,
   "notes": "Opening volley",
+  "traits": [],
+  "leader_aura_text": "squad +15% dodge vs ranged",
+  "leader_aura": "Screen",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 12,
    "CON": 12,
@@ -1372,7 +1620,7 @@
   ]
  },
  {
-  "class": "Samurai",
+  "class": "Ronin",
   "stage": 3,
   "size": "Small",
   "slots": 1,
@@ -1385,7 +1633,7 @@
    "STR",
    "AGI"
   ],
-  "stat_total": 60,
+  "stat_total": 59,
   "flex_min": 3,
   "flex_max": 5,
   "front_attack": "Melee",
@@ -1394,13 +1642,20 @@
   "back_count": 1,
   "element": null,
   "notes": null,
+  "traits": [
+   "First strike"
+  ],
+  "leader_aura_text": "squad immune to debuffs in round 1",
+  "leader_aura": "Discipline",
+  "xp_rate": 1,
+  "formerly": "Samurai",
   "base_stats": {
-   "STR": 14,
-   "CON": 12,
-   "INT": 4,
+   "STR": 13,
+   "CON": 11,
+   "INT": 6,
    "SPD": 9,
    "AGI": 9,
-   "PDEF": 8,
+   "PDEF": 7,
    "MDEF": 4
   },
   "lines": [
@@ -1408,7 +1663,7 @@
   ]
  },
  {
-  "class": "Samurai Master",
+  "class": "Kensei",
   "stage": 4,
   "size": "Small",
   "slots": 1,
@@ -1430,13 +1685,20 @@
   "back_count": 2,
   "element": "Holy",
   "notes": null,
+  "traits": [
+   "First strike"
+  ],
+  "leader_aura_text": "squad immune to debuffs in round 1",
+  "leader_aura": "Discipline",
+  "xp_rate": 1,
+  "formerly": "Samurai Master",
   "base_stats": {
-   "STR": 16,
-   "CON": 14,
-   "INT": 5,
+   "STR": 15,
+   "CON": 13,
+   "INT": 7,
    "SPD": 10,
-   "AGI": 10,
-   "PDEF": 9,
+   "AGI": 11,
+   "PDEF": 8,
    "MDEF": 5
   },
   "lines": [
@@ -1466,6 +1728,11 @@
   "back_count": 3,
   "element": null,
   "notes": "Main healer",
+  "traits": [],
+  "leader_aura_text": "squad heals slowly on the map",
+  "leader_aura": "Sanctuary",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 4,
    "CON": 9,
@@ -1498,10 +1765,17 @@
   "flex_max": 5,
   "front_attack": "Melee",
   "front_count": 2,
-  "back_attack": "Heal",
-  "back_count": 3,
+  "back_attack": "Heal (row)",
+  "back_count": 2,
   "element": "Holy",
   "notes": "Main healer",
+  "traits": [
+   "Mass heal (row)"
+  ],
+  "leader_aura_text": "squad heals slowly on the map",
+  "leader_aura": "Sanctuary",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 5,
    "CON": 10,
@@ -1533,11 +1807,18 @@
   "flex_min": 3,
   "flex_max": 5,
   "front_attack": "Melee",
-  "front_count": 3,
+  "front_count": 2,
   "back_attack": "Heal",
   "back_count": 1,
   "element": null,
   "notes": "Mounted",
+  "traits": [
+   "Mounted"
+  ],
+  "leader_aura_text": "healers in squad +1 action",
+  "leader_aura": "Hymn",
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
    "STR": 9,
    "CON": 10,
@@ -1552,7 +1833,7 @@
   ]
  },
  {
-  "class": "Muse",
+  "class": "Warsinger",
   "stage": 4,
   "size": "Small",
   "slots": 1,
@@ -1569,11 +1850,18 @@
   "flex_min": 3,
   "flex_max": 5,
   "front_attack": "Melee",
-  "front_count": 3,
+  "front_count": 2,
   "back_attack": "Heal",
   "back_count": 2,
   "element": "Holy",
   "notes": "Mounted",
+  "traits": [
+   "Mounted"
+  ],
+  "leader_aura_text": "healers in squad +1 action",
+  "leader_aura": "Hymn",
+  "xp_rate": 1.25,
+  "formerly": "Muse",
   "base_stats": {
    "STR": 10,
    "CON": 12,
@@ -1610,6 +1898,11 @@
   "back_count": 3,
   "element": null,
   "notes": "Branch by alignment",
+  "traits": [],
+  "leader_aura_text": "enemy -10% MDEF",
+  "leader_aura": "Curse",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 4,
    "CON": 8,
@@ -1642,17 +1935,22 @@
   "flex_max": 5,
   "front_attack": "Magic",
   "front_count": 2,
-  "back_attack": "Magic",
-  "back_count": 3,
+  "back_attack": "Magic (row)",
+  "back_count": 2,
   "element": "Dark",
   "notes": "Branch by alignment",
+  "traits": [],
+  "leader_aura_text": "enemy -10% MDEF",
+  "leader_aura": "Curse",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 5,
-   "CON": 9,
-   "INT": 16,
+   "CON": 8,
+   "INT": 18,
    "SPD": 9,
    "AGI": 9,
-   "PDEF": 4,
+   "PDEF": 3,
    "MDEF": 12
   },
   "lines": [
@@ -1678,18 +1976,23 @@
   "flex_max": 5,
   "front_attack": "Magic",
   "front_count": 2,
-  "back_attack": "Magic",
-  "back_count": 3,
+  "back_attack": "Ward",
+  "back_count": 2,
   "element": "Holy",
   "notes": "Branch by alignment",
+  "traits": [],
+  "leader_aura_text": "squad +10% MDEF",
+  "leader_aura": "Blessing",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 5,
+   "STR": 4,
    "CON": 9,
-   "INT": 16,
-   "SPD": 9,
+   "INT": 15,
+   "SPD": 10,
    "AGI": 9,
    "PDEF": 4,
-   "MDEF": 12
+   "MDEF": 13
   },
   "lines": [
    "18"
@@ -1718,6 +2021,11 @@
   "back_count": 3,
   "element": null,
   "notes": "Element at stage 4",
+  "traits": [],
+  "leader_aura_text": "casters in squad +10% INT",
+  "leader_aura": "Focus",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 4,
    "CON": 8,
@@ -1750,25 +2058,30 @@
   "flex_max": 5,
   "front_attack": "Magic",
   "front_count": 2,
-  "back_attack": "Magic",
-  "back_count": 3,
+  "back_attack": "Magic (row)",
+  "back_count": 2,
   "element": "Fire",
   "notes": "Element at stage 4",
+  "traits": [],
+  "leader_aura_text": "squad melee adds leader element",
+  "leader_aura": "Attunement",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 5,
-   "CON": 9,
+   "STR": 8,
+   "CON": 10,
    "INT": 16,
-   "SPD": 9,
-   "AGI": 9,
-   "PDEF": 4,
-   "MDEF": 12
+   "SPD": 8,
+   "AGI": 8,
+   "PDEF": 6,
+   "MDEF": 8
   },
   "lines": [
    "19"
   ]
  },
  {
-  "class": "Ice Mage",
+  "class": "Wind Mage",
   "stage": 4,
   "size": "Small",
   "slots": 1,
@@ -1788,16 +2101,62 @@
   "front_count": 2,
   "back_attack": "Magic",
   "back_count": 3,
-  "element": "Ice",
+  "element": "Wind",
   "notes": "Element at stage 4",
+  "traits": [],
+  "leader_aura_text": "squad melee adds leader element",
+  "leader_aura": "Attunement",
+  "xp_rate": 1,
+  "formerly": "Ice Mage",
   "base_stats": {
-   "STR": 5,
-   "CON": 9,
-   "INT": 16,
-   "SPD": 9,
-   "AGI": 9,
-   "PDEF": 4,
-   "MDEF": 12
+   "STR": 4,
+   "CON": 8,
+   "INT": 15,
+   "SPD": 12,
+   "AGI": 11,
+   "PDEF": 3,
+   "MDEF": 11
+  },
+  "lines": [
+   "19"
+  ]
+ },
+ {
+  "class": "Earth Mage",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Mountain",
+  "speed_tier": 1,
+  "role": "Caster",
+  "key_stats": [
+   "INT",
+   "MDEF"
+  ],
+  "stat_total": 64,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Magic",
+  "front_count": 2,
+  "back_attack": "Magic (pierce)",
+  "back_count": 2,
+  "element": "Earth",
+  "notes": "Element at stage 4",
+  "traits": [],
+  "leader_aura_text": "squad melee adds leader element",
+  "leader_aura": "Attunement",
+  "xp_rate": 1,
+  "formerly": null,
+  "base_stats": {
+   "STR": 7,
+   "CON": 12,
+   "INT": 14,
+   "SPD": 7,
+   "AGI": 7,
+   "PDEF": 8,
+   "MDEF": 9
   },
   "lines": [
    "19"
@@ -1822,25 +2181,30 @@
   "flex_max": 5,
   "front_attack": "Magic",
   "front_count": 2,
-  "back_attack": "Magic",
-  "back_count": 3,
+  "back_attack": "Magic (chain 3)",
+  "back_count": 2,
   "element": "Lightning",
   "notes": "Element at stage 4",
+  "traits": [],
+  "leader_aura_text": "squad melee adds leader element",
+  "leader_aura": "Attunement",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 5,
-   "CON": 9,
-   "INT": 16,
-   "SPD": 9,
-   "AGI": 9,
-   "PDEF": 4,
-   "MDEF": 12
+   "STR": 4,
+   "CON": 8,
+   "INT": 18,
+   "SPD": 10,
+   "AGI": 10,
+   "PDEF": 3,
+   "MDEF": 11
   },
   "lines": [
    "19"
   ]
  },
  {
-  "class": "Wizard",
+  "class": "Occultist",
   "stage": 3,
   "size": "Small",
   "slots": 1,
@@ -1861,22 +2225,29 @@
   "back_attack": "Magic",
   "back_count": 3,
   "element": null,
-  "notes": "Summons undead; Lich by item",
+  "notes": "Summons undead",
+  "traits": [
+   "Raise dead"
+  ],
+  "leader_aura_text": "first fallen unit rises as a Skeleton",
+  "leader_aura": "Grave pact",
+  "xp_rate": 1,
+  "formerly": "Wizard",
   "base_stats": {
    "STR": 4,
    "CON": 8,
-   "INT": 14,
-   "SPD": 8,
-   "AGI": 8,
+   "INT": 15,
+   "SPD": 7,
+   "AGI": 7,
    "PDEF": 3,
-   "MDEF": 10
+   "MDEF": 11
   },
   "lines": [
    "20"
   ]
  },
  {
-  "class": "Sorcerer",
+  "class": "Necromancer",
   "stage": 4,
   "size": "Small",
   "slots": 1,
@@ -1897,15 +2268,22 @@
   "back_attack": "Magic",
   "back_count": 3,
   "element": "Dark",
-  "notes": "Summons undead; Lich by item",
+  "notes": "Summons undead",
+  "traits": [
+   "Raise dead"
+  ],
+  "leader_aura_text": "first fallen unit rises as a Skeleton",
+  "leader_aura": "Grave pact",
+  "xp_rate": 1,
+  "formerly": "Sorcerer",
   "base_stats": {
    "STR": 5,
    "CON": 9,
-   "INT": 16,
-   "SPD": 9,
-   "AGI": 9,
+   "INT": 17,
+   "SPD": 8,
+   "AGI": 8,
    "PDEF": 4,
-   "MDEF": 12
+   "MDEF": 13
   },
   "lines": [
    "20"
@@ -1934,6 +2312,11 @@
   "back_count": 3,
   "element": null,
   "notes": "Weakens enemies",
+  "traits": [],
+  "leader_aura_text": "enemy leader -15% all stats",
+  "leader_aura": "Enfeeble",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 4,
    "CON": 8,
@@ -1970,6 +2353,11 @@
   "back_count": 3,
   "element": null,
   "notes": "Weakens enemies",
+  "traits": [],
+  "leader_aura_text": "enemy leader -15% all stats",
+  "leader_aura": "Enfeeble",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 5,
    "CON": 9,
@@ -1981,6 +2369,608 @@
   },
   "lines": [
    "21"
+  ]
+ },
+ {
+  "class": "Spellbreaker",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 2,
+  "role": "Anti-mage",
+  "key_stats": [
+   "AGI",
+   "MDEF"
+  ],
+  "stat_total": 58,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Dispel",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "traits": [
+   "Nullify"
+  ],
+  "leader_aura_text": "enemy magic -20%",
+  "leader_aura": "Null field",
+  "xp_rate": 1,
+  "formerly": null,
+  "base_stats": {
+   "STR": 9,
+   "CON": 9,
+   "INT": 6,
+   "SPD": 9,
+   "AGI": 9,
+   "PDEF": 5,
+   "MDEF": 11
+  },
+  "lines": [
+   "22"
+  ]
+ },
+ {
+  "class": "Witch Hunter",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 2,
+  "role": "Anti-mage",
+  "key_stats": [
+   "AGI",
+   "MDEF"
+  ],
+  "stat_total": 69,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Dispel",
+  "back_count": 2,
+  "element": null,
+  "notes": null,
+  "traits": [
+   "Nullify"
+  ],
+  "leader_aura_text": "enemy magic -20%",
+  "leader_aura": "Null field",
+  "xp_rate": 1,
+  "formerly": null,
+  "base_stats": {
+   "STR": 11,
+   "CON": 11,
+   "INT": 7,
+   "SPD": 10,
+   "AGI": 11,
+   "PDEF": 6,
+   "MDEF": 13
+  },
+  "lines": [
+   "22"
+  ]
+ },
+ {
+  "class": "Falconer",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Forest",
+  "speed_tier": 2,
+  "role": "Archer",
+  "key_stats": [
+   "AGI",
+   "STR"
+  ],
+  "stat_total": 55,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Ranged",
+  "front_count": 1,
+  "back_attack": "Ranged",
+  "back_count": 3,
+  "element": null,
+  "notes": null,
+  "traits": [
+   "Anti-air"
+  ],
+  "leader_aura_text": "see enemy squad makeup before contact",
+  "leader_aura": "Spotter",
+  "xp_rate": 1,
+  "formerly": null,
+  "base_stats": {
+   "STR": 9,
+   "CON": 9,
+   "INT": 6,
+   "SPD": 9,
+   "AGI": 13,
+   "PDEF": 4,
+   "MDEF": 5
+  },
+  "lines": [
+   "23"
+  ]
+ },
+ {
+  "class": "Hawkmaster",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Forest",
+  "speed_tier": 2,
+  "role": "Archer",
+  "key_stats": [
+   "AGI",
+   "STR"
+  ],
+  "stat_total": 65,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Ranged",
+  "front_count": 2,
+  "back_attack": "Ranged",
+  "back_count": 3,
+  "element": null,
+  "notes": null,
+  "traits": [
+   "Anti-air"
+  ],
+  "leader_aura_text": "see enemy squad makeup before contact",
+  "leader_aura": "Spotter",
+  "xp_rate": 1,
+  "formerly": null,
+  "base_stats": {
+   "STR": 11,
+   "CON": 10,
+   "INT": 7,
+   "SPD": 11,
+   "AGI": 15,
+   "PDEF": 5,
+   "MDEF": 6
+  },
+  "lines": [
+   "23"
+  ]
+ },
+ {
+  "class": "Herald",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 2,
+  "role": "Support",
+  "key_stats": [
+   "CON",
+   "INT"
+  ],
+  "stat_total": 55,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 1,
+  "back_attack": "Buff",
+  "back_count": 2,
+  "element": null,
+  "notes": null,
+  "traits": [
+   "Mounted",
+   "Banner"
+  ],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
+  "base_stats": {
+   "STR": 8,
+   "CON": 10,
+   "INT": 7,
+   "SPD": 8,
+   "AGI": 8,
+   "PDEF": 7,
+   "MDEF": 7
+  },
+  "lines": [
+   "24"
+  ]
+ },
+ {
+  "class": "Standard-Bearer",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 2,
+  "role": "Support",
+  "key_stats": [
+   "CON",
+   "INT"
+  ],
+  "stat_total": 63,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Buff",
+  "back_count": 2,
+  "element": null,
+  "notes": null,
+  "traits": [
+   "Mounted",
+   "Banner"
+  ],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
+  "base_stats": {
+   "STR": 9,
+   "CON": 12,
+   "INT": 8,
+   "SPD": 9,
+   "AGI": 9,
+   "PDEF": 8,
+   "MDEF": 8
+  },
+  "lines": [
+   "24"
+  ]
+ },
+ {
+  "class": "Sapper",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Mountain",
+  "speed_tier": 1,
+  "role": "Engineer",
+  "key_stats": [
+   "STR",
+   "CON"
+  ],
+  "stat_total": 58,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Ranged",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "traits": [
+   "Bridge"
+  ],
+  "leader_aura_text": "squad x2 capture speed",
+  "leader_aura": "Siegecraft",
+  "xp_rate": 1,
+  "formerly": null,
+  "base_stats": {
+   "STR": 12,
+   "CON": 11,
+   "INT": 7,
+   "SPD": 7,
+   "AGI": 8,
+   "PDEF": 9,
+   "MDEF": 4
+  },
+  "lines": [
+   "25"
+  ]
+ },
+ {
+  "class": "Siege Engineer",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Mountain",
+  "speed_tier": 1,
+  "role": "Engineer",
+  "key_stats": [
+   "STR",
+   "CON"
+  ],
+  "stat_total": 67,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Ranged (row)",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "traits": [
+   "Bridge"
+  ],
+  "leader_aura_text": "squad x2 capture speed",
+  "leader_aura": "Siegecraft",
+  "xp_rate": 1,
+  "formerly": null,
+  "base_stats": {
+   "STR": 14,
+   "CON": 13,
+   "INT": 8,
+   "SPD": 8,
+   "AGI": 9,
+   "PDEF": 10,
+   "MDEF": 5
+  },
+  "lines": [
+   "25"
+  ]
+ },
+ {
+  "class": "Quartermaster",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 1,
+  "role": "Support",
+  "key_stats": [
+   "CON",
+   "INT"
+  ],
+  "stat_total": 53,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Buff",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "traits": [
+   "Supply"
+  ],
+  "leader_aura_text": "squad heals between battles",
+  "leader_aura": "Supply line",
+  "xp_rate": 1,
+  "formerly": null,
+  "base_stats": {
+   "STR": 6,
+   "CON": 10,
+   "INT": 9,
+   "SPD": 7,
+   "AGI": 7,
+   "PDEF": 6,
+   "MDEF": 8
+  },
+  "lines": [
+   "26"
+  ]
+ },
+ {
+  "class": "Provisioner",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Any",
+  "terrain": "Plains",
+  "speed_tier": 1,
+  "role": "Support",
+  "key_stats": [
+   "CON",
+   "INT"
+  ],
+  "stat_total": 61,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Buff",
+  "back_count": 2,
+  "element": null,
+  "notes": null,
+  "traits": [
+   "Supply"
+  ],
+  "leader_aura_text": "squad heals between battles",
+  "leader_aura": "Supply line",
+  "xp_rate": 1,
+  "formerly": null,
+  "base_stats": {
+   "STR": 7,
+   "CON": 12,
+   "INT": 10,
+   "SPD": 8,
+   "AGI": 8,
+   "PDEF": 7,
+   "MDEF": 9
+  },
+  "lines": [
+   "26"
+  ]
+ },
+ {
+  "class": "Smuggler",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Neutral",
+  "terrain": "Swamp",
+  "speed_tier": 2,
+  "role": "Rear striker",
+  "key_stats": [
+   "AGI",
+   "SPD"
+  ],
+  "stat_total": 56,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee (any row)",
+  "front_count": 2,
+  "back_attack": "Ranged",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "traits": [
+   "Black market"
+  ],
+  "leader_aura_text": "reveals hidden map sites nearby",
+  "leader_aura": "Contacts",
+  "xp_rate": 1,
+  "formerly": null,
+  "base_stats": {
+   "STR": 8,
+   "CON": 9,
+   "INT": 7,
+   "SPD": 11,
+   "AGI": 12,
+   "PDEF": 4,
+   "MDEF": 5
+  },
+  "lines": [
+   "27"
+  ]
+ },
+ {
+  "class": "Fence",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Neutral",
+  "terrain": "Swamp",
+  "speed_tier": 2,
+  "role": "Rear striker",
+  "key_stats": [
+   "AGI",
+   "SPD"
+  ],
+  "stat_total": 65,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Melee (any row)",
+  "front_count": 2,
+  "back_attack": "Ranged",
+  "back_count": 2,
+  "element": null,
+  "notes": null,
+  "traits": [
+   "Black market"
+  ],
+  "leader_aura_text": "reveals hidden map sites nearby",
+  "leader_aura": "Contacts",
+  "xp_rate": 1,
+  "formerly": null,
+  "base_stats": {
+   "STR": 9,
+   "CON": 10,
+   "INT": 8,
+   "SPD": 13,
+   "AGI": 14,
+   "PDEF": 5,
+   "MDEF": 6
+  },
+  "lines": [
+   "27"
+  ]
+ },
+ {
+  "class": "Seer",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Neutral",
+  "terrain": "Desert",
+  "speed_tier": 1,
+  "role": "Caster",
+  "key_stats": [
+   "INT",
+   "MDEF"
+  ],
+  "stat_total": 53,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Magic",
+  "front_count": 1,
+  "back_attack": "Debuff",
+  "back_count": 2,
+  "element": null,
+  "notes": null,
+  "traits": [
+   "Foresight"
+  ],
+  "leader_aura_text": "preview the next Tarot card",
+  "leader_aura": "Foresight",
+  "xp_rate": 1,
+  "formerly": null,
+  "base_stats": {
+   "STR": 3,
+   "CON": 7,
+   "INT": 14,
+   "SPD": 8,
+   "AGI": 8,
+   "PDEF": 3,
+   "MDEF": 10
+  },
+  "lines": [
+   "28"
+  ]
+ },
+ {
+  "class": "Oracle",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Neutral",
+  "terrain": "Desert",
+  "speed_tier": 1,
+  "role": "Caster",
+  "key_stats": [
+   "INT",
+   "MDEF"
+  ],
+  "stat_total": 61,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Magic",
+  "front_count": 2,
+  "back_attack": "Debuff",
+  "back_count": 2,
+  "element": null,
+  "notes": null,
+  "traits": [
+   "Foresight"
+  ],
+  "leader_aura_text": "preview the next Tarot card",
+  "leader_aura": "Foresight",
+  "xp_rate": 1,
+  "formerly": null,
+  "base_stats": {
+   "STR": 4,
+   "CON": 8,
+   "INT": 16,
+   "SPD": 9,
+   "AGI": 9,
+   "PDEF": 3,
+   "MDEF": 12
+  },
+  "lines": [
+   "28"
   ]
  },
  {
@@ -2006,6 +2996,12 @@
   "back_count": 2,
   "element": null,
   "notes": "Healer for mounted squads",
+  "traits": [
+   "Mounted"
+  ],
+  "leader_aura": null,
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
    "STR": 6,
    "CON": 9,
@@ -2039,9 +3035,16 @@
   "front_attack": "Melee",
   "front_count": 1,
   "back_attack": "Heal",
-  "back_count": 3,
+  "back_count": 2,
   "element": null,
   "notes": "Healer for mounted squads",
+  "traits": [
+   "Mounted"
+  ],
+  "leader_aura_text": "Mounted units heal 10% after battle",
+  "leader_aura": "Remount",
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
    "STR": 8,
    "CON": 10,
@@ -2075,9 +3078,16 @@
   "front_attack": "Melee",
   "front_count": 2,
   "back_attack": "Heal",
-  "back_count": 3,
+  "back_count": 2,
   "element": null,
   "notes": "Healer for mounted squads",
+  "traits": [
+   "Mounted"
+  ],
+  "leader_aura_text": "Mounted units heal 10% after battle",
+  "leader_aura": "Remount",
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
    "STR": 9,
    "CON": 12,
@@ -2114,6 +3124,10 @@
   "back_count": 2,
   "element": "Holy",
   "notes": "Low flyer; white magic",
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 4,
    "CON": 6,
@@ -2150,6 +3164,11 @@
   "back_count": 3,
   "element": "Holy",
   "notes": "Low flyer; white magic",
+  "traits": [],
+  "leader_aura_text": "squad -25% Dark damage taken",
+  "leader_aura": "Halo",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 4,
    "CON": 8,
@@ -2186,6 +3205,11 @@
   "back_count": 3,
   "element": "Holy",
   "notes": "Low flyer; white magic",
+  "traits": [],
+  "leader_aura_text": "squad -25% Dark damage taken",
+  "leader_aura": "Halo",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 5,
    "CON": 9,
@@ -2222,6 +3246,10 @@
   "back_count": 2,
   "element": "Dark",
   "notes": "Low flyer; dark magic",
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 4,
    "CON": 6,
@@ -2258,6 +3286,11 @@
   "back_count": 3,
   "element": "Dark",
   "notes": "Low flyer; dark magic",
+  "traits": [],
+  "leader_aura_text": "enemy -10% AGI",
+  "leader_aura": "Dread",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 4,
    "CON": 8,
@@ -2294,6 +3327,11 @@
   "back_count": 3,
   "element": "Dark",
   "notes": "Low flyer; dark magic",
+  "traits": [],
+  "leader_aura_text": "enemy -10% AGI",
+  "leader_aura": "Dread",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 5,
    "CON": 9,
@@ -2330,6 +3368,12 @@
   "back_count": 1,
   "element": null,
   "notes": "Sky-mounted",
+  "traits": [
+   "Mounted"
+  ],
+  "leader_aura": null,
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
    "STR": 11,
    "CON": 10,
@@ -2361,11 +3405,18 @@
   "flex_min": 3,
   "flex_max": 5,
   "front_attack": "Melee",
-  "front_count": 3,
+  "front_count": 2,
   "back_attack": "Melee",
   "back_count": 1,
   "element": null,
   "notes": "Sky-mounted",
+  "traits": [
+   "Mounted"
+  ],
+  "leader_aura_text": "squad crosses water and mountains",
+  "leader_aura": "Airlift",
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
    "STR": 14,
    "CON": 12,
@@ -2397,11 +3448,18 @@
   "flex_min": 3,
   "flex_max": 5,
   "front_attack": "Melee",
-  "front_count": 3,
+  "front_count": 2,
   "back_attack": "Melee",
   "back_count": 2,
   "element": null,
   "notes": "Sky-mounted",
+  "traits": [
+   "Mounted"
+  ],
+  "leader_aura_text": "squad crosses water and mountains",
+  "leader_aura": "Airlift",
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
    "STR": 16,
    "CON": 14,
@@ -2429,7 +3487,7 @@
    "STR",
    "INT"
   ],
-  "stat_total": 51,
+  "stat_total": 50,
   "flex_min": 3,
   "flex_max": 5,
   "front_attack": "Melee",
@@ -2438,12 +3496,16 @@
   "back_count": 1,
   "element": "Water",
   "notes": null,
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 9,
-   "CON": 10,
-   "INT": 8,
+   "STR": 7,
+   "CON": 9,
+   "INT": 9,
    "SPD": 6,
-   "AGI": 6,
+   "AGI": 7,
    "PDEF": 6,
    "MDEF": 6
   },
@@ -2470,17 +3532,22 @@
   "flex_max": 5,
   "front_attack": "Melee",
   "front_count": 3,
-  "back_attack": "Magic",
+  "back_attack": "Debuff",
   "back_count": 1,
   "element": "Water",
   "notes": null,
+  "traits": [],
+  "leader_aura_text": "squad +20% damage on water",
+  "leader_aura": "Tide",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 10,
-   "CON": 12,
-   "INT": 9,
+   "STR": 9,
+   "CON": 11,
+   "INT": 11,
    "SPD": 8,
-   "AGI": 8,
-   "PDEF": 8,
+   "AGI": 9,
+   "PDEF": 7,
    "MDEF": 8
   },
   "lines": [
@@ -2506,17 +3573,22 @@
   "flex_max": 5,
   "front_attack": "Melee",
   "front_count": 3,
-  "back_attack": "Magic",
+  "back_attack": "Debuff",
   "back_count": 2,
   "element": "Water",
   "notes": null,
+  "traits": [],
+  "leader_aura_text": "squad +20% damage on water",
+  "leader_aura": "Tide",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 12,
-   "CON": 14,
-   "INT": 10,
+   "STR": 10,
+   "CON": 13,
+   "INT": 13,
    "SPD": 9,
-   "AGI": 9,
-   "PDEF": 9,
+   "AGI": 10,
+   "PDEF": 8,
    "MDEF": 9
   },
   "lines": [
@@ -2524,7 +3596,7 @@
   ]
  },
  {
-  "class": "Faerie",
+  "class": "Sprite",
   "stage": 2,
   "size": "Small",
   "slots": 1,
@@ -2546,6 +3618,10 @@
   "back_count": 2,
   "element": null,
   "notes": "Cannot lead",
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": "Faerie",
   "base_stats": {
    "STR": 2,
    "CON": 5,
@@ -2560,7 +3636,7 @@
   ]
  },
  {
-  "class": "Pixie",
+  "class": "Faerie",
   "stage": 3,
   "size": "Small",
   "slots": 1,
@@ -2582,6 +3658,10 @@
   "back_count": 3,
   "element": null,
   "notes": "Cannot lead",
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": "Pixie",
   "base_stats": {
    "STR": 3,
    "CON": 6,
@@ -2596,7 +3676,7 @@
   ]
  },
  {
-  "class": "Sylph",
+  "class": "Faerie Queen",
   "stage": 4,
   "size": "Small",
   "slots": 1,
@@ -2618,6 +3698,10 @@
   "back_count": 3,
   "element": null,
   "notes": "Cannot lead",
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": "Sylph",
   "base_stats": {
    "STR": 4,
    "CON": 7,
@@ -2629,6 +3713,130 @@
   },
   "lines": [
    "R6"
+  ]
+ },
+ {
+  "class": "Gustling",
+  "stage": 2,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": false,
+  "alignment_lean": "Neutral",
+  "terrain": "Desert",
+  "speed_tier": 2,
+  "role": "Flying caster",
+  "key_stats": [
+   "INT",
+   "SPD"
+  ],
+  "stat_total": 49,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Magic",
+  "front_count": 1,
+  "back_attack": "Magic",
+  "back_count": 2,
+  "element": "Wind",
+  "notes": "Low flyer; wind magic",
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
+  "base_stats": {
+   "STR": 4,
+   "CON": 6,
+   "INT": 11,
+   "SPD": 9,
+   "AGI": 8,
+   "PDEF": 3,
+   "MDEF": 8
+  },
+  "lines": [
+   "R7"
+  ]
+ },
+ {
+  "class": "Zephyr",
+  "stage": 3,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Neutral",
+  "terrain": "Desert",
+  "speed_tier": 2,
+  "role": "Flying caster",
+  "key_stats": [
+   "INT",
+   "SPD"
+  ],
+  "stat_total": 57,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Magic",
+  "front_count": 1,
+  "back_attack": "Magic (row)",
+  "back_count": 1,
+  "element": "Wind",
+  "notes": "Low flyer; wind magic",
+  "traits": [],
+  "leader_aura_text": "squad hidden from enemy scouts",
+  "leader_aura": "Mirage",
+  "xp_rate": 1,
+  "formerly": null,
+  "base_stats": {
+   "STR": 4,
+   "CON": 8,
+   "INT": 13,
+   "SPD": 11,
+   "AGI": 9,
+   "PDEF": 3,
+   "MDEF": 9
+  },
+  "lines": [
+   "R7"
+  ]
+ },
+ {
+  "class": "Djinn",
+  "stage": 4,
+  "size": "Small",
+  "slots": 1,
+  "can_lead": true,
+  "alignment_lean": "Neutral",
+  "terrain": "Desert",
+  "speed_tier": 2,
+  "role": "Flying caster",
+  "key_stats": [
+   "INT",
+   "SPD"
+  ],
+  "stat_total": 68,
+  "flex_min": 3,
+  "flex_max": 5,
+  "front_attack": "Magic",
+  "front_count": 2,
+  "back_attack": "Magic (row)",
+  "back_count": 2,
+  "element": "Wind",
+  "notes": "Low flyer; wind magic",
+  "traits": [
+   "Mirage"
+  ],
+  "leader_aura_text": "squad hidden from enemy scouts",
+  "leader_aura": "Mirage",
+  "xp_rate": 1,
+  "formerly": null,
+  "base_stats": {
+   "STR": 5,
+   "CON": 9,
+   "INT": 15,
+   "SPD": 13,
+   "AGI": 11,
+   "PDEF": 4,
+   "MDEF": 11
+  },
+  "lines": [
+   "R7"
   ]
  },
  {
@@ -2648,12 +3856,16 @@
   "stat_total": 40,
   "flex_min": 3,
   "flex_max": 5,
-  "front_attack": "Heal",
+  "front_attack": "Ward",
   "front_count": 1,
   "back_attack": "Ranged",
   "back_count": 2,
   "element": null,
   "notes": null,
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 6,
    "CON": 6,
@@ -2684,12 +3896,16 @@
   "stat_total": 52,
   "flex_min": 3,
   "flex_max": 5,
-  "front_attack": "Heal",
+  "front_attack": "Ward",
   "front_count": 1,
   "back_attack": "Ranged",
   "back_count": 2,
   "element": null,
   "notes": null,
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 8,
    "CON": 8,
@@ -2720,12 +3936,17 @@
   "stat_total": 60,
   "flex_min": 3,
   "flex_max": 5,
-  "front_attack": "Heal",
+  "front_attack": "Ward",
   "front_count": 1,
   "back_attack": "Ranged",
   "back_count": 3,
   "element": null,
   "notes": null,
+  "traits": [],
+  "leader_aura_text": "squad -15% magic damage taken",
+  "leader_aura": "Wardsong",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 9,
    "CON": 9,
@@ -2756,12 +3977,17 @@
   "stat_total": 68,
   "flex_min": 3,
   "flex_max": 5,
-  "front_attack": "Heal",
+  "front_attack": "Ward",
   "front_count": 2,
   "back_attack": "Ranged",
   "back_count": 3,
   "element": null,
   "notes": null,
+  "traits": [],
+  "leader_aura_text": "squad -15% magic damage taken",
+  "leader_aura": "Wardsong",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 10,
    "CON": 10,
@@ -2789,7 +4015,7 @@
    "STR",
    "INT"
   ],
-  "stat_total": 41,
+  "stat_total": 42,
   "flex_min": 3,
   "flex_max": 5,
   "front_attack": "Melee",
@@ -2798,13 +4024,17 @@
   "back_count": 1,
   "element": "Ice",
   "notes": "Cold magic",
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 7,
-   "CON": 8,
-   "INT": 6,
+   "CON": 9,
+   "INT": 7,
    "SPD": 5,
    "AGI": 5,
-   "PDEF": 5,
+   "PDEF": 4,
    "MDEF": 5
   },
   "lines": [
@@ -2825,7 +4055,7 @@
    "STR",
    "INT"
   ],
-  "stat_total": 51,
+  "stat_total": 52,
   "flex_min": 3,
   "flex_max": 5,
   "front_attack": "Melee",
@@ -2834,13 +4064,19 @@
   "back_count": 1,
   "element": "Ice",
   "notes": "Cold magic",
+  "traits": [
+   "Regenerate"
+  ],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 9,
-   "CON": 10,
-   "INT": 8,
+   "CON": 11,
+   "INT": 9,
    "SPD": 6,
    "AGI": 6,
-   "PDEF": 6,
+   "PDEF": 5,
    "MDEF": 6
   },
   "lines": [
@@ -2861,7 +4097,7 @@
    "STR",
    "INT"
   ],
-  "stat_total": 63,
+  "stat_total": 62,
   "flex_min": 3,
   "flex_max": 5,
   "front_attack": "Melee",
@@ -2870,13 +4106,20 @@
   "back_count": 1,
   "element": "Ice",
   "notes": "Cold magic",
+  "traits": [
+   "Regenerate"
+  ],
+  "leader_aura_text": "squad regenerates 3% per round",
+  "leader_aura": "Regrowth",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 10,
-   "CON": 12,
-   "INT": 9,
-   "SPD": 8,
-   "AGI": 8,
-   "PDEF": 8,
+   "STR": 11,
+   "CON": 13,
+   "INT": 10,
+   "SPD": 7,
+   "AGI": 7,
+   "PDEF": 6,
    "MDEF": 8
   },
   "lines": [
@@ -2906,13 +4149,20 @@
   "back_count": 2,
   "element": "Ice",
   "notes": "Cold magic",
+  "traits": [
+   "Regenerate"
+  ],
+  "leader_aura_text": "squad regenerates 3% per round",
+  "leader_aura": "Regrowth",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 12,
-   "CON": 14,
-   "INT": 10,
-   "SPD": 9,
-   "AGI": 9,
-   "PDEF": 9,
+   "STR": 13,
+   "CON": 15,
+   "INT": 12,
+   "SPD": 8,
+   "AGI": 8,
+   "PDEF": 7,
    "MDEF": 9
   },
   "lines": [
@@ -2933,23 +4183,27 @@
    "STR",
    "INT"
   ],
-  "stat_total": 41,
+  "stat_total": 42,
   "flex_min": 3,
   "flex_max": 5,
   "front_attack": "Melee",
   "front_count": 2,
   "back_attack": "Magic",
   "back_count": 1,
-  "element": "Lightning",
-  "notes": "Lightning magic undecided",
+  "element": "Earth",
+  "notes": "Earth magic",
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 7,
-   "CON": 8,
-   "INT": 6,
-   "SPD": 5,
+   "STR": 8,
+   "CON": 9,
+   "INT": 5,
+   "SPD": 4,
    "AGI": 5,
-   "PDEF": 5,
-   "MDEF": 5
+   "PDEF": 7,
+   "MDEF": 4
   },
   "lines": [
    "N3"
@@ -2969,23 +4223,27 @@
    "STR",
    "INT"
   ],
-  "stat_total": 51,
+  "stat_total": 52,
   "flex_min": 3,
   "flex_max": 5,
   "front_attack": "Melee",
   "front_count": 2,
   "back_attack": "Magic",
   "back_count": 1,
-  "element": "Lightning",
-  "notes": "Lightning magic undecided",
+  "element": "Earth",
+  "notes": "Earth magic",
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 9,
-   "CON": 10,
-   "INT": 8,
-   "SPD": 6,
+   "STR": 10,
+   "CON": 11,
+   "INT": 6,
+   "SPD": 5,
    "AGI": 6,
-   "PDEF": 6,
-   "MDEF": 6
+   "PDEF": 9,
+   "MDEF": 5
   },
   "lines": [
    "N3"
@@ -3005,23 +4263,28 @@
    "STR",
    "INT"
   ],
-  "stat_total": 63,
+  "stat_total": 62,
   "flex_min": 3,
   "flex_max": 5,
   "front_attack": "Melee",
   "front_count": 3,
   "back_attack": "Magic",
   "back_count": 1,
-  "element": "Lightning",
-  "notes": "Lightning magic undecided",
+  "element": "Earth",
+  "notes": "Earth magic",
+  "traits": [],
+  "leader_aura_text": "squad +20% PDEF on mountains",
+  "leader_aura": "Dig in",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 10,
-   "CON": 12,
-   "INT": 9,
-   "SPD": 8,
-   "AGI": 8,
-   "PDEF": 8,
-   "MDEF": 8
+   "STR": 12,
+   "CON": 13,
+   "INT": 8,
+   "SPD": 6,
+   "AGI": 7,
+   "PDEF": 10,
+   "MDEF": 6
   },
   "lines": [
    "N3"
@@ -3048,16 +4311,21 @@
   "front_count": 3,
   "back_attack": "Magic",
   "back_count": 2,
-  "element": "Lightning",
-  "notes": "Lightning magic undecided",
+  "element": "Earth",
+  "notes": "Earth magic",
+  "traits": [],
+  "leader_aura_text": "squad +20% PDEF on mountains",
+  "leader_aura": "Dig in",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 12,
-   "CON": 14,
-   "INT": 10,
-   "SPD": 9,
-   "AGI": 9,
-   "PDEF": 9,
-   "MDEF": 9
+   "STR": 14,
+   "CON": 15,
+   "INT": 9,
+   "SPD": 7,
+   "AGI": 8,
+   "PDEF": 12,
+   "MDEF": 7
   },
   "lines": [
    "N3"
@@ -3086,14 +4354,18 @@
   "back_count": 1,
   "element": "Dark",
   "notes": null,
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 7,
-   "CON": 8,
-   "INT": 6,
-   "SPD": 5,
-   "AGI": 5,
-   "PDEF": 5,
-   "MDEF": 5
+   "STR": 6,
+   "CON": 7,
+   "INT": 7,
+   "SPD": 6,
+   "AGI": 7,
+   "PDEF": 4,
+   "MDEF": 4
   },
   "lines": [
    "N4"
@@ -3113,7 +4385,7 @@
    "STR",
    "INT"
   ],
-  "stat_total": 51,
+  "stat_total": 53,
   "flex_min": 3,
   "flex_max": 5,
   "front_attack": "Melee",
@@ -3122,14 +4394,18 @@
   "back_count": 1,
   "element": "Dark",
   "notes": null,
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 9,
-   "CON": 10,
-   "INT": 8,
-   "SPD": 6,
-   "AGI": 6,
-   "PDEF": 6,
-   "MDEF": 6
+   "STR": 8,
+   "CON": 9,
+   "INT": 9,
+   "SPD": 8,
+   "AGI": 9,
+   "PDEF": 5,
+   "MDEF": 5
   },
   "lines": [
    "N4"
@@ -3149,7 +4425,7 @@
    "STR",
    "INT"
   ],
-  "stat_total": 63,
+  "stat_total": 60,
   "flex_min": 3,
   "flex_max": 5,
   "front_attack": "Melee",
@@ -3158,14 +4434,19 @@
   "back_count": 1,
   "element": "Dark",
   "notes": null,
+  "traits": [],
+  "leader_aura_text": "+25% gold from battles",
+  "leader_aura": "Plunder",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 10,
-   "CON": 12,
-   "INT": 9,
-   "SPD": 8,
-   "AGI": 8,
-   "PDEF": 8,
-   "MDEF": 8
+   "STR": 9,
+   "CON": 10,
+   "INT": 10,
+   "SPD": 9,
+   "AGI": 10,
+   "PDEF": 6,
+   "MDEF": 6
   },
   "lines": [
    "N4"
@@ -3194,14 +4475,19 @@
   "back_count": 2,
   "element": "Dark",
   "notes": null,
+  "traits": [],
+  "leader_aura_text": "+25% gold from battles",
+  "leader_aura": "Plunder",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 12,
-   "CON": 14,
-   "INT": 10,
-   "SPD": 9,
-   "AGI": 9,
-   "PDEF": 9,
-   "MDEF": 9
+   "STR": 11,
+   "CON": 12,
+   "INT": 12,
+   "SPD": 11,
+   "AGI": 12,
+   "PDEF": 7,
+   "MDEF": 7
   },
   "lines": [
    "N4"
@@ -3230,6 +4516,12 @@
   "back_count": 2,
   "element": "Dark",
   "notes": null,
+  "traits": [
+   "Incorporeal"
+  ],
+  "leader_aura": null,
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
    "STR": 3,
    "CON": 4,
@@ -3266,6 +4558,12 @@
   "back_count": 2,
   "element": "Dark",
   "notes": null,
+  "traits": [
+   "Incorporeal"
+  ],
+  "leader_aura": null,
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
    "STR": 4,
    "CON": 5,
@@ -3299,9 +4597,16 @@
   "front_attack": "Melee",
   "front_count": 1,
   "back_attack": "Magic",
-  "back_count": 3,
+  "back_count": 2,
   "element": "Dark",
   "notes": null,
+  "traits": [
+   "Incorporeal"
+  ],
+  "leader_aura_text": "enemy -10% STR",
+  "leader_aura": "Wail",
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
    "STR": 4,
    "CON": 6,
@@ -3316,7 +4621,7 @@
   ]
  },
  {
-  "class": "Niffin",
+  "class": "Banshee",
   "stage": 4,
   "size": "Small",
   "slots": 1,
@@ -3335,9 +4640,16 @@
   "front_attack": "Melee",
   "front_count": 2,
   "back_attack": "Magic",
-  "back_count": 3,
+  "back_count": 2,
   "element": "Dark",
   "notes": null,
+  "traits": [
+   "Incorporeal"
+  ],
+  "leader_aura_text": "enemy -10% STR",
+  "leader_aura": "Wail",
+  "xp_rate": 1.25,
+  "formerly": "Niffin",
   "base_stats": {
    "STR": 5,
    "CON": 7,
@@ -3374,6 +4686,10 @@
   "back_count": 1,
   "element": null,
   "notes": "Amphibious; low HP",
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 5,
    "CON": 4,
@@ -3411,6 +4727,10 @@
   "back_count": 1,
   "element": null,
   "notes": "Amphibious; low HP",
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 6,
    "CON": 5,
@@ -3447,6 +4767,11 @@
   "back_count": 1,
   "element": null,
   "notes": "Amphibious; low HP",
+  "traits": [],
+  "leader_aura_text": "no swamp/water penalty",
+  "leader_aura": "Marsh step",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 8,
    "CON": 6,
@@ -3483,6 +4808,11 @@
   "back_count": 2,
   "element": null,
   "notes": "Amphibious; low HP",
+  "traits": [],
+  "leader_aura_text": "no swamp/water penalty",
+  "leader_aura": "Marsh step",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 9,
    "CON": 7,
@@ -3510,21 +4840,25 @@
    "AGI",
    "INT"
   ],
-  "stat_total": 49,
+  "stat_total": 47,
   "flex_min": 3,
   "flex_max": 5,
   "front_attack": "Melee",
   "front_count": 2,
-  "back_attack": "Heal",
+  "back_attack": "Dispel",
   "back_count": 1,
   "element": null,
   "notes": "Amphibious; low HP",
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 6,
-   "CON": 5,
-   "INT": 8,
-   "SPD": 9,
-   "AGI": 11,
+   "STR": 8,
+   "CON": 6,
+   "INT": 6,
+   "SPD": 7,
+   "AGI": 10,
    "PDEF": 4,
    "MDEF": 6
   },
@@ -3551,17 +4885,22 @@
   "flex_max": 5,
   "front_attack": "Melee",
   "front_count": 3,
-  "back_attack": "Heal",
+  "back_attack": "Dispel",
   "back_count": 1,
   "element": null,
   "notes": "Amphibious; low HP",
+  "traits": [],
+  "leader_aura_text": "squad -20% Dark/magic damage taken in round 1",
+  "leader_aura": "Spell-eater",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 8,
-   "CON": 6,
-   "INT": 9,
-   "SPD": 10,
-   "AGI": 14,
-   "PDEF": 4,
+   "STR": 9,
+   "CON": 8,
+   "INT": 8,
+   "SPD": 9,
+   "AGI": 12,
+   "PDEF": 5,
    "MDEF": 8
   },
   "lines": [
@@ -3569,7 +4908,7 @@
   ]
  },
  {
-  "class": "Toad Man",
+  "class": "Toad Shaman",
   "stage": 4,
   "size": "Small",
   "slots": 1,
@@ -3587,17 +4926,22 @@
   "flex_max": 5,
   "front_attack": "Melee",
   "front_count": 3,
-  "back_attack": "Heal",
+  "back_attack": "Dispel",
   "back_count": 2,
   "element": null,
   "notes": "Amphibious; low HP",
+  "traits": [],
+  "leader_aura_text": "squad -20% Dark/magic damage taken in round 1",
+  "leader_aura": "Spell-eater",
+  "xp_rate": 1,
+  "formerly": "Toad Man",
   "base_stats": {
-   "STR": 9,
-   "CON": 7,
-   "INT": 10,
-   "SPD": 12,
-   "AGI": 16,
-   "PDEF": 5,
+   "STR": 11,
+   "CON": 9,
+   "INT": 9,
+   "SPD": 10,
+   "AGI": 14,
+   "PDEF": 6,
    "MDEF": 9
   },
   "lines": [
@@ -3618,23 +4962,29 @@
    "STR",
    "INT"
   ],
-  "stat_total": 58,
+  "stat_total": 70,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
-  "front_count": 2,
-  "back_attack": "Breath",
-  "back_count": 2,
+  "front_count": 1,
+  "back_attack": "Breath (row)",
+  "back_count": 1,
   "element": null,
   "notes": "Flyer",
+  "traits": [
+   "Bulwark"
+  ],
+  "leader_aura": null,
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
-   "STR": 12,
-   "CON": 14,
-   "INT": 8,
-   "SPD": 6,
-   "AGI": 4,
-   "PDEF": 8,
-   "MDEF": 6
+   "STR": 14,
+   "CON": 17,
+   "INT": 10,
+   "SPD": 7,
+   "AGI": 5,
+   "PDEF": 10,
+   "MDEF": 7
   },
   "lines": [
    "L1",
@@ -3656,23 +5006,29 @@
    "STR",
    "INT"
   ],
-  "stat_total": 74,
+  "stat_total": 90,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
   "front_count": 2,
-  "back_attack": "Breath",
-  "back_count": 2,
+  "back_attack": "Breath (row)",
+  "back_count": 1,
   "element": null,
   "notes": "Flyer",
+  "traits": [
+   "Bulwark"
+  ],
+  "leader_aura": null,
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
-   "STR": 15,
-   "CON": 18,
-   "INT": 10,
-   "SPD": 8,
-   "AGI": 5,
-   "PDEF": 10,
-   "MDEF": 8
+   "STR": 18,
+   "CON": 22,
+   "INT": 12,
+   "SPD": 10,
+   "AGI": 6,
+   "PDEF": 12,
+   "MDEF": 10
   },
   "lines": [
    "L1"
@@ -3692,23 +5048,30 @@
    "STR",
    "INT"
   ],
-  "stat_total": 87,
+  "stat_total": 104,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
   "front_count": 2,
-  "back_attack": "Breath",
-  "back_count": 3,
+  "back_attack": "Breath (row)",
+  "back_count": 2,
   "element": null,
   "notes": "Flyer",
+  "traits": [
+   "Bulwark"
+  ],
+  "leader_aura_text": "enemy -10% SPD and AGI",
+  "leader_aura": "Dragonfear",
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
-   "STR": 18,
-   "CON": 21,
-   "INT": 12,
-   "SPD": 9,
-   "AGI": 6,
-   "PDEF": 12,
-   "MDEF": 9
+   "STR": 22,
+   "CON": 25,
+   "INT": 14,
+   "SPD": 11,
+   "AGI": 7,
+   "PDEF": 14,
+   "MDEF": 11
   },
   "lines": [
    "L1"
@@ -3720,7 +5083,7 @@
   "size": "Large",
   "slots": 2,
   "can_lead": true,
-  "alignment_lean": "Varies by color",
+  "alignment_lean": "Any",
   "terrain": "Sky",
   "speed_tier": 3,
   "role": "Dragon",
@@ -3728,23 +5091,30 @@
    "STR",
    "INT"
   ],
-  "stat_total": 100,
+  "stat_total": 120,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
-  "front_count": 3,
-  "back_attack": "Breath",
-  "back_count": 3,
+  "front_count": 2,
+  "back_attack": "Breath (row)",
+  "back_count": 2,
   "element": "Fire",
   "notes": "Flyer",
+  "traits": [
+   "Bulwark"
+  ],
+  "leader_aura_text": "enemy -10% SPD and AGI",
+  "leader_aura": "Dragonfear",
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
-   "STR": 21,
-   "CON": 24,
-   "INT": 14,
-   "SPD": 10,
-   "AGI": 7,
-   "PDEF": 14,
-   "MDEF": 10
+   "STR": 26,
+   "CON": 30,
+   "INT": 13,
+   "SPD": 11,
+   "AGI": 8,
+   "PDEF": 20,
+   "MDEF": 12
   },
   "lines": [
    "L1"
@@ -3756,7 +5126,7 @@
   "size": "Large",
   "slots": 2,
   "can_lead": true,
-  "alignment_lean": "Varies by color",
+  "alignment_lean": "Any",
   "terrain": "Sky",
   "speed_tier": 3,
   "role": "Dragon",
@@ -3764,23 +5134,30 @@
    "STR",
    "INT"
   ],
-  "stat_total": 100,
+  "stat_total": 120,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
-  "front_count": 3,
-  "back_attack": "Breath",
-  "back_count": 3,
+  "front_count": 2,
+  "back_attack": "Breath (row)",
+  "back_count": 2,
   "element": "Ice",
   "notes": "Flyer",
+  "traits": [
+   "Bulwark"
+  ],
+  "leader_aura_text": "enemy -10% SPD and AGI",
+  "leader_aura": "Dragonfear",
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
    "STR": 21,
-   "CON": 24,
-   "INT": 14,
-   "SPD": 10,
-   "AGI": 7,
-   "PDEF": 14,
-   "MDEF": 10
+   "CON": 27,
+   "INT": 19,
+   "SPD": 12,
+   "AGI": 9,
+   "PDEF": 15,
+   "MDEF": 17
   },
   "lines": [
    "L1"
@@ -3792,7 +5169,7 @@
   "size": "Large",
   "slots": 2,
   "can_lead": true,
-  "alignment_lean": "Varies by color",
+  "alignment_lean": "Holy",
   "terrain": "Sky",
   "speed_tier": 3,
   "role": "Dragon",
@@ -3800,23 +5177,30 @@
    "STR",
    "INT"
   ],
-  "stat_total": 100,
+  "stat_total": 120,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
-  "front_count": 3,
-  "back_attack": "Breath",
-  "back_count": 3,
+  "front_count": 2,
+  "back_attack": "Breath (row)",
+  "back_count": 2,
   "element": "Holy",
   "notes": "Flyer",
+  "traits": [
+   "Bulwark"
+  ],
+  "leader_aura_text": "enemy -10% SPD and AGI",
+  "leader_aura": "Dragonfear",
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
-   "STR": 21,
-   "CON": 24,
-   "INT": 14,
-   "SPD": 10,
-   "AGI": 7,
+   "STR": 20,
+   "CON": 28,
+   "INT": 18,
+   "SPD": 12,
+   "AGI": 10,
    "PDEF": 14,
-   "MDEF": 10
+   "MDEF": 18
   },
   "lines": [
    "L1"
@@ -3828,7 +5212,7 @@
   "size": "Large",
   "slots": 2,
   "can_lead": true,
-  "alignment_lean": "Varies by color",
+  "alignment_lean": "Evil",
   "terrain": "Sky",
   "speed_tier": 3,
   "role": "Dragon",
@@ -3836,23 +5220,30 @@
    "STR",
    "INT"
   ],
-  "stat_total": 100,
+  "stat_total": 120,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
-  "front_count": 3,
-  "back_attack": "Breath",
-  "back_count": 3,
+  "front_count": 2,
+  "back_attack": "Breath (row)",
+  "back_count": 2,
   "element": "Dark",
   "notes": "Flyer",
+  "traits": [
+   "Bulwark"
+  ],
+  "leader_aura_text": "enemy -10% SPD and AGI",
+  "leader_aura": "Dragonfear",
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
-   "STR": 21,
-   "CON": 24,
-   "INT": 14,
-   "SPD": 10,
-   "AGI": 7,
+   "STR": 22,
+   "CON": 26,
+   "INT": 18,
+   "SPD": 13,
+   "AGI": 11,
    "PDEF": 14,
-   "MDEF": 10
+   "MDEF": 16
   },
   "lines": [
    "L1"
@@ -3872,23 +5263,27 @@
    "STR",
    "INT"
   ],
-  "stat_total": 74,
+  "stat_total": 85,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
   "front_count": 2,
-  "back_attack": "Breath",
-  "back_count": 2,
+  "back_attack": "Breath (row)",
+  "back_count": 1,
   "element": "Water",
   "notes": null,
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 15,
-   "CON": 18,
-   "INT": 10,
-   "SPD": 8,
-   "AGI": 5,
-   "PDEF": 10,
-   "MDEF": 8
+   "CON": 20,
+   "INT": 14,
+   "SPD": 9,
+   "AGI": 7,
+   "PDEF": 9,
+   "MDEF": 11
   },
   "lines": [
    "L2"
@@ -3908,23 +5303,28 @@
    "STR",
    "INT"
   ],
-  "stat_total": 87,
+  "stat_total": 103,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
   "front_count": 2,
-  "back_attack": "Breath",
-  "back_count": 3,
+  "back_attack": "Breath (row)",
+  "back_count": 2,
   "element": "Water",
   "notes": null,
+  "traits": [],
+  "leader_aura_text": "squad crosses water",
+  "leader_aura": "Sea lord",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 18,
-   "CON": 21,
-   "INT": 12,
-   "SPD": 9,
-   "AGI": 6,
-   "PDEF": 12,
-   "MDEF": 9
+   "CON": 24,
+   "INT": 17,
+   "SPD": 10,
+   "AGI": 9,
+   "PDEF": 11,
+   "MDEF": 14
   },
   "lines": [
    "L2"
@@ -3944,23 +5344,28 @@
    "STR",
    "INT"
   ],
-  "stat_total": 100,
+  "stat_total": 120,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
   "front_count": 3,
-  "back_attack": "Breath",
-  "back_count": 3,
+  "back_attack": "Breath (all)",
+  "back_count": 1,
   "element": "Water",
   "notes": null,
+  "traits": [],
+  "leader_aura_text": "squad crosses water",
+  "leader_aura": "Sea lord",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
    "STR": 21,
-   "CON": 24,
-   "INT": 14,
-   "SPD": 10,
-   "AGI": 7,
-   "PDEF": 14,
-   "MDEF": 10
+   "CON": 28,
+   "INT": 20,
+   "SPD": 12,
+   "AGI": 10,
+   "PDEF": 13,
+   "MDEF": 16
   },
   "lines": [
    "L2"
@@ -3980,23 +5385,27 @@
    "STR",
    "INT"
   ],
-  "stat_total": 74,
+  "stat_total": 85,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
   "front_count": 2,
-  "back_attack": "Breath",
-  "back_count": 2,
+  "back_attack": "Breath (row)",
+  "back_count": 1,
   "element": "Ice",
   "notes": null,
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 15,
-   "CON": 18,
-   "INT": 10,
-   "SPD": 8,
-   "AGI": 5,
+   "STR": 14,
+   "CON": 19,
+   "INT": 14,
+   "SPD": 7,
+   "AGI": 8,
    "PDEF": 10,
-   "MDEF": 8
+   "MDEF": 13
   },
   "lines": [
    "L3"
@@ -4016,23 +5425,28 @@
    "STR",
    "INT"
   ],
-  "stat_total": 87,
+  "stat_total": 102,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
   "front_count": 2,
-  "back_attack": "Breath",
-  "back_count": 3,
+  "back_attack": "Breath (row)",
+  "back_count": 2,
   "element": "Ice",
   "notes": null,
+  "traits": [],
+  "leader_aura_text": "enemy -10% SPD",
+  "leader_aura": "Blizzard",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 18,
-   "CON": 21,
-   "INT": 12,
+   "STR": 17,
+   "CON": 23,
+   "INT": 17,
    "SPD": 9,
-   "AGI": 6,
+   "AGI": 9,
    "PDEF": 12,
-   "MDEF": 9
+   "MDEF": 15
   },
   "lines": [
    "L3"
@@ -4052,23 +5466,28 @@
    "STR",
    "INT"
   ],
-  "stat_total": 100,
+  "stat_total": 120,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
   "front_count": 3,
-  "back_attack": "Breath",
-  "back_count": 3,
+  "back_attack": "Breath (row)",
+  "back_count": 2,
   "element": "Ice",
   "notes": null,
+  "traits": [],
+  "leader_aura_text": "enemy -10% SPD",
+  "leader_aura": "Blizzard",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 21,
-   "CON": 24,
-   "INT": 14,
+   "STR": 20,
+   "CON": 27,
+   "INT": 20,
    "SPD": 10,
-   "AGI": 7,
+   "AGI": 11,
    "PDEF": 14,
-   "MDEF": 10
+   "MDEF": 18
   },
   "lines": [
    "L3"
@@ -4088,7 +5507,7 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 54,
+  "stat_total": 65,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
@@ -4097,14 +5516,18 @@
   "back_count": 1,
   "element": "Fire",
   "notes": null,
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
-   "STR": 12,
-   "CON": 14,
-   "INT": 4,
-   "SPD": 8,
-   "AGI": 6,
-   "PDEF": 6,
-   "MDEF": 4
+   "STR": 14,
+   "CON": 17,
+   "INT": 5,
+   "SPD": 10,
+   "AGI": 7,
+   "PDEF": 7,
+   "MDEF": 5
   },
   "lines": [
    "L4",
@@ -4112,7 +5535,7 @@
   ]
  },
  {
-  "class": "Hellhound",
+  "class": "Ember Wolf",
   "stage": 2,
   "size": "Large",
   "slots": 2,
@@ -4125,30 +5548,34 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 69,
+  "stat_total": 79,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
   "front_count": 2,
-  "back_attack": "Breath",
+  "back_attack": "Breath (row)",
   "back_count": 1,
   "element": "Fire",
   "notes": null,
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1.25,
+  "formerly": "Hellhound",
   "base_stats": {
-   "STR": 15,
-   "CON": 18,
-   "INT": 5,
-   "SPD": 10,
+   "STR": 19,
+   "CON": 21,
+   "INT": 6,
+   "SPD": 11,
    "AGI": 8,
-   "PDEF": 8,
-   "MDEF": 5
+   "PDEF": 10,
+   "MDEF": 4
   },
   "lines": [
    "L4"
   ]
  },
  {
-  "class": "Cerberus",
+  "class": "Hellhound",
   "stage": 3,
   "size": "Large",
   "slots": 2,
@@ -4161,30 +5588,35 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 81,
+  "stat_total": 96,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
-  "front_count": 3,
-  "back_attack": "Breath",
+  "front_count": 2,
+  "back_attack": "Breath (row)",
   "back_count": 1,
   "element": "Fire",
   "notes": null,
+  "traits": [],
+  "leader_aura_text": "squad melee adds Fire damage",
+  "leader_aura": "Scorch",
+  "xp_rate": 1.25,
+  "formerly": "Cerberus",
   "base_stats": {
-   "STR": 18,
-   "CON": 21,
-   "INT": 6,
-   "SPD": 12,
+   "STR": 23,
+   "CON": 25,
+   "INT": 8,
+   "SPD": 14,
    "AGI": 9,
-   "PDEF": 9,
-   "MDEF": 6
+   "PDEF": 12,
+   "MDEF": 5
   },
   "lines": [
    "L4"
   ]
  },
  {
-  "class": "Cujo",
+  "class": "Hellmaw",
   "stage": 4,
   "size": "Large",
   "slots": 2,
@@ -4197,23 +5629,28 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 93,
+  "stat_total": 112,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
-  "front_count": 3,
-  "back_attack": "Breath",
+  "front_count": 2,
+  "back_attack": "Breath (row)",
   "back_count": 2,
   "element": "Fire",
   "notes": null,
+  "traits": [],
+  "leader_aura_text": "squad melee adds Fire damage",
+  "leader_aura": "Scorch",
+  "xp_rate": 1.25,
+  "formerly": "Cujo",
   "base_stats": {
-   "STR": 21,
-   "CON": 24,
-   "INT": 7,
-   "SPD": 14,
-   "AGI": 10,
-   "PDEF": 10,
-   "MDEF": 7
+   "STR": 27,
+   "CON": 29,
+   "INT": 9,
+   "SPD": 16,
+   "AGI": 11,
+   "PDEF": 14,
+   "MDEF": 6
   },
   "lines": [
    "L4"
@@ -4233,7 +5670,7 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 65,
+  "stat_total": 77,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
@@ -4242,14 +5679,18 @@
   "back_count": 1,
   "element": null,
   "notes": null,
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
-   "STR": 15,
-   "CON": 18,
-   "INT": 2,
-   "SPD": 10,
-   "AGI": 8,
-   "PDEF": 8,
-   "MDEF": 4
+   "STR": 16,
+   "CON": 19,
+   "INT": 6,
+   "SPD": 13,
+   "AGI": 10,
+   "PDEF": 7,
+   "MDEF": 6
   },
   "lines": [
    "L5"
@@ -4269,30 +5710,37 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 76,
+  "stat_total": 91,
   "flex_min": 4,
   "flex_max": 7,
-  "front_attack": "Melee",
-  "front_count": 3,
+  "front_attack": "Melee (cleave 2)",
+  "front_count": 2,
   "back_attack": "Melee",
   "back_count": 1,
   "element": null,
   "notes": null,
+  "traits": [
+   "Pack"
+  ],
+  "leader_aura_text": "wolves in squad +1 attack",
+  "leader_aura": "Pack",
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
-   "STR": 18,
-   "CON": 21,
-   "INT": 3,
-   "SPD": 12,
-   "AGI": 9,
+   "STR": 19,
+   "CON": 22,
+   "INT": 7,
+   "SPD": 15,
+   "AGI": 12,
    "PDEF": 9,
-   "MDEF": 4
+   "MDEF": 7
   },
   "lines": [
    "L5"
   ]
  },
  {
-  "class": "Balto",
+  "class": "Winter Wolf",
   "stage": 4,
   "size": "Large",
   "slots": 2,
@@ -4305,23 +5753,30 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 88,
+  "stat_total": 106,
   "flex_min": 4,
   "flex_max": 7,
-  "front_attack": "Melee",
-  "front_count": 3,
-  "back_attack": "Melee",
-  "back_count": 2,
-  "element": null,
+  "front_attack": "Melee (cleave 2)",
+  "front_count": 2,
+  "back_attack": "Breath (row)",
+  "back_count": 1,
+  "element": "Ice",
   "notes": null,
+  "traits": [
+   "Pack"
+  ],
+  "leader_aura_text": "wolves in squad +1 attack",
+  "leader_aura": "Pack",
+  "xp_rate": 1.25,
+  "formerly": "Balto",
   "base_stats": {
-   "STR": 21,
-   "CON": 24,
-   "INT": 4,
-   "SPD": 14,
-   "AGI": 10,
+   "STR": 22,
+   "CON": 26,
+   "INT": 8,
+   "SPD": 18,
+   "AGI": 14,
    "PDEF": 10,
-   "MDEF": 5
+   "MDEF": 8
   },
   "lines": [
    "L5"
@@ -4341,7 +5796,7 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 51,
+  "stat_total": 61,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
@@ -4350,14 +5805,18 @@
   "back_count": 1,
   "element": null,
   "notes": null,
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
-   "STR": 12,
-   "CON": 14,
+   "STR": 14,
+   "CON": 17,
    "INT": 2,
-   "SPD": 8,
-   "AGI": 6,
-   "PDEF": 6,
-   "MDEF": 3
+   "SPD": 10,
+   "AGI": 7,
+   "PDEF": 7,
+   "MDEF": 4
   },
   "lines": [
    "L6",
@@ -4378,7 +5837,7 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 65,
+  "stat_total": 76,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
@@ -4387,21 +5846,25 @@
   "back_count": 1,
   "element": null,
   "notes": null,
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
-   "STR": 15,
-   "CON": 18,
-   "INT": 2,
-   "SPD": 10,
-   "AGI": 8,
+   "STR": 19,
+   "CON": 17,
+   "INT": 3,
+   "SPD": 13,
+   "AGI": 11,
    "PDEF": 8,
-   "MDEF": 4
+   "MDEF": 5
   },
   "lines": [
    "L6"
   ]
  },
  {
-  "class": "Siamese",
+  "class": "Shadow Cat",
   "stage": 3,
   "size": "Large",
   "slots": 2,
@@ -4414,23 +5877,30 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 76,
+  "stat_total": 90,
   "flex_min": 4,
   "flex_max": 7,
-  "front_attack": "Melee",
-  "front_count": 3,
+  "front_attack": "Melee (cleave 2)",
+  "front_count": 2,
   "back_attack": "Melee",
   "back_count": 1,
   "element": null,
   "notes": null,
+  "traits": [
+   "Pounce"
+  ],
+  "leader_aura_text": "squad hidden in forest",
+  "leader_aura": "Stalk",
+  "xp_rate": 1.25,
+  "formerly": "Siamese",
   "base_stats": {
-   "STR": 18,
+   "STR": 22,
    "CON": 21,
    "INT": 3,
-   "SPD": 12,
-   "AGI": 9,
+   "SPD": 15,
+   "AGI": 14,
    "PDEF": 9,
-   "MDEF": 4
+   "MDEF": 6
   },
   "lines": [
    "L6"
@@ -4450,30 +5920,37 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 88,
+  "stat_total": 106,
   "flex_min": 4,
   "flex_max": 7,
-  "front_attack": "Melee",
-  "front_count": 3,
+  "front_attack": "Melee (cleave 2)",
+  "front_count": 2,
   "back_attack": "Melee",
   "back_count": 2,
   "element": null,
   "notes": null,
+  "traits": [
+   "Pounce"
+  ],
+  "leader_aura_text": "squad hidden in forest",
+  "leader_aura": "Stalk",
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
-   "STR": 21,
+   "STR": 26,
    "CON": 24,
    "INT": 4,
-   "SPD": 14,
-   "AGI": 10,
-   "PDEF": 10,
-   "MDEF": 5
+   "SPD": 18,
+   "AGI": 16,
+   "PDEF": 11,
+   "MDEF": 7
   },
   "lines": [
    "L6"
   ]
  },
  {
-  "class": "Battle Cat",
+  "class": "Prowler",
   "stage": 2,
   "size": "Large",
   "slots": 2,
@@ -4486,7 +5963,7 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 65,
+  "stat_total": 74,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
@@ -4495,13 +5972,17 @@
   "back_count": 1,
   "element": null,
   "notes": null,
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1.25,
+  "formerly": "Battle Cat",
   "base_stats": {
-   "STR": 15,
-   "CON": 18,
-   "INT": 2,
-   "SPD": 10,
-   "AGI": 8,
-   "PDEF": 8,
+   "STR": 17,
+   "CON": 19,
+   "INT": 4,
+   "SPD": 11,
+   "AGI": 10,
+   "PDEF": 9,
    "MDEF": 4
   },
   "lines": [
@@ -4522,30 +6003,35 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 76,
+  "stat_total": 91,
   "flex_min": 4,
   "flex_max": 7,
-  "front_attack": "Melee",
-  "front_count": 3,
+  "front_attack": "Melee (cleave 2)",
+  "front_count": 2,
   "back_attack": "Melee",
   "back_count": 1,
   "element": null,
   "notes": null,
+  "traits": [],
+  "leader_aura_text": "squad +10% STR",
+  "leader_aura": "Ferocity",
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
-   "STR": 18,
-   "CON": 21,
-   "INT": 3,
-   "SPD": 12,
-   "AGI": 9,
-   "PDEF": 9,
-   "MDEF": 4
+   "STR": 21,
+   "CON": 23,
+   "INT": 5,
+   "SPD": 14,
+   "AGI": 12,
+   "PDEF": 11,
+   "MDEF": 5
   },
   "lines": [
    "L7"
   ]
  },
  {
-  "class": "Tigress",
+  "class": "White Tiger",
   "stage": 4,
   "size": "Large",
   "slots": 2,
@@ -4558,23 +6044,28 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 88,
+  "stat_total": 106,
   "flex_min": 4,
   "flex_max": 7,
-  "front_attack": "Melee",
-  "front_count": 3,
+  "front_attack": "Melee (cleave 2)",
+  "front_count": 2,
   "back_attack": "Melee",
   "back_count": 2,
   "element": null,
   "notes": null,
+  "traits": [],
+  "leader_aura_text": "squad +10% STR",
+  "leader_aura": "Ferocity",
+  "xp_rate": 1.25,
+  "formerly": "Tigress",
   "base_stats": {
-   "STR": 21,
-   "CON": 24,
-   "INT": 4,
-   "SPD": 14,
-   "AGI": 10,
-   "PDEF": 10,
-   "MDEF": 5
+   "STR": 24,
+   "CON": 27,
+   "INT": 6,
+   "SPD": 16,
+   "AGI": 14,
+   "PDEF": 13,
+   "MDEF": 6
   },
   "lines": [
    "L7"
@@ -4594,7 +6085,7 @@
    "CON",
    "STR"
   ],
-  "stat_total": 53,
+  "stat_total": 64,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
@@ -4603,14 +6094,18 @@
   "back_count": 1,
   "element": "Water",
   "notes": null,
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 12,
-   "CON": 16,
-   "INT": 5,
-   "SPD": 3,
-   "AGI": 3,
-   "PDEF": 8,
-   "MDEF": 6
+   "STR": 14,
+   "CON": 19,
+   "INT": 6,
+   "SPD": 4,
+   "AGI": 4,
+   "PDEF": 10,
+   "MDEF": 7
   },
   "lines": [
    "L8",
@@ -4631,7 +6126,7 @@
    "CON",
    "STR"
   ],
-  "stat_total": 67,
+  "stat_total": 78,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
@@ -4640,14 +6135,18 @@
   "back_count": 1,
   "element": "Water",
   "notes": null,
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 15,
-   "CON": 20,
-   "INT": 6,
-   "SPD": 4,
-   "AGI": 4,
+   "STR": 16,
+   "CON": 21,
+   "INT": 10,
+   "SPD": 5,
+   "AGI": 6,
    "PDEF": 10,
-   "MDEF": 8
+   "MDEF": 10
   },
   "lines": [
    "L8"
@@ -4667,23 +6166,28 @@
    "CON",
    "STR"
   ],
-  "stat_total": 79,
+  "stat_total": 95,
   "flex_min": 4,
   "flex_max": 7,
-  "front_attack": "Melee",
+  "front_attack": "Melee (cleave 2)",
   "front_count": 3,
   "back_attack": "Magic",
   "back_count": 1,
   "element": "Water",
   "notes": null,
+  "traits": [],
+  "leader_aura_text": "enemy ranged -20% hit",
+  "leader_aura": "Ink cloud",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 18,
-   "CON": 24,
-   "INT": 8,
-   "SPD": 4,
-   "AGI": 4,
+   "STR": 19,
+   "CON": 26,
+   "INT": 12,
+   "SPD": 6,
+   "AGI": 8,
    "PDEF": 12,
-   "MDEF": 9
+   "MDEF": 12
   },
   "lines": [
    "L8"
@@ -4703,23 +6207,28 @@
    "CON",
    "STR"
   ],
-  "stat_total": 92,
+  "stat_total": 110,
   "flex_min": 4,
   "flex_max": 7,
-  "front_attack": "Melee",
+  "front_attack": "Melee (cleave 2)",
   "front_count": 3,
   "back_attack": "Magic",
   "back_count": 2,
   "element": "Water",
   "notes": null,
+  "traits": [],
+  "leader_aura_text": "enemy ranged -20% hit",
+  "leader_aura": "Ink cloud",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 21,
-   "CON": 28,
-   "INT": 9,
-   "SPD": 5,
-   "AGI": 5,
+   "STR": 22,
+   "CON": 30,
+   "INT": 14,
+   "SPD": 7,
+   "AGI": 9,
    "PDEF": 14,
-   "MDEF": 10
+   "MDEF": 14
   },
   "lines": [
    "L8"
@@ -4739,7 +6248,7 @@
    "CON",
    "STR"
   ],
-  "stat_total": 67,
+  "stat_total": 78,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
@@ -4748,14 +6257,18 @@
   "back_count": 1,
   "element": "Lightning",
   "notes": null,
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 15,
-   "CON": 20,
-   "INT": 6,
+   "STR": 17,
+   "CON": 22,
+   "INT": 9,
    "SPD": 4,
    "AGI": 4,
-   "PDEF": 10,
-   "MDEF": 8
+   "PDEF": 13,
+   "MDEF": 9
   },
   "lines": [
    "L9"
@@ -4775,30 +6288,35 @@
    "CON",
    "STR"
   ],
-  "stat_total": 79,
+  "stat_total": 94,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
   "front_count": 3,
-  "back_attack": "Magic",
+  "back_attack": "Magic (chain 3)",
   "back_count": 1,
   "element": "Lightning",
   "notes": null,
+  "traits": [],
+  "leader_aura_text": "Lightning damage +20%",
+  "leader_aura": "Storm surge",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 18,
-   "CON": 24,
-   "INT": 8,
-   "SPD": 4,
-   "AGI": 4,
-   "PDEF": 12,
-   "MDEF": 9
+   "STR": 21,
+   "CON": 27,
+   "INT": 11,
+   "SPD": 5,
+   "AGI": 5,
+   "PDEF": 15,
+   "MDEF": 10
   },
   "lines": [
    "L9"
   ]
  },
  {
-  "class": "Cthulhu",
+  "class": "Abyssal Kraken",
   "stage": 4,
   "size": "Large",
   "slots": 2,
@@ -4811,23 +6329,28 @@
    "CON",
    "STR"
   ],
-  "stat_total": 92,
+  "stat_total": 110,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
   "front_count": 3,
-  "back_attack": "Magic",
+  "back_attack": "Magic (chain 3)",
   "back_count": 2,
   "element": "Lightning",
   "notes": null,
+  "traits": [],
+  "leader_aura_text": "Lightning damage +20%",
+  "leader_aura": "Storm surge",
+  "xp_rate": 1,
+  "formerly": "Cthulhu",
   "base_stats": {
-   "STR": 21,
-   "CON": 28,
-   "INT": 9,
-   "SPD": 5,
-   "AGI": 5,
-   "PDEF": 14,
-   "MDEF": 10
+   "STR": 24,
+   "CON": 31,
+   "INT": 13,
+   "SPD": 6,
+   "AGI": 6,
+   "PDEF": 18,
+   "MDEF": 12
   },
   "lines": [
    "L9"
@@ -4847,7 +6370,7 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 51,
+  "stat_total": 61,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
@@ -4856,14 +6379,18 @@
   "back_count": 1,
   "element": null,
   "notes": "Flyer",
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
-   "STR": 12,
-   "CON": 14,
+   "STR": 14,
+   "CON": 17,
    "INT": 2,
-   "SPD": 8,
-   "AGI": 6,
-   "PDEF": 6,
-   "MDEF": 3
+   "SPD": 10,
+   "AGI": 7,
+   "PDEF": 7,
+   "MDEF": 4
   },
   "lines": [
    "L10",
@@ -4884,7 +6411,7 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 65,
+  "stat_total": 76,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
@@ -4893,21 +6420,27 @@
   "back_count": 1,
   "element": null,
   "notes": "Flyer",
+  "traits": [
+   "Bulwark"
+  ],
+  "leader_aura": null,
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
-   "STR": 15,
-   "CON": 18,
-   "INT": 2,
-   "SPD": 10,
-   "AGI": 8,
-   "PDEF": 8,
-   "MDEF": 4
+   "STR": 16,
+   "CON": 21,
+   "INT": 6,
+   "SPD": 11,
+   "AGI": 7,
+   "PDEF": 10,
+   "MDEF": 5
   },
   "lines": [
    "L10"
   ]
  },
  {
-  "class": "Cockatrice",
+  "class": "Royal Gryphon",
   "stage": 3,
   "size": "Large",
   "slots": 2,
@@ -4920,23 +6453,30 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 76,
+  "stat_total": 92,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
-  "front_count": 3,
-  "back_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee (any row)",
   "back_count": 1,
   "element": null,
   "notes": "Flyer",
+  "traits": [
+   "Bulwark"
+  ],
+  "leader_aura_text": "squad +15% PDEF vs ranged",
+  "leader_aura": "Aerie",
+  "xp_rate": 1.25,
+  "formerly": "Cockatrice",
   "base_stats": {
-   "STR": 18,
-   "CON": 21,
-   "INT": 3,
-   "SPD": 12,
+   "STR": 20,
+   "CON": 25,
+   "INT": 7,
+   "SPD": 13,
    "AGI": 9,
-   "PDEF": 9,
-   "MDEF": 4
+   "PDEF": 12,
+   "MDEF": 6
   },
   "lines": [
    "L10"
@@ -4956,71 +6496,42 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 88,
+  "stat_total": 106,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
-  "front_count": 3,
-  "back_attack": "Melee",
-  "back_count": 2,
-  "element": null,
+  "front_count": 2,
+  "back_attack": "Magic (row)",
+  "back_count": 1,
+  "element": "Holy",
   "notes": "Flyer",
+  "traits": [
+   "Bulwark"
+  ],
+  "leader_aura_text": "squad +15% PDEF vs ranged",
+  "leader_aura": "Aerie",
+  "xp_rate": 1.25,
+  "formerly": null,
   "base_stats": {
-   "STR": 21,
-   "CON": 24,
-   "INT": 4,
-   "SPD": 14,
+   "STR": 23,
+   "CON": 29,
+   "INT": 8,
+   "SPD": 15,
    "AGI": 10,
-   "PDEF": 10,
-   "MDEF": 5
+   "PDEF": 14,
+   "MDEF": 7
   },
   "lines": [
    "L10"
   ]
  },
  {
-  "class": "Deathwing",
+  "class": "Stormhawk",
   "stage": 2,
   "size": "Large",
   "slots": 2,
   "can_lead": false,
-  "alignment_lean": "Evil",
-  "terrain": "Sky",
-  "speed_tier": 3,
-  "role": "Beast",
-  "key_stats": [
-   "STR",
-   "SPD"
-  ],
-  "stat_total": 65,
-  "flex_min": 4,
-  "flex_max": 7,
-  "front_attack": "Melee",
-  "front_count": 2,
-  "back_attack": "Melee",
-  "back_count": 1,
-  "element": null,
-  "notes": "Flyer",
-  "base_stats": {
-   "STR": 15,
-   "CON": 18,
-   "INT": 2,
-   "SPD": 10,
-   "AGI": 8,
-   "PDEF": 8,
-   "MDEF": 4
-  },
-  "lines": [
-   "L11"
-  ]
- },
- {
-  "class": "Blackwing",
-  "stage": 3,
-  "size": "Large",
-  "slots": 2,
-  "can_lead": true,
-  "alignment_lean": "Evil",
+  "alignment_lean": "Neutral",
   "terrain": "Sky",
   "speed_tier": 3,
   "role": "Beast",
@@ -5032,31 +6543,35 @@
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
-  "front_count": 3,
-  "back_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Magic",
   "back_count": 1,
-  "element": null,
-  "notes": "Flyer",
+  "element": "Wind",
+  "notes": "Flyer; storm wings",
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1.25,
+  "formerly": "Deathwing",
   "base_stats": {
-   "STR": 18,
-   "CON": 21,
-   "INT": 3,
-   "SPD": 12,
-   "AGI": 9,
-   "PDEF": 9,
-   "MDEF": 4
+   "STR": 15,
+   "CON": 17,
+   "INT": 9,
+   "SPD": 13,
+   "AGI": 10,
+   "PDEF": 6,
+   "MDEF": 6
   },
   "lines": [
    "L11"
   ]
  },
  {
-  "class": "Wraith",
-  "stage": 4,
+  "class": "Roc",
+  "stage": 3,
   "size": "Large",
   "slots": 2,
   "can_lead": true,
-  "alignment_lean": "Evil",
+  "alignment_lean": "Neutral",
   "terrain": "Sky",
   "speed_tier": 3,
   "role": "Beast",
@@ -5064,23 +6579,69 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 88,
+  "stat_total": 91,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
-  "front_count": 3,
-  "back_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Magic (row)",
+  "back_count": 1,
+  "element": "Wind",
+  "notes": "Flyer; storm wings",
+  "traits": [],
+  "leader_aura_text": "squad map speed +1 tier (max 3)",
+  "leader_aura": "Tailwind",
+  "xp_rate": 1.25,
+  "formerly": "Blackwing",
+  "base_stats": {
+   "STR": 18,
+   "CON": 21,
+   "INT": 11,
+   "SPD": 15,
+   "AGI": 12,
+   "PDEF": 7,
+   "MDEF": 7
+  },
+  "lines": [
+   "L11"
+  ]
+ },
+ {
+  "class": "Storm Roc",
+  "stage": 4,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Neutral",
+  "terrain": "Sky",
+  "speed_tier": 3,
+  "role": "Beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 106,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Magic (row)",
   "back_count": 2,
-  "element": null,
-  "notes": "Flyer",
+  "element": "Wind",
+  "notes": "Flyer; storm wings",
+  "traits": [],
+  "leader_aura_text": "squad map speed +1 tier (max 3)",
+  "leader_aura": "Tailwind",
+  "xp_rate": 1.25,
+  "formerly": "Wraith",
   "base_stats": {
    "STR": 21,
    "CON": 24,
-   "INT": 4,
-   "SPD": 14,
-   "AGI": 10,
-   "PDEF": 10,
-   "MDEF": 5
+   "INT": 13,
+   "SPD": 18,
+   "AGI": 14,
+   "PDEF": 8,
+   "MDEF": 8
   },
   "lines": [
    "L11"
@@ -5100,7 +6661,7 @@
    "CON",
    "PDEF"
   ],
-  "stat_total": 55,
+  "stat_total": 66,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
@@ -5109,14 +6670,18 @@
   "back_count": 1,
   "element": "Ice",
   "notes": "Cold magic",
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 12,
-   "CON": 18,
-   "INT": 4,
+   "STR": 14,
+   "CON": 22,
+   "INT": 5,
    "SPD": 3,
    "AGI": 3,
-   "PDEF": 10,
-   "MDEF": 5
+   "PDEF": 12,
+   "MDEF": 7
   },
   "lines": [
    "L12"
@@ -5136,7 +6701,7 @@
    "CON",
    "PDEF"
   ],
-  "stat_total": 68,
+  "stat_total": 82,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
@@ -5145,14 +6710,18 @@
   "back_count": 1,
   "element": "Ice",
   "notes": "Cold magic",
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 15,
-   "CON": 22,
-   "INT": 5,
+   "STR": 17,
+   "CON": 27,
+   "INT": 6,
    "SPD": 4,
    "AGI": 4,
-   "PDEF": 12,
-   "MDEF": 6
+   "PDEF": 15,
+   "MDEF": 9
   },
   "lines": [
    "L12"
@@ -5172,30 +6741,35 @@
    "CON",
    "PDEF"
   ],
-  "stat_total": 82,
+  "stat_total": 100,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
   "front_count": 3,
-  "back_attack": "Magic",
+  "back_attack": "Magic (row)",
   "back_count": 1,
   "element": "Ice",
   "notes": "Cold magic",
+  "traits": [],
+  "leader_aura_text": "squad +15% PDEF in snow",
+  "leader_aura": "Hunker",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 18,
-   "CON": 27,
-   "INT": 6,
-   "SPD": 4,
-   "AGI": 4,
-   "PDEF": 15,
-   "MDEF": 8
+   "STR": 21,
+   "CON": 33,
+   "INT": 8,
+   "SPD": 5,
+   "AGI": 5,
+   "PDEF": 18,
+   "MDEF": 10
   },
   "lines": [
    "L12"
   ]
  },
  {
-  "class": "Coldmiser",
+  "class": "Abominable",
   "stage": 4,
   "size": "Large",
   "slots": 2,
@@ -5208,23 +6782,28 @@
    "CON",
    "PDEF"
   ],
-  "stat_total": 97,
+  "stat_total": 116,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
   "front_count": 3,
-  "back_attack": "Magic",
+  "back_attack": "Magic (row)",
   "back_count": 2,
   "element": "Ice",
   "notes": "Cold magic",
+  "traits": [],
+  "leader_aura_text": "squad +15% PDEF in snow",
+  "leader_aura": "Hunker",
+  "xp_rate": 1,
+  "formerly": "Coldmiser",
   "base_stats": {
-   "STR": 21,
-   "CON": 32,
-   "INT": 7,
-   "SPD": 5,
-   "AGI": 5,
-   "PDEF": 18,
-   "MDEF": 9
+   "STR": 24,
+   "CON": 38,
+   "INT": 9,
+   "SPD": 6,
+   "AGI": 6,
+   "PDEF": 21,
+   "MDEF": 12
   },
   "lines": [
    "L12"
@@ -5244,7 +6823,7 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 51,
+  "stat_total": 61,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
@@ -5253,14 +6832,18 @@
   "back_count": 1,
   "element": null,
   "notes": null,
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 12,
-   "CON": 14,
-   "INT": 2,
-   "SPD": 8,
-   "AGI": 6,
-   "PDEF": 6,
-   "MDEF": 3
+   "STR": 15,
+   "CON": 15,
+   "INT": 3,
+   "SPD": 9,
+   "AGI": 7,
+   "PDEF": 8,
+   "MDEF": 4
   },
   "lines": [
    "L13"
@@ -5280,7 +6863,7 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 65,
+  "stat_total": 77,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
@@ -5289,14 +6872,18 @@
   "back_count": 1,
   "element": null,
   "notes": null,
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 15,
-   "CON": 18,
-   "INT": 2,
-   "SPD": 10,
-   "AGI": 8,
-   "PDEF": 8,
-   "MDEF": 4
+   "STR": 19,
+   "CON": 19,
+   "INT": 4,
+   "SPD": 11,
+   "AGI": 9,
+   "PDEF": 10,
+   "MDEF": 5
   },
   "lines": [
    "L13"
@@ -5316,7 +6903,7 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 76,
+  "stat_total": 90,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
@@ -5325,14 +6912,21 @@
   "back_count": 1,
   "element": null,
   "notes": null,
+  "traits": [
+   "Pushback"
+  ],
+  "leader_aura_text": "squad front row Pushback in round 1",
+  "leader_aura": "Battering",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 18,
-   "CON": 21,
-   "INT": 3,
-   "SPD": 12,
-   "AGI": 9,
-   "PDEF": 9,
-   "MDEF": 4
+   "STR": 22,
+   "CON": 23,
+   "INT": 4,
+   "SPD": 13,
+   "AGI": 10,
+   "PDEF": 12,
+   "MDEF": 6
   },
   "lines": [
    "L13"
@@ -5352,7 +6946,7 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 88,
+  "stat_total": 106,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
@@ -5361,14 +6955,21 @@
   "back_count": 2,
   "element": null,
   "notes": null,
+  "traits": [
+   "Pushback"
+  ],
+  "leader_aura_text": "squad front row Pushback in round 1",
+  "leader_aura": "Battering",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 21,
-   "CON": 24,
-   "INT": 4,
-   "SPD": 14,
-   "AGI": 10,
-   "PDEF": 10,
-   "MDEF": 5
+   "STR": 26,
+   "CON": 27,
+   "INT": 5,
+   "SPD": 15,
+   "AGI": 12,
+   "PDEF": 14,
+   "MDEF": 7
   },
   "lines": [
    "L13"
@@ -5382,13 +6983,13 @@
   "can_lead": false,
   "alignment_lean": "Evil",
   "terrain": "Mountain",
-  "speed_tier": 3,
+  "speed_tier": 2,
   "role": "Beast",
   "key_stats": [
    "STR",
    "SPD"
   ],
-  "stat_total": 51,
+  "stat_total": 60,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
@@ -5397,13 +6998,17 @@
   "back_count": 1,
   "element": null,
   "notes": "Charger",
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 12,
-   "CON": 14,
-   "INT": 2,
-   "SPD": 8,
-   "AGI": 6,
-   "PDEF": 6,
+   "STR": 16,
+   "CON": 17,
+   "INT": 3,
+   "SPD": 7,
+   "AGI": 5,
+   "PDEF": 9,
    "MDEF": 3
   },
   "lines": [
@@ -5418,28 +7023,32 @@
   "can_lead": false,
   "alignment_lean": "Evil",
   "terrain": "Mountain",
-  "speed_tier": 3,
+  "speed_tier": 2,
   "role": "Beast",
   "key_stats": [
    "STR",
    "SPD"
   ],
-  "stat_total": 65,
+  "stat_total": 75,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
   "front_count": 2,
   "back_attack": "Melee",
   "back_count": 1,
-  "element": null,
-  "notes": "Charger",
+  "element": "Earth",
+  "notes": "Charger; earth stomp",
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 15,
-   "CON": 18,
-   "INT": 2,
-   "SPD": 10,
-   "AGI": 8,
-   "PDEF": 8,
+   "STR": 20,
+   "CON": 21,
+   "INT": 4,
+   "SPD": 9,
+   "AGI": 6,
+   "PDEF": 11,
    "MDEF": 4
   },
   "lines": [
@@ -5454,28 +7063,33 @@
   "can_lead": true,
   "alignment_lean": "Evil",
   "terrain": "Mountain",
-  "speed_tier": 3,
+  "speed_tier": 2,
   "role": "Beast",
   "key_stats": [
    "STR",
    "SPD"
   ],
-  "stat_total": 76,
+  "stat_total": 91,
   "flex_min": 4,
   "flex_max": 7,
-  "front_attack": "Melee",
+  "front_attack": "Melee (pierce)",
   "front_count": 3,
-  "back_attack": "Melee",
+  "back_attack": "Magic (row)",
   "back_count": 1,
-  "element": null,
-  "notes": "Charger",
+  "element": "Earth",
+  "notes": "Charger; earth stomp",
+  "traits": [],
+  "leader_aura_text": "squad front row +1 attack in round 1",
+  "leader_aura": "Stampede",
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 18,
-   "CON": 21,
-   "INT": 3,
-   "SPD": 12,
-   "AGI": 9,
-   "PDEF": 9,
+   "STR": 24,
+   "CON": 26,
+   "INT": 4,
+   "SPD": 11,
+   "AGI": 8,
+   "PDEF": 14,
    "MDEF": 4
   },
   "lines": [
@@ -5483,35 +7097,40 @@
   ]
  },
  {
-  "class": "Gamork",
+  "class": "Earthshaker",
   "stage": 4,
   "size": "Large",
   "slots": 2,
   "can_lead": true,
   "alignment_lean": "Evil",
   "terrain": "Mountain",
-  "speed_tier": 3,
+  "speed_tier": 2,
   "role": "Beast",
   "key_stats": [
    "STR",
    "SPD"
   ],
-  "stat_total": 88,
+  "stat_total": 106,
   "flex_min": 4,
   "flex_max": 7,
-  "front_attack": "Melee",
+  "front_attack": "Melee (pierce)",
   "front_count": 3,
-  "back_attack": "Melee",
+  "back_attack": "Magic (row)",
   "back_count": 2,
-  "element": null,
-  "notes": "Charger",
+  "element": "Earth",
+  "notes": "Charger; earth stomp",
+  "traits": [],
+  "leader_aura_text": "squad front row +1 attack in round 1",
+  "leader_aura": "Stampede",
+  "xp_rate": 1,
+  "formerly": "Gamork",
   "base_stats": {
-   "STR": 21,
-   "CON": 24,
-   "INT": 4,
-   "SPD": 14,
-   "AGI": 10,
-   "PDEF": 10,
+   "STR": 28,
+   "CON": 30,
+   "INT": 5,
+   "SPD": 13,
+   "AGI": 9,
+   "PDEF": 16,
    "MDEF": 5
   },
   "lines": [
@@ -5519,7 +7138,7 @@
   ]
  },
  {
-  "class": "Mountain Cub",
+  "class": "Lion Cub",
   "stage": 1,
   "size": "Large",
   "slots": 2,
@@ -5532,7 +7151,7 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 51,
+  "stat_total": 60,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
@@ -5541,13 +7160,17 @@
   "back_count": 1,
   "element": null,
   "notes": null,
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1.25,
+  "formerly": "Mountain Cub",
   "base_stats": {
-   "STR": 12,
-   "CON": 14,
-   "INT": 2,
-   "SPD": 8,
-   "AGI": 6,
-   "PDEF": 6,
+   "STR": 14,
+   "CON": 15,
+   "INT": 4,
+   "SPD": 10,
+   "AGI": 7,
+   "PDEF": 7,
    "MDEF": 3
   },
   "lines": [
@@ -5555,7 +7178,7 @@
   ]
  },
  {
-  "class": "Mountain Lion",
+  "class": "Lion",
   "stage": 2,
   "size": "Large",
   "slots": 2,
@@ -5568,7 +7191,7 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 65,
+  "stat_total": 75,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
@@ -5577,13 +7200,17 @@
   "back_count": 1,
   "element": null,
   "notes": null,
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1.25,
+  "formerly": "Mountain Lion",
   "base_stats": {
-   "STR": 15,
-   "CON": 18,
-   "INT": 2,
-   "SPD": 10,
-   "AGI": 8,
-   "PDEF": 8,
+   "STR": 17,
+   "CON": 19,
+   "INT": 5,
+   "SPD": 12,
+   "AGI": 9,
+   "PDEF": 9,
    "MDEF": 4
   },
   "lines": [
@@ -5591,7 +7218,7 @@
   ]
  },
  {
-  "class": "Lionelle",
+  "class": "Pride Lion",
   "stage": 3,
   "size": "Large",
   "slots": 2,
@@ -5604,30 +7231,35 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 76,
+  "stat_total": 91,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
-  "front_count": 3,
-  "back_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Debuff (row)",
   "back_count": 1,
   "element": null,
   "notes": null,
+  "traits": [],
+  "leader_aura_text": "enemy front row -10% STR",
+  "leader_aura": "Roar",
+  "xp_rate": 1.25,
+  "formerly": "Lionelle",
   "base_stats": {
-   "STR": 18,
-   "CON": 21,
-   "INT": 3,
-   "SPD": 12,
-   "AGI": 9,
-   "PDEF": 9,
-   "MDEF": 4
+   "STR": 21,
+   "CON": 23,
+   "INT": 6,
+   "SPD": 15,
+   "AGI": 11,
+   "PDEF": 10,
+   "MDEF": 5
   },
   "lines": [
    "L15"
   ]
  },
  {
-  "class": "Lion-O",
+  "class": "Golden Lion",
   "stage": 4,
   "size": "Large",
   "slots": 2,
@@ -5640,23 +7272,28 @@
    "STR",
    "SPD"
   ],
-  "stat_total": 88,
+  "stat_total": 106,
   "flex_min": 4,
   "flex_max": 7,
   "front_attack": "Melee",
-  "front_count": 3,
-  "back_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Debuff (row)",
   "back_count": 2,
   "element": null,
   "notes": null,
+  "traits": [],
+  "leader_aura_text": "enemy front row -10% STR",
+  "leader_aura": "Roar",
+  "xp_rate": 1.25,
+  "formerly": "Lion-O",
   "base_stats": {
-   "STR": 21,
-   "CON": 24,
-   "INT": 4,
-   "SPD": 14,
-   "AGI": 10,
-   "PDEF": 10,
-   "MDEF": 5
+   "STR": 24,
+   "CON": 27,
+   "INT": 7,
+   "SPD": 17,
+   "AGI": 13,
+   "PDEF": 12,
+   "MDEF": 6
   },
   "lines": [
    "L15"
@@ -5669,45 +7306,9 @@
   "slots": 2,
   "can_lead": false,
   "alignment_lean": "Neutral",
-  "terrain": "Water",
+  "terrain": "Lava",
   "speed_tier": 2,
-  "role": "Beast",
-  "key_stats": [
-   "STR",
-   "SPD"
-  ],
-  "stat_total": 48,
-  "flex_min": 4,
-  "flex_max": 7,
-  "front_attack": "Melee",
-  "front_count": 2,
-  "back_attack": "Melee",
-  "back_count": 1,
-  "element": null,
-  "notes": "Amphibious; low HP",
-  "base_stats": {
-   "STR": 12,
-   "CON": 11,
-   "INT": 2,
-   "SPD": 8,
-   "AGI": 6,
-   "PDEF": 6,
-   "MDEF": 3
-  },
-  "lines": [
-   "L16"
-  ]
- },
- {
-  "class": "Viper",
-  "stage": 2,
-  "size": "Large",
-  "slots": 2,
-  "can_lead": false,
-  "alignment_lean": "Neutral",
-  "terrain": "Water",
-  "speed_tier": 2,
-  "role": "Beast",
+  "role": "Breath beast",
   "key_stats": [
    "STR",
    "SPD"
@@ -5717,52 +7318,20 @@
   "flex_max": 7,
   "front_attack": "Melee",
   "front_count": 2,
-  "back_attack": "Melee",
+  "back_attack": "Breath",
   "back_count": 1,
-  "element": null,
-  "notes": "Amphibious; low HP",
+  "element": "Fire",
+  "notes": "Lava-walker",
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 15,
-   "CON": 14,
-   "INT": 2,
-   "SPD": 10,
-   "AGI": 8,
-   "PDEF": 8,
-   "MDEF": 4
-  },
-  "lines": [
-   "L16"
-  ]
- },
- {
-  "class": "Monitor",
-  "stage": 3,
-  "size": "Large",
-  "slots": 2,
-  "can_lead": true,
-  "alignment_lean": "Neutral",
-  "terrain": "Water",
-  "speed_tier": 2,
-  "role": "Beast",
-  "key_stats": [
-   "STR",
-   "SPD"
-  ],
-  "stat_total": 72,
-  "flex_min": 4,
-  "flex_max": 7,
-  "front_attack": "Melee",
-  "front_count": 3,
-  "back_attack": "Melee",
-  "back_count": 1,
-  "element": null,
-  "notes": "Amphibious; low HP",
-  "base_stats": {
-   "STR": 18,
-   "CON": 17,
-   "INT": 3,
-   "SPD": 12,
-   "AGI": 9,
+   "STR": 14,
+   "CON": 15,
+   "INT": 5,
+   "SPD": 8,
+   "AGI": 6,
    "PDEF": 9,
    "MDEF": 4
   },
@@ -5771,39 +7340,637 @@
   ]
  },
  {
-  "class": "Komodo",
+  "class": "Cinder Lizard",
+  "stage": 2,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Neutral",
+  "terrain": "Lava",
+  "speed_tier": 2,
+  "role": "Breath beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 76,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Breath",
+  "back_count": 1,
+  "element": "Fire",
+  "notes": "Lava-walker",
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": "Viper",
+  "base_stats": {
+   "STR": 18,
+   "CON": 19,
+   "INT": 6,
+   "SPD": 10,
+   "AGI": 7,
+   "PDEF": 11,
+   "MDEF": 5
+  },
+  "lines": [
+   "L16"
+  ]
+ },
+ {
+  "class": "Magma Lizard",
+  "stage": 3,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Neutral",
+  "terrain": "Lava",
+  "speed_tier": 2,
+  "role": "Breath beast",
+  "key_stats": [
+   "STR",
+   "SPD"
+  ],
+  "stat_total": 91,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Breath (row)",
+  "back_count": 1,
+  "element": "Fire",
+  "notes": "Lava-walker",
+  "traits": [],
+  "leader_aura_text": "squad crosses lava",
+  "leader_aura": "Lava-walker",
+  "xp_rate": 1,
+  "formerly": "Monitor",
+  "base_stats": {
+   "STR": 21,
+   "CON": 23,
+   "INT": 7,
+   "SPD": 12,
+   "AGI": 9,
+   "PDEF": 13,
+   "MDEF": 6
+  },
+  "lines": [
+   "L16"
+  ]
+ },
+ {
+  "class": "Basilisk",
   "stage": 4,
   "size": "Large",
   "slots": 2,
   "can_lead": true,
   "alignment_lean": "Neutral",
-  "terrain": "Water",
+  "terrain": "Lava",
   "speed_tier": 2,
-  "role": "Beast",
+  "role": "Breath beast",
   "key_stats": [
    "STR",
    "SPD"
   ],
-  "stat_total": 83,
+  "stat_total": 106,
   "flex_min": 4,
   "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Breath (row)",
+  "back_count": 2,
+  "element": "Fire",
+  "notes": "Lava-walker",
+  "traits": [
+   "Petrify"
+  ],
+  "leader_aura_text": "squad crosses lava",
+  "leader_aura": "Lava-walker",
+  "xp_rate": 1,
+  "formerly": "Komodo",
+  "base_stats": {
+   "STR": 25,
+   "CON": 27,
+   "INT": 8,
+   "SPD": 14,
+   "AGI": 10,
+   "PDEF": 15,
+   "MDEF": 7
+  },
+  "lines": [
+   "L16"
+  ]
+ },
+ {
+  "class": "Mudling",
+  "stage": 1,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Neutral",
+  "terrain": "Mountain",
+  "speed_tier": 1,
+  "role": "Big tank",
+  "key_stats": [
+   "CON",
+   "PDEF"
+  ],
+  "stat_total": 67,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": "Construct",
+  "traits": [],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
+  "base_stats": {
+   "STR": 15,
+   "CON": 23,
+   "INT": 3,
+   "SPD": 3,
+   "AGI": 3,
+   "PDEF": 16,
+   "MDEF": 4
+  },
+  "lines": [
+   "L17"
+  ]
+ },
+ {
+  "class": "Stoneguard",
+  "stage": 2,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": false,
+  "alignment_lean": "Neutral",
+  "terrain": "Mountain",
+  "speed_tier": 1,
+  "role": "Big tank",
+  "key_stats": [
+   "CON",
+   "PDEF"
+  ],
+  "stat_total": 85,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Magic",
+  "back_count": 1,
+  "element": "Earth",
+  "notes": "Construct",
+  "traits": [
+   "Stoneskin"
+  ],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
+  "base_stats": {
+   "STR": 19,
+   "CON": 29,
+   "INT": 4,
+   "SPD": 4,
+   "AGI": 4,
+   "PDEF": 20,
+   "MDEF": 5
+  },
+  "lines": [
+   "L17"
+  ]
+ },
+ {
+  "class": "Monolith",
+  "stage": 3,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Neutral",
+  "terrain": "Mountain",
+  "speed_tier": 1,
+  "role": "Big tank",
+  "key_stats": [
+   "CON",
+   "PDEF"
+  ],
+  "stat_total": 98,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Magic (row)",
+  "back_count": 1,
+  "element": "Earth",
+  "notes": "Construct",
+  "traits": [
+   "Stoneskin"
+  ],
+  "leader_aura_text": "squad +20% PDEF when stationary",
+  "leader_aura": "Fortify",
+  "xp_rate": 1,
+  "formerly": null,
+  "base_stats": {
+   "STR": 22,
+   "CON": 34,
+   "INT": 4,
+   "SPD": 4,
+   "AGI": 4,
+   "PDEF": 24,
+   "MDEF": 6
+  },
+  "lines": [
+   "L17"
+  ]
+ },
+ {
+  "class": "Colossus",
+  "stage": 4,
+  "size": "Large",
+  "slots": 2,
+  "can_lead": true,
+  "alignment_lean": "Neutral",
+  "terrain": "Mountain",
+  "speed_tier": 1,
+  "role": "Big tank",
+  "key_stats": [
+   "CON",
+   "PDEF"
+  ],
+  "stat_total": 116,
+  "flex_min": 4,
+  "flex_max": 7,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Magic (row)",
+  "back_count": 2,
+  "element": "Earth",
+  "notes": "Construct",
+  "traits": [
+   "Stoneskin"
+  ],
+  "leader_aura_text": "squad +20% PDEF when stationary",
+  "leader_aura": "Fortify",
+  "xp_rate": 1,
+  "formerly": null,
+  "base_stats": {
+   "STR": 26,
+   "CON": 40,
+   "INT": 5,
+   "SPD": 5,
+   "AGI": 5,
+   "PDEF": 28,
+   "MDEF": 7
+  },
+  "lines": [
+   "L17"
+  ]
+ },
+ {
+  "class": "Rat",
+  "stage": 1,
+  "size": "Tiny",
+  "slots": 0.5,
+  "can_lead": false,
+  "alignment_lean": "Neutral",
+  "terrain": "Swamp",
+  "speed_tier": 2,
+  "role": "Swarm",
+  "key_stats": [
+   "AGI",
+   "SPD"
+  ],
+  "stat_total": 19,
+  "flex_min": 1,
+  "flex_max": 3,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "traits": [
+   "Tiny",
+   "Swarm"
+  ],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
+  "base_stats": {
+   "STR": 3,
+   "CON": 3,
+   "INT": 1,
+   "SPD": 5,
+   "AGI": 5,
+   "PDEF": 1,
+   "MDEF": 1
+  },
+  "lines": [
+   "T1"
+  ]
+ },
+ {
+  "class": "Giant Rat",
+  "stage": 2,
+  "size": "Tiny",
+  "slots": 0.5,
+  "can_lead": false,
+  "alignment_lean": "Neutral",
+  "terrain": "Swamp",
+  "speed_tier": 2,
+  "role": "Swarm",
+  "key_stats": [
+   "AGI",
+   "SPD"
+  ],
+  "stat_total": 23,
+  "flex_min": 1,
+  "flex_max": 3,
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "traits": [
+   "Tiny",
+   "Swarm"
+  ],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
+  "base_stats": {
+   "STR": 4,
+   "CON": 4,
+   "INT": 1,
+   "SPD": 6,
+   "AGI": 6,
+   "PDEF": 1,
+   "MDEF": 1
+  },
+  "lines": [
+   "T1"
+  ]
+ },
+ {
+  "class": "Rat Pack",
+  "stage": 3,
+  "size": "Tiny",
+  "slots": 0.5,
+  "can_lead": false,
+  "alignment_lean": "Neutral",
+  "terrain": "Swamp",
+  "speed_tier": 2,
+  "role": "Swarm",
+  "key_stats": [
+   "AGI",
+   "SPD"
+  ],
+  "stat_total": 30,
+  "flex_min": 1,
+  "flex_max": 3,
+  "front_attack": "Melee",
+  "front_count": 3,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "element": null,
+  "notes": null,
+  "traits": [
+   "Tiny",
+   "Swarm"
+  ],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
+  "base_stats": {
+   "STR": 4,
+   "CON": 4,
+   "INT": 2,
+   "SPD": 8,
+   "AGI": 8,
+   "PDEF": 2,
+   "MDEF": 2
+  },
+  "lines": [
+   "T1"
+  ]
+ },
+ {
+  "class": "Rat King",
+  "stage": 4,
+  "size": "Tiny",
+  "slots": 0.5,
+  "can_lead": false,
+  "alignment_lean": "Neutral",
+  "terrain": "Swamp",
+  "speed_tier": 2,
+  "role": "Swarm",
+  "key_stats": [
+   "AGI",
+   "SPD"
+  ],
+  "stat_total": 34,
+  "flex_min": 1,
+  "flex_max": 3,
   "front_attack": "Melee",
   "front_count": 3,
   "back_attack": "Melee",
   "back_count": 2,
   "element": null,
-  "notes": "Amphibious; low HP",
+  "notes": null,
+  "traits": [
+   "Tiny",
+   "Swarm"
+  ],
+  "leader_aura": null,
+  "xp_rate": 1,
+  "formerly": null,
   "base_stats": {
-   "STR": 21,
-   "CON": 19,
-   "INT": 4,
-   "SPD": 14,
-   "AGI": 10,
-   "PDEF": 10,
-   "MDEF": 5
+   "STR": 5,
+   "CON": 5,
+   "INT": 2,
+   "SPD": 9,
+   "AGI": 9,
+   "PDEF": 2,
+   "MDEF": 2
   },
   "lines": [
-   "L16"
+   "T1"
+  ]
+ },
+ {
+  "class": "Bat",
+  "stage": 1,
+  "size": "Tiny",
+  "slots": 0.5,
+  "can_lead": false,
+  "alignment_lean": "Evil",
+  "terrain": "Forest",
+  "speed_tier": 3,
+  "role": "Swarm",
+  "key_stats": [
+   "AGI",
+   "SPD"
+  ],
+  "stat_total": 20,
+  "flex_min": 1,
+  "flex_max": 3,
+  "front_attack": "Melee (any row)",
+  "front_count": 1,
+  "back_attack": "Melee (any row)",
+  "back_count": 1,
+  "element": null,
+  "notes": "Flyer",
+  "traits": [
+   "Tiny"
+  ],
+  "leader_aura": null,
+  "xp_rate": 1.25,
+  "formerly": null,
+  "base_stats": {
+   "STR": 2,
+   "CON": 2,
+   "INT": 3,
+   "SPD": 5,
+   "AGI": 5,
+   "PDEF": 1,
+   "MDEF": 2
+  },
+  "lines": [
+   "T2"
+  ]
+ },
+ {
+  "class": "Bat Swarm",
+  "stage": 2,
+  "size": "Tiny",
+  "slots": 0.5,
+  "can_lead": false,
+  "alignment_lean": "Evil",
+  "terrain": "Forest",
+  "speed_tier": 3,
+  "role": "Swarm",
+  "key_stats": [
+   "AGI",
+   "SPD"
+  ],
+  "stat_total": 26,
+  "flex_min": 1,
+  "flex_max": 3,
+  "front_attack": "Melee (any row)",
+  "front_count": 2,
+  "back_attack": "Melee (any row)",
+  "back_count": 1,
+  "element": null,
+  "notes": "Flyer",
+  "traits": [
+   "Tiny"
+  ],
+  "leader_aura": null,
+  "xp_rate": 1.25,
+  "formerly": null,
+  "base_stats": {
+   "STR": 3,
+   "CON": 3,
+   "INT": 4,
+   "SPD": 6,
+   "AGI": 6,
+   "PDEF": 1,
+   "MDEF": 3
+  },
+  "lines": [
+   "T2"
+  ]
+ },
+ {
+  "class": "Vampire Bats",
+  "stage": 3,
+  "size": "Tiny",
+  "slots": 0.5,
+  "can_lead": false,
+  "alignment_lean": "Evil",
+  "terrain": "Forest",
+  "speed_tier": 3,
+  "role": "Swarm",
+  "key_stats": [
+   "AGI",
+   "SPD"
+  ],
+  "stat_total": 30,
+  "flex_min": 1,
+  "flex_max": 3,
+  "front_attack": "Melee (any row)",
+  "front_count": 1,
+  "back_attack": "Melee (any row)",
+  "back_count": 1,
+  "element": "Dark",
+  "notes": "Flyer",
+  "traits": [
+   "Tiny",
+   "Drain"
+  ],
+  "leader_aura": null,
+  "xp_rate": 1.25,
+  "formerly": null,
+  "base_stats": {
+   "STR": 3,
+   "CON": 3,
+   "INT": 4,
+   "SPD": 8,
+   "AGI": 8,
+   "PDEF": 1,
+   "MDEF": 3
+  },
+  "lines": [
+   "T2"
+  ]
+ },
+ {
+  "class": "Night Terror",
+  "stage": 4,
+  "size": "Tiny",
+  "slots": 0.5,
+  "can_lead": false,
+  "alignment_lean": "Evil",
+  "terrain": "Forest",
+  "speed_tier": 3,
+  "role": "Swarm",
+  "key_stats": [
+   "AGI",
+   "SPD"
+  ],
+  "stat_total": 36,
+  "flex_min": 1,
+  "flex_max": 3,
+  "front_attack": "Melee (any row)",
+  "front_count": 1,
+  "back_attack": "Melee (any row)",
+  "back_count": 2,
+  "element": "Dark",
+  "notes": "Flyer",
+  "traits": [
+   "Tiny",
+   "Drain"
+  ],
+  "leader_aura": null,
+  "xp_rate": 1.25,
+  "formerly": null,
+  "base_stats": {
+   "STR": 4,
+   "CON": 4,
+   "INT": 5,
+   "SPD": 9,
+   "AGI": 9,
+   "PDEF": 1,
+   "MDEF": 4
+  },
+  "lines": [
+   "T2"
   ]
  }
 ]

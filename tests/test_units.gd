@@ -158,7 +158,7 @@ func test_deep_water() -> void:
 
 
 func test_speed_tier_and_casualties() -> void:
-	var s := _squad([["Knight"], ["Centaur"], ["Bowman"], ["Fighter"], ["Militia"]])
+	var s := _squad([["Knight"], ["Centaur"], ["Bowman"], ["Fighter"], ["Slinger"]])
 	check_eq(s.speed_tier, 1, "the slowest unit sets the tier")
 	var slow: Array[Unit] = [s.units[0], s.units[3]]
 	for u in slow:

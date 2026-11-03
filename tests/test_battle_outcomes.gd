@@ -117,7 +117,7 @@ func test_blind_silence_fear_weak_protect() -> void:
 	var c := _battle([mage], [_unit("Knight")])
 	c.add_status(mage, "silence")
 	c._turn(mage)
-	check(c.events[-1]["type"] == "wait" and c.events[-1]["text"].contains("silenced"), "silence stops magic")
+	check(c.events[-1]["type"] == "wait" and c.events[-1]["text"].contains("cancelled"), "silence stops magic")
 	var f := _unit("Fighter")  # two attacks in the front row
 	var e := _battle([f], [_unit("Knight")])
 	e.add_status(f, "fear")
@@ -163,7 +163,7 @@ func test_buff_lasts_until_buffers_next_turn() -> void:
 	var b := _battle([k, faerie], [_unit("Fighter")])
 	b._turn(faerie)
 	check(b.has_status(k, "mdef_up"), "the faerie raises the squad's MDEF")
-	check_eq(b.stat(k, "MDEF"), k.stats["MDEF"] * 1.2, "by 20%")
+	check_eq(b.stat(k, "MDEF"), k.stats["MDEF"] * 1.1, "by 10%")
 	b._end_buffs_from(faerie)
 	check(not b.has_status(k, "mdef_up"), "it ends at the faerie's next turn")
 	var ench := _unit("Enchantress", "back")
@@ -171,7 +171,7 @@ func test_buff_lasts_until_buffers_next_turn() -> void:
 	var c := _battle([ench], [foe])
 	c._misses[ench] = 3
 	c._turn(ench)
-	check(c.has_status(foe, "weak_physical"), "debuffers weaken enemies")
+	check(c.has_status(foe, "str_down"), "the enchantress lowers STR")
 
 
 func test_statuses_clear_at_end() -> void:
@@ -189,25 +189,22 @@ func test_on_hit_status() -> void:
 			ice = c
 	var b := _battle([_unit(ice)], [_unit("Knight")])
 	check_eq(b.on_hit_status(b.sides[0].units[0]), "freeze", "ice casters freeze")
-	check_eq(b.on_hit_status(_unit("Siren")), "charm", "sirens charm")
+	check_eq(b.on_hit_status(b.sides[0].units[0], "Melee"), "", "only Magic and Breath carry the element")
 
 
 # --- Traits and Raise dead ------------------------------------------------------------
 
-func test_first_strike_and_charge() -> void:
-	var lancer := _unit("Lancer", "front", "L")
+func test_first_strike() -> void:
+	var ronin := _unit("Ronin", "front", "R")
 	var fast := _unit("Fighter", "front", "F")
-	lancer.stats["SPD"] = 1
+	ronin.stats["SPD"] = 1
 	fast.stats["SPD"] = 20
-	var b := _battle([lancer], [fast])
-	check_eq(b.turn_order(true)[0], lancer, "Charge strikes first when its side attacks")
-	check_eq(b.turn_order(false)[0], fast, "only in the first round")
-	b.attacker = 1
-	check_eq(b.turn_order(true)[0], fast, "no Charge when defending")
+	var b := _battle([ronin], [fast])
+	check_eq(b.turn_order(true)[0], ronin, "First strike acts first in round 1")
+	check_eq(b.turn_order(false)[0], fast, "only in round 1")
 
 
 func test_raise_dead() -> void:
-	d.units["Necromancer"] = d.units["Apprentice"].duplicate()  # not in the sheet yet
 	var n := _unit("Necromancer", "back")
 	var b := _battle([n], [_unit("Knight")])
 	b._turn(n)
@@ -223,7 +220,6 @@ func test_raise_dead() -> void:
 	check_eq(b.sides[0].units.size(), count, "once per battle")
 	b.finish()
 	check(sk not in b.sides[0].units, "removed after the battle")
-	d.units.erase("Necromancer")
 
 
 # --- Steps, retreat, outcomes ------------------------------------------------------------

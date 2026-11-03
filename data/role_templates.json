@@ -593,5 +593,93 @@
    "PDEF": 8,
    "MDEF": 6
   }
+ },
+ "Anti-mage": {
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Dispel",
+  "back_count": 1,
+  "key_stats": [
+   "AGI",
+   "MDEF"
+  ],
+  "flex_min": 3,
+  "flex_max": 5,
+  "primary_row": "front",
+  "base_stats": {
+   "STR": 7,
+   "CON": 7,
+   "INT": 4,
+   "SPD": 6,
+   "AGI": 7,
+   "PDEF": 4,
+   "MDEF": 8
+  }
+ },
+ "Support": {
+  "front_attack": "Melee",
+  "front_count": 1,
+  "back_attack": "Buff",
+  "back_count": 2,
+  "key_stats": [
+   "CON",
+   "INT"
+  ],
+  "flex_min": 3,
+  "flex_max": 5,
+  "primary_row": "back",
+  "base_stats": {
+   "STR": 5,
+   "CON": 7,
+   "INT": 5,
+   "SPD": 5,
+   "AGI": 5,
+   "PDEF": 5,
+   "MDEF": 5
+  }
+ },
+ "Engineer": {
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Ranged",
+  "back_count": 1,
+  "key_stats": [
+   "STR",
+   "CON"
+  ],
+  "flex_min": 3,
+  "flex_max": 5,
+  "primary_row": "front",
+  "base_stats": {
+   "STR": 8,
+   "CON": 8,
+   "INT": 5,
+   "SPD": 5,
+   "AGI": 5,
+   "PDEF": 6,
+   "MDEF": 3
+  }
+ },
+ "Swarm": {
+  "front_attack": "Melee",
+  "front_count": 2,
+  "back_attack": "Melee",
+  "back_count": 1,
+  "key_stats": [
+   "AGI",
+   "SPD"
+  ],
+  "flex_min": 1,
+  "flex_max": 3,
+  "primary_row": "front",
+  "base_stats": {
+   "STR": 4,
+   "CON": 4,
+   "INT": 2,
+   "SPD": 7,
+   "AGI": 7,
+   "PDEF": 2,
+   "MDEF": 2
+  }
  }
 }

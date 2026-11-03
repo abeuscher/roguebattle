@@ -95,7 +95,7 @@ func test_squad_moves_at_tier_speed() -> void:
 	m.seed = 1
 	m.settings = {"preset": "continent", "size": "small"}
 	var state := GameState.new(_data, m, GameLog.new())
-	var s := state.add_squad("Test", m.index_of(Hex.from_offset(Vector2i(0, 1))), [["Militia", "front"]])  # plains, tier 2
+	var s := state.add_squad("Test", m.index_of(Hex.from_offset(Vector2i(0, 1))), [["Slinger", "front"]])  # plains, tier 2
 	var goal := m.index_of(Hex.from_offset(Vector2i(10, 1)))
 	check(state.order_move(s, PackedInt32Array([goal])), "order accepted")
 	check_eq(s.path.size(), 10, "ten hexes to go")
