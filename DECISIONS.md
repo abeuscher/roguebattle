@@ -39,7 +39,6 @@ Small calls made where the spec left a gap. Newest at the bottom. Anything here 
 - **Deep Forest / Tundra** scale one terrain's amount up (`terrain_scale`), since the spec's levels stop at high.
 - **Frozen lakes** (user request) are their own terrain, light blue, only in Tundra: about 15% of the snow, cut out as blobs. Same difficulty as snow, and `"native_as": "snow"` in `data/terrain.json` means snow natives count as native there too. Later movement and battle rules must read `native_as`.
 - **Volcanic ash plains** are plain plains; there is no ash terrain in §6.3. Volcanic adds 8 short lava flows running down from the mountains.
-- **Large maps take about 5–6 s** to generate (medium about 2.8 s). That's at the edge of the spec's "a few seconds"; worth another pass if it bothers anyone.
 
 ## Session 003 (2026-11-02)
 
@@ -53,4 +52,4 @@ Small calls made where the spec left a gap. Newest at the bottom. Anything here 
 - **Hidden-site roads** run from the site to the nearest existing road (none when road coverage is "none").
 - **Lairs** pick a home terrain from the sheet's Terrain column (Water lairs sit in shallows, Sky lairs on mountains, Lava lairs on lava), at least 4 hexes from roads and 15 (scaled by map width) from both bases. Danger = distance from the Player Base ÷ distance between bases, clamped to 0–1.
 - **Rule 3 (§6.5):** any terrain region of 0.4% of the map or more (360 hexes on small) with no building or lair gets a lair (or a tower if neutrals are off). This adds about 3–7 lairs on top of the density count. At 0.2% it added far more.
-- **Speed.** Small maps take about 1.1 s, medium about 5 s, large about 11 s. Large is well past "a few seconds". Most of the cost is plain GDScript loops over every hex; it needs a dedicated speed pass (see ROADMAP).
+- **Speed.** Small maps take about 1.1 s, medium about 5 s, large about 11 s. The user confirmed this is fine: the spec's "a few seconds" means not minutes, so no speed pass is planned.
