@@ -37,6 +37,6 @@ Small calls made where the spec left a gap. Newest at the bottom. Anything here 
 - **Islands / Floating Isles** split the map between 2–4 (or 3–5) island centers with a wandering water or air channel between them. Floating Isles use air gaps instead of sea, with no shallows.
 - **Archipelago** cuts the land with a network of thin straits and keeps islands as small as 6 hexes.
 - **Deep Forest / Tundra** scale one terrain's amount up (`terrain_scale`), since the spec's levels stop at high.
-- **Tundra's frozen lakes** are drawn as snow and ice: §6.3 has one terrain for both, so there is no separate lake feature.
+- **Frozen lakes** (user request) are their own terrain, light blue, only in Tundra: about 15% of the snow, cut out as blobs. Same difficulty as snow, and `"native_as": "snow"` in `data/terrain.json` means snow natives count as native there too. Later movement and battle rules must read `native_as`.
 - **Volcanic ash plains** are plain plains; there is no ash terrain in §6.3. Volcanic adds 8 short lava flows running down from the mountains.
 - **Large maps take about 5–6 s** to generate (medium about 2.8 s). That's at the edge of the spec's "a few seconds"; worth another pass if it bothers anyone.

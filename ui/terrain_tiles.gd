@@ -83,6 +83,11 @@ static func draw_tile(key: String, base: Color, s: float) -> Image:
 				_fill(img, at.call(_ellipse(p, 6.5, 4.5)), Color("#5a2614"))
 			for p in [Vector2(6, -9), Vector2(-10, 5), Vector2(11, 12)]:
 				_fill(img, at.call(_ellipse(p, 2.2, 2.2)), Color("#ffd23f"))
+		"frozen_lake":
+			var glint := base.lightened(0.6)
+			for p in [Vector2(-9, -5), Vector2(7, 6)]:
+				_fill(img, at.call([p + Vector2(-6, 3), p + Vector2(-5, 4.5), p + Vector2(6, -3), p + Vector2(5, -4.5)]), glint)
+				_fill(img, at.call([p + Vector2(-1, 5), p + Vector2(0, 6), p + Vector2(5, 2.5), p + Vector2(4, 1.5)]), glint)
 		"cliff":
 			for x in [-14, -6, 2, 10]:
 				_fill(img, at.call([Vector2(x, 12), Vector2(x + 3, 12), Vector2(x + 9, -12), Vector2(x + 6, -12)]), dark)

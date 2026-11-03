@@ -24,6 +24,7 @@
   "min_island_hexes": 30,
   "rivers": 0,
   "river_crossing_spacing": 18,
+  "frozen_lakes": 0,
   "lava_flows": 0,
   "lava_flow_length": 30
  },
@@ -41,7 +42,7 @@
   "deep_forest": {"land_pct": 58, "terrain_amounts": {"forest": "high", "mountain": "low", "swamp": "low",
    "snow": "low", "desert": "none", "lava": "none", "cliff": "none"}, "terrain_scale": {"forest": 3.5}},
   "tundra": {"land_pct": 58, "terrain_amounts": {"snow": "high", "desert": "none", "lava": "none", "forest": "low"},
-   "terrain_scale": {"snow": 3}},
+   "terrain_scale": {"snow": 3}, "frozen_lakes": 0.15},
   "volcanic": {"land_pct": 55, "terrain_amounts": {"lava": "medium", "mountain": "high", "snow": "low", "desert": "none"},
    "lava_flows": 8}
  }

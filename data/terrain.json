@@ -9,5 +9,6 @@
  {"key": "deep", "name": "Deep water", "impassable": true, "water": true, "crossing": "shallow", "color": "#2a5c8f"},
  {"key": "lava", "name": "Lava", "impassable": true, "crossing": "plains", "color": "#d9481c"},
  {"key": "cliff", "name": "Cliffs", "impassable": true, "crossing": "mountain", "color": "#4b433b"},
- {"key": "air_gap", "name": "Air gap", "impassable": true, "crossing": "bridge", "color": "#c9dcf0"}
+ {"key": "air_gap", "name": "Air gap", "impassable": true, "crossing": "bridge", "color": "#c9dcf0"},
+ {"key": "frozen_lake", "name": "Frozen lake", "difficulty": 2, "native_as": "snow", "color": "#b3dcf2"}
 ]

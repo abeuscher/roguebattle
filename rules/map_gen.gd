@@ -326,7 +326,12 @@ func _terrain_features() -> void:
 		"forest": woods,
 	}
 	for key in scores:
-		_assign(land, _id(key), int(land.size() * target_fraction(data, settings, key)), scores[key])
+		_assign(land, _id("plains"), _id(key), int(land.size() * target_fraction(data, settings, key)), scores[key])
+	# Frozen lakes: blobs cut out of the snow (Tundra).
+	var lake_share := float(settings["frozen_lakes"])
+	if lake_share > 0.0:
+		var snow_count := map.terrain.count(_id("snow"))
+		_assign(land, _id("snow"), _id("frozen_lake"), int(snow_count * lake_share), _field("lakes", 14.0))
 
 
 ## The share of land a terrain is meant to cover under these settings.
@@ -335,14 +340,14 @@ static func target_fraction(game_data: GameData, s: Dictionary, key: String) -> 
 	return float(game_data.mapgen["amount_fractions"][amount]) * float(s["terrain_scale"].get(key, 1.0))
 
 
-func _assign(land: PackedInt32Array, terrain_id: int, count: int, score: PackedFloat32Array) -> void:
+## Turns the `count` best-scoring `from` hexes among `land` into `terrain_id`.
+func _assign(land: PackedInt32Array, from: int, terrain_id: int, count: int, score: PackedFloat32Array) -> void:
 	if count <= 0:
 		return
-	var plains := _id("plains")
 	var cand := PackedInt32Array()
 	var vals := PackedFloat32Array()
 	for i in land:
-		if map.terrain[i] == plains:
+		if map.terrain[i] == from:
 			cand.append(i)
 			vals.append(score[i])
 	var cut := _cutoff(vals, count)

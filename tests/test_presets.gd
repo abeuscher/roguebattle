@@ -117,7 +117,11 @@ func test_deep_forest_and_tundra() -> void:
 	var forest := _map("deep_forest")
 	check(_count(forest, "forest") > _land_count(forest) * 0.5, "deep forest: mostly forest")
 	var tundra := _map("tundra")
-	check(_count(tundra, "snow") > _land_count(tundra) * 0.45, "tundra: mostly snow")
+	var cold := _count(tundra, "snow") + _count(tundra, "frozen_lake")
+	check(cold > _land_count(tundra) * 0.45, "tundra: mostly snow and ice")
+	check(_count(tundra, "frozen_lake") > _count(tundra, "snow") * 0.1, "tundra: has frozen lakes")
+	check_eq(_count(_map("continent"), "frozen_lake"), 0, "frozen lakes only where the preset asks")
+	check_eq(_data.terrains[_data.terrain_ids["frozen_lake"]]["native_as"], "snow", "frozen lake counts as snow for natives")
 	check_eq(_count(tundra, "desert"), 0, "tundra: no desert")
 
 
