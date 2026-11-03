@@ -9,6 +9,7 @@ signal back
 signal next(map: MapData)  # the previewed map, or null if it doesn't match the settings yet
 
 const OPEN_SECTIONS := ["Size", "Land shape", "Terrain"]  # the rest start collapsed
+const SLIDER_COLOR := Color(0.78, 0.8, 0.85)
 
 var data: GameData
 var config: GameConfig
@@ -107,8 +108,16 @@ func _control_for(f: Dictionary) -> Control:
 	var slider := HSlider.new()
 	slider.max_value = opts.size() - 1
 	slider.step = 1
-	slider.tick_count = opts.size() if opts.size() <= 12 else 0
-	slider.ticks_on_borders = true
+	var filled := UiStyle.box(SLIDER_COLOR, 0)
+	filled.content_margin_top = 3
+	filled.content_margin_bottom = 3
+	var empty := filled.duplicate() as StyleBoxFlat
+	empty.bg_color = Color(SLIDER_COLOR, 0.3)
+	slider.add_theme_stylebox_override("slider", empty)
+	slider.add_theme_stylebox_override("grabber_area", filled)
+	slider.add_theme_stylebox_override("grabber_area_highlight", filled)
+	if f.has("options"):  # a dot at each choice
+		slider.draw.connect(func(): _draw_stops(slider))
 	slider.size_flags_horizontal = SIZE_EXPAND_FILL
 	slider.size_flags_vertical = SIZE_SHRINK_CENTER
 	var value := UiStyle.label("", 16)
@@ -120,6 +129,19 @@ func _control_for(f: Dictionary) -> Control:
 	row.add_child(value)
 	_controls[key] = slider
 	return row
+
+
+## Dots where the slider can stop, full color up to the chosen one and faded past it.
+## The grabber covers the chosen stop.
+func _draw_stops(slider: HSlider) -> void:
+	var grab := slider.get_theme_icon("grabber").get_width()
+	var y := slider.size.y / 2.0
+	for i in int(slider.max_value) + 1:
+		if i == int(slider.value):
+			continue
+		var x := grab / 2.0 + (slider.size.x - grab) * i / slider.max_value
+		var color := SLIDER_COLOR if i < slider.value else Color(SLIDER_COLOR, 0.55)
+		slider.draw_circle(Vector2(x, y), 5.0, color)
 
 
 ## How a slider shows option i: its label, its number, or its name (map size adds its hexes).
