@@ -14,6 +14,8 @@ var speed_tier := 2
 var path := PackedInt32Array()  # hexes still to enter, in order
 var rally := PackedInt32Array()  # rally points still ahead, each also on the path
 var progress := 0.0  # ticks spent so far toward entering path[0]
+var morale := 50  # 0-100, hidden (§12.2); what moves it arrives in M4
+var marching_home := false  # lost its leader: heads for base on its own (§11.3)
 
 
 func _init(squad_id: int, squad_name: String, at_hex: int) -> void:

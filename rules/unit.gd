@@ -14,6 +14,7 @@ var alignment := 50  # 0-100
 var charisma := 0  # 0-100
 var row := "front"  # "front" or "back"
 var extra_slots := 0  # slots earned as a leader (§8.2)
+var element := ""  # overrides the class's element when set (Skeletons)
 # Hidden (§12.2)
 var growth := {}  # non-key stat -> chance to grow per level, before talent
 var talent := "ordinary"

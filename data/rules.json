@@ -7,6 +7,7 @@
  "start_minute": 480,
  "starting_gold": 500,
  "starting_reputation": 50,
+ "starting_morale": 50,
  "hex_seconds_by_tier": [1.0, 0.6, 0.3],
  "placeholder_squad": {"name": "Vanguard", "units": [["Knight", "front"], ["Fighter", "front"], ["Fighter", "front"], ["Bowman", "back"], ["Acolyte", "back"]]},
  "hp_per_con": 10,
