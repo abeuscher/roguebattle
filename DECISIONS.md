@@ -14,7 +14,7 @@ Small calls made where the spec left a gap. Newest at the bottom. Anything here 
 - **Test runner** is a small homemade script (`tests/run_tests.gd`), not GUT. It uses Godot 4.5's `Logger` to fail any test that raises a script error.
 - **Logs** go to `user://logs/game-<time>.log`.
 
-## Open data issues (need the v3 sheet or an answer)
+## Open data issues (from session 001; items 1, 2 and the class names in 6 are settled by v3, see "After session 010")
 
 1. **Wrong sheet version.** The sheet has 160 classes; the spec says 190. It has no Traits, Leader aura or XP rate columns and no Mechanics tab. Level cost (§9.4), traits and auras (§11) depend on these. M1 doesn't need them; M2 battle traits and M3 levelling do.
 2. **Classes the spec names that the sheet lacks:** Herald, Standard-Bearer, Quartermaster, Provisioner, Sapper, Occultist, Necromancer, Seer, Oracle, Falconer, Dragonslayer, Smuggler/Fence, Sprite, Faerie Queen. No Tiny units and no T lines exist.
@@ -120,11 +120,11 @@ Small calls made where the spec left a gap. Newest at the bottom. Anything here 
 - **Home terrain**: matches the battle hex's terrain or what it counts as (frozen lake = snow; any water = home for Water units). Difficulty-3 terrain gives −15% to non-natives. Flyers (Sky) get neither.
 - **Matchup tags** (archer, mounted, spear, flyer, large, falconer, dragonslayer) are by role, class, sheet terrain or size in `battle.json`, since the sheet has no such columns. Mounted = Cavalry, Mounted archer, Mounted healer and Sky rider roles plus Valkyrie and Muse; spear = Spearman and Centurion; flyer = Sky terrain (so Angels and Imps, "low flyers" on other terrains, don't count). Falconer and Dragonslayer wait for the sheet.
 - **Buff and Debuff** actions just wait until statuses arrive (session 3).
-- **Balance check**: with placeholder data an even stage 2–3 fight costs each side about 12–16% of its HP, short of the 35–50% target. Session 4 tunes the data with the sim.
+- **Balance check**: with placeholder data an even stage 2–3 fight costs each side about 12–16% of its HP, short of the 35–50% target. Session 5 tunes the data with the sim.
 
 ## Session 010 (2026-11-03): statuses, traits, outcomes
 
-- **Battles step one turn at a time** (`Battle.step()`), so the battle view (session 6) can animate them and the player can retreat between turns. `run()` plays to the end; `finish()` clears statuses, removes Skeletons and reports the outcome; `GameState.end_battle()` applies it on the map.
+- **Battles step one turn at a time** (`Battle.step()`), so the battle view (session 7) can animate them and the player can retreat between turns. `run()` plays to the end; `finish()` clears statuses, removes Skeletons and reports the outcome; `GameState.end_battle()` applies it on the map.
 - **Statuses** (§11.7) are data in `battle.json`. Harmful ones last the battle; Charm lasts the charmed unit's next turn; Sleep lasts until hit. Poison, Burn and Regen tick at the start of the unit's own turn, and Poison and Burn can kill. Blind takes 30% off after the 50–95% clamp, so it bites. Silence blocks Magic, Heal, Buff and Debuff actions (not Breath). A unit can't get a status it already has.
 - **Who causes statuses** (§11.7, "assign casters from the sheet by element and role"): hits from Fire units can Burn, Ice can Freeze, Lightning can Shock and Dark can Poison, with a 20% chance per hit (placeholder). Siren and Naiad Charm; Basilisk Petrifies (not in the sheet yet). Water and Holy have no status. Snow natives resist Freeze and lava natives resist Burn. The Debuffers (Enchantress, Sorceress: "weakens enemies") give Weak (physical), preferring targets that don't have it yet.
 - **Buffs**: Buffer units (Faerie, Pixie, Sylph) raise the whole squad's MDEF by 20% until the buffer's next turn. Herald, Standard-Bearer, Quartermaster, Provisioner and Sprite are mapped too, waiting for the sheet.
@@ -132,7 +132,19 @@ Small calls made where the spec left a gap. Newest at the bottom. Anything here 
 - **Raise dead** (§9.7) is free at the start of the raiser's turn, once per battle, when the squad has a slot not used by a living unit. The Occultist and Necromancer classes aren't in the sheet yet.
 - **Retreat** (§11.6) compares squad speed tiers (higher = faster). A failed retreat makes the squad's next turn, by whichever unit, a lost action.
 - **Outcomes** (§11.3): the side that lost the larger share of its starting HP is pushed back (no push on a tie, a wipe-out or a retreat). Push-back steps away from the enemy's hex, into hexes the squad can enter that no other squad holds, and stops early if it can't get further away. Flyers count as on their travel terrain (1 hex). A wiped-out enemy squad leaves the map. A squad that loses its leader is ordered to its own base and flagged `marching_home`.
-- **Drive-off** is a GameState call (`drive_off_chance`, `drive_off`); the battle-result screen (session 6) offers it. Squads start at morale 50 (`starting_morale`); what moves morale arrives in M4.
+- **Drive-off** is a GameState call (`drive_off_chance`, `drive_off`); the battle-result screen (session 7) offers it. Squads start at morale 50 (`starting_morale`); what moves morale arrives in M4.
 - **Threat rating** (§12.4) = stat total × (1 + 0.5 per attack beyond the first) × (1 + 0.1 per stage above 1) × HP share. Pre-battle label from the enemy:own ratio: below 0.8 Weaker, below 1.25 Even, below 1.75 Stronger, else Dangerous. The Strong tactic now targets the highest threat.
 - **After-battle updates** (§11.3.5): only statuses clear for now. XP, charisma, alignment, morale, loyalty and bonds arrive with M3 and M4.
+
+## After session 010: unit sheet v3 (2026-11-03)
+
+The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, XP rate and Formerly columns, plus Mechanics and Change log tabs). It answers open data issues 1, 2 and the class-name part of 6. Recorded for M2 session 4 (new), which switches to it:
+
+- **The old `unit-table-final.xlsx` gets deleted** when the converter moves to v3, so only one unit sheet remains (user request).
+- **Spec over sheet** where they differ (§21): buffs last until the buffer's next turn (sheet: the battle); Supply heals 2% max HP per in-game hour (sheet: per second); Harass lasts 60 ticks (sheet: 10 s); day and night apply to every unit by alignment band (sheet lists six units). Buff sizes follow the sheet (+10%) unless the spec gives a number.
+- **Corrections to sessions 008–010:** Charge is "first attack ×1.5", not acting first; acting first in round 1 comes from First strike (Ronin, Kensei) and the Charge order aura. Amphibious units (frog and toad lines) move freely on land and water. Flyers are the sheet's Flyer list (including Angels, Imps and Sprites), not just Sky-terrain classes.
+- **Positions within a row** (agreed with the user): each row is ordered left to right. A back-row unit is "behind" the front-row unit in the same position; a Large unit takes one position. Bulwark, Guard, Pushback, pierce and cleave use this, and Edit Units (M3) will let the player arrange it.
+- **Debuff stats** (agreed): Enchantress and Sorceress lower STR, Seer and Oracle lower AGI, lion roar (Debuff row) lowers front-row STR, each −10% (sheet placeholder). Siren and Naiad charm.
+- **Elemental statuses** (agreed): only Magic and Breath attacks, which carry the element, can cause Burn (Fire), Freeze (Ice), Shock (Lightning) or Poison (Dark). Other statuses come from named units (Siren, Naiad, Basilisk) and cards.
+- **Still open: §18 coverage.** v3 adds Serf-line leaders on Mountain (Sapper) and Desert (Seer), but every Serf-line stage 2 unit is Plains, so four stage 2 units (weight 4) always outvote a stage 3 leader (weight 2). Not needed until M4 session 1; raise it then.
 
