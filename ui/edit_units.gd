@@ -584,28 +584,39 @@ class Chip extends Control:
 		var dead := not unit.is_alive()
 		draw_rect(r, color.darkened(0.55) if not dead else Color(0.12, 0.12, 0.13))
 		draw_rect(Rect2(0, 0, 4, size.y), color if not dead else Color(0.3, 0.3, 0.32))
-		var edge := Color(1, 0.88, 0.5) if leader else (Color.WHITE if selected else Color(0.32, 0.35, 0.4))
-		draw_rect(r, edge, false, 3.0 if selected else 2.0)
+		draw_rect(r, Color.WHITE if selected else Color(0.32, 0.35, 0.4), false, 3.0 if selected else 2.0)
 		var ink := Color.WHITE if not dead else Color(0.5, 0.5, 0.52)
 		var share := float(unit.hp) / max_hp
 		var fill := Color("#5fbf5a") if share > 0.5 else (Color("#e0b03a") if share > 0.25 else Color("#d9533f"))
 		match mode:
 			"compact":
-				draw_string(font, Vector2(8, 20), unit.unit_class, HORIZONTAL_ALIGNMENT_LEFT, size.x - 10, 11, ink)
+				draw_string(font, Vector2(8, 20), unit.unit_class, HORIZONTAL_ALIGNMENT_LEFT, size.x - (22 if leader else 10), 11, ink)
+				if leader:
+					_star(Vector2(size.x - 10, 15), 6.0)
 				draw_string(font, Vector2(8, 34), "Lv %d" % unit.level, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, ink.darkened(0.3))
 				draw_rect(Rect2(6, size.y - 9, size.x - 12, 4), Color(0.05, 0.05, 0.06))
 				draw_rect(Rect2(6, size.y - 9, (size.x - 12) * share, 4), fill)
 			_:
 				var w := size.x - 20
-				draw_string(font, Vector2(12, 21), unit.unit_class + ("  (leader)" if leader and mode == "wide" else ""), HORIZONTAL_ALIGNMENT_LEFT, w, 15, ink)
+				draw_string(font, Vector2(12, 21), unit.unit_class, HORIZONTAL_ALIGNMENT_LEFT, w - (20 if leader else 0), 15, ink)
+				if leader:
+					_star(Vector2(size.x - 16, 16), 8.0)
 				draw_string(font, Vector2(12, 38), unit.name, HORIZONTAL_ALIGNMENT_LEFT, w, 12, ink.darkened(0.25))
 				if mode == "slot":
 					draw_string(font, Vector2(12, 56), line, HORIZONTAL_ALIGNMENT_LEFT, w, 12, ink.darkened(0.25))
-					if leader:
-						draw_string(font, Vector2(12, 74), "Leader", HORIZONTAL_ALIGNMENT_LEFT, w, 12, Color(1, 0.88, 0.5))
 				var y := size.y - 12
 				draw_rect(Rect2(12, y, size.x - 24, 5), Color(0.05, 0.05, 0.06))
 				draw_rect(Rect2(12, y, (size.x - 24) * share, 5), fill)
 				if mode == "slot" or mode == "wide":
-					draw_string(font, Vector2(size.x - 80, 21 if mode == "wide" else 74), "%d/%d" % [unit.hp, max_hp] if not dead else "Fallen",
+					draw_string(font, Vector2(size.x - 80, 38 if mode == "wide" else 74), "%d/%d" % [unit.hp, max_hp] if not dead else "Fallen",
 							HORIZONTAL_ALIGNMENT_RIGHT, 68, 11, ink.darkened(0.2))
+
+	## The leader's mark: a gold five-pointed star.
+	func _star(at: Vector2, radius: float) -> void:
+		var points := PackedVector2Array()
+		for i in 10:
+			var a := -PI / 2.0 + i * PI / 5.0
+			points.append(at + Vector2(cos(a), sin(a)) * (radius if i % 2 == 0 else radius * 0.45))
+		draw_colored_polygon(points, Color(1, 0.84, 0.35))
+		points.append(points[0])
+		draw_polyline(points, Color(0.25, 0.18, 0.05), 1.0)
