@@ -10,7 +10,7 @@ Open the folder in Godot 4.5.1 and press F5, or:
 godot --path .
 ```
 
-For now the game shows a generated map with the clock running and one test squad: click it, choose Move, click hexes to lay rally points and click the last one again to commit. Space pauses, PgUp/PgDn change speed, L opens the log, the minimap jumps the view. Wheel zooms, drag pans, F fits, R makes a new map, P cycles presets, S cycles sizes, H shows or hides hidden sites and lairs, G toggles the hex grid, O cycles debug overlays.
+Title → Start → Configurator (every map setting, live preview, seed, share code) → summary → battlemap. On the battlemap: click the test squad, choose Move, click hexes to lay rally points and click the last one again to commit. Space pauses, PgUp/PgDn change speed, L opens the log, Esc opens the menu, the minimap jumps the view. Wheel zooms, drag pans, F fits, H shows or hides hidden sites and lairs, G toggles the hex grid, O cycles debug overlays, T changes the test squad's travel type.
 
 ## Run the tests
 

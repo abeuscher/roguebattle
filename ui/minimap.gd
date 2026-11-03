@@ -5,10 +5,10 @@ extends Control
 
 signal jump(world_point: Vector2)
 
-const WIDTH := 380.0
 const DOT_COLORS := {"player_base": Color("#3b6fd6"), "enemy_base": Color("#c8342c"),
 		"town": Color("#f4ead2"), "tower": Color("#6d3a8c"), "temple": Color("#ffffff"), "nomads": Color("#2f8f6a")}
 
+var width := 380.0  # on screen
 var _texture: Texture2D
 var _view := Rect2()  # in minimap pixels
 var _px_per_world := Vector2.ONE  # minimap image pixels per world unit
@@ -25,8 +25,8 @@ func set_map(map: MapData, data: GameData) -> void:
 	_texture = ImageTexture.create_from_image(img)
 	# Same layout as the map view's underlay: 2 pixels per hex across, 2 per row down.
 	_px_per_world = Vector2(1.0 / (MapView.HEX_SIZE * Hex.SQRT3 / 2.0), 1.0 / (MapView.HEX_SIZE * 0.75))
-	_scale = WIDTH / img.get_width()
-	custom_minimum_size = Vector2(WIDTH, img.get_height() * _scale)
+	_scale = width / img.get_width()
+	custom_minimum_size = Vector2(width, img.get_height() * _scale)
 	size = custom_minimum_size
 	queue_redraw()
 

@@ -9,21 +9,23 @@ var clock: GameClock
 var log: GameLog
 var pathfinder: Pathfinder
 var squads: Array[Squad] = []
+var settings: Dictionary  # victory, defeat, squad cap, fairness (from the configurator)
 var gold: int
 var reputation: int
 
 
-func _init(game_data: GameData, game_map: MapData, game_log: GameLog) -> void:
+func _init(game_data: GameData, game_map: MapData, game_log: GameLog, game_settings := {}) -> void:
 	data = game_data
 	map = game_map
 	log = game_log
+	settings = game_settings
 	rng = RngStreams.new(map.seed)
 	clock = GameClock.new(data.rules, int(data.rules["start_minute"]))
 	pathfinder = Pathfinder.new(map, data)
 	gold = int(data.rules["starting_gold"])
 	reputation = int(data.rules["starting_reputation"])
 	log.add(clock.tick, "system", "New map: seed %d, %s %s." % [map.seed, map.settings["preset"], map.settings["size"]],
-			-1, {"settings": map.settings})
+			-1, {"settings": map.settings, "game": settings})
 
 
 ## Runs the simulation for one tick.

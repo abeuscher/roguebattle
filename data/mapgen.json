@@ -27,6 +27,8 @@
   "road_coverage": "main",
   "hidden_road_chance": 0.25,
   "neutral_density": "low",
+  "neutral_danger": "low",
+  "roamer_aggression": "low",
   "spawn_side": "west",
   "size": "small",
   "preset": "continent",

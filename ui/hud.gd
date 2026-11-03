@@ -19,7 +19,7 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	mouse_filter = MOUSE_FILTER_IGNORE
 	var bar := PanelContainer.new()
-	bar.add_theme_stylebox_override("panel", _box(Color(0.07, 0.09, 0.11, 0.85), 10))
+	bar.add_theme_stylebox_override("panel", UiStyle.box(Color(0.07, 0.09, 0.11, 0.85), 10))
 	bar.set_anchors_and_offsets_preset(PRESET_TOP_WIDE)
 	bar.mouse_filter = MOUSE_FILTER_IGNORE
 	add_child(bar)
@@ -37,10 +37,10 @@ func _ready() -> void:
 	_money.add_theme_font_size_override("font_size", 20)
 	row.add_child(_money)
 	add_child(minimap)
-	_help.add_theme_stylebox_override("normal", _box(Color(0.07, 0.09, 0.11, 0.75), 6))
+	_help.add_theme_stylebox_override("normal", UiStyle.box(Color(0.07, 0.09, 0.11, 0.75), 6))
 	_help.add_theme_font_size_override("font_size", 13)
 	add_child(_help)
-	_banner.add_theme_stylebox_override("normal", _box(Color(0.12, 0.1, 0.04, 0.92), 10))
+	_banner.add_theme_stylebox_override("normal", UiStyle.box(Color(0.12, 0.1, 0.04, 0.92), 10))
 	_banner.add_theme_font_size_override("font_size", 18)
 	_banner.add_theme_color_override("font_color", Color("#ffe08a"))
 	_banner.visible = false
@@ -81,7 +81,7 @@ func refresh(state: GameState) -> void:
 		_speed.text = "PAUSED  (Space)"
 		_speed.add_theme_color_override("font_color", Color("#ff9b6a"))
 	elif not state.clock.is_running():
-		_speed.text = "Paused while planning"
+		_speed.text = "Paused"
 		_speed.add_theme_color_override("font_color", Color("#ffe08a"))
 	else:
 		_speed.text = "%s  x%s" % [state.speed_name(), state.clock.speed()]
@@ -98,10 +98,3 @@ func place() -> void:
 	_help.reset_size()
 	_help.position = Vector2(12, size.y - _help.size.y - 12)
 
-
-static func _box(color: Color, margin: int) -> StyleBoxFlat:
-	var box := StyleBoxFlat.new()
-	box.bg_color = color
-	box.set_content_margin_all(margin)
-	box.set_corner_radius_all(4)
-	return box

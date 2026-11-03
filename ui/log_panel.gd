@@ -22,7 +22,7 @@ func _ready() -> void:
 	center.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	add_child(center)
 	var panel := PanelContainer.new()
-	panel.add_theme_stylebox_override("panel", Hud._box(Color(0.1, 0.12, 0.15), 16))
+	panel.add_theme_stylebox_override("panel", UiStyle.box(Color(0.1, 0.12, 0.15), 16))
 	panel.custom_minimum_size = Vector2(1100, 720)
 	center.add_child(panel)
 	var col := VBoxContainer.new()
