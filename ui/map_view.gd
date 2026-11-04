@@ -11,6 +11,8 @@ const CHUNK := 64  # hexes per chunk side
 const STRIP_ROWS := 2  # objects are batched in full-width strips this many rows tall
 const ICON_SCALE := 2.0  # icons stand about two hexes tall
 const ICON_MIN_SCREEN := 0.5  # icons never shrink below this fraction of their size at zoom 1
+const HOVER_SCALE := 1.1  # a building under the pointer while laying a route grows this much
+const HOVER_TIME := 0.08  # seconds
 const RELIEF_EARTH := Color("#5a4632")
 const OBJECT_SHADER := """
 shader_type canvas_item;
@@ -61,6 +63,8 @@ var _grid_layer := Node2D.new()
 var _object_layer := Node2D.new()
 var _strips: Array[Node2D] = []
 var _icon_sprites: Array[Sprite2D] = []
+var _icon_scale := 1.0  # set by set_zoom
+var _hovered := -1  # building index under the pointer, or -1
 var _secret_at := {}  # hex -> hidden site or lair icon
 var _revealed := {}  # hexes whose secret icon a squad has seen
 
@@ -108,9 +112,9 @@ static func hex_center(map: MapData, i: int) -> Vector2:
 
 ## Keeps icons readable when zoomed far out.
 func set_zoom(zoom: float) -> void:
-	var s := HEX_SIZE / TEXTURE_HEX_SIZE * ICON_SCALE * maxf(1.0, ICON_MIN_SCREEN / zoom)
-	for icon in _icon_sprites:
-		icon.scale = Vector2(s, s)
+	_icon_scale = HEX_SIZE / TEXTURE_HEX_SIZE * ICON_SCALE * maxf(1.0, ICON_MIN_SCREEN / zoom)
+	for i in _icon_sprites.size():
+		_icon_sprites[i].scale = Vector2.ONE * _icon_scale * (HOVER_SCALE if i == _hovered else 1.0)
 	paths.zoom = zoom
 	paths.queue_redraw()
 
@@ -294,6 +298,16 @@ func update_building(i: int, hex: int, shown: bool, flag: Color, progress: float
 	if marker:
 		marker.flag = flag
 		marker.progress = progress
+
+
+## Grows the building icon under the pointer a little (`i` indexes map.buildings; -1 for none).
+func hover_building(i: int) -> void:
+	if i == _hovered:
+		return
+	for j in [_hovered, i]:
+		if j >= 0:
+			create_tween().tween_property(_icon_sprites[j], "scale", Vector2.ONE * _icon_scale * (HOVER_SCALE if j == i else 1.0), HOVER_TIME)
+	_hovered = i
 
 
 ## Shows a hidden site or lair icon once a squad has seen it.

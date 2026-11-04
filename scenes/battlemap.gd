@@ -95,6 +95,8 @@ func _process(delta: float) -> void:
 		_sync_tokens()
 		hud.set_squads(state.player_squads())
 	_update_cursor()
+	var under := state.building_at(_hex_at(get_global_mouse_position())) if _planning and _confirm == null else {}
+	view.hover_building(state.map.buildings.find(under) if not under.is_empty() else -1)
 	night.color = Color.WHITE.lerp(NIGHT, darkness(state.clock.minute_of_day()))
 	_update_tokens()
 	_update_paths()
