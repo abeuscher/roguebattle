@@ -56,6 +56,7 @@ func start(game_data: GameData, game_log: GameLog, config: GameConfig, map: MapD
 	camera.view_changed.connect(_on_view_changed)
 	hud.minimap.jump.connect(camera.center_on)
 	hud.squad_pressed.connect(_center_on_squad)
+	hud.speed_chosen.connect(_on_speed_chosen)
 	hud.edit_pressed.connect(func():
 		if _can_open() and _selected == null:
 			_open_edit())
@@ -547,6 +548,10 @@ func _close_main_menu() -> void:
 
 
 # --- Input ------------------------------------------------------------------------
+
+func _on_speed_chosen(index: int) -> void:
+	state.set_speed_index(index)
+
 
 ## No menu or dialog is open.
 func _can_open() -> bool:
