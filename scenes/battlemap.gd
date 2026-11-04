@@ -66,6 +66,9 @@ func start(game_data: GameData, game_log: GameLog, config: GameConfig, map: MapD
 	hud.cards_pressed.connect(func():
 		if _can_open() and _selected == null:
 			_open_cards(false))
+	hud.tech_pressed.connect(func():
+		if _can_open() and _selected == null:
+			_open_tech())
 	get_viewport().size_changed.connect(camera.fit)
 	var started := Time.get_ticks_msec()
 	if map == null:
@@ -123,7 +126,7 @@ static func darkness(minute: int) -> float:
 
 
 func _update_help() -> void:
-	var text := _info + "\nClick a squad to give orders  ·  1-9: find squad  ·  T: test squad's travel type  ·  Space: pause  ·  PgUp/PgDn: speed  ·  L: log  ·  Esc: menu" \
+	var text := _info + "\nClick a squad to give orders  ·  1-9: find squad  ·  F8: test squad's travel type  ·  Space: pause  ·  PgUp/PgDn: speed  ·  L: log  ·  Esc: menu" \
 			+ "\nWheel: zoom  ·  Drag: pan  ·  F: fit  ·  H: hidden sites and lairs  ·  G: grid  ·  O: overlay (%s)" % MapOverlay.NAMES[view.overlay]
 	var legend := MapOverlay.legend(view.overlay, state.map)
 	if legend != "":
@@ -420,6 +423,13 @@ func _open_shop(screen: Control) -> void:
 	state.clock.hold()
 
 
+func _open_tech() -> void:
+	var screen := TechScreen.new()
+	_ui.add_child(screen)
+	screen.setup(state)
+	_open_shop(screen)
+
+
 func _open_cards(offer: bool) -> void:
 	var panel := CardsPanel.new()
 	_ui.add_child(panel)
@@ -629,6 +639,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		KEY_C:
 			_open_cards(false)
 		KEY_T:
+			_open_tech()
+		KEY_F8:  # debug: cycle the first squad's travel type
 			var s := state.player_squads()[0]
 			var next: String = TEST_TRAVEL[(TEST_TRAVEL.find("sky" if s.sky else s.travel_type) + 1) % TEST_TRAVEL.size()]
 			s.sky = next == "sky"

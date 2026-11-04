@@ -11,6 +11,7 @@ var pool: Array[Unit] = []
 var items: Array[Dictionary] = []  # every item owned, one entry each ({uid, id}), worn or free (§15.2)
 var _next_item := 1
 var supplies := {}  # consumable id -> count (§15.1)
+var tech: Array = []  # the army's tech nodes, shared with its squads
 
 
 func _init(game_data: GameData) -> void:
@@ -42,6 +43,7 @@ func move(u: Unit, cell: int, to_row := "front", to_col := -1) -> bool:
 	var to: Squad = cells[cell] if cell >= 0 else null
 	if cell >= 0 and to == null:
 		to = Squad.new(cell + 1, "Squad %d" % (cell + 1), -1)
+		to.tech = tech
 	if to == null and from == null:
 		return true
 	var other: Unit = to.at(to_row, to_col) if to and to_col >= 0 else null

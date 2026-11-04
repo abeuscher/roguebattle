@@ -8,6 +8,7 @@ signal squad_pressed(id: int)
 signal edit_pressed
 signal deploy_pressed
 signal cards_pressed
+signal tech_pressed
 signal speed_chosen(index: int)  # -1 to pause
 
 var minimap := Minimap.new()
@@ -61,12 +62,13 @@ func _ready() -> void:
 	add_child(_banner)
 	_toolbar.add_theme_constant_override("separation", 10)
 	add_child(_toolbar)
-	for entry in [["Edit Units (U)", edit_pressed], ["Deploy Squad (D)", deploy_pressed], ["Cards (C)", cards_pressed]]:
+	for entry in [["Edit Units (U)", edit_pressed], ["Deploy Squad (D)", deploy_pressed], ["Cards (C)", cards_pressed], ["Tech (T)", tech_pressed]]:
 		var b := UiStyle.button(entry[0], 210)
 		b.focus_mode = FOCUS_NONE
 		b.pressed.connect(entry[1].emit)
 		_toolbar.add_child(b)
-		_cards_button = b
+		if entry[0].begins_with("Cards"):
+			_cards_button = b
 	resized.connect(place)
 
 

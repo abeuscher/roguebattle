@@ -22,6 +22,7 @@ var morale := 50  # 0-100, hidden (§12.2); what moves it arrives in M4
 var marching_home := false  # lost its leader: heads for base on its own (§11.3)
 var entering_base := false  # leaves the map when it reaches the Player Base (§8.4)
 var capture_ticks := 0.0  # time spent so far liberating the building it stands in (§6.5)
+var tech: Array = []  # the army's tech nodes (the player's squads share GameState.tech)
 
 
 func _init(squad_id: int, squad_name: String, at_hex: int) -> void:
@@ -159,10 +160,14 @@ func refresh(data: GameData) -> void:
 	if alive.is_empty():
 		return
 	speed_tier = 3
-	for u in alive:
+	var pacers := alive.filter(func(u: Unit): return not ("mage_regiments" in tech and Battle.base_kind(
+			u.info(data)["front_attack" if u.row == "front" else "back_attack"]) == "Magic"))  # Mage Regiments: casters don't slow it
+	for u in (pacers if not pacers.is_empty() else alive):
 		speed_tier = mini(speed_tier, int(u.info(data)["speed_tier"]))
 	var vote := travel_vote(data, alive, leader)
 	sky = vote == "sky"
+	if sky and "sky_lords" in tech:
+		speed_tier = mini(3, speed_tier + int(data.tech["nodes"]["sky_lords"]["tiers"]))
 	travel_type = "" if sky else vote
 
 

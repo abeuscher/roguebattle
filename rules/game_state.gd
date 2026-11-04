@@ -23,6 +23,8 @@ var noon_report := ""  # the last noon's ledger, for the HUD to show once
 var cards: Array[String] = []  # the hand: card ids (§13)
 var next_card := ""  # the next card to be drawn, rolled ahead so Foresight can preview it
 var card_offer: Array[String] = []  # cards to choose one from (a Seer or Oracle drew), shown by the HUD
+var tech: Array[String] = []  # tech nodes bought (§14), shared with the army and its squads
+var tech_points := 0
 
 
 func _init(game_data: GameData, game_map: MapData, game_log: GameLog, game_settings := {}) -> void:
@@ -37,6 +39,8 @@ func _init(game_data: GameData, game_map: MapData, game_log: GameLog, game_setti
 	gold = int(data.rules["starting_gold"])
 	reputation = int(data.rules["starting_reputation"])
 	army = Army.new(data)
+	army.tech = tech
+	tech_points = int(data.tech["start_points"])
 	for i in map.buildings.size():
 		var b: Dictionary = map.buildings[i]
 		b["owner"] = data.buildings[b["type"]].get("owner", "neutral")
@@ -169,6 +173,7 @@ func _liberated(s: Squad, b: Dictionary) -> void:
 		change_charisma([s.leader], int(st["liberate_charisma"]), "liberating a %s that matches their alignment" % what)
 	change_alignment(s.units, int(st["liberate_alignment"]) * (1 if aligned == "holy" else -1), "liberating a %s" % what)
 	draw_card(s)
+	earn_tech_points(int(data.tech["points"]["liberation"]), "a liberation")
 
 
 ## +1 when the squad's band matches the building's (holy town, evil tower), −1 for the
@@ -277,6 +282,74 @@ func hint(b: Dictionary) -> String:
 	var names := ["east", "southeast", "south", "southwest", "west", "northwest", "north", "northeast"]
 	var dir: String = names[posmod(roundi(delta.angle() / (PI / 4.0)), 8)]
 	return "Travellers speak of something hidden to the %s, about %d hexes away." % [dir, Hex.distance(at, map.hex_at(map.buildings[best]["hex"]))]
+
+
+# --- Tech (SPEC §14) ------------------------------------------------------------------
+
+## A bought node's number (e.g. war_chest's "income"), or 0 if not bought.
+func tech_value(id: String, key: String) -> float:
+	return float(data.tech["nodes"][id][key]) if id in tech else 0.0
+
+
+func earn_tech_points(n: int, why: String) -> void:
+	if n > 0:
+		tech_points += n
+		log.add(clock.tick, "progression", "+%d tech point%s for %s (%d to spend)." % [n, "" if n == 1 else "s", why, tech_points])
+
+
+## Every node: the branch nodes, then a terrain node per terrain per tier ("terrain_Plains_1").
+func tech_nodes() -> Dictionary:
+	var out: Dictionary = data.tech["nodes"].duplicate()
+	for terrain in data.tech["terrains"]:
+		for t in range(1, 5):
+			out["terrain_%s_%d" % [terrain, t]] = {"name": "%s %s" % [terrain, ["I", "II", "III", "IV"][t - 1]], "branch": "", "tier": t,
+					"text": "Units native to %s: +%d STR, INT, PDEF and MDEF." % [terrain.to_lower(), t]}
+	return out
+
+
+## Tier 1 is always open; a later tier opens once 80% of the previous tier's branch nodes are bought.
+func tier_open(tier: int) -> bool:
+	if tier <= 1:
+		return true
+	var branch: Array = data.tech["nodes"].keys().filter(func(id): return int(data.tech["nodes"][id]["tier"]) == tier - 1)
+	var bought: int = branch.filter(func(id): return id in tech).size()
+	return bought >= ceili(branch.size() * float(data.tech["gate_share"]) - 0.0001)
+
+
+## Why a node can't be bought, or "" if it can.
+func tech_blocker(id: String) -> String:
+	var node: Dictionary = tech_nodes()[id]
+	if id in tech:
+		return "Already learned."
+	if not tier_open(int(node["tier"])):
+		return "Tier %d opens with 80%% of tier %d's branch nodes." % [int(node["tier"]), int(node["tier"]) - 1]
+	if tech_points < int(node["tier"]):
+		return "Needs %d point%s." % [int(node["tier"]), "" if int(node["tier"]) == 1 else "s"]
+	return ""
+
+
+## Buys a node for its tier in points (§14).
+func buy_tech(id: String) -> bool:
+	if tech_blocker(id) != "":
+		return false
+	var node: Dictionary = tech_nodes()[id]
+	tech_points -= int(node["tier"])
+	tech.append(id)
+	_apply_tech()
+	log.add(clock.tick, "progression", "Tech learned: %s. %s" % [node["name"], node["text"]])
+	return true
+
+
+## Effects that live on units and squads: Veterans' HP, and speed tiers (Mage Regiments, Sky Lords).
+func _apply_tech() -> void:
+	var share := tech_value("veterans", "hp")
+	for u in army.units():
+		var before := u.max_hp(data)
+		u.hp_bonus = share if int(u.info(data)["stage"]) >= 4 else 0.0
+		if u.is_alive():
+			u.hp = clampi(u.hp + u.max_hp(data) - before, 1, u.max_hp(data))
+	for s in army.squads():
+		s.refresh(data)
 
 
 # --- Cards (SPEC §13) ---------------------------------------------------------------
@@ -397,6 +470,8 @@ func _battle_standing(b: Battle, out: Dictionary) -> void:
 	var weaker := b.odds in ["Weaker", "Much weaker"]
 	change_alignment(units, int(st["battle_alignment"]) * (-1 if weaker else 1), "fighting a %s enemy" % b.odds.to_lower())
 	var won: bool = out["wiped"][1] or (out["retreated"] < 0 and out["hp_lost"][1] > out["hp_lost"][0])
+	if won:
+		earn_tech_points(int(data.tech["points"]["battle_win"]), "a battle won")
 	if won and b.odds in ["Stronger", "Dangerous"]:
 		change_charisma(units, int(st["battle_charisma"]), "beating a stronger squad")
 	elif won and b.odds == "Much weaker":
@@ -417,9 +492,10 @@ func price(base: int, s: Squad = null) -> int:
 
 ## A neutral squad's chance to join you (§16): 0.60 × (10 − units)/9 × (1 − alignment
 ## gap/100) × (0.5 + reputation/100). The gap is from your squad's alignment (leader twice).
-func recruit_chance(s: Squad, neutral_units: int, neutral_alignment: float) -> float:
+func recruit_chance(s: Squad, neutral_units: int, neutral_alignment: float, large := false) -> float:
 	var gap := absf(s.alignment() - neutral_alignment)
-	return clampf(0.6 * (10 - neutral_units) / 9.0 * (1.0 - gap / 100.0) * (0.5 + reputation / 100.0), 0.0, 1.0)
+	var bonus := (1.0 + tech_value("diplomacy", "recruit")) * (1.0 + (tech_value("tamers", "recruit") if large else 0.0))
+	return clampf(0.6 * (10 - neutral_units) / 9.0 * (1.0 - gap / 100.0) * (0.5 + reputation / 100.0) * bonus, 0.0, 1.0)
 
 
 # --- Economy (SPEC §15.1, §16) ------------------------------------------------------
@@ -428,7 +504,7 @@ func recruit_chance(s: Squad, neutral_units: int, neutral_alignment: float) -> f
 func income() -> int:
 	var e: Dictionary = data.rules["economy"]
 	var held := map.buildings.filter(func(b): return b["type"] in e["income_buildings"] and b["owner"] == "player")
-	return held.size() * int(e["income_per_building"])
+	return roundi(held.size() * int(e["income_per_building"]) * (1.0 + tech_value("war_chest", "income")))
 
 
 ## Upkeep per day for the whole army: every unit in a squad or the recruit pool.
@@ -444,7 +520,7 @@ func army_upkeep() -> int:
 func _unit_upkeep(u: Unit) -> int:
 	var k: Dictionary = data.rules["upkeep"]
 	var c: Dictionary = u.info(data)
-	return roundi(float(k["by_stage"][int(c["stage"]) - 1]) * float(k["size"][c["size"]]))
+	return roundi(float(k["by_stage"][int(c["stage"]) - 1]) * float(k["size"][c["size"]]) * (1.0 + tech_value("quartermaster", "upkeep")))
 
 
 ## At noon: income comes in, then upkeep goes out. Gold never drops below zero; upkeep
@@ -509,7 +585,7 @@ func shop_stock(b: Dictionary) -> Array:
 		return []
 	if not b.has("stock"):
 		var r := rng.get_stream("shops")
-		var ids: Array = data.items["items"].keys()
+		var ids: Array = data.items["items"].keys().filter(func(id): return data.items["items"][id].get("requires", "") in tech or not data.items["items"][id].has("requires"))
 		b["stock"] = []
 		for i in int(data.rules["economy"]["shop_items"]):
 			b["stock"].append(ids[r.randi() % ids.size()])
@@ -596,7 +672,7 @@ func upkeep(s: Squad) -> int:
 	for unit in s.units:
 		var c: Dictionary = unit.info(data)
 		total += float(u["by_stage"][int(c["stage"]) - 1]) * float(u["size"][c["size"]])
-	return roundi(total)
+	return roundi(total * (1.0 + tech_value("quartermaster", "upkeep")))
 
 
 ## Deploying costs one day of the squad's upkeep.
@@ -721,6 +797,8 @@ func after_edit() -> void:
 func _form(number: int, squad_name: String, at_hex: int, members: Array, side: String) -> Squad:
 	var s := Squad.new(number, squad_name, at_hex)
 	s.side = side
+	if side == "player":
+		s.tech = tech
 	for m in members:
 		var u := Unit.roll(data, m[0], rng.get_stream("recruit"), names)
 		if s.add(data, u, m[1]):
@@ -740,7 +818,10 @@ func base_ticks(s: Squad) -> float:
 
 ## Ticks to enter hex `i`.
 func step_ticks(s: Squad, i: int) -> float:
-	return base_ticks(s) * pathfinder.hex_cost(i, s.travel_type, s.sky)
+	var t := base_ticks(s) * pathfinder.hex_cost(i, s.travel_type, s.sky)
+	if map.road[i] and not s.sky and s.side == "player" and "engineers" in tech:  # Engineers: bigger road bonus
+		t *= float(data.tech["nodes"]["engineers"]["road"]) / float(data.rules["road_multiplier"])
+	return t
 
 
 ## The route through these rally points in order, starting where the squad stands
@@ -925,6 +1006,12 @@ func sight(viewer: Squad, target_hex: int) -> int:
 		v += int(r["flying"])
 	v += int(r["on_travel_terrain"]) if _on_travel_terrain(viewer) else int(r["off_travel_terrain"])
 	v += int(r["target_terrain"].get(data.terrains[map.terrain[target_hex]]["key"], 0))
+	if viewer.side == "player":  # Aerial Scouts, Outriders: past the usual cap
+		if viewer.sky:
+			v += int(tech_value("aerial_scouts", "sight"))
+		if viewer.living().any(func(u: Unit): return u.has_tag(data, "mounted")):
+			v += int(tech_value("outriders", "sight"))
+		return clampi(v, int(r["range"][0]), int(r["range"][1]) + int(tech_value("aerial_scouts", "sight") + tech_value("outriders", "sight")))
 	return clampi(v, int(r["range"][0]), int(r["range"][1]))
 
 
@@ -1017,6 +1104,7 @@ func start_battle(player: Squad, enemy: Squad, defender: Squad) -> Battle:
 	b.attacker = 0 if defender == enemy else 1
 	b.defense = [building_defense(player), building_defense(enemy)]
 	b.odds = Threat.label(data, player, enemy)
+	b.tech[0] = tech
 	log.add(clock.tick, "battle", "Battle: %s against %s on %s. The enemy looks %s." % [player.name, enemy.name, info["name"],
 			Threat.label(data, player, enemy).to_lower()], player.id)
 	return b
@@ -1119,6 +1207,7 @@ func promote(u: Unit, new_class: String) -> String:
 			s.leader = army.best_leader(s)  # the new class can't lead: the next best unit takes over
 		s.refresh(data)
 	log.add(clock.tick, "progression", "%s is promoted from %s to %s: %s." % [u.name, old, new_class, Progression.gains_text(gains)], s.id if s else -1)
+	_apply_tech()
 	return ""
 
 

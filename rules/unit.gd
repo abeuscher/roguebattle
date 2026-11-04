@@ -17,6 +17,7 @@ var col := 0  # position in the row, left to right; a back-row unit stands behin
 var extra_slots := 0  # slots earned as a leader (§8.2)
 var element := ""  # overrides the class's element when set (Skeletons)
 var items := {}  # slot (weapon, armor, jewelry) -> the item worn ({uid, id}, §15.2)
+var hp_bonus := 0.0  # extra share of max HP (the Veterans tech)
 # Hidden (§12.2)
 var growth := {}  # non-key stat -> chance to grow per level, before talent
 var since_growth := {}  # non-key stat -> levels since it last grew (§12.2 guarantee)
@@ -56,7 +57,7 @@ static func roll(data: GameData, unit_class_name: String, rng: RandomNumberGener
 
 
 func max_hp(data: GameData) -> int:
-	return stat(data, "CON") * int(data.rules["hp_per_con"])
+	return roundi(stat(data, "CON") * int(data.rules["hp_per_con"]) * (1.0 + hp_bonus))
 
 
 ## A stat with its items' bonuses.

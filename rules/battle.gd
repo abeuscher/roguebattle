@@ -25,6 +25,7 @@ var first_side := -1  # a side that takes its whole first round first (neutrals 
 var ranged_only := false  # a ranged map attack: only Ranged and Magic units act, no push-back (§11.2)
 var odds := "Even"  # how the enemy looked to the player at the start (a threat label), for §9.5–9.6
 var card_damage := 0  # enemy HP lost to cards, for the XP share (§9.4)
+var tech := [[], []]  # per side: tech node ids bought (§14); only the player has any
 var _card_buffs: Array = []  # {side, stat, mult, left}: stat boosts from cards, ending on the leader's turns
 var rng: RandomNumberGenerator
 var events: Array[Dictionary] = []
@@ -143,6 +144,10 @@ func turn_order(first_round := false) -> Array[Unit]:
 func _strikes_first(u: Unit) -> bool:
 	if u.has_trait(data, "First strike"):
 		return true
+	var side := side_of(u)
+	if u.has_tag(data, "mounted") and side == attacker and _tech(side, "charge") \
+			and (terrain["key"] == "plains" or (_tech(side, "lance_rush") and int(terrain.get("difficulty", 0)) < 3)):
+		return true
 	for e in _effects(side_of(u)):
 		if e.get("first", false):
 			return true
@@ -185,6 +190,9 @@ func attack_count(u: Unit) -> int:
 	for e in _effects(side_of(u)):
 		if e.has("attacks") and _covers(e, u, true) and not (e.get("front_only", false) and u.row != "front"):
 			n += int(e["attacks"])
+	var drill := _tech(side_of(u), "drill")
+	if drill and int(u.info(data)["stage"]) >= 3 and base_kind(attack_kind(u)) == "Melee":
+		n += int(drill["attacks"])
 	return n
 
 
@@ -358,8 +366,17 @@ func _strike(u: Unit, kind: String, side: int) -> void:
 		return
 	var base := base_kind(kind)
 	var group := group_of(kind)
+	if base == "Magic" and group == "" and _tech(side, "archmagi"):
+		group = "row"
 	var t := pick_target(u, base, targets, tactics[side])
 	var enemy := sides[1 - side]
+	var volley := _tech(side, "volley")
+	if volley and base == "Ranged" and group == "" and u.has_tag(data, "archer") and targets.size() > 1:
+		var other: Unit = targets.filter(func(o: Unit): return o != t)[rng.randi() % (targets.size() - 1)]
+		_attack(u, base, _guarded(enemy, t), float(volley["split"]))
+		_attack(u, base, _guarded(enemy, other), float(volley["split"]))
+		_used["first:%d" % u.get_instance_id()] = true
+		return
 	match group:
 		"row":
 			for o in enemy.row(t.row):
@@ -585,6 +602,38 @@ func hp_lost_share(side: int) -> float:
 	return 1.0 - float(now) / maxi(1, _start_hp[side])
 
 
+# --- Tech (§14) ----------------------------------------------------------------------
+
+## The node's data if the side has bought it, else {}.
+func _tech(side: int, id: String) -> Dictionary:
+	return data.tech["nodes"][id] if id in tech[side] else {}
+
+
+## The terrain node level for a unit native to that terrain: the highest tier bought.
+func terrain_level(side: int, u: Unit) -> int:
+	var level := 0
+	for i in range(1, 5):
+		if "terrain_%s_%d" % [u.terrain(data), i] in tech[side]:
+			level = i
+	return level
+
+
+## Shield Wall (front row), Barding (mounted, PDEF) and Pack Bond (Large, with another Large).
+func tech_defense(u: Unit, s: String) -> float:
+	var side := side_of(u)
+	var m := 1.0
+	var wall := _tech(side, "shield_wall")
+	if wall and u.row == "front":
+		m *= 1.0 + float(wall["defense"])
+	var barding := _tech(side, "barding")
+	if barding and s == "PDEF" and u.has_tag(data, "mounted"):
+		m *= 1.0 + float(barding["defense"])
+	var bond := _tech(side, "pack_bond")
+	if bond and u.has_tag(data, "large") and sides[side].living().filter(func(o: Unit): return o.has_tag(data, "large")).size() >= 2:
+		m *= 1.0 + float(bond["defense"])
+	return m
+
+
 # --- Cards (§13) ---------------------------------------------------------------------
 
 ## Plays a battle card for a side; it takes hold at once. False if it can't be played
@@ -759,7 +808,9 @@ func _blocks_healing(u: Unit) -> bool:
 ## A stat with statuses, auras and Last stand applied. `vs` is the attack being
 ## defended against, for effects like Aerie (+PDEF against ranged).
 func stat(u: Unit, s: String, vs := "") -> float:
-	var v := float(u.stat(data, s))
+	var v := float(u.stat(data, s)) + (terrain_level(side_of(u), u) if s in ["STR", "INT", "PDEF", "MDEF"] else 0)
+	if s in ["PDEF", "MDEF"]:
+		v *= tech_defense(u, s)
 	for st in _status.get(u, {}):
 		v *= float(cfg["statuses"][st].get("stats", {}).get(s, 1.0))
 	for b in _card_buffs:
@@ -895,6 +946,10 @@ func finish() -> Dictionary:
 				for u in s.living():
 					if _covers(e, u):
 						u.hp = mini(u.max_hp(data), u.hp + roundi(u.max_hp(data) * float(e["after_battle_heal"])))
+		var medicine := _tech(side, "field_medicine")
+		if medicine:
+			for u in s.living():
+				u.hp = mini(u.max_hp(data), u.hp + roundi(u.max_hp(data) * float(medicine["heal"])))
 	if retreated < 0 and not ranged_only and not out["wiped"].has(true) and out["hp_lost"][0] != out["hp_lost"][1]:
 		out["pushed"] = 0 if out["hp_lost"][0] > out["hp_lost"][1] else 1
 	for s in sides:
@@ -976,6 +1031,9 @@ func expected_damage(u: Unit, t: Unit, base: String) -> float:
 ## Charge, Execute, Burn and the attacker's damage auras.
 func _dealt_multiplier(u: Unit, t: Unit, base: String) -> float:
 	var m := 1.0
+	var focus := _tech(side_of(u), "elemental_focus")
+	if focus and base in ["Magic", "Breath"] and attack_element(u, base) != "":
+		m *= 1.0 + float(focus["damage"])
 	if u.has_trait(data, "Charge") and not _used.has("first:%d" % u.get_instance_id()):
 		m *= float(cfg["traits"]["Charge"]["first_attack"])
 	if u.has_trait(data, "Execute") and _hp_share(t) < float(cfg["traits"]["Execute"]["under"]):
@@ -1053,9 +1111,11 @@ func day_modifier(u: Unit) -> float:
 
 func matchup_modifier(u: Unit, t: Unit) -> float:
 	var m := 1.0
+	var sky := _tech(side_of(u), "skyhunters")
 	for rule in cfg["matchups"]:
 		if u.has_tag(data, rule["attacker"]) and t.has_tag(data, rule["target"]):
-			m *= float(rule["multiplier"])
+			var r := float(rule["multiplier"])
+			m *= r + (float(sky["add"]) if sky and rule["attacker"] == "archer" and rule["target"] == "flyer" else 0.0)
 	return m
 
 
@@ -1113,7 +1173,9 @@ func roll_hit(u: Unit, t: Unit, base := "Melee") -> bool:
 ## 5% + 0.5% per luck point. With fairer dice the chance starts low and ramps up after
 ## each non-crit, resetting on a crit, with the same average.
 func crit_chance(u: Unit) -> float:
-	return (float(cfg["crit_base"]) + u.luck * float(cfg["luck_crit_per_point"])) / 100.0
+	var deadeye := _tech(side_of(u), "deadeye")
+	return (float(cfg["crit_base"]) + u.luck * float(cfg["luck_crit_per_point"])) / 100.0 \
+			+ (float(deadeye["crit"]) if deadeye and u.has_tag(data, "archer") else 0.0)
 
 
 func roll_crit(u: Unit) -> bool:

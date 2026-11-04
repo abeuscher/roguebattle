@@ -43,7 +43,7 @@ Goal: a generated map the player can look at, and one squad they can move.
 | 5 | **Reputation, charisma, alignment.** All change events, price scaling, recruit chance factor | §9.5, §9.6, §10 | Tests per event | Done |
 | 6 | **Progression.** XP formula, level cost, growth, promotion and alignment branches, slot growth with charisma and banners | §8.2, §9.4 | Tests: XP and level math, promotion stat deltas, slot unlock rule | Done |
 | 7 | **Cards.** All cards in battle and on map, card XP redirect, card draws (Seer and Oracle choices, Foresight) | §13 | Tests: each card effect, draws | Done |
-| 8 | **Tech tree.** Tech screen, tier gates, branch and terrain nodes, points from liberations, wins and map end | §14 | Tests: tier gate at 80% of branch nodes, node effects |  |
+| 8 | **Tech tree.** Tech screen, tier gates, branch and terrain nodes, points from liberations, wins and map end | §14 | Tests: tier gate at 80% of branch nodes, node effects | Done |
 
 **M3 milestone check:** a short play session.
 
