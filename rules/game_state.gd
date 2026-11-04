@@ -954,10 +954,6 @@ func _check_contact() -> void:
 			if clock.tick < int(_contact_until.get(_pair(p, e), -1)):
 				continue
 			var defender := e if _moved.has(p) or not _moved.has(e) else p
-			for s in [p, e]:
-				s.path.clear()
-				s.rally.clear()
-				s.progress = 0.0
 			pending = start_battle(p, e, defender)
 			return
 

@@ -66,13 +66,43 @@ func test_adjacency_triggers_battle() -> void:
 	check(st.pending != null, "moving next to an enemy starts a battle")
 	check_eq(Hex.distance(st.map.hex_at(ours.hex), st.map.hex_at(theirs.hex)), 1, "they're adjacent")
 	check_eq(st.pending.attacker, 0, "the squad that moved in attacks")
-	check(not ours.is_moving(), "orders stop at contact")
 	var tick := st.clock.tick
 	st.step()
 	check_eq(st.clock.tick, tick, "the map holds while a battle is pending")
 	var text: String = st.resolve_pending()["text"]
 	check(text.contains("fought"), "a summary comes back: " + text)
 	check(st.pending == null, "the battle is resolved")
+
+
+## Squad 1 marches past an enemy that lies off its route; the battle's outcome is set by hand.
+func _contact_on_the_march() -> Array:
+	var st := _state()
+	var ours := _ours(st, 10)
+	var theirs := _theirs(st, 13, 3)
+	st.order_move(ours, PackedInt32Array([_at(st.map, 18, 4)]))
+	for i in 200:
+		if st.pending:
+			break
+		st.step()
+	check(st.pending != null, "contact on the march")
+	check(ours.is_moving(), "orders survive contact")
+	return [st, ours, theirs]
+
+
+func test_orders_continue_unless_knocked_back() -> void:
+	var r := _contact_on_the_march()
+	var ours: Squad = r[1]
+	for u in r[2].units:  # they lose more HP, but aren't wiped out
+		u.hp = maxi(1, u.hp / 2)
+	var out: Dictionary = r[0].end_battle(r[0].pending)
+	check_eq(out["pushed"], 1, "the enemy is pushed back")
+	check(ours.is_moving(), "the winner keeps its orders")
+	r = _contact_on_the_march()
+	for u in r[1].units:  # we lose more HP
+		u.hp = maxi(1, u.hp / 2)
+	out = r[0].end_battle(r[0].pending)
+	check_eq(out["pushed"], 0, "we're pushed back")
+	check(not r[1].is_moving(), "a squad knocked back stops")
 
 
 func test_same_side_and_cooldown() -> void:
