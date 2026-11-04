@@ -1,6 +1,11 @@
 class_name BuildingIcons
 ## Placeholder building and lair icons drawn in code, one texture per type.
-## Coordinates are designed for a hex of size 32 (center to corner).
+## Coordinates are designed for a hex of size 32 (center to corner). Icons carry no
+## flags: the owner's flag is drawn over them (BuildingMarker), standing on TOPS.
+
+## Where each icon's roof or wall top is, centered, for the owner's flag pole.
+const TOPS := {"town": Vector2(0, -15), "tower": Vector2(0, -16), "temple": Vector2(0, -15), "nomads": Vector2(0, -13),
+		"player_base": Vector2(0, -6), "enemy_base": Vector2(0, -6)}
 
 
 static func build(s: float) -> Dictionary:
@@ -40,8 +45,6 @@ static func draw(type: String, s: float) -> Image:
 			for x in [-7, -1.5, 4]:
 				box.call(x, -16, x + 3, -12, Color("#77727f"))
 			box.call(-2, -6, 2, 0, Color("#3a3045"))
-			box.call(7, -24, 8.5, -12, outline)
-			poly.call([Vector2(8.5, -24), Vector2(16, -21), Vector2(8.5, -18)], Color("#6d3a8c"))
 		"temple":
 			box.call(-14, 8, 14, 13, outline)
 			box.call(-13, 9, 13, 12, Color("#f1ede2"))
@@ -53,10 +56,7 @@ static func draw(type: String, s: float) -> Image:
 			poly.call([Vector2(-14, 12), Vector2(0, -13), Vector2(14, 12)], outline)
 			poly.call([Vector2(-12, 11), Vector2(0, -11), Vector2(12, 11)], Color("#d3ad6e"))
 			poly.call([Vector2(-4, 11), Vector2(0, 2), Vector2(4, 11)], Color("#5b3a24"))
-			box.call(-0.7, -18, 0.7, -11, outline)
-			poly.call([Vector2(0.7, -18), Vector2(7, -16), Vector2(0.7, -14)], Color("#2f8f6a"))
 		"player_base", "enemy_base":
-			var flag := Color("#3b6fd6") if type == "player_base" else Color("#c8342c")
 			var stone := Color("#9aa3b0") if type == "player_base" else Color("#6e6668")
 			box.call(-17, -6, 17, 13, outline)
 			box.call(-16, -5, 16, 12, stone)
@@ -64,8 +64,6 @@ static func draw(type: String, s: float) -> Image:
 				box.call(x, -16, x + 8, 13, outline)
 				box.call(x + 1, -15, x + 7, 12, stone)
 			box.call(-4, 3, 4, 12, Color("#3a2c22"))
-			box.call(-0.8, -30, 0.8, -6, outline)
-			poly.call([Vector2(0.8, -30), Vector2(13, -26), Vector2(0.8, -22)], flag)
 		"hidden_site":
 			poly.call([Vector2(0, -12), Vector2(10, 0), Vector2(0, 12), Vector2(-10, 0)], Color(outline, 0.6))
 			poly.call([Vector2(0, -10), Vector2(8, 0), Vector2(0, 10), Vector2(-8, 0)], Color("#f2c94c", 0.6))

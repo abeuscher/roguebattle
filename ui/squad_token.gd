@@ -3,13 +3,14 @@ extends Node2D
 ## A squad on the battlemap: a numbered banner. Flyers float with a soft shadow (SPEC §5.1).
 
 const FLY_HEIGHT := 16.0
+const PLAYER := Color("#3b6fd6")
 
 var squad: Squad
 var selected := false:
 	set(value):
 		selected = value
 		queue_redraw()
-var color := Color("#3b6fd6")  # player blue; enemies are red
+var color := PLAYER  # player blue; enemies are red
 
 
 func _draw() -> void:

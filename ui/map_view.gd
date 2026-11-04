@@ -276,20 +276,23 @@ func _build_objects(map: MapData) -> void:
 
 
 ## Moves, shows or hides a building's icon (nomads) and sets its marker: the owner's
-## pennant and liberation progress. `i` indexes map.buildings.
-func update_building(i: int, hex: int, shown: bool, owned: bool, progress: float) -> void:
+## flag (transparent for none) and liberation progress. `i` indexes map.buildings.
+func update_building(i: int, hex: int, shown: bool, flag: Color, progress: float) -> void:
 	var icon := _icon_sprites[i]
 	icon.position = Hex.to_pixel(_map.hex_at(hex), HEX_SIZE)
 	if icon not in _secret_at.values():
 		icon.visible = shown
 	var marker: BuildingMarker = icon.get_node_or_null("Marker")
-	if marker == null and (owned or progress > 0.0):
+	if marker == null and (flag.a > 0.0 or progress > 0.0):
+		var unit := TEXTURE_HEX_SIZE / 32.0
 		marker = BuildingMarker.new()
 		marker.name = "Marker"
-		marker.position = icon.offset
+		marker.position = icon.offset  # the icon image's center
+		marker.unit = unit
+		marker.top = BuildingIcons.TOPS.get(_map.buildings[i]["type"], Vector2.ZERO) * unit
 		icon.add_child(marker)
 	if marker:
-		marker.owned = owned
+		marker.flag = flag
 		marker.progress = progress
 
 

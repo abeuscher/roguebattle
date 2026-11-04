@@ -161,8 +161,9 @@ func _update_tokens() -> void:
 			view.reveal(state.map.buildings[i]["hex"])
 	for i in state.map.buildings.size():
 		var b: Dictionary = state.map.buildings[i]
-		if b["type"] in ["town", "tower", "nomads"]:
-			view.update_building(i, b["hex"], not b["away"], b["owner"] == "player", state.capture_progress(b))
+		if BuildingIcons.TOPS.has(b["type"]):
+			var flag: Color = {"player": SquadToken.PLAYER, "enemy": ENEMY}.get(b["owner"], Color.TRANSPARENT)
+			view.update_building(i, b["hex"], not b["away"], flag, state.capture_progress(b))
 	var stacks := {}  # hex -> squads standing there, in id order
 	for s in state.squads:
 		if not s.is_moving():
