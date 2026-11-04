@@ -51,7 +51,13 @@ func setup(state: GameState, b: Dictionary) -> void:
 			lines.append("Liberating: %d%% done." % _pct(p))
 	if b["type"] == "nomads":
 		lines.append("A town on the move: it travels every half day.")
-	lines.append("Shop: %s" % ("yes (shops open with the economy)" if b.get("shop", false) else "no"))
+	if b.get("shop", false):
+		lines.append("Shop: yes. %s" % ("Liberate it to trade here." if b["owner"] == "enemy" else
+				"Stand a squad here and choose Shop in its squad menu."))
+	else:
+		lines.append("Shop: no")
+	if b["type"] == "temple":
+		lines.append("Healing and revival: stand a squad here and choose Temple services in its squad menu.")
 	if b.get("hint", false):
 		var h := state.hint(b)
 		lines.append(("Local news: " + h) if b["owner"] == "player" and h != "" else

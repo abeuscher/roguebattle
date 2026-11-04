@@ -1,7 +1,7 @@
 extends Node
 ## The game's screens and the flow between them (SPEC §4):
 ## Title -> Start -> Configurator -> Game summary -> Battlemap.
-## (After M3 the game opens on Edit Units before the battlemap.)
+## The game starts on the battlemap; Edit Units opens from its toolbar.
 
 const SETTINGS_PATH := "user://settings.json"
 
