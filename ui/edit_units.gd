@@ -447,25 +447,9 @@ func _unit_overview(u: Unit, sq: Squad, locked: bool) -> Control:
 	row.add_child(gear)
 	gear.add_child(UiStyle.label("Items", 18))
 	for slot in data.items["slots"]:
-		gear.add_child(_item_box(u, slot, locked))
+		gear.add_child(_item_picker(u, slot, locked))
 	if locked:
-		return row
-	gear.add_child(UiStyle.label("Free items that fit: drag one onto a slot, or click it", 14, Color(0.55, 0.58, 0.62)))
-	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(420, 380)
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	gear.add_child(scroll)
-	var list := VBoxContainer.new()
-	list.add_theme_constant_override("separation", 6)
-	list.size_flags_horizontal = SIZE_EXPAND_FILL
-	scroll.add_child(list)
-	var free := army.items.filter(func(i: Dictionary): return army.holder(i) == null and army.fits(u, i))
-	if free.is_empty():
-		list.add_child(UiStyle.label("None. Shops and hidden sites will have more.", 14, Color(0.55, 0.58, 0.62)))
-	for item in free:
-		list.add_child(_item_row(item, func():
-			army.equip(u, item)
-			_refresh()))
+		gear.add_child(UiStyle.label("Items change only at the Player Base.", 14, Color(0.55, 0.58, 0.62)))
 	return row
 
 
@@ -505,42 +489,40 @@ func _promotion_tip(u: Unit, c: String) -> String:
 	return "%s: %s. Front %s, back %s." % [c, ", ".join(parts), info["front_attack"], info["back_attack"]]
 
 
-## One of the unit's item slots: the item worn (drag it away, or ×), or an empty outline.
-func _item_box(u: Unit, slot: String, locked: bool) -> Control:
+## One of the unit's item slots as a dropdown: Empty, the item worn, and the free items
+## that fit it (identical items grouped, with a count).
+func _item_picker(u: Unit, slot: String, locked: bool) -> Control:
 	var line := HBoxContainer.new()
 	line.add_theme_constant_override("separation", 10)
 	var l := UiStyle.label(slot.capitalize(), 15, Color(0.65, 0.68, 0.72))
 	l.custom_minimum_size.x = 70
 	line.add_child(l)
-	var box := PanelContainer.new()
-	var item: Dictionary = u.items.get(slot, {})
-	var style := UiStyle.box(Color(0.15, 0.17, 0.21) if item else Color(0, 0, 0, 0), 8)
-	style.set_border_width_all(2 if item else 1)
-	style.border_color = UiStyle.OUTLINE if item else Color(0.3, 0.32, 0.37)
-	box.add_theme_stylebox_override("panel", style)
-	box.custom_minimum_size = Vector2(330, 44)
-	line.add_child(box)
-	var inner := HBoxContainer.new()
-	inner.mouse_filter = MOUSE_FILTER_IGNORE
-	box.add_child(inner)
-	var text := _quiet(UiStyle.label(_item_label(item["id"]) if item else "Empty", 15, Color.WHITE if item else Color(0.45, 0.47, 0.52)))
-	text.size_flags_horizontal = SIZE_EXPAND_FILL
-	inner.add_child(text)
-	if locked:
-		return line
-	box.set_drag_forwarding(_drag_item.bind(item, u) if item else Callable(), _can_drop_item.bind(u, slot), _drop_item.bind(u))
-	_targets.append([box, u, slot])
-	if item:
-		box.mouse_default_cursor_shape = CURSOR_DRAG
-		box.tooltip_text = "Drag to another unit, or back to the Items tab to take it off."
-		var off := Button.new()
-		off.text = "×"
-		off.flat = true
-		off.tooltip_text = "Take it off"
-		off.pressed.connect(func():
+	var pick := OptionButton.new()
+	pick.custom_minimum_size = Vector2(340, 40)
+	pick.add_theme_font_size_override("font_size", 15)
+	var choices: Array = [{}]  # per entry: the item to equip ({} = take it off)
+	pick.add_item("Empty")
+	var worn: Dictionary = u.items.get(slot, {})
+	if worn:
+		choices.append(worn)
+		pick.add_item(_item_label(worn["id"]))
+		pick.select(1)
+	var free := {}  # item id -> free items of that kind that fit
+	for item in army.items:
+		if data.items["items"][item["id"]]["slot"] == slot and army.holder(item) == null and army.fits(u, item):
+			free[item["id"]] = free.get(item["id"], []) + [item]
+	for id in free:
+		choices.append(free[id][0])
+		pick.add_item(_item_label(id) + ("  (×%d)" % free[id].size() if free[id].size() > 1 else ""))
+	pick.disabled = locked
+	pick.tooltip_text = "Only at the Player Base." if locked else ("No free %s fits this unit." % slot if free.is_empty() else "")
+	pick.item_selected.connect(func(i: int):
+		if choices[i].is_empty():
 			army.unequip(u, slot)
-			_refresh())
-		inner.add_child(off)
+		else:
+			army.equip(u, choices[i])
+		_refresh())
+	line.add_child(pick)
 	return line
 
 
@@ -563,9 +545,8 @@ func _item_list() -> void:
 			_pool.add_child(_item_row(item))
 
 
-## An owned item: free ones drag onto units (or run `on_click`, if given); worn ones say
-## who has them and open that unit.
-func _item_row(item: Dictionary, on_click := Callable()) -> Control:
+## An owned item: free ones drag onto units; worn ones say who has them and open that unit.
+func _item_row(item: Dictionary) -> Control:
 	var who := army.holder(item)
 	var row := PanelContainer.new()
 	var style := UiStyle.box(Color(0.15, 0.17, 0.21) if who == null else Color(0.1, 0.11, 0.13), 8)
@@ -579,12 +560,8 @@ func _item_row(item: Dictionary, on_click := Callable()) -> Control:
 	col.add_child(_quiet(UiStyle.label(_item_label(item["id"]), 15, Color.WHITE if who == null else Color(0.5, 0.52, 0.56))))
 	if who == null:
 		row.mouse_default_cursor_shape = CURSOR_DRAG
-		row.tooltip_text = "Drag onto a unit or an item slot." + (" Click to equip." if on_click.is_valid() else "")
+		row.tooltip_text = "Drag onto a unit to equip it."
 		row.set_drag_forwarding(_drag_item.bind(item, null), Callable(), Callable())
-		if on_click.is_valid():
-			row.gui_input.connect(func(e: InputEvent):
-				if e is InputEventMouseButton and not e.pressed and e.button_index == MOUSE_BUTTON_LEFT:
-					on_click.call())
 		return row
 	var sq := army.squad_of(who)
 	var where := "#%d %s" % [sq.id, sq.name] if sq else "recruit pool"
