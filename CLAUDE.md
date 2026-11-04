@@ -1,13 +1,13 @@
 # Landwar: working rules
 
-Real-time squad strategy game in Godot 4.5.1 (GDScript). The design is `SPEC.md`; the plan is `ROADMAP.md`; small calls made along the way are in `DECISIONS.md`. Where things stand and what comes next is in `STATUS.md`: read it first in a new session.
+Real-time squad strategy game in Godot 4.7.2 (GDScript). The design is `SPEC.md`; the plan is `ROADMAP.md`; small calls made along the way are in `DECISIONS.md`. Where things stand and what comes next is in `STATUS.md`: read it first in a new session.
 
 ## How to work
 
 - **Communicate plainly and briefly.** Say what changed and how to try it, not how it was done.
 - **Prefer a smaller codebase.** No speculative abstractions, plugins or frameworks. Write the simplest thing that meets the spec.
 - **The spec is the design.** Don't redesign. If the spec is unclear, contradictory, or would make the code much bigger, stop and ask, citing the section number. For small gaps, pick the simplest reading, log it in `DECISIONS.md`, and continue.
-- **Godot docs for the installed version (4.5.1).** Don't guess at APIs. Dump the exact reference with `godot --headless --doctool <dir>` and grep `<dir>/doc/classes/*.xml`, or use docs.godotengine.org/en/4.5.
+- **Godot docs for the installed version (4.7.2).** Don't guess at APIs. Dump the exact reference with `godot --headless --doctool <dir>` and grep `<dir>/doc/classes/*.xml`, or use docs.godotengine.org/en/4.7.
 
 ## Code rules
 
@@ -26,7 +26,7 @@ Real-time squad strategy game in Godot 4.5.1 (GDScript). The design is `SPEC.md`
 
 ## Checking work
 
-- Tests: `tools\run_tests.ps1` (optional name filter as first argument). Must be green before a session closes.
+- Tests: `tools\run_tests.ps1` on Windows, `tools/run_tests.sh` on macOS/Linux (optional name filter as first argument). Must be green before a session closes.
 - Map images: `godot --headless --path . -s res://tools/map_preview.gd -- <seed> [size] [preset] [out.png]`, then look at the PNG.
 - A script that fails to parse makes a headless `-s` run sit idle forever. Wrap ad-hoc runs in `timeout`, and use `--check-only -s res://path.gd` to find the error. By Godot 4's defaults, inferring a type from a Variant with `:=` (e.g. `var x := array.max()`) is an error; give such variables an explicit type.
 - The user playtests only at milestones (SPEC §23). Check your own work in between.

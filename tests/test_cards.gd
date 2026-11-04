@@ -134,8 +134,7 @@ func test_hand_and_draws() -> void:
 	var st := _state()
 	check_eq(st.cards.size(), 3, "3 cards to start")
 	var next := st.next_card
-	var s := st.player_squads()[0]
-	s.hex = st.map.buildings[0]["hex"]
+	st.add_squad("Testers", st.map.buildings[0]["hex"], [["Knight", "front"]])  # a plain leader: no Seer/Oracle choice
 	for i in int(d.rules["capture"]["ticks"]):
 		st.step()
 	check_eq(st.cards.size(), 4, "a liberation draws a card")
@@ -158,6 +157,7 @@ func test_seer_and_oracle_choose() -> void:
 
 func test_foresight() -> void:
 	var st := _state()
+	st.squads.clear()  # the Opinion Leader's squad is one of the 6 random Map 1 squads (§18); it might be a Seer's
 	check(not st.foresight(), "no Foresight leader on the map")
 	st.add_squad("Seers", st.map.player_base, [["Seer", "front"]])
 	check(st.foresight(), "a Seer leading a squad on the map previews the next card")

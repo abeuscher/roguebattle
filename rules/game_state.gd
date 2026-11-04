@@ -87,23 +87,17 @@ func add_squad(squad_name: String, at_hex: int, members: Array, side := "player"
 	return s
 
 
-## The placeholder army from rules.json until Map 1 setup (M4): its squads (named
-## after their leaders) fill the first cells, the first one stands on the Player Base, the rest wait at base (§8.4).
+## Map 1's starting army (SPEC §18): 6 Serf-line squads from Map1Setup fill the
+## first cells; the Opinion Leader's (cell 0) is the only one that starts on the
+## map, at the Player Base (§8.4). 3 random cards complete the starting state
+## (starting gold and tech points are set in _init).
 func setup_army() -> void:
-	var p: Dictionary = data.rules["placeholder_army"]
-	for i in p["squads"].size():
-		var entry: Dictionary = p["squads"][i]
-		var s := _form(i + 1, "", map.player_base if i == 0 else -1, entry["units"], "player")
+	var built := Map1Setup.build(data, rng.get_stream("army_setup"))
+	for i in built.size():
+		var s := _form(i + 1, "", map.player_base if i == 0 else -1, built[i], "player")
 		army.cells[i] = s
 		if i == 0:
 			squads.append(s)
-	for c in p["pool"]:
-		var u := Unit.roll(data, c, rng.get_stream("recruit"), names)
-		army.pool.append(u)
-		log.add(clock.tick, "progression", "%s the %s waits in the recruit pool." % [u.name, u.unit_class])
-	for id in p["items"]:
-		for i in int(p["items"][id]):
-			army.add_item(id)
 	for i in int(data.cards["start"]):
 		draw_card(null)
 

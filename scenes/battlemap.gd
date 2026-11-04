@@ -1,8 +1,8 @@
 class_name Battlemap
 extends Node2D
 ## The battlemap (SPEC §5): map view, camera, clock, HUD, minimap, log, squad
-## orders and the Esc menu. For now one test squad stands at the Player Base and
-## the enemy's squads stand at their posts; the real Map 1 army arrives in M4.
+## orders and the Esc menu. The Opinion Leader's squad stands at the Player Base
+## and the enemy's squads stand at their posts (their AI roles arrive later in M4).
 ## Contact and ranged attacks open the battle view; the map holds until it closes.
 
 signal to_title

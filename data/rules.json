@@ -17,16 +17,6 @@
  "sight": {"base": 7, "flying": 2, "on_travel_terrain": 1, "off_travel_terrain": -1, "target_terrain": {"mountain": -2, "forest": -1}, "range": [5, 10]},
  "ranged_attack": {"range": 2, "high_ground_range": 3, "high_ground_terrains": ["mountain"], "high_ground_buildings": ["tower"], "cooldown_ticks": 120, "attack_kinds": ["Ranged", "Magic"]},
  "hex_seconds_by_tier": [1.0, 0.6, 0.3],
- "placeholder_army": {
-  "_note": "Until Map 1 setup (M4) rolls the real army. Only the first squad starts on the map (SPEC 8.4).",
-  "squads": [
-   {"units": [["Knight", "front"], ["Fighter", "front"], ["Fighter", "front"], ["Bowman", "back"], ["Acolyte", "back"]]},
-   {"units": [["Lancer", "front"], ["Squire", "front"], ["Squire", "front"], ["Slinger", "back"], ["Acolyte", "back"]]},
-   {"units": [["Archer", "back"], ["Soldier", "front"], ["Bowman", "back"], ["Apprentice", "back"]]}
-  ],
-  "pool": ["Fighter", "Bowman", "Herald", "Serf"],
-  "items": {"sword": 2, "mace": 1, "bow": 1, "longbow": 1, "bronze": 3, "iron": 1, "necklace": 1, "ring": 1, "earring": 1}
- },
  "army_size": 16,
  "hp_per_con": 3,
  "unit_roll": {

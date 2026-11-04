@@ -6,7 +6,8 @@ var d := GameData.load_dir()
 
 
 ## A plains strip with the Player Base at (2, 3), a town at (8, 3) with a shop, a tower
-## at (12, 3) and a temple at (16, 3), and the placeholder army.
+## at (12, 3) and a temple at (16, 3), and three known squads (not the random Map 1
+## squads, so the ledger below can be worked by hand).
 func _state() -> GameState:
 	var m := MapData.new(30, 9)
 	for i in m.size():
@@ -21,7 +22,10 @@ func _state() -> GameState:
 	m.buildings.append(_b("tower", _at(m, 12, 3)))
 	m.buildings.append(_b("temple", _at(m, 16, 3)))
 	var st := GameState.new(d, m, GameLog.new())
-	st.setup_army()
+	st.army.cells[0] = st._form(1, "", m.player_base, [["Knight", "front"], ["Fighter", "front"], ["Fighter", "front"], ["Bowman", "back"], ["Acolyte", "back"]], "player")
+	st.squads.append(st.army.cells[0])
+	st.army.cells[1] = st._form(2, "", -1, [["Lancer", "front"], ["Squire", "front"], ["Squire", "front"], ["Slinger", "back"], ["Acolyte", "back"]], "player")
+	st.army.cells[2] = st._form(3, "", -1, [["Archer", "back"], ["Soldier", "front"], ["Bowman", "back"], ["Apprentice", "back"]], "player")
 	return st
 
 
@@ -46,12 +50,11 @@ func test_a_days_ledger() -> void:
 	# Worked by hand. Upkeep (§15.1: stage 1/2/3 = 5/10/20 a unit, all Small):
 	#   squad 1: Knight 20 + Fighter 10 + Fighter 10 + Bowman 10 + Acolyte 10 = 60
 	#   squad 2: Lancer 20 + Squire 10 + Squire 10 + Slinger 10 + Acolyte 10 = 60
-	#   squad 3: Archer 20 + Soldier 20 + Bowman 10 + Apprentice 10 = 60
-	#   pool:    Fighter 10 + Bowman 10 + Herald 20 + Serf 5 = 45            total 225
+	#   squad 3: Archer 20 + Soldier 20 + Bowman 10 + Apprentice 10 = 60       total 180
 	# Squads 1 and 2 liberate the town and the tower in the morning: 2 × 100 × (0.5 + 50/100) = +200.
-	# Noon: income 2 × 50 = +100, upkeep −225.  500 + 200 + 100 − 225 = 575.
+	# Noon: income 2 × 50 = +100, upkeep −180.  500 + 200 + 100 − 180 = 620.
 	var st := _state()
-	check_eq(st.army_upkeep(), 225, "the army's upkeep")
+	check_eq(st.army_upkeep(), 180, "the army's upkeep")
 	for c in 2:  # neutral squads, so liberating doesn't move reputation and the second bonus is 100 too
 		for u in _place(st, c, 8 if c == 0 else 12).units:
 			u.alignment = 50
@@ -61,8 +64,8 @@ func test_a_days_ledger() -> void:
 	check_eq(st.building_at(_at(st.map, 8, 3))["owner"], "player", "the town is ours")
 	check_eq(st.building_at(_at(st.map, 12, 3))["owner"], "player", "and the tower")
 	check_eq(st.income(), 100, "two buildings: 100 a day")
-	check_eq(st.gold, 575, "the day's ledger")
-	check(st.noon_report.contains("+100") and st.noon_report.contains("225"), st.noon_report)
+	check_eq(st.gold, 620, "the day's ledger")
+	check(st.noon_report.contains("+100") and st.noon_report.contains("180"), st.noon_report)
 
 
 func test_liberation_bonus_scales_with_reputation() -> void:

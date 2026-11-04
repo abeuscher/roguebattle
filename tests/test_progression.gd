@@ -133,12 +133,14 @@ func test_promote_at_base() -> void:
 	var st := GameState.new(d, m, GameLog.new())
 	st.setup_army()
 	var waiting: Squad = st.army.cells[1]
-	var squire: Unit = waiting.units.filter(func(u: Unit): return u.unit_class == "Squire")[0]
-	squire.level = 6
-	var options := Progression.promotion_options(d, squire)
-	check(not options.is_empty(), "a level 6 Squire can promote")
-	check_eq(st.promote(squire, options[0]), "", "promote it at base")
-	check_eq(squire.unit_class, options[0], "it's a %s now" % options[0])
+	for u in waiting.units:
+		u.level = 6
+	var promotable: Array = waiting.units.filter(func(u: Unit): return not Progression.promotion_options(d, u).is_empty())
+	check(not promotable.is_empty(), "a stage 2 unit can promote at level 6")
+	var unit: Unit = promotable[0]
+	var options := Progression.promotion_options(d, unit)
+	check_eq(st.promote(unit, options[0]), "", "promote it at base")
+	check_eq(unit.unit_class, options[0], "it's a %s now" % options[0])
 	var field := st.player_squads()[0]
 	field.hex = m.index_of(Hex.from_offset(Vector2i(8, 2)))
 	field.units[1].level = 6

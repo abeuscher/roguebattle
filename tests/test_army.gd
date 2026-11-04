@@ -127,10 +127,9 @@ func test_state_army_and_editing() -> void:
 	m.enemy_base = m.index_of(Hex.from_offset(Vector2i(18, 2)))
 	var st := GameState.new(d, m, GameLog.new())
 	st.setup_army()
-	var p: Dictionary = d.rules["placeholder_army"]
-	check_eq(st.army.squads().size(), p["squads"].size(), "the placeholder squads")
+	check_eq(st.army.squads().size(), 6, "the 6 Map 1 squads (§18)")
 	check_eq(st.player_squads().size(), 1, "only the first squad starts on the map (§8.4)")
-	check_eq(st.army.pool.size(), p["pool"].size(), "the recruit pool")
+	check(st.army.pool.is_empty(), "no starting recruit pool")
 	var first := st.player_squads()[0]
 	check(st.can_edit(first), "a squad on the Player Base can be edited")
 	check(st.can_edit(st.army.cells[1]), "so can one waiting at base")
