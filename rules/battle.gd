@@ -24,6 +24,8 @@ var tactics := ["best", "best"]
 var first_side := -1  # a side that takes its whole first round first (neutrals that resisted recruitment)
 var ranged_only := false  # a ranged map attack: only Ranged and Magic units act, no push-back (§11.2)
 var odds := "Even"  # how the enemy looked to the player at the start (a threat label), for §9.5–9.6
+var card_damage := 0  # enemy HP lost to cards, for the XP share (§9.4)
+var _card_buffs: Array = []  # {side, stat, mult, left}: stat boosts from cards, ending on the leader's turns
 var rng: RandomNumberGenerator
 var events: Array[Dictionary] = []
 var retreated := -1  # the side that got away
@@ -93,6 +95,9 @@ func step() -> bool:
 				return false
 			_record({"type": "round", "round": round, "text": "Round %d" % round})
 			_start_round()
+			for side in 2:  # a leaderless side's card boosts run out by rounds instead
+				if not (sides[side].leader and sides[side].leader.is_alive()):
+					_tick_card_buffs(side)
 			if is_over():
 				return false
 		var u: Unit = _queue.pop_front()
@@ -295,6 +300,8 @@ func _act(u: Unit) -> void:
 	_attacks[u] -= 1
 	var side := side_of(u)
 	_end_buffs_from(u)
+	if u == sides[side].leader:
+		_tick_card_buffs(side)
 	_tick_statuses(u)
 	if not u.is_alive():
 		return
@@ -564,6 +571,11 @@ func log_line(e: Dictionary) -> String:
 	return "[%s] %s" % [sides[e["side"]].name, e["text"]] if e["side"] >= 0 else e["text"]
 
 
+## HP a side has lost so far.
+func hp_lost(side: int) -> int:
+	return roundi(hp_lost_share(side) * _start_hp[side])
+
+
 ## Share of a side's starting HP it has lost so far.
 func hp_lost_share(side: int) -> float:
 	var now := 0
@@ -571,6 +583,107 @@ func hp_lost_share(side: int) -> float:
 		if u not in _skeletons:
 			now += u.hp
 	return 1.0 - float(now) / maxi(1, _start_hp[side])
+
+
+# --- Cards (§13) ---------------------------------------------------------------------
+
+## Plays a battle card for a side; it takes hold at once. False if it can't be played
+## (a map card, the battle is over, or no home terrain for Chameleon).
+func play_card(id: String, side := 0) -> bool:
+	var c: Dictionary = data.cards["cards"][id]
+	var own := sides[side]
+	var enemy := sides[1 - side]
+	if c["where"] != "battle" or is_over():
+		return false
+	var home := _home_terrain(own)
+	if c["effect"] == "home_terrain" and home.is_empty():
+		return false
+	_record({"type": "card", "side": side, "card": id, "text": "Plays %s: %s" % [c["name"], c["text"]]})
+	match c["effect"]:
+		"buff":
+			_card_buffs.append({"side": side, "stat": c["stat"], "mult": float(c["mult"]), "left": 2})
+		"overheal":
+			for u in own.living():
+				_card_heal(u, roundi(u.max_hp(data) * float(c["share"])), true)
+		"heal":
+			for u in own.living():
+				_card_heal(u, int(c["amount"]))
+		"heal_full":
+			for u in own.living():
+				_card_heal(u, u.max_hp(data))
+		"narwhal":
+			var level := 0.0
+			for u in own.living():
+				level += u.level
+			var amount := roundi(level / maxf(1, own.living().size()) * float(c["per_level"]))
+			for i in int(c["casts"]):
+				for u in own.living():
+					_card_heal(u, amount)
+		"cleanse":
+			for u in own.living():
+				cleanse(u)
+		"attack":
+			for t in enemy.living():
+				_card_hit(c, t, side)
+		"status":
+			for t in enemy.living():
+				add_status(t, c["status"])
+		"home_terrain":
+			terrain = home
+		"enemy_loses_turn":
+			_lose_turn[1 - side] = true
+		"extra_attack":
+			for u in own.living():
+				_attacks[u] += 1
+	return true
+
+
+## The terrain a squad counts as home: its travel type's terrain ({} for flyers and
+## travel types with no terrain of their own).
+func _home_terrain(s: Squad) -> Dictionary:
+	if s.sky or not data.terrain_ids.has(s.travel_type):
+		return {}
+	return data.terrains[data.terrain_ids[s.travel_type]]
+
+
+func _card_heal(u: Unit, amount: int, over := false) -> void:
+	if _blocks_healing(u):
+		return
+	var cap := u.hp + amount if over else u.max_hp(data)
+	var gain := mini(amount, cap - u.hp)
+	if gain <= 0:
+		return
+	u.hp += gain
+	_record({"type": "heal", "unit": u, "target": u, "amount": gain, "text": "%s recovers %d HP." % [_n(u), gain]})
+
+
+## An attack card's hit: power less the target's PDEF or MDEF, times the element
+## multiplier and the target's weakness statuses, with the usual spread; at least 1.
+func _card_hit(c: Dictionary, t: Unit, side: int) -> void:
+	var physical: bool = c["kind"] == "physical"
+	var dmg := float(c["power"]) - stat(t, "PDEF" if physical else "MDEF", "Melee" if physical else "Magic")
+	dmg *= element_multiplier(str(c.get("element", "")), element(t))
+	for s in _status.get(t, {}):
+		dmg *= float(cfg["statuses"][s].get("physical_taken" if physical else "magic_taken", 1.0)) * float(cfg["statuses"][s].get("damage_taken", 1.0))
+	dmg *= 1.0 + rng.randf_range(-float(cfg["spread"]), float(cfg["spread"]))
+	var amount := mini(maxi(1, roundi(dmg)), t.hp)
+	t.hp -= amount
+	card_damage += amount
+	_record({"type": "card_hit", "side": side, "target": t, "damage": amount, "killed": not t.is_alive(),
+			"text": "%s takes %d: %s." % [_n(t), amount, "%s falls" % t.name if not t.is_alive() else "%d/%d HP left" % [t.hp, t.max_hp(data)]]})
+	if not t.is_alive():
+		_grave_pact(t)
+	elif c.has("status"):
+		add_status(t, c["status"])
+
+
+## A card boost ends at the start of the side's leader's second turn after it was played.
+func _tick_card_buffs(side: int) -> void:
+	for b in _card_buffs.duplicate():
+		if b["side"] == side:
+			b["left"] -= 1
+			if b["left"] <= 0:
+				_card_buffs.erase(b)
 
 
 # --- Statuses (§11.7) ---------------------------------------------------------------
@@ -649,6 +762,9 @@ func stat(u: Unit, s: String, vs := "") -> float:
 	var v := float(u.stat(data, s))
 	for st in _status.get(u, {}):
 		v *= float(cfg["statuses"][st].get("stats", {}).get(s, 1.0))
+	for b in _card_buffs:
+		if b["stat"] == s and b["side"] == side_of(u):
+			v *= float(b["mult"])
 	for e in _effects_on(u):
 		if e.has("stats") and (not e.has("vs") or e["vs"] == vs.to_lower()) and (not e.get("stationary", false) or not sides[side_of(u)].is_moving()):
 			v *= 1.0 + float(e["stats"].get(s, 0.0))
@@ -757,6 +873,10 @@ func retreat(side: int) -> bool:
 ## (the side that lost the larger share of its HP, if neither is wiped out or retreated).
 func finish() -> Dictionary:
 	_status.clear()
+	_card_buffs.clear()
+	for side in 2:
+		for u in sides[side].units:  # Elephant's extra HP lasts only this battle
+			u.hp = mini(u.hp, u.max_hp(data))
 	var out := {"wiped": [], "leader_dead": [], "retreated": retreated, "pushed": -1,
 			"hp_lost": [hp_lost_share(0), hp_lost_share(1)]}
 	for sk in _skeletons:

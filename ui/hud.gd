@@ -7,6 +7,7 @@ extends Control
 signal squad_pressed(id: int)
 signal edit_pressed
 signal deploy_pressed
+signal cards_pressed
 signal speed_chosen(index: int)  # -1 to pause
 
 var minimap := Minimap.new()
@@ -19,6 +20,7 @@ var _help := Label.new()
 var _banner := Label.new()
 var _flash_until := 0
 var _toolbar := HBoxContainer.new()
+var _cards_button: Button
 
 
 func _ready() -> void:
@@ -59,11 +61,12 @@ func _ready() -> void:
 	add_child(_banner)
 	_toolbar.add_theme_constant_override("separation", 10)
 	add_child(_toolbar)
-	for entry in [["Edit Units (U)", edit_pressed], ["Deploy Squad (D)", deploy_pressed]]:
+	for entry in [["Edit Units (U)", edit_pressed], ["Deploy Squad (D)", deploy_pressed], ["Cards (C)", cards_pressed]]:
 		var b := UiStyle.button(entry[0], 210)
 		b.focus_mode = FOCUS_NONE
 		b.pressed.connect(entry[1].emit)
 		_toolbar.add_child(b)
+		_cards_button = b
 	resized.connect(place)
 
 
@@ -110,6 +113,7 @@ func refresh(state: GameState) -> void:
 	_speed.text = "Paused"
 	_speed.add_theme_color_override("font_color", Color("#ffe08a"))
 	_money.text = "Gold %d  (+%d / −%d a day)   ·   Reputation %d" % [state.gold, state.income(), state.army_upkeep(), state.reputation]
+	_cards_button.text = "Cards (C): %d" % state.cards.size()
 	if _flash_until > 0 and Time.get_ticks_msec() > _flash_until:
 		_flash_until = 0
 		_banner.visible = false

@@ -63,6 +63,9 @@ func start(game_data: GameData, game_log: GameLog, config: GameConfig, map: MapD
 	hud.deploy_pressed.connect(func():
 		if _can_open() and _selected == null:
 			_open_deploy_menu())
+	hud.cards_pressed.connect(func():
+		if _can_open() and _selected == null:
+			_open_cards(false))
 	get_viewport().size_changed.connect(camera.fit)
 	var started := Time.get_ticks_msec()
 	if map == null:
@@ -93,6 +96,8 @@ func _process(delta: float) -> void:
 			break
 	if state.pending and _battle == null:
 		_open_battle()
+	if not state.card_offer.is_empty() and _can_open() and _selected == null:
+		_open_cards(true)
 	if state.noon_report != "":
 		hud.show_banner(state.noon_report, 5.0)
 		state.noon_report = ""
@@ -415,6 +420,13 @@ func _open_shop(screen: Control) -> void:
 	state.clock.hold()
 
 
+func _open_cards(offer: bool) -> void:
+	var panel := CardsPanel.new()
+	_ui.add_child(panel)
+	panel.setup(state, offer)
+	_open_shop(panel)
+
+
 func _open_building(b: Dictionary) -> void:
 	_building_popup = BuildingPopup.new()
 	_ui.add_child(_building_popup)
@@ -614,6 +626,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			_open_edit()
 		KEY_D:
 			_open_deploy_menu()
+		KEY_C:
+			_open_cards(false)
 		KEY_T:
 			var s := state.player_squads()[0]
 			var next: String = TEST_TRAVEL[(TEST_TRAVEL.find("sky" if s.sky else s.travel_type) + 1) % TEST_TRAVEL.size()]

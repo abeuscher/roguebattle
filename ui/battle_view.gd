@@ -2,7 +2,7 @@ class_name BattleView
 extends Control
 ## The battle screen (SPEC §4 Battle and Battle result, §11.3). The two squads face off,
 ## back rows outside, and each action plays out in turn order with a running log.
-## Pause, speed, tactic, retreat and skip; at the end a result panel with the outcome
+## Pause, speed, tactic, cards, retreat and skip; at the end a result panel with the outcome
 ## and, when a beaten enemy is shaken, the offer to drive it off (§11.6).
 ## A modal: 50% dark overlay; the battlemap holds the clock while it's open.
 
@@ -31,6 +31,8 @@ var _paused := false
 var _ended := false  # the battle has no turns left
 var _done := false  # the result is showing
 var _retreat_asked := false
+var _card_asked := ""  # a card to play before the next action
+var _cards_btn: Button
 var _round := UiStyle.label("", 28, UiStyle.ACCENT)
 var _ticker := RichTextLabel.new()
 var _controls := HBoxContainer.new()
@@ -122,6 +124,10 @@ func _build_controls() -> void:
 		_retreat_btn.text = "Retreating...")
 	_controls.add_child(_retreat_btn)
 	_update_retreat()
+	_cards_btn = UiStyle.button("", 160)
+	_cards_btn.pressed.connect(_choose_card)
+	_controls.add_child(_cards_btn)
+	_update_cards()
 	var skip := UiStyle.button("Skip to end", 170)
 	skip.pressed.connect(_skip)
 	_controls.add_child(skip)
@@ -137,6 +143,40 @@ func _update_retreat() -> void:
 	_retreat_btn.disabled = battle.ranged_only
 	_retreat_btn.tooltip_text = "No retreat from a ranged attack" if battle.ranged_only \
 			else "On success the squad steps back 1 hex and each unit loses 1 charisma. On failure it loses its next action."
+
+
+## The battle cards in the hand, counted (§13).
+func _battle_cards() -> Dictionary:
+	var out := {}
+	for id in state.cards:
+		if state.data.cards["cards"][id]["where"] == "battle":
+			out[id] = out.get(id, 0) + 1
+	return out
+
+
+func _update_cards() -> void:
+	var n := 0
+	for id in _battle_cards():
+		n += _battle_cards()[id]
+	_cards_btn.text = "Cards (%d)" % n
+	_cards_btn.disabled = n == 0 or _card_asked != ""
+	_cards_btn.tooltip_text = "No battle cards in hand." if n == 0 else "Play a card before the next action."
+
+
+func _choose_card() -> void:
+	var menu := PopupMenu.new()
+	menu.add_theme_font_size_override("font_size", 18)
+	var ids := _battle_cards().keys()
+	for i in ids.size():
+		var c: Dictionary = state.data.cards["cards"][ids[i]]
+		var n: int = _battle_cards()[ids[i]]
+		menu.add_item("%s%s: %s" % [c["name"], " ×%d" % n if n > 1 else "", c["text"]], i)
+	menu.id_pressed.connect(func(i: int):
+		_card_asked = ids[i]
+		_update_cards())
+	menu.popup_hide.connect(menu.queue_free)
+	add_child(menu)
+	menu.popup(Rect2i(Vector2i(get_viewport().get_mouse_position()) - Vector2i(0, 40 * ids.size() + 20), Vector2i.ZERO))
 
 
 func _toggle_pause() -> void:
@@ -157,6 +197,10 @@ func _process(delta: float) -> void:
 		_shown += 1
 	elif _ended or battle.is_over():
 		_finish()
+	elif _card_asked != "":
+		state.play_battle_card(battle, _card_asked)
+		_card_asked = ""
+		_update_cards()
 	elif _retreat_asked:
 		_retreat_asked = false
 		battle.retreat(0)
@@ -195,7 +239,7 @@ func _play(e: Dictionary, animate: bool) -> float:
 			return beat
 		"heal":
 			var card: Card = _cards[e["target"]]
-			card.hp = mini(card.max_hp, card.hp + int(e["amount"]))
+			card.hp += int(e["amount"])  # cards can heal above full for the battle
 			_float(card, "+%d" % e["amount"], Color("#7ee08a"), animate)
 			if animate:
 				card.flash(Color(0.3, 1, 0.4))
@@ -210,6 +254,27 @@ func _play(e: Dictionary, animate: bool) -> float:
 		"raise":
 			_add_card(e["target"], battle.side_of(e["target"]))
 			_layout(animate)
+		"card":
+			var c: Dictionary = state.data.cards["cards"][e["card"]]
+			var l := UiStyle.label(c["name"], 40, UiStyle.ACCENT)
+			l.add_theme_color_override("font_outline_color", Color.BLACK)
+			l.add_theme_constant_override("outline_size", 8)
+			l.position = Vector2(FIELD.x / 2.0 - 80, FIELD.y / 2.0 - 60)
+			_field.add_child(l)
+			if animate:
+				var t := l.create_tween()
+				t.tween_property(l, "modulate:a", 0.0, beat * 2.0 / _speed_now()).set_delay(beat * 0.6 / _speed_now())
+				t.tween_callback(l.queue_free)
+			else:
+				l.queue_free()
+			return beat * 1.2
+		"card_hit":
+			var card: Card = _cards[e["target"]]
+			card.hp = maxi(0, card.hp - int(e["damage"]))
+			_float(card, "-%d" % e["damage"], Color("#ff6b5a"), animate)
+			if animate:
+				card.flash(Color(1, 0.2, 0.15))
+			return beat * 0.5
 		"wait":
 			return beat * 0.6
 	return beat * 0.8
@@ -421,7 +486,7 @@ class Card extends Control:
 				Color("#d7a6ff") if not statuses.is_empty() else ink.darkened(0.2))
 		var bar := Rect2(16, 70, size.x - 32, 14)
 		draw_rect(bar, Color(0.05, 0.05, 0.06))
-		var share := float(hp) / max_hp
+		var share := minf(1.0, float(hp) / max_hp)
 		var fill := Color("#5fbf5a") if share > 0.5 else (Color("#e0b03a") if share > 0.25 else Color("#d9533f"))
 		draw_rect(Rect2(bar.position, Vector2(bar.size.x * share, bar.size.y)), fill)
 		draw_string(font, Vector2(16, 98), "Fallen" if dead else "%d / %d HP" % [hp, max_hp], HORIZONTAL_ALIGNMENT_LEFT, -1, 13, ink)

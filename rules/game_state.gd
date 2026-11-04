@@ -20,6 +20,9 @@ var _contact_until := {}  # "player id:enemy id" -> tick before which the pair w
 var _moved := {}  # squads that entered a new hex this tick
 var _building_at := {}  # hex -> index in map.buildings
 var noon_report := ""  # the last noon's ledger, for the HUD to show once
+var cards: Array[String] = []  # the hand: card ids (§13)
+var next_card := ""  # the next card to be drawn, rolled ahead so Foresight can preview it
+var card_offer: Array[String] = []  # cards to choose one from (a Seer or Oracle drew), shown by the HUD
 
 
 func _init(game_data: GameData, game_map: MapData, game_log: GameLog, game_settings := {}) -> void:
@@ -49,13 +52,7 @@ func step() -> void:
 	if pending:
 		return
 	for event in clock.step():
-		if event == "new_day":
-			log.add(clock.tick, "system", "Day %d begins." % clock.day())
-			_rest()
-		elif event == "half_day":
-			_move_nomads()
-		if event == "noon":
-			_noon()
+		_clock_event(event)
 	_moved.clear()
 	for s in squads.duplicate():
 		_move(s)
@@ -64,6 +61,17 @@ func step() -> void:
 	_capture()
 	_reveal_sites()
 	_check_contact()
+
+
+## Daily rest, nomads every half day, the noon ledger (§7).
+func _clock_event(event: String) -> void:
+	if event == "new_day":
+		log.add(clock.tick, "system", "Day %d begins." % clock.day())
+		_rest()
+	elif event == "half_day":
+		_move_nomads()
+	if event == "noon":
+		_noon()
 
 
 ## A squad of freshly rolled units. `members` lists [class name, row] pairs;
@@ -92,6 +100,8 @@ func setup_army() -> void:
 	for id in p["items"]:
 		for i in int(p["items"][id]):
 			army.add_item(id)
+	for i in int(data.cards["start"]):
+		draw_card(null)
 
 
 # --- Buildings (SPEC §6.5) ---------------------------------------------------------------
@@ -158,6 +168,7 @@ func _liberated(s: Squad, b: Dictionary) -> void:
 	if s.leader and s.leader.alignment_band(data) == aligned:
 		change_charisma([s.leader], int(st["liberate_charisma"]), "liberating a %s that matches their alignment" % what)
 	change_alignment(s.units, int(st["liberate_alignment"]) * (1 if aligned == "holy" else -1), "liberating a %s" % what)
+	draw_card(s)
 
 
 ## +1 when the squad's band matches the building's (holy town, evil tower), −1 for the
@@ -266,6 +277,79 @@ func hint(b: Dictionary) -> String:
 	var names := ["east", "southeast", "south", "southwest", "west", "northwest", "north", "northeast"]
 	var dir: String = names[posmod(roundi(delta.angle() / (PI / 4.0)), 8)]
 	return "Travellers speak of something hidden to the %s, about %d hexes away." % [dir, Hex.distance(at, map.hex_at(map.buildings[best]["hex"]))]
+
+
+# --- Cards (SPEC §13) ---------------------------------------------------------------
+
+func _roll_card() -> String:
+	var ids: Array = data.cards["cards"].keys()
+	return ids[rng.get_stream("cards").randi() % ids.size()]
+
+
+## Draws a card for a liberation or a found hidden site. A squad with a Seer (2) or an
+## Oracle (3) chooses from that many cards (card_offer, for the HUD); otherwise the card
+## goes straight into the hand. The next card is rolled ahead for Foresight.
+func draw_card(s: Squad) -> void:
+	var choose := 1
+	if s:
+		for u in s.living():
+			choose = maxi(choose, int(data.cards["choose"].get(u.unit_class, 1)))
+	if next_card == "":
+		next_card = _roll_card()
+	var drawn: Array[String] = []
+	for i in choose:
+		drawn.append(next_card)
+		next_card = _roll_card()
+	if choose == 1:
+		cards.append(drawn[0])
+		log.add(clock.tick, "progression", "You draw %s." % card_name(drawn[0]), s.id if s else -1)
+	else:
+		card_offer = drawn
+
+
+## Takes one card from the offer into the hand.
+func choose_card(id: String) -> void:
+	if id in card_offer:
+		cards.append(id)
+		log.add(clock.tick, "progression", "You choose %s." % card_name(id))
+	card_offer.clear()
+
+
+func card_name(id: String) -> String:
+	return data.cards["cards"][id]["name"]
+
+
+## Whether a squad on the map has a leader with the Foresight aura, which shows the next card.
+func foresight() -> bool:
+	return player_squads().any(func(s: Squad): return s.leader and s.leader.is_alive() and s.leader.info(data)["leader_aura"] == "Foresight")
+
+
+## The squad the Opinion Leader leads: the first squad of the army (§18).
+func opinion_leader_squad() -> Squad:
+	return army.cells[0]
+
+
+## Plays a map card (Rooster, Fox): time jumps ahead to its hour, with the noon ledger,
+## nomad moves and daily rest it passes; squads don't move meanwhile.
+func play_map_card(id: String) -> bool:
+	var c: Dictionary = data.cards["cards"][id]
+	if id not in cards or c["where"] != "map":
+		return false
+	cards.erase(id)
+	var ticks := posmod(int(c["minute"]) - clock.minute_of_day(), GameClock.TICKS_PER_DAY)
+	for i in (ticks if ticks > 0 else GameClock.TICKS_PER_DAY):
+		for event in clock.step():
+			_clock_event(event)
+	log.add(clock.tick, "system", "%s: %s" % [c["name"], c["text"]])
+	return true
+
+
+## Plays a battle card from the hand in the pending battle.
+func play_battle_card(b: Battle, id: String) -> bool:
+	if id not in cards or not b.play_card(id, 0):
+		return false
+	cards.erase(id)
+	return true
 
 
 # --- Reputation, charisma and alignment (SPEC §9.5, §9.6, §10) ------------------------
@@ -864,6 +948,16 @@ func _reveal_sites() -> void:
 		if (b["hidden"] or b["type"] == "lair") and not revealed.has(i) and seen(b["hex"]):
 			revealed[i] = true
 			log.add(clock.tick, "map", "A hidden site comes into view at %s." % map.hex_at(b["hex"]))
+			if b["hidden"]:  # found (§13); lairs aren't hidden sites
+				draw_card(_spotter(b["hex"]))
+
+
+## The first of your squads that can see the hex.
+func _spotter(target_hex: int) -> Squad:
+	for s in player_squads():
+		if Hex.distance(map.hex_at(s.hex), map.hex_at(target_hex)) <= sight(s, target_hex):
+			return s
+	return null
 
 
 # --- Ranged map attacks (SPEC §11.2) ----------------------------------------------------
@@ -972,11 +1066,30 @@ func _award_xp(b: Battle, out: Dictionary) -> void:
 	var s := b.sides[0]
 	out["xp"] = {}
 	out["level_ups"] = []
+	# The share of the enemy's losses dealt by cards goes to the Opinion Leader's squad (§9.4, §13).
+	var share := clampf(float(b.card_damage) / maxi(1, b.hp_lost(1)), 0.0, 1.0)
+	var leader_squad := opinion_leader_squad()
+	if leader_squad == s:
+		share = 0.0
+	var redirected := 0
 	for u in s.living():
 		if u not in army.units():
 			continue
-		var amount := Progression.battle_xp(data, s, b.sides[1], u)
+		var full := Progression.battle_xp(data, s, b.sides[1], u)
+		var amount := roundi(full * (1.0 - share))
+		redirected = maxi(redirected, full - amount)
 		out["xp"][u] = amount
+		_give_xp(s, u, amount, out)
+	if redirected > 0 and leader_squad:
+		for u in leader_squad.living():
+			_give_xp(leader_squad, u, redirected, out)
+		log.add(clock.tick, "progression", "%s earns %d XP each from the cards played." % [leader_squad.name, redirected], leader_squad.id)
+	if not out["xp"].is_empty():
+		log.add(clock.tick, "progression", "%s earns %s XP." % [s.name, "/".join(PackedStringArray(out["xp"].values().map(func(x): return str(x))))], s.id)
+
+
+## Adds XP to a unit, with level-ups and the leader's slot growth (§8.2).
+func _give_xp(s: Squad, u: Unit, amount: int, out: Dictionary) -> void:
 		for gains in Progression.gain_xp(data, u, amount, rng.get_stream("progression")):
 			var line := "%s%s reaches level %d: %s." % ["A prodigy shines! " if u.talent == "prodigy" else "", u.name, u.level, Progression.gains_text(gains)]
 			out["level_ups"].append(line)
@@ -984,8 +1097,6 @@ func _award_xp(b: Battle, out: Dictionary) -> void:
 			if u == s.leader and s.check_slot_growth(data):
 				out["level_ups"].append("%s can now lead %d slots." % [u.name, s.capacity(data)])
 				log.add(clock.tick, "progression", out["level_ups"][-1], s.id)
-	if not out["xp"].is_empty():
-		log.add(clock.tick, "progression", "%s earns %s XP." % [s.name, "/".join(PackedStringArray(out["xp"].values().map(func(x): return str(x))))], s.id)
 
 
 ## Promotes a unit at base into one of its options (§9.4). Returns why not, or "" on success.

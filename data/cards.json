@@ -1,0 +1,30 @@
+{
+ "_note": "Cards (SPEC §13). All strengths are placeholders. where: battle or map. Stat boosts last until your leader's second turn after the card is played (§11.7). Attack cards hit every enemy: damage = power - the target's PDEF (physical) or MDEF (magic), times the element multiplier, with the usual spread, at least 1.",
+ "start": 3,
+ "choose": {"Seer": 2, "Oracle": 3},
+ "cards": {
+  "panther":    {"name": "Panther",    "group": "Stat boost",  "where": "battle", "effect": "buff", "stat": "STR",  "mult": 1.3, "text": "+30% STR for your squad until your leader's second turn."},
+  "elephant":   {"name": "Elephant",   "group": "Stat boost",  "where": "battle", "effect": "overheal", "share": 0.3, "text": "Each of your units gains 30% of its max HP, even above full, for this battle."},
+  "owl":        {"name": "Owl",        "group": "Stat boost",  "where": "battle", "effect": "buff", "stat": "INT",  "mult": 1.3, "text": "+30% INT for your squad until your leader's second turn."},
+  "cheetah":    {"name": "Cheetah",    "group": "Stat boost",  "where": "battle", "effect": "buff", "stat": "SPD",  "mult": 1.5, "text": "Haste: +50% SPD for your squad until your leader's second turn."},
+  "raccoon":    {"name": "Raccoon",    "group": "Stat boost",  "where": "battle", "effect": "buff", "stat": "AGI",  "mult": 1.3, "text": "+30% AGI for your squad until your leader's second turn."},
+  "turtle":     {"name": "Turtle",     "group": "Stat boost",  "where": "battle", "effect": "buff", "stat": "PDEF", "mult": 1.3, "text": "+30% PDEF for your squad until your leader's second turn."},
+  "hippo":      {"name": "Hippo",      "group": "Stat boost",  "where": "battle", "effect": "buff", "stat": "MDEF", "mult": 1.3, "text": "+30% MDEF for your squad until your leader's second turn."},
+  "dolphin":    {"name": "Dolphin",    "group": "Heal",        "where": "battle", "effect": "heal", "amount": 50, "text": "+50 HP to all your units."},
+  "whale":      {"name": "Whale",      "group": "Heal",        "where": "battle", "effect": "heal_full", "text": "All your units healed to full."},
+  "narwhal":    {"name": "Narwhal",    "group": "Heal",        "where": "battle", "effect": "narwhal", "casts": 2, "per_level": 10, "text": "A narwhal healer at your squad's average level heals everyone twice."},
+  "walrus":     {"name": "Walrus",     "group": "Heal",        "where": "battle", "effect": "cleanse", "text": "Cleanses all harmful statuses from your squad."},
+  "tiger":      {"name": "Tiger",      "group": "Attack",      "where": "battle", "effect": "attack", "kind": "physical", "power": 18, "text": "A physical attack on the whole enemy squad."},
+  "crocodile":  {"name": "Crocodile",  "group": "Attack",      "where": "battle", "effect": "attack", "kind": "magic", "element": "Water", "power": 16, "text": "A water magic attack on the whole enemy squad."},
+  "rhino":      {"name": "Rhino",      "group": "Attack",      "where": "battle", "effect": "attack", "kind": "magic", "element": "Earth", "power": 16, "text": "An earth magic attack on the whole enemy squad."},
+  "condor":     {"name": "Condor",     "group": "Attack",      "where": "battle", "effect": "attack", "kind": "magic", "element": "Wind", "power": 16, "text": "A wind attack on the whole enemy squad."},
+  "angelfish":  {"name": "Angelfish",  "group": "Attack",      "where": "battle", "effect": "attack", "kind": "magic", "element": "Lightning", "power": 14, "status": "shock", "text": "A lightning attack on the whole enemy squad that shocks them."},
+  "mouse":      {"name": "Mouse",      "group": "Attack",      "where": "battle", "effect": "status", "status": "weak_physical", "text": "The enemy squad becomes weak to physical attacks."},
+  "mink":       {"name": "Mink",       "group": "Attack",      "where": "battle", "effect": "status", "status": "weak_magic", "text": "The enemy squad becomes weak to magic."},
+  "rooster":    {"name": "Rooster",    "group": "Environment", "where": "map",    "effect": "time", "minute": 720, "text": "Time jumps to noon."},
+  "fox":        {"name": "Fox",        "group": "Environment", "where": "map",    "effect": "time", "minute": 0, "text": "Time jumps to midnight."},
+  "chameleon":  {"name": "Chameleon",  "group": "Environment", "where": "battle", "effect": "home_terrain", "text": "This battle plays as if on your squad's home terrain."},
+  "sloth":      {"name": "Sloth",      "group": "Environment", "where": "battle", "effect": "enemy_loses_turn", "text": "The enemy squad loses its next action."},
+  "unicorn":    {"name": "Unicorn",    "group": "Environment", "where": "battle", "effect": "extra_attack", "text": "Each of your units gets one extra attack this battle."}
+ }
+}
