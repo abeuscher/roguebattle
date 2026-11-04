@@ -1,8 +1,9 @@
 class_name EditUnits
 extends Control
 ## Edit Units (SPEC §4): the army overview (a 4×4 grid of squad cards) with the recruit
-## pool in a gutter on the right; click a card for the squad detail (front and back rows,
-## the selected unit's stats, leader and items). Drag units between squads, rows and the
+## pool in a gutter on the right; click a card for the squad detail (front and back rows).
+## Click any unit, in a squad or the pool, for its detail panel over the screen: stats,
+## leader, promotion and items, and an About tab for the unit type. Drag units between squads, rows and the
 ## pool. The gutter's Items tab lists every item the army owns, worn ones greyed with
 ## who has them; drag a free item onto a unit or an item slot, and drag a worn one back
 ## to the list to take it off. Squads out in the field are locked until they're back at
@@ -24,7 +25,9 @@ var army: Army
 var data: GameData
 var _squad: Squad  # the squad in detail view, or null for the overview
 var _cell := -1
-var _unit: Unit  # selected in the detail view
+var _unit: Unit  # shown in the unit detail panel, or null
+var _unit_tab := "overview"  # the panel's tab: "overview" or "about"
+var _modal: Control  # the unit detail panel while open
 var _title := UiStyle.label("Edit Units", 26)
 var _main := VBoxContainer.new()
 var _pool := VBoxContainer.new()
@@ -113,7 +116,7 @@ func _gutter() -> Control:
 func _open(cell: int) -> void:
 	_cell = cell
 	_squad = army.cells[cell] if cell >= 0 else null
-	_unit = _squad.leader if _squad else null
+	_unit = null
 	_status.text = ""
 	_refresh()
 
@@ -126,6 +129,9 @@ func _refresh() -> void:
 		c.queue_free()
 	for c in _pool.get_children():
 		c.queue_free()
+	if _modal:
+		_modal.queue_free()
+		_modal = null
 	_targets.clear()
 	_back.visible = _squad != null
 	_gold.text = "Gold %d  ·  Upkeep %d a day  ·  On the map %d / %d" % [state.gold, state.army_upkeep(), state.player_squads().size(), state.squad_cap()]
@@ -140,11 +146,13 @@ func _refresh() -> void:
 		_tabs[t].set_pressed_no_signal(t == _tab)
 	if _tab == "items":
 		_item_list()
-		return
-	for u in army.pool:
-		_pool.add_child(_chip(u, "wide", true, -1, "", -1))
-	if army.pool.is_empty():
-		_pool.add_child(UiStyle.label("Drag units here to take them out of a squad.", 14, Color(0.6, 0.62, 0.66)))
+	else:
+		for u in army.pool:
+			_pool.add_child(_chip(u, "wide", true, -1, "", -1))
+		if army.pool.is_empty():
+			_pool.add_child(UiStyle.label("Drag units here to take them out of a squad.", 14, Color(0.6, 0.62, 0.66)))
+	if _unit:
+		_show_unit()
 
 
 # --- Overview -----------------------------------------------------------------------
@@ -262,7 +270,7 @@ func _detail() -> Control:
 		for c in cols:
 			row.add_child(_slot(s, r, c, locked))
 		box.add_child(row)
-	box.add_child(_unit_panel(locked))
+	box.add_child(UiStyle.label("Click a unit for its details. Drag units to rearrange them.", 14, Color(0.55, 0.58, 0.62)))
 	return box
 
 
@@ -281,26 +289,111 @@ func _slot(s: Squad, r: String, c: int, locked: bool) -> Control:
 	return slot
 
 
-func _unit_panel(locked: bool) -> Control:
-	var panel := PanelContainer.new()
-	panel.add_theme_stylebox_override("panel", UiStyle.box(Color(0.07, 0.08, 0.1), 16))
-	panel.size_flags_vertical = SIZE_EXPAND_FILL
+## The unit detail panel over the whole screen, the same from a squad or the pool. Close
+## with the button or Esc.
+func _show_unit() -> void:
 	var u := _unit
-	if u == null:
-		panel.add_child(UiStyle.label("Click a unit to see it.", 16, Color(0.6, 0.62, 0.66)))
-		return panel
+	var sq := army.squad_of(u)
+	var locked := sq != null and not state.can_edit(sq)
+	_modal = Control.new()
+	_modal.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	add_child(_modal)
+	var shade := ColorRect.new()
+	shade.color = Color(0, 0, 0, 0.6)
+	shade.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	_modal.add_child(shade)
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	_modal.add_child(center)
+	var panel := PanelContainer.new()
+	var style := UiStyle.box(UiStyle.PANEL, 24)
+	style.set_border_width_all(2)
+	style.border_color = UiStyle.OUTLINE
+	panel.add_theme_stylebox_override("panel", style)
+	panel.custom_minimum_size = Vector2(1700, 900)
+	center.add_child(panel)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 14)
+	panel.add_child(col)
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override("separation", 16)
+	col.add_child(head)
+	head.add_child(UiStyle.label(u.name, 30))
+	var where := "%s of #%d %s" % ["Leader" if sq.leader == u else "In", sq.id, sq.name] if sq else "In the recruit pool"
+	var sub := UiStyle.label("%s  ·  %s" % [u.unit_class, where], 18, Color(0.75, 0.78, 0.82))
+	sub.size_flags_horizontal = SIZE_EXPAND_FILL
+	head.add_child(sub)
+	var close := UiStyle.button("Close (Esc)", 190, true)
+	close.pressed.connect(_close_unit)
+	head.add_child(close)
+	var tabs := HBoxContainer.new()
+	tabs.add_theme_constant_override("separation", 6)
+	col.add_child(tabs)
+	for t in [["overview", "Overview"], ["about", "About the %s" % u.unit_class]]:
+		var b := UiStyle.button(t[1], 200)
+		b.toggle_mode = true
+		b.set_pressed_no_signal(_unit_tab == t[0])
+		b.pressed.connect(func():
+			_unit_tab = t[0]
+			_refresh())
+		tabs.add_child(b)
+	var body: Control = _unit_overview(u, sq, locked) if _unit_tab == "overview" else _unit_about(u)
+	body.size_flags_vertical = SIZE_EXPAND_FILL
+	col.add_child(body)
+	col.add_child(UiStyle.label(_status.text, 16, UiStyle.ACCENT))
+
+
+func _close_unit() -> void:
+	_unit = null
+	_status.text = ""
+	_refresh()
+
+
+## The About tab: room for the unit type's art and description, with what the sheet says.
+func _unit_about(u: Unit) -> Control:
 	var c: Dictionary = u.info(data)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 40)
-	panel.add_child(row)
+	var art := PanelContainer.new()
+	var frame := UiStyle.box(Color(0.07, 0.08, 0.1), 0)
+	frame.set_border_width_all(2)
+	frame.border_color = Color(0.25, 0.27, 0.32)
+	art.add_theme_stylebox_override("panel", frame)
+	art.custom_minimum_size = Vector2(420, 420)
+	art.size_flags_vertical = SIZE_SHRINK_BEGIN
+	var art_note := UiStyle.label("Art coming later", 16, Color(0.4, 0.42, 0.47))
+	art_note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	art_note.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	art.add_child(art_note)
+	row.add_child(art)
+	var text := VBoxContainer.new()
+	text.add_theme_constant_override("separation", 10)
+	row.add_child(text)
+	text.add_child(UiStyle.label(u.unit_class, 26))
+	text.add_child(UiStyle.label("%s  ·  stage %d  ·  %s  ·  %s  ·  leans %s" % [c["role"], int(c["stage"]), c["size"], c["terrain"],
+			str(c["alignment_lean"]).to_lower()], 17, Color(0.8, 0.82, 0.86)))
+	text.add_child(_wrapped("No description of the %s yet." % u.unit_class if c.get("notes") == null else str(c["notes"]), 17))
+	text.add_child(UiStyle.label("Lines", 18, Color(0.65, 0.68, 0.72)))
+	for line_id in c["lines"]:
+		var stages := PackedStringArray()
+		for stage in data.lines[line_id]:
+			stages.append(" / ".join(PackedStringArray(stage)))
+		text.add_child(_wrapped("  >  ".join(stages), 16))
+	return row
+
+
+## The Overview tab: who it is and its stats, what it does and its promotion, and its items.
+func _unit_overview(u: Unit, sq: Squad, locked: bool) -> Control:
+	var c: Dictionary = u.info(data)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 48)
 	# Who it is and its stats
 	var who := VBoxContainer.new()
-	who.custom_minimum_size.x = 380
+	who.add_theme_constant_override("separation", 8)
+	who.custom_minimum_size.x = 440
 	row.add_child(who)
-	who.add_child(UiStyle.label(u.name, 24))
 	who.add_child(UiStyle.label("%s  ·  stage %d  ·  level %d  ·  XP %d / %d" % [u.unit_class, int(c["stage"]), u.level, u.xp,
-			Progression.level_cost(data, u)], 16, Color(0.8, 0.82, 0.86)))
-	var sq := army.squad_of(u)
+			Progression.level_cost(data, u)], 17, Color(0.8, 0.82, 0.86)))
 	if sq and sq.leader == u:
 		who.add_child(UiStyle.label("Leads %s" % sq.name, 16, Color(1, 0.88, 0.5)))
 	elif sq and c["can_lead"] and not locked:
@@ -336,7 +429,8 @@ func _unit_panel(locked: bool) -> Control:
 	who.add_child(grid)
 	# What it does
 	var does := VBoxContainer.new()
-	does.custom_minimum_size.x = 440
+	does.add_theme_constant_override("separation", 8)
+	does.custom_minimum_size.x = 480
 	row.add_child(does)
 	does.add_child(UiStyle.label("Front row: %s ×%d" % [c["front_attack"], int(c["front_count"])], 16))
 	does.add_child(UiStyle.label("Back row: %s ×%d" % [c["back_attack"], int(c["back_count"])], 16))
@@ -354,9 +448,25 @@ func _unit_panel(locked: bool) -> Control:
 	gear.add_child(UiStyle.label("Items", 18))
 	for slot in data.items["slots"]:
 		gear.add_child(_item_box(u, slot, locked))
-	if not locked:
-		gear.add_child(UiStyle.label("Drag items here from the Items tab.", 13, Color(0.55, 0.58, 0.62)))
-	return panel
+	if locked:
+		return row
+	gear.add_child(UiStyle.label("Free items that fit: drag one onto a slot, or click it", 14, Color(0.55, 0.58, 0.62)))
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(420, 380)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	gear.add_child(scroll)
+	var list := VBoxContainer.new()
+	list.add_theme_constant_override("separation", 6)
+	list.size_flags_horizontal = SIZE_EXPAND_FILL
+	scroll.add_child(list)
+	var free := army.items.filter(func(i: Dictionary): return army.holder(i) == null and army.fits(u, i))
+	if free.is_empty():
+		list.add_child(UiStyle.label("None. Shops and hidden sites will have more.", 14, Color(0.55, 0.58, 0.62)))
+	for item in free:
+		list.add_child(_item_row(item, func():
+			army.equip(u, item)
+			_refresh()))
+	return row
 
 
 ## Promotion (§9.4): a button per class the unit can become now, or when it can next promote.
@@ -453,7 +563,9 @@ func _item_list() -> void:
 			_pool.add_child(_item_row(item))
 
 
-func _item_row(item: Dictionary) -> Control:
+## An owned item: free ones drag onto units (or run `on_click`, if given); worn ones say
+## who has them and open that unit.
+func _item_row(item: Dictionary, on_click := Callable()) -> Control:
 	var who := army.holder(item)
 	var row := PanelContainer.new()
 	var style := UiStyle.box(Color(0.15, 0.17, 0.21) if who == null else Color(0.1, 0.11, 0.13), 8)
@@ -467,8 +579,12 @@ func _item_row(item: Dictionary) -> Control:
 	col.add_child(_quiet(UiStyle.label(_item_label(item["id"]), 15, Color.WHITE if who == null else Color(0.5, 0.52, 0.56))))
 	if who == null:
 		row.mouse_default_cursor_shape = CURSOR_DRAG
-		row.tooltip_text = "Drag onto a unit or an item slot."
+		row.tooltip_text = "Drag onto a unit or an item slot." + (" Click to equip." if on_click.is_valid() else "")
 		row.set_drag_forwarding(_drag_item.bind(item, null), Callable(), Callable())
+		if on_click.is_valid():
+			row.gui_input.connect(func(e: InputEvent):
+				if e is InputEventMouseButton and not e.pressed and e.button_index == MOUSE_BUTTON_LEFT:
+					on_click.call())
 		return row
 	var sq := army.squad_of(who)
 	var where := "#%d %s" % [sq.id, sq.name] if sq else "recruit pool"
@@ -480,8 +596,6 @@ func _item_row(item: Dictionary) -> Control:
 			if sq:
 				_open(sq.id - 1)
 			_unit = who
-			if sq == null and _squad == null:
-				_status.text = "%s is in the recruit pool: open any squad to see them." % who.name
 			_refresh())
 	return row
 
@@ -540,13 +654,10 @@ func _chip(u: Unit, mode: String, draggable: bool, cell: int, r: String, c: int)
 	chip.gui_input.connect(func(e: InputEvent):
 		if not (e is InputEventMouseButton and e.button_index == MOUSE_BUTTON_LEFT and not e.pressed):
 			return  # on release, so pressing to drag doesn't rebuild the screen under the drag
-		if mode == "compact":  # in a squad card: open the squad on this unit
+		if mode == "compact":  # in a squad card: open the squad behind the unit's panel
 			_open(cell)
-			_unit = u
-			_refresh()
-		elif _squad:
-			_unit = u
-			_refresh())
+		_unit = u
+		_refresh())
 	return chip
 
 
@@ -626,8 +737,6 @@ func _drop(_at: Vector2, what: Variant, cell: int, r: String, c: int) -> void:
 		r = preferred_row(data, u)
 	if army.move(u, cell, r, c):
 		_status.text = ""
-		if _squad and u in _squad.units:
-			_unit = u
 	else:
 		var s: Squad = army.cells[cell]
 		_status.text = "%s doesn't fit: %s has %s of %d slots filled." % [u.name, s.name, _num(Squad.slots_filled(data, s.units)), s.capacity(data)]
@@ -663,7 +772,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if not event.is_pressed():
 		return
 	var key := (event as InputEventKey).keycode
-	if key == KEY_U or (key == KEY_ESCAPE and _squad == null):
+	if key == KEY_ESCAPE and _unit:
+		_close_unit()
+	elif key == KEY_U or (key == KEY_ESCAPE and _squad == null):
 		closed.emit()
 	elif key == KEY_ESCAPE:
 		_open(-1)
