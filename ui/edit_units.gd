@@ -758,7 +758,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 
-## A unit as a small square (squad cards), a wide row (pool) or a slot-sized card (detail).
+## A unit as a small square (squad cards), a wide row (pool), a slot-sized card (detail)
+## or a name, class and HP bar (the squad menu).
 class Chip extends Control:
 	var unit: Unit
 	var mode := "wide"
@@ -779,7 +780,7 @@ class Chip extends Control:
 		color = colors.get(kind, Color.GRAY)
 		var c: Dictionary = u.info(data)
 		line = "Lv %d  ·  %s" % [u.level, c["front_attack"] if u.row == "front" or squad == null else c["back_attack"]]
-		custom_minimum_size = {"compact": Vector2(62, 48), "wide": Vector2(272, 58), "slot": Vector2(148, 104)}[mode]
+		custom_minimum_size = {"compact": Vector2(62, 48), "wide": Vector2(272, 58), "slot": Vector2(148, 104), "menu": Vector2(104, 70)}[mode]
 		mouse_default_cursor_shape = CURSOR_DRAG
 
 	func _draw() -> void:
@@ -793,6 +794,13 @@ class Chip extends Control:
 		var share := float(unit.hp) / max_hp
 		var fill := Color("#5fbf5a") if share > 0.5 else (Color("#e0b03a") if share > 0.25 else Color("#d9533f"))
 		match mode:
+			"menu":
+				draw_string(font, Vector2(10, 22), unit.name.get_slice(" ", 0), HORIZONTAL_ALIGNMENT_LEFT, size.x - (28 if leader else 14), 15, ink)
+				if leader:
+					_star(Vector2(size.x - 13, 15), 7.0)
+				draw_string(font, Vector2(10, 41), unit.unit_class, HORIZONTAL_ALIGNMENT_LEFT, size.x - 14, 12, ink.darkened(0.25))
+				draw_rect(Rect2(10, size.y - 16, size.x - 20, 6), Color(0.05, 0.05, 0.06))
+				draw_rect(Rect2(10, size.y - 16, (size.x - 20) * share, 6), fill)
 			"compact":
 				draw_string(font, Vector2(8, 20), unit.unit_class, HORIZONTAL_ALIGNMENT_LEFT, size.x - (22 if leader else 10), 11, ink)
 				if leader:

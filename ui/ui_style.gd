@@ -56,9 +56,9 @@ static func _outlined(fill: Color, edge: Color) -> StyleBoxFlat:
 	return s
 
 
-## A small white icon drawn in code: "copy", "apply", "open" or "closed".
-static func icon(kind: String) -> ImageTexture:
-	var n := ICON_SIZE
+## A small white icon drawn in code: "copy", "apply", "open", "closed", "clock", "calendar",
+## or an alignment: "holy" (a sun), "neutral" (a half-filled circle), "evil" (a horned head).
+static func icon(kind: String, n := ICON_SIZE) -> ImageTexture:
 	var img := Image.create(n, n, false, Image.FORMAT_RGBA8)
 	for y in n:
 		for x in n:
@@ -79,6 +79,29 @@ static func _icon_covers(kind: String, p: Vector2) -> bool:
 			return Geometry2D.is_point_in_polygon(p, PackedVector2Array([Vector2(0.15, 0.3), Vector2(0.85, 0.3), Vector2(0.5, 0.75)]))
 		"closed":
 			return Geometry2D.is_point_in_polygon(p, PackedVector2Array([Vector2(0.3, 0.15), Vector2(0.75, 0.5), Vector2(0.3, 0.85)]))
+		"clock":  # a ring with two hands
+			var d := p.distance_to(Vector2(0.5, 0.5))
+			return (d > 0.36 and d < 0.47) or _near(p, Vector2(0.5, 0.5), Vector2(0.5, 0.24)) or _near(p, Vector2(0.5, 0.5), Vector2(0.7, 0.5))
+		"calendar":  # a page with a header band and two rings
+			return _frame(p, Rect2(0.1, 0.2, 0.8, 0.72)) or Rect2(0.1, 0.2, 0.8, 0.2).has_point(p) \
+					or Rect2(0.26, 0.06, 0.1, 0.2).has_point(p) or Rect2(0.64, 0.06, 0.1, 0.2).has_point(p) \
+					or Rect2(0.28, 0.54, 0.14, 0.12).has_point(p) or Rect2(0.58, 0.54, 0.14, 0.12).has_point(p)
+		"holy":  # a sun
+			var v := p - Vector2(0.5, 0.5)
+			if v.length() < 0.2:
+				return true
+			for i in 8:
+				var dir := Vector2.from_angle(i * PI / 4.0)
+				if _near(p, Vector2(0.5, 0.5) + dir * 0.3, Vector2(0.5, 0.5) + dir * 0.44):
+					return true
+			return false
+		"neutral":  # a ring, its left half filled
+			var d := p.distance_to(Vector2(0.5, 0.5))
+			return (d > 0.32 and d < 0.43) or (d < 0.43 and p.x < 0.5)
+		"evil":  # a horned head
+			return p.distance_to(Vector2(0.5, 0.62)) < 0.27 \
+					or Geometry2D.is_point_in_polygon(p, PackedVector2Array([Vector2(0.27, 0.52), Vector2(0.44, 0.4), Vector2(0.16, 0.08)])) \
+					or Geometry2D.is_point_in_polygon(p, PackedVector2Array([Vector2(0.73, 0.52), Vector2(0.56, 0.4), Vector2(0.84, 0.08)]))
 	return false
 
 

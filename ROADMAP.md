@@ -47,6 +47,8 @@ Goal: a generated map the player can look at, and one squad they can move.
 
 **M3 milestone check:** a short play session.
 
+**Later (UI):** once the toolbar's full button set is known (likely after M4, when the debug panel and any end-of-map screens are in), plan icons for the toolbar buttons and a more compact toolbar.
+
 ## M4: Map 1
 
 | # | Session | Spec | Verify |

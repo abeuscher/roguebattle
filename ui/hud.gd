@@ -13,6 +13,7 @@ signal speed_chosen(index: int)  # -1 to pause
 
 var minimap := Minimap.new()
 var _clock := Label.new()
+var _calendar := TextureRect.new()  # tinted like the clock text (day or night)
 var _speed := Label.new()  # shown only while a menu holds the game
 var _speed_pick := OptionButton.new()  # Paused, then the game speeds; Space, PgUp and PgDn change it too
 var _money := Label.new()
@@ -36,12 +37,17 @@ func _ready() -> void:
 	row.add_theme_constant_override("separation", 40)
 	bar.add_child(row)
 	_clock.add_theme_font_size_override("font_size", 20)
-	row.add_child(_clock)
+	_calendar.texture = UiStyle.icon("calendar")
+	_calendar.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+	row.add_child(_with_icon(_calendar, _clock))
+	var clock_icon := TextureRect.new()
+	clock_icon.texture = UiStyle.icon("clock")
+	clock_icon.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
 	_speed_pick.add_theme_font_size_override("font_size", 18)
 	_speed_pick.focus_mode = FOCUS_NONE  # Space and the arrow keys stay with the map
 	_speed_pick.tooltip_text = "Pause (Space) or game speed (PgUp / PgDn)"
 	_speed_pick.item_selected.connect(func(i: int): speed_chosen.emit(i - 1))
-	row.add_child(_speed_pick)
+	row.add_child(_with_icon(clock_icon, _speed_pick))
 	_speed.add_theme_font_size_override("font_size", 20)
 	row.add_child(_speed)
 	_squads.add_theme_constant_override("separation", 6)
@@ -70,6 +76,16 @@ func _ready() -> void:
 		if entry[0].begins_with("Cards"):
 			_cards_button = b
 	resized.connect(place)
+
+
+## An icon just left of a control, both vertically centred.
+func _with_icon(icon: TextureRect, control: Control) -> HBoxContainer:
+	var pair := HBoxContainer.new()
+	pair.add_theme_constant_override("separation", 8)
+	icon.size_flags_vertical = SIZE_SHRINK_CENTER
+	pair.add_child(icon)
+	pair.add_child(control)
+	return pair
 
 
 ## One button per squad, labelled with its number (click centers the map on it).
@@ -101,6 +117,7 @@ func set_help(text: String) -> void:
 func refresh(state: GameState) -> void:
 	_clock.text = "%s  ·  %s" % [state.clock.time_text(), "Day" if state.clock.is_day() else "Night"]
 	_clock.add_theme_color_override("font_color", Color("#f6e7a8") if state.clock.is_day() else Color("#a9b8e8"))
+	_calendar.modulate = Color("#f6e7a8") if state.clock.is_day() else Color("#a9b8e8")
 	if _speed_pick.item_count == 0:
 		_speed_pick.add_item("Paused  (Space)")
 		var names: Array = state.data.rules["game_speed_names"]
