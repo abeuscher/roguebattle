@@ -7,12 +7,12 @@ extends Control
 signal squad_pressed(id: int)
 signal edit_pressed
 signal deploy_pressed
-signal speed_chosen(index: int)
+signal speed_chosen(index: int)  # -1 to pause
 
 var minimap := Minimap.new()
 var _clock := Label.new()
-var _speed := Label.new()  # shown only while paused
-var _speed_pick := OptionButton.new()  # game speed; PgUp and PgDn change it too
+var _speed := Label.new()  # shown only while a menu holds the game
+var _speed_pick := OptionButton.new()  # Paused, then the game speeds; Space, PgUp and PgDn change it too
 var _money := Label.new()
 var _squads := HBoxContainer.new()
 var _help := Label.new()
@@ -36,8 +36,8 @@ func _ready() -> void:
 	row.add_child(_clock)
 	_speed_pick.add_theme_font_size_override("font_size", 18)
 	_speed_pick.focus_mode = FOCUS_NONE  # Space and the arrow keys stay with the map
-	_speed_pick.tooltip_text = "Game speed (PgUp / PgDn)"
-	_speed_pick.item_selected.connect(func(i: int): speed_chosen.emit(i))
+	_speed_pick.tooltip_text = "Pause (Space) or game speed (PgUp / PgDn)"
+	_speed_pick.item_selected.connect(func(i: int): speed_chosen.emit(i - 1))
 	row.add_child(_speed_pick)
 	_speed.add_theme_font_size_override("font_size", 20)
 	row.add_child(_speed)
@@ -97,19 +97,18 @@ func refresh(state: GameState) -> void:
 	_clock.text = "%s  ·  %s" % [state.clock.time_text(), "Day" if state.clock.is_day() else "Night"]
 	_clock.add_theme_color_override("font_color", Color("#f6e7a8") if state.clock.is_day() else Color("#a9b8e8"))
 	if _speed_pick.item_count == 0:
+		_speed_pick.add_item("Paused  (Space)")
 		var names: Array = state.data.rules["game_speed_names"]
 		for i in names.size():
 			var x := float(state.data.rules["game_speeds"][i])
 			_speed_pick.add_item("%s  ×%s" % [names[i], str(int(x)) if x == int(x) else str(x)])
-	if _speed_pick.selected != state.clock.speed_index:
-		_speed_pick.select(state.clock.speed_index)
-	_speed.visible = not state.clock.is_running()
-	if state.clock.paused:
-		_speed.text = "PAUSED  (Space)"
-		_speed.add_theme_color_override("font_color", Color("#ff9b6a"))
-	else:
-		_speed.text = "Paused"
-		_speed.add_theme_color_override("font_color", Color("#ffe08a"))
+	var shown := 0 if state.clock.paused else state.clock.speed_index + 1
+	if _speed_pick.selected != shown:
+		_speed_pick.select(shown)
+	_speed_pick.add_theme_color_override("font_color", Color("#ff9b6a") if state.clock.paused else Color.WHITE)
+	_speed.visible = not state.clock.paused and not state.clock.is_running()
+	_speed.text = "Paused"
+	_speed.add_theme_color_override("font_color", Color("#ffe08a"))
 	_money.text = "Gold %d  (+%d / −%d a day)   ·   Reputation %d" % [state.gold, state.income(), state.army_upkeep(), state.reputation]
 	if _flash_until > 0 and Time.get_ticks_msec() > _flash_until:
 		_flash_until = 0

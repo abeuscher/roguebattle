@@ -549,8 +549,12 @@ func _close_main_menu() -> void:
 
 # --- Input ------------------------------------------------------------------------
 
+## From the top bar's dropdown: -1 pauses; a speed also unpauses.
 func _on_speed_chosen(index: int) -> void:
-	state.set_speed_index(index)
+	if (index < 0) != state.clock.paused:
+		state.toggle_pause()
+	if index >= 0:
+		state.set_speed_index(index)
 
 
 ## No menu or dialog is open.
