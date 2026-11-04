@@ -1,6 +1,6 @@
 # Landwar: working rules
 
-Real-time squad strategy game in Godot 4.5.1 (GDScript). The design is `SPEC.md`; the plan is `ROADMAP.md`; small calls made along the way are in `DECISIONS.md`.
+Real-time squad strategy game in Godot 4.5.1 (GDScript). The design is `SPEC.md`; the plan is `ROADMAP.md`; small calls made along the way are in `DECISIONS.md`. Where things stand and what comes next is in `STATUS.md`: read it first in a new session.
 
 ## How to work
 
