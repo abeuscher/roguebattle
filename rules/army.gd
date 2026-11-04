@@ -163,12 +163,12 @@ func _put(s: Squad, u: Unit, r: String, c: int) -> void:
 	u.col = c
 	s.units.append(u)
 	if s.leader == null:
-		s.leader = _best_leader(s)
+		s.leader = best_leader(s)
 	s.refresh(data)
 
 
 ## The highest-level unit that can lead, living units first.
-func _best_leader(s: Squad) -> Unit:
+func best_leader(s: Squad) -> Unit:
 	var best: Unit = null
 	for u in s.units:
 		if not u.info(data)["can_lead"]:
@@ -191,7 +191,7 @@ func _free_col(s: Squad, r: String) -> int:
 
 func _fits(s: Squad) -> bool:
 	if s.leader == null or s.leader not in s.units:
-		s.leader = _best_leader(s)
+		s.leader = best_leader(s)
 	return Squad.slots_filled(data, s.units) <= s.capacity(data)
 
 

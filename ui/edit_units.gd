@@ -298,7 +298,8 @@ func _unit_panel(locked: bool) -> Control:
 	who.custom_minimum_size.x = 380
 	row.add_child(who)
 	who.add_child(UiStyle.label(u.name, 24))
-	who.add_child(UiStyle.label("%s  ·  stage %d  ·  level %d  ·  XP %d" % [u.unit_class, int(c["stage"]), u.level, u.xp], 16, Color(0.8, 0.82, 0.86)))
+	who.add_child(UiStyle.label("%s  ·  stage %d  ·  level %d  ·  XP %d / %d" % [u.unit_class, int(c["stage"]), u.level, u.xp,
+			Progression.level_cost(data, u)], 16, Color(0.8, 0.82, 0.86)))
 	var sq := army.squad_of(u)
 	if sq and sq.leader == u:
 		who.add_child(UiStyle.label("Leads %s" % sq.name, 16, Color(1, 0.88, 0.5)))
@@ -345,8 +346,7 @@ func _unit_panel(locked: bool) -> Control:
 		does.add_child(_wrapped("Traits: " + ", ".join(c["traits"]), 15))
 	if c["leader_aura"] != null:
 		does.add_child(_wrapped("Leader aura: %s. %s" % [c["leader_aura"], c.get("leader_aura_text", "")], 15))
-	var next := data.next_classes(u.unit_class)
-	does.add_child(_wrapped("Promotes to: %s (promotion arrives with levels)" % ", ".join(next) if not next.is_empty() else "Final stage", 15))
+	does.add_child(_promotion(u, locked))
 	# Items
 	var gear := VBoxContainer.new()
 	gear.add_theme_constant_override("separation", 8)
@@ -357,6 +357,42 @@ func _unit_panel(locked: bool) -> Control:
 	if not locked:
 		gear.add_child(UiStyle.label("Drag items here from the Items tab.", 13, Color(0.55, 0.58, 0.62)))
 	return panel
+
+
+## Promotion (§9.4): a button per class the unit can become now, or when it can next promote.
+func _promotion(u: Unit, locked: bool) -> Control:
+	var box := VBoxContainer.new()
+	var options := Progression.promotion_options(data, u)
+	if options.is_empty():
+		var next := data.next_classes(u.unit_class)
+		box.add_child(_wrapped("Final stage." if next.is_empty() else
+				"Promotes at level %d to: %s." % [Progression.next_promotion_level(data, u), ", ".join(next)], 15))
+		return box
+	box.add_child(UiStyle.label("Ready to promote:", 15, Color("#7ee08a")))
+	var row := HFlowContainer.new()
+	row.add_theme_constant_override("h_separation", 8)
+	row.add_theme_constant_override("v_separation", 8)
+	box.add_child(row)
+	for c in options:
+		var b := _small("Promote to %s" % c, false, true)
+		b.disabled = locked or not state.at_base(u)
+		b.tooltip_text = "Promote at the Player Base." if b.disabled else _promotion_tip(u, c)
+		b.pressed.connect(func():
+			var why := state.promote(u, c)
+			_status.text = why
+			_refresh())
+		row.add_child(b)
+	return box
+
+
+func _promotion_tip(u: Unit, c: String) -> String:
+	var parts := []
+	for s in Unit.STATS:
+		var diff := int(data.units[c]["base_stats"][s]) - int(data.units[u.unit_class]["base_stats"][s])
+		if diff != 0:
+			parts.append("%s %+d" % [s, diff])
+	var info: Dictionary = data.units[c]
+	return "%s: %s. Front %s, back %s." % [c, ", ".join(parts), info["front_attack"], info["back_attack"]]
 
 
 ## One of the unit's item slots: the item worn (drag it away, or ×), or an empty outline.
@@ -643,12 +679,14 @@ class Chip extends Control:
 	var color := Color.GRAY
 	var line := ""
 	var selected := false
+	var promotable := false  # shows a green arrow (§4: a badge on any unit ready to promote)
 
 	func setup(data: GameData, u: Unit, chip_mode: String, squad: Squad, colors: Dictionary) -> void:
 		unit = u
 		mode = chip_mode
 		leader = squad != null and squad.leader == u
 		max_hp = u.max_hp(data)
+		promotable = not Progression.promotion_options(data, u).is_empty()
 		var kind := Battle.base_kind(u.info(data)["front_attack" if u.row == "front" or squad == null else "back_attack"])
 		color = colors.get(kind, Color.GRAY)
 		var c: Dictionary = u.info(data)
@@ -671,6 +709,8 @@ class Chip extends Control:
 				draw_string(font, Vector2(8, 20), unit.unit_class, HORIZONTAL_ALIGNMENT_LEFT, size.x - (22 if leader else 10), 11, ink)
 				if leader:
 					_star(Vector2(size.x - 10, 15), 6.0)
+				if promotable:
+					_arrow(Vector2(size.x - 10, 33), 5.0)
 				draw_string(font, Vector2(8, 34), "Lv %d" % unit.level, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, ink.darkened(0.3))
 				draw_rect(Rect2(6, size.y - 9, size.x - 12, 4), Color(0.05, 0.05, 0.06))
 				draw_rect(Rect2(6, size.y - 9, (size.x - 12) * share, 4), fill)
@@ -679,6 +719,8 @@ class Chip extends Control:
 				draw_string(font, Vector2(12, 21), unit.unit_class, HORIZONTAL_ALIGNMENT_LEFT, w - (20 if leader else 0), 15, ink)
 				if leader:
 					_star(Vector2(size.x - 16, 16), 8.0)
+				if promotable:
+					_arrow(Vector2(size.x - (36 if leader else 16), 16), 7.0)
 				draw_string(font, Vector2(12, 38), unit.name, HORIZONTAL_ALIGNMENT_LEFT, w, 12, ink.darkened(0.25))
 				if mode == "slot":
 					draw_string(font, Vector2(12, 56), line, HORIZONTAL_ALIGNMENT_LEFT, w, 12, ink.darkened(0.25))
@@ -688,6 +730,14 @@ class Chip extends Control:
 				if mode == "slot" or mode == "wide":
 					draw_string(font, Vector2(size.x - 80, 38 if mode == "wide" else 74), "%d/%d" % [unit.hp, max_hp] if not dead else "Fallen",
 							HORIZONTAL_ALIGNMENT_RIGHT, 68, 11, ink.darkened(0.2))
+
+	## Ready to promote: a green up arrow.
+	func _arrow(at: Vector2, r: float) -> void:
+		var points := PackedVector2Array([at + Vector2(0, -r), at + Vector2(r, 0), at + Vector2(r * 0.4, 0), at + Vector2(r * 0.4, r),
+				at + Vector2(-r * 0.4, r), at + Vector2(-r * 0.4, 0), at + Vector2(-r, 0)])
+		draw_colored_polygon(points, Color("#7ee08a"))
+		points.append(points[0])
+		draw_polyline(points, Color(0.05, 0.2, 0.08), 1.0)
 
 	## The leader's mark: a gold five-pointed star.
 	func _star(at: Vector2, radius: float) -> void:

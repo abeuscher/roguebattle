@@ -41,7 +41,7 @@ Goal: a generated map the player can look at, and one squad they can move.
 | 3 | **Buildings and liberation.** Capture timer, Sapper speed, ground-only capture, building popup, defense and healing in buildings, nomad movement | §6.5 | Tests: capture timing, healing per day, nomad rules | Done |
 | 4 | **Economy and shops.** Income and upkeep at noon, liberation bonus, services, consumables, Serf purchase, going broke | §15.1, §16 Serfs | Tests: a scripted day's ledger matches hand-worked numbers | Done |
 | 5 | **Reputation, charisma, alignment.** All change events, price scaling, recruit chance factor | §9.5, §9.6, §10 | Tests per event | Done |
-| 6 | **Progression.** XP formula, level cost, growth, promotion and alignment branches, slot growth with charisma and banners | §8.2, §9.4 | Tests: XP and level math, promotion stat deltas, slot unlock rule |  |
+| 6 | **Progression.** XP formula, level cost, growth, promotion and alignment branches, slot growth with charisma and banners | §8.2, §9.4 | Tests: XP and level math, promotion stat deltas, slot unlock rule | Done |
 | 7 | **Cards and tech.** All cards in battle and on map, card XP redirect, card draws; tech tree with tier gates and terrain nodes | §13, §14 | Tests: each card effect, tier gate at 80% of branch nodes |  |
 
 **M3 milestone check:** a short play session.

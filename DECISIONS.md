@@ -247,3 +247,13 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **Shop prices** follow reputation: −20% at 100, +20% at 0, linear (Serfs, herbs, items; not healing and revival).
 - **Recruit chance** (§16) is ready for recruiting in M4: 0.60 × (10 − units)/9 × (1 − alignment gap/100) × (0.5 + reputation/100), gap from your squad's alignment with the leader counted twice.
 - The squad menu and the squad detail show the squad's alignment band and value, e.g. "Neutral (54)".
+
+## Session 020 (2026-11-03): progression
+
+- **XP** (§9.4): after every battle (ranged attacks too), each living unit of your squad earns 40 × level ratio × (0.5 + leader charisma/100) × (1 + talent XP bonus). The level ratio is the enemy squad's average level over yours, clamped 0.5–2; a squad without a leader uses 0.5. XP carries over between levels; enough XP for several levels gives several. Numbers in `rules.json` (`progression`). The battle result shows the XP and any level-ups; the log has each unit's gains.
+- **Levels**: a level costs 100 × the class's XP rate. Key stats +1 each level; other stats grow on their hidden chance plus the talent's growth bonus (added: a Gifted unit's 30% becomes 40%), and a stat that hasn't grown for 3 levels grows for sure on the third (§12.2). HP rises with CON. Prodigy level-ups start "A prodigy shines!" (§12.2's flourish).
+- **Slot growth** (§8.2): when the leader levels up, the existing check runs (level 5/10/15/20, charisma ≥ 5 × level, banner bearers count); an opened slot is announced.
+- **Promotion** (§9.4): into any next class on the unit's lines once it has the level for that stage (stage 2 at level 3, stage 3 at 6, stage 4 at 9); level and XP carry over, stats gain the difference between the classes' base stats, HP rises with CON. Only at the Player Base (from Edit Units), and only if the squad still fits its slots. A leader promoted into a class that can't lead hands over to the next best unit.
+- **Alignment branches**: from a class whose sheet lean is "By alignment" (Witch line) or "Varies by color" (dragons), next classes with a Holy, Evil or Neutral lean need the unit's band to match; "Any" classes stay open. Other lines ignore alignment (an evil Knight can still become a Paladin).
+- **Edit Units**: units ready to promote show a green arrow (§4's badge); the unit panel shows XP toward the next level and a Promote button per option (tooltip with the stat changes), or the level of the next promotion.
+- **Balance note**: with starting charisma 5–15 the charisma factor is about 0.6, so an even battle gives about 24 XP and a level takes 4–5 battles, not §9.4's 2.5. The 40 base looks tuned for a leader near charisma 50. Worth checking at the M3 playtest before changing.

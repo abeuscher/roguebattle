@@ -19,6 +19,7 @@ var element := ""  # overrides the class's element when set (Skeletons)
 var items := {}  # slot (weapon, armor, jewelry) -> the item worn ({uid, id}, §15.2)
 # Hidden (§12.2)
 var growth := {}  # non-key stat -> chance to grow per level, before talent
+var since_growth := {}  # non-key stat -> levels since it last grew (§12.2 guarantee)
 var talent := "ordinary"
 var luck := 0
 

@@ -961,7 +961,54 @@ func end_battle(b: Battle) -> Dictionary:
 			s.entering_base = side == 0
 			log.add(clock.tick, "battle", "%s lost its leader and marches home." % s.name, s.id)
 	_battle_standing(b, out)
+	_award_xp(b, out)
 	return out
+
+
+## Every living unit of your squad earns XP (§9.4) and may level up; a leader reaching
+## level 5, 10, 15 or 20 with enough charisma opens a slot (§8.2). Adds "xp" (unit ->
+## amount) and "level_ups" (lines for the result screen) to the outcome.
+func _award_xp(b: Battle, out: Dictionary) -> void:
+	var s := b.sides[0]
+	out["xp"] = {}
+	out["level_ups"] = []
+	for u in s.living():
+		if u not in army.units():
+			continue
+		var amount := Progression.battle_xp(data, s, b.sides[1], u)
+		out["xp"][u] = amount
+		for gains in Progression.gain_xp(data, u, amount, rng.get_stream("progression")):
+			var line := "%s%s reaches level %d: %s." % ["A prodigy shines! " if u.talent == "prodigy" else "", u.name, u.level, Progression.gains_text(gains)]
+			out["level_ups"].append(line)
+			log.add(clock.tick, "progression", line, s.id, {"growth": u.growth, "talent": u.talent})
+			if u == s.leader and s.check_slot_growth(data):
+				out["level_ups"].append("%s can now lead %d slots." % [u.name, s.capacity(data)])
+				log.add(clock.tick, "progression", out["level_ups"][-1], s.id)
+	if not out["xp"].is_empty():
+		log.add(clock.tick, "progression", "%s earns %s XP." % [s.name, "/".join(PackedStringArray(out["xp"].values().map(func(x): return str(x))))], s.id)
+
+
+## Promotes a unit at base into one of its options (§9.4). Returns why not, or "" on success.
+func promote(u: Unit, new_class: String) -> String:
+	if not at_base(u):
+		return "Promote at the Player Base."
+	if new_class not in Progression.promotion_options(data, u):
+		return "%s can't become a %s now." % [u.name, new_class]
+	var s := army.squad_of(u)
+	var old := u.unit_class
+	if s:
+		u.unit_class = new_class
+		var fits := Squad.slots_filled(data, s.units) <= s.capacity(data)
+		u.unit_class = old
+		if not fits:
+			return "A %s needs more room than %s has." % [new_class, s.name]
+	var gains := Progression.promote(data, u, new_class)
+	if s:
+		if s.leader == u and not u.info(data)["can_lead"]:
+			s.leader = army.best_leader(s)  # the new class can't lead: the next best unit takes over
+		s.refresh(data)
+	log.add(clock.tick, "progression", "%s is promoted from %s to %s: %s." % [u.name, old, new_class, Progression.gains_text(gains)], s.id if s else -1)
+	return ""
 
 
 ## Whether the battle hex is the squad's travel-type terrain (flyers always are).

@@ -321,6 +321,11 @@ func _finish() -> void:
 		col.add_child(l)
 	if out["pushed"] >= 0:
 		col.add_child(UiStyle.label("%s is pushed back." % battle.sides[out["pushed"]].name, 17))
+	if not out.get("xp", {}).is_empty():
+		var amounts: Array = out["xp"].values()
+		col.add_child(UiStyle.label("XP: +%d each" % amounts[0] if amounts.min() == amounts.max() else "XP: +%d to +%d" % [amounts.min(), amounts.max()], 17))
+	for line in out.get("level_ups", []):
+		col.add_child(UiStyle.label(line, 17, Color("#7ee08a")))
 	var note := UiStyle.label("", 17, UiStyle.ACCENT)
 	var buttons := HBoxContainer.new()
 	buttons.add_theme_constant_override("separation", 12)
