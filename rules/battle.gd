@@ -23,6 +23,7 @@ var defense := [0.0, 0.0]  # building defense bonus per side (§6.5)
 var tactics := ["best", "best"]
 var first_side := -1  # a side that takes its whole first round first (neutrals that resisted recruitment)
 var ranged_only := false  # a ranged map attack: only Ranged and Magic units act, no push-back (§11.2)
+var odds := "Even"  # how the enemy looked to the player at the start (a threat label), for §9.5–9.6
 var rng: RandomNumberGenerator
 var events: Array[Dictionary] = []
 var retreated := -1  # the side that got away

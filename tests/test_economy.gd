@@ -52,8 +52,9 @@ func test_a_days_ledger() -> void:
 	# Noon: income 2 × 50 = +100, upkeep −225.  500 + 200 + 100 − 225 = 575.
 	var st := _state()
 	check_eq(st.army_upkeep(), 225, "the army's upkeep")
-	_place(st, 0, 8)
-	_place(st, 1, 12)
+	for c in 2:  # neutral squads, so liberating doesn't move reputation and the second bonus is 100 too
+		for u in _place(st, c, 8 if c == 0 else 12).units:
+			u.alignment = 50
 	check_eq(st.gold, 500, "starting gold")
 	while st.clock.minute_of_day() != 12 * 60:
 		st.step()

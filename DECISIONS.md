@@ -234,3 +234,16 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **Temples** offer healing and revival for the squad standing in them (same prices as at base), through the same screen ("Temple services").
 - **Consumables**: Herb (+30 HP, 15 gold), used from the squad menu's Use item on a hurt unit. Remedy (cure a status) isn't sold: statuses clear after every battle (§11.7) and items aren't used in battle, so it has no use yet. Same for the "cure one status" service.
 - **Balance note**: with the placeholder army (13 units in squads plus 4 recruits) upkeep is 225 a day against 50 per town held, so the starting 500 gold lasts about two days without liberating several buildings. The six Map 1 squads (M4) will cost about 360 a day. Worth a look at the M3 playtest.
+
+## Session 019 (2026-11-03): reputation, charisma and alignment
+
+- **Events** (§9.5, §9.6, §10), all amounts in `rules.json` (`standing`), all logged under Progression:
+  - Liberating a town: reputation +5 for a holy squad, −5 for an evil one, 0 for a neutral one (towers the reverse); +5 charisma for a leader whose own alignment matches (holy for towns, evil for towers); every unit in the squad +3 alignment for a town, −3 for a tower.
+  - Each day a squad spends in a town (or nomad camp, as a town) or tower, at the start of the day: reputation ±1 the same way.
+  - Every battle (ranged attacks too): each living unit of your squad +2 alignment if the enemy looked even or stronger at the start, −2 if it looked weaker. After a win, +1 charisma each if it looked stronger or dangerous, −1 if it looked much weaker. A win is the enemy wiped out, or, with no retreat, the enemy losing the larger share of its HP. Retreating still costs each unit 1 charisma.
+  - Recruitment's +3 charisma comes with recruiting (M4).
+- **"Much weaker"** is a new threat label (enemy rated under half your squad), added for §9.5's "much weaker squad"; the player sees it too.
+- **Black market** (Smuggler, Fence; sheet Mechanics tab, numbers in `battle.json`): a squad with one doubles its reputation swings, and shops are 10% cheaper for it (Fence 20%). The discount follows the squad standing in the shop.
+- **Shop prices** follow reputation: −20% at 100, +20% at 0, linear (Serfs, herbs, items; not healing and revival).
+- **Recruit chance** (§16) is ready for recruiting in M4: 0.60 × (10 − units)/9 × (1 − alignment gap/100) × (0.5 + reputation/100), gap from your squad's alignment with the leader counted twice.
+- The squad menu and the squad detail show the squad's alignment band and value, e.g. "Neutral (54)".

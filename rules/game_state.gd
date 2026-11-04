@@ -144,6 +144,28 @@ func _capture() -> void:
 			var bonus := liberation_bonus()
 			gold += bonus
 			log.add(clock.tick, "economy", "Liberation bonus: %d gold." % bonus, s.id, {"reputation": reputation})
+			_liberated(s, b)
+
+
+## Standing changes for a liberation (§9.5, §9.6, §10): reputation by the squad's
+## alignment, +5 charisma for a leader whose alignment matches the building, and each
+## unit's alignment +3 for a town or −3 for a tower.
+func _liberated(s: Squad, b: Dictionary) -> void:
+	var st: Dictionary = data.rules["standing"]
+	var aligned: String = data.buildings[b["type"]].get("aligned", "")
+	var what: String = data.buildings[b["type"]]["name"].to_lower()
+	change_reputation(s, _swing(aligned, s.alignment_band(data)) * int(st["liberate_reputation"]), "%s liberated a %s" % [s.name, what])
+	if s.leader and s.leader.alignment_band(data) == aligned:
+		change_charisma([s.leader], int(st["liberate_charisma"]), "liberating a %s that matches their alignment" % what)
+	change_alignment(s.units, int(st["liberate_alignment"]) * (1 if aligned == "holy" else -1), "liberating a %s" % what)
+
+
+## +1 when the squad's band matches the building's (holy town, evil tower), −1 for the
+## opposite band, 0 for a neutral squad.
+static func _swing(aligned: String, band: String) -> int:
+	if band == "neutral" or aligned == "":
+		return 0
+	return 1 if band == aligned else -1
 
 
 ## Share of the capture done by squads on a building's hex (0 if none).
@@ -162,6 +184,10 @@ func _rest() -> void:
 		var b := building_at(s.hex)
 		if not b.is_empty():
 			_heal_share(s.living(), building_effect(b, s)[1])
+			if s.side == "player" and b["type"] in ["town", "tower", "nomads"]:  # nomads count as towns
+				var aligned: String = data.buildings[b["type"]]["aligned"]
+				change_reputation(s, _swing(aligned, s.alignment_band(data)) * int(data.rules["standing"]["stay_reputation"]),
+						"%s spent the day in a %s" % [s.name, data.buildings[b["type"]]["name"].to_lower()])
 	var base: float = data.buildings["player_base"]["own_base"]["rest"]
 	for s in army.squads():
 		if s not in squads:
@@ -240,6 +266,76 @@ func hint(b: Dictionary) -> String:
 	var names := ["east", "southeast", "south", "southwest", "west", "northwest", "north", "northeast"]
 	var dir: String = names[posmod(roundi(delta.angle() / (PI / 4.0)), 8)]
 	return "Travellers speak of something hidden to the %s, about %d hexes away." % [dir, Hex.distance(at, map.hex_at(map.buildings[best]["hex"]))]
+
+
+# --- Reputation, charisma and alignment (SPEC §9.5, §9.6, §10) ------------------------
+
+## Changes the army's reputation (0–100). A squad with a Black market unit (Smuggler,
+## Fence) doubles the swing.
+func change_reputation(s: Squad, amount: int, why: String) -> void:
+	if amount == 0:
+		return
+	if s and s.living().any(func(u: Unit): return u.has_trait(data, "Black market")):
+		amount *= int(data.battle["traits"]["Black market"]["reputation_swing"])
+	var before := reputation
+	reputation = clampi(reputation + amount, 0, 100)
+	log.add(clock.tick, "progression", "Reputation %+d (%s): now %d." % [reputation - before, why, reputation], s.id if s else -1)
+
+
+func change_charisma(units: Array, amount: int, why: String) -> void:
+	for u in units:
+		u.charisma = clampi(u.charisma + amount, 0, 100)
+	if not units.is_empty():
+		log.add(clock.tick, "progression", "Charisma %+d for %s (%s)." % [amount, _who(units), why])
+
+
+func change_alignment(units: Array, amount: int, why: String) -> void:
+	for u in units:
+		u.alignment = clampi(u.alignment + amount, 0, 100)
+	if not units.is_empty():
+		log.add(clock.tick, "progression", "Alignment %+d for %s (%s)." % [amount, _who(units), why])
+
+
+func _who(units: Array) -> String:
+	if units.size() == 1:
+		return units[0].name
+	var s := army.squad_of(units[0])
+	return "each unit in %s" % s.name if s else "%d units" % units.size()
+
+
+## After a battle (§9.5, §9.6): each living unit of your squad shifts alignment +2
+## against an equal or stronger enemy and −2 against a weaker one; after a win, each
+## gains 1 charisma against a stronger enemy and loses 1 against a much weaker one.
+## A win: the enemy is wiped out, or (no one retreated) it lost the larger share of its HP.
+func _battle_standing(b: Battle, out: Dictionary) -> void:
+	var st: Dictionary = data.rules["standing"]
+	var units := b.sides[0].living().filter(func(u: Unit): return u in army.units())
+	var weaker := b.odds in ["Weaker", "Much weaker"]
+	change_alignment(units, int(st["battle_alignment"]) * (-1 if weaker else 1), "fighting a %s enemy" % b.odds.to_lower())
+	var won: bool = out["wiped"][1] or (out["retreated"] < 0 and out["hp_lost"][1] > out["hp_lost"][0])
+	if won and b.odds in ["Stronger", "Dangerous"]:
+		change_charisma(units, int(st["battle_charisma"]), "beating a stronger squad")
+	elif won and b.odds == "Much weaker":
+		change_charisma(units, -int(st["battle_charisma"]), "beating a much weaker squad")
+
+
+## Shop prices with reputation: −20% at 100, +20% at 0, linear between (§10); a squad
+## with a Smuggler takes 10% off, with a Fence 20%.
+func price(base: int, s: Squad = null) -> int:
+	var f := 1.0 + float(data.rules["standing"]["price_swing"]) * (1.0 - reputation / 50.0)
+	var off := 0.0
+	if s:
+		var cut: Dictionary = data.battle["traits"]["Black market"]["price"]
+		for u in s.living():
+			off = minf(off, float(cut.get(u.unit_class, 0.0)))
+	return maxi(1, roundi(base * f * (1.0 + off)))
+
+
+## A neutral squad's chance to join you (§16): 0.60 × (10 − units)/9 × (1 − alignment
+## gap/100) × (0.5 + reputation/100). The gap is from your squad's alignment (leader twice).
+func recruit_chance(s: Squad, neutral_units: int, neutral_alignment: float) -> float:
+	var gap := absf(s.alignment() - neutral_alignment)
+	return clampf(0.6 * (10 - neutral_units) / 9.0 * (1.0 - gap / 100.0) * (0.5 + reputation / 100.0), 0.0, 1.0)
 
 
 # --- Economy (SPEC §15.1, §16) ------------------------------------------------------
@@ -336,28 +432,37 @@ func shop_stock(b: Dictionary) -> Array:
 	return b["stock"]
 
 
-func item_price(id: String) -> int:
-	return int(data.items["items"][id]["price"])
+func item_price(id: String, s: Squad = null) -> int:
+	return price(int(data.items["items"][id]["price"]), s)
 
 
-func buy_item(b: Dictionary, id: String) -> bool:
+func supply_price(id: String, s: Squad = null) -> int:
+	return price(int(data.items["consumables"][id]["price"]), s)
+
+
+func serf_price(s: Squad = null) -> int:
+	return price(int(data.rules["economy"]["serf_price"]), s)
+
+
+func buy_item(b: Dictionary, id: String, s: Squad = null) -> bool:
 	var stock := shop_stock(b)
-	if id not in stock or gold < item_price(id):
+	var cost := item_price(id, s)
+	if id not in stock or gold < cost:
 		return false
-	gold -= item_price(id)
+	gold -= cost
 	stock.erase(id)
 	army.add_item(id)
-	log.add(clock.tick, "economy", "Bought a %s for %d gold." % [data.items["items"][id]["name"], item_price(id)])
+	log.add(clock.tick, "economy", "Bought a %s for %d gold." % [data.items["items"][id]["name"], cost])
 	return true
 
 
-func buy_supply(b: Dictionary, id: String) -> bool:
-	var price := int(data.items["consumables"][id]["price"])
-	if not b.get("shop", false) or gold < price:
+func buy_supply(b: Dictionary, id: String, s: Squad = null) -> bool:
+	var cost := supply_price(id, s)
+	if not b.get("shop", false) or gold < cost:
 		return false
-	gold -= price
+	gold -= cost
 	army.supplies[id] = int(army.supplies.get(id, 0)) + 1
-	log.add(clock.tick, "economy", "Bought a %s for %d gold." % [data.items["consumables"][id]["name"], price])
+	log.add(clock.tick, "economy", "Bought a %s for %d gold." % [data.items["consumables"][id]["name"], cost])
 	return true
 
 
@@ -366,14 +471,14 @@ func sells_serfs(b: Dictionary) -> bool:
 	return b.get("shop", false) and b["type"] in data.rules["economy"]["serf_shops"]
 
 
-func buy_serf(b: Dictionary) -> Unit:
-	var price := int(data.rules["economy"]["serf_price"])
-	if not sells_serfs(b) or gold < price:
+func buy_serf(b: Dictionary, s: Squad = null) -> Unit:
+	var cost := serf_price(s)
+	if not sells_serfs(b) or gold < cost:
 		return null
-	gold -= price
+	gold -= cost
 	var u := Unit.roll(data, "Serf", rng.get_stream("recruit"), names)
 	army.pool.append(u)
-	log.add(clock.tick, "economy", "%s the Serf is hired for %d gold and waits in the recruit pool." % [u.name, price])
+	log.add(clock.tick, "economy", "%s the Serf is hired for %d gold and waits in the recruit pool." % [u.name, cost])
 	return u
 
 
@@ -817,6 +922,7 @@ func start_battle(player: Squad, enemy: Squad, defender: Squad) -> Battle:
 	var b := Battle.new(data, player, enemy, info["key"], clock.is_day(), rng.get_stream("battle"), settings.get("fairness", "both"))
 	b.attacker = 0 if defender == enemy else 1
 	b.defense = [building_defense(player), building_defense(enemy)]
+	b.odds = Threat.label(data, player, enemy)
 	log.add(clock.tick, "battle", "Battle: %s against %s on %s. The enemy looks %s." % [player.name, enemy.name, info["name"],
 			Threat.label(data, player, enemy).to_lower()], player.id)
 	return b
@@ -845,8 +951,8 @@ func end_battle(b: Battle) -> Dictionary:
 			continue
 		if out["retreated"] == side:
 			_push(s, enemy.hex, 1)
-			for u in s.units:
-				u.charisma = maxi(0, u.charisma - 1)
+			if side == 0:
+				change_charisma(s.units, -1, "retreating")
 		elif out["pushed"] == side:
 			_push(s, enemy.hex, int(data.battle["push_back"]["on_travel_terrain" if _on_travel_terrain(s) else "otherwise"]))
 		if out["leader_dead"][side] and not s.marching_home:
@@ -854,6 +960,7 @@ func end_battle(b: Battle) -> Dictionary:
 			order_move(s, PackedInt32Array([map.player_base if side == 0 else map.enemy_base]))
 			s.entering_base = side == 0
 			log.add(clock.tick, "battle", "%s lost its leader and marches home." % s.name, s.id)
+	_battle_standing(b, out)
 	return out
 
 

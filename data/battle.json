@@ -40,6 +40,7 @@
   "beast": {"roles": ["Beast", "Breath beast"]}
  },
  "traits": {
+  "Black market": {"_note": "Mechanics tab: lower shop prices, reputation swings doubled.", "price": {"Smuggler": -0.10, "Fence": -0.20}, "reputation_swing": 2},
   "Charge": {"first_attack": 1.5},
   "Riposte": {"counter": 0.5},
   "Last stand": {"below_half_stats": {"STR": 0.5}},
@@ -144,5 +145,5 @@
  "push_back": {"on_travel_terrain": 1, "otherwise": 2},
  "drive_off": {"morale_below": 25, "halved_from": 10},
  "threat": {"support_share": 0.5, "group": {"row": 2.0, "all": 3.0, "cleave 2": 1.6, "pierce": 1.6, "chain 3": 2.0}},
- "threat_labels": [["Weaker", 0.8], ["Even", 1.25], ["Stronger", 1.75], ["Dangerous", 1000000]]
+ "threat_labels": [["Much weaker", 0.5], ["Weaker", 0.8], ["Even", 1.25], ["Stronger", 1.75], ["Dangerous", 1000000]]
 }

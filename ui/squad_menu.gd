@@ -35,10 +35,11 @@ func setup(state: GameState, s: Squad) -> void:
 	title.add_theme_font_size_override("font_size", 26)
 	col.add_child(title)
 	if s.is_moving():
-		_info.text = "Travel type: %s · Speed tier %d\nMoving: %d hexes to go, about %s." % [s.travel_name(), s.speed_tier,
-				s.path.size(), GameState.duration_text(state.route_ticks(s, s.path))]
+		_info.text = "Travel type: %s · Speed tier %d · %s (%d)\nMoving: %d hexes to go, about %s." % [s.travel_name(), s.speed_tier,
+				s.alignment_band(state.data).capitalize(), roundi(s.alignment()), s.path.size(), GameState.duration_text(state.route_ticks(s, s.path))]
 	else:
-		_info.text = "Travel type: %s · Speed tier %d\nWaiting at %s." % [s.travel_name(), s.speed_tier, state.map.hex_at(s.hex)]
+		_info.text = "Travel type: %s · Speed tier %d · %s (%d)\nWaiting at %s." % [s.travel_name(), s.speed_tier,
+				s.alignment_band(state.data).capitalize(), roundi(s.alignment()), state.map.hex_at(s.hex)]
 	col.add_child(_info)
 	var roster := UiStyle.label("Slots %d / %d" % [Squad.slots_filled(state.data, s.units), s.capacity(state.data)], 15,
 			Color(0.75, 0.78, 0.84))

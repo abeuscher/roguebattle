@@ -2,7 +2,8 @@ class_name ShopScreen
 extends Control
 ## A shop (SPEC §4 Shop, §15.1, §16), opened from the squad menu when the squad stands
 ## in a building with a shop: Serfs at towns and nomad camps, herbs, and the shop's few
-## items. In a temple it offers healing and revival for the squad instead.
+## items. In a temple it offers healing and revival for the squad instead. Prices follow
+## reputation and the squad's Smuggler or Fence (§10).
 ## A modal: 50% dark overlay.
 
 signal closed
@@ -50,7 +51,7 @@ func setup(game_state: GameState, s: Squad, b: Dictionary) -> void:
 func _refresh() -> void:
 	for c in _list.get_children():
 		c.queue_free()
-	_gold.text = "Gold %d" % state.gold
+	_gold.text = "Gold %d  ·  Reputation %d" % [state.gold, state.reputation]
 	var data := state.data
 	if building["type"] == "temple":
 		_heading("Services")
@@ -67,13 +68,14 @@ func _refresh() -> void:
 		return
 	if state.sells_serfs(building):
 		_heading("Recruits")
-		var price := int(data.rules["economy"]["serf_price"])
-		_row("Serf: joins the recruit pool at the Player Base", "Hire  %d g" % price, price, func(): state.buy_serf(building))
+		var price := state.serf_price(squad)
+		_row("Serf: joins the recruit pool at the Player Base", "Hire  %d g" % price, price, func(): state.buy_serf(building, squad))
 	_heading("Supplies")
 	for id in data.items["consumables"]:
 		var c: Dictionary = data.items["consumables"][id]
-		_row("%s: %s  (you have %d)" % [c["name"], c["text"], int(state.army.supplies.get(id, 0))], "Buy  %d g" % int(c["price"]), int(c["price"]),
-				func(): state.buy_supply(building, id))
+		var price := state.supply_price(id, squad)
+		_row("%s: %s  (you have %d)" % [c["name"], c["text"], int(state.army.supplies.get(id, 0))], "Buy  %d g" % price, price,
+				func(): state.buy_supply(building, id, squad))
 	_heading("Items")
 	var stock := state.shop_stock(building)
 	if stock.is_empty():
@@ -83,8 +85,9 @@ func _refresh() -> void:
 		var parts := []
 		for st in item["stats"]:
 			parts.append("%s %+d" % [st, int(item["stats"][st])])
-		_row("%s: %s" % [item["name"], ", ".join(parts)], "Buy  %d g" % state.item_price(id), state.item_price(id),
-				func(): state.buy_item(building, id))
+		var price := state.item_price(id, squad)
+		_row("%s: %s" % [item["name"], ", ".join(parts)], "Buy  %d g" % price, price,
+				func(): state.buy_item(building, id, squad))
 
 
 func _heading(text: String) -> void:

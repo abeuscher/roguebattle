@@ -222,7 +222,8 @@ func _detail() -> Control:
 	var locked := not state.can_edit(s)
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 8)
-	var facts := "%s  ·  speed %d  ·  slots %s / %d" % [s.travel_name(), s.speed_tier, _num(Squad.slots_filled(data, s.units)), s.capacity(data)]
+	var facts := "%s  ·  speed %d  ·  slots %s / %d  ·  %s (%d)" % [s.travel_name(), s.speed_tier, _num(Squad.slots_filled(data, s.units)), s.capacity(data),
+			s.alignment_band(data).capitalize(), roundi(s.alignment())]
 	if locked:
 		facts += "  ·  In the field: edit it back at the Player Base"
 	var bar := HBoxContainer.new()
