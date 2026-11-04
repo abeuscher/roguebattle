@@ -97,7 +97,7 @@ func refresh(state: GameState) -> void:
 	else:
 		_speed.text = "%s  x%s" % [state.speed_name(), state.clock.speed()]
 		_speed.remove_theme_color_override("font_color")
-	_money.text = "Gold %d   ·   Reputation %d" % [state.gold, state.reputation]
+	_money.text = "Gold %d  (+%d / −%d a day)   ·   Reputation %d" % [state.gold, state.income(), state.army_upkeep(), state.reputation]
 	if _flash_until > 0 and Time.get_ticks_msec() > _flash_until:
 		_flash_until = 0
 		_banner.visible = false

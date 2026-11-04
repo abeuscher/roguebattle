@@ -128,7 +128,7 @@ func _refresh() -> void:
 		c.queue_free()
 	_targets.clear()
 	_back.visible = _squad != null
-	_gold.text = "Gold %d  ·  On the map %d / %d" % [state.gold, state.player_squads().size(), state.squad_cap()]
+	_gold.text = "Gold %d  ·  Upkeep %d a day  ·  On the map %d / %d" % [state.gold, state.army_upkeep(), state.player_squads().size(), state.squad_cap()]
 	_title.text = "Edit Units" if _squad == null else "Edit Units  ·  #%d %s" % [_squad.id, _squad.name]
 	if _squad:
 		_main.add_child(_detail())
@@ -232,6 +232,13 @@ func _detail() -> Control:
 	var go := _base_button(s, false)
 	if go:
 		bar.add_child(go)
+	if state.is_broke():
+		var sell := _small("Sell for %d g" % state.sell_value(s), false)
+		sell.tooltip_text = "You're out of gold: the squad leaves the army and its items return to the inventory."
+		sell.pressed.connect(func():
+			state.sell_squad(s)
+			_open(-1))
+		bar.add_child(sell)
 	var cost := 0
 	for u in s.units:
 		cost += state.heal_cost(u) + state.revive_cost(u)
@@ -392,6 +399,8 @@ func _item_box(u: Unit, slot: String, locked: bool) -> Control:
 
 ## The gutter's Items tab: every item by slot, free ones first.
 func _item_list() -> void:
+	for id in data.items["consumables"]:
+		_pool.add_child(UiStyle.label("%ss: %d" % [data.items["consumables"][id]["name"], int(army.supplies.get(id, 0))], 15, UiStyle.ACCENT))
 	if army.items.is_empty():
 		_pool.add_child(UiStyle.label("No items yet. Shops and hidden sites will have some.", 14, Color(0.6, 0.62, 0.66)))
 	for slot in data.items["slots"]:

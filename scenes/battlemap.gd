@@ -32,6 +32,7 @@ var _deploy_menu: DeployMenu
 var _confirm: ConfirmDialog
 var _deploying := false  # _selected is a squad from base whose route is being laid
 var _building_popup: BuildingPopup
+var _shop: Control  # the shop screen or the supplies menu
 var _cursor_flag: SquadToken  # while laying a route, the squad's flag replaces the mouse pointer
 var _tokens := {}  # squad id -> SquadToken
 var _selected: Squad  # the squad whose menu or move order is open (the game is held meanwhile)
@@ -91,6 +92,9 @@ func _process(delta: float) -> void:
 			break
 	if state.pending and _battle == null:
 		_open_battle()
+	if state.noon_report != "":
+		hud.show_banner(state.noon_report, 5.0)
+		state.noon_report = ""
 	if _tokens.size() != state.squads.size():  # a squad went into the base, or left the map
 		_sync_tokens()
 		hud.set_squads(state.player_squads())
@@ -280,6 +284,20 @@ func _open_menu() -> void:
 		_end_selection()
 		_sync_tokens()
 		hud.set_squads(state.player_squads()))
+	_menu.shop.connect(func():
+		var s := _selected
+		_end_selection()
+		var screen := ShopScreen.new()
+		_ui.add_child(screen)
+		screen.setup(state, s, state.shop_at(s))
+		_open_shop(screen))
+	_menu.use_item.connect(func():
+		var s := _selected
+		_end_selection()
+		var screen := SuppliesMenu.new()
+		_ui.add_child(screen)
+		screen.setup(state, s)
+		_open_shop(screen))
 	_menu.edit.connect(func():
 		var cell := _selected.id - 1
 		_end_selection()
@@ -385,6 +403,15 @@ func _update_cursor() -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	if _cursor_flag:
 		_cursor_flag.position = get_viewport().get_mouse_position() - Vector2(0, 10)
+
+
+func _open_shop(screen: Control) -> void:
+	_shop = screen
+	screen.connect("closed", func():
+		_shop.queue_free()
+		_shop = null
+		state.clock.release())
+	state.clock.hold()
 
 
 func _open_building(b: Dictionary) -> void:
@@ -523,7 +550,7 @@ func _close_main_menu() -> void:
 
 ## No menu or dialog is open.
 func _can_open() -> bool:
-	return not (_log_panel or _menu or _main_menu or _battle or _edit or _deploy_menu or _confirm or _building_popup)
+	return not (_log_panel or _menu or _main_menu or _battle or _edit or _deploy_menu or _confirm or _building_popup or _shop)
 
 
 func _unhandled_input(event: InputEvent) -> void:

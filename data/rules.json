@@ -6,6 +6,7 @@
  "default_speed_index": 2,
  "start_minute": 480,
  "starting_gold": 500,
+ "economy": {"_note": "SPEC 15.1 and 16, placeholders. Income at noon per town and tower you hold; liberation bonus x (0.5 + reputation/100); a squad sells for sell_per_stage x stage per unit when you're broke; each shop stocks shop_items random items.", "income_per_building": 50, "income_buildings": ["town", "tower"], "liberation_bonus": 100, "serf_price": 50, "serf_shops": ["town", "nomads"], "sell_per_stage": 50, "shop_items": 3},
  "upkeep": {"_note": "SPEC 15.1, gold per unit per day, placeholders. Deploying a squad costs one day of its upkeep.", "by_stage": [5, 10, 20, 35], "size": {"Small": 1, "Large": 2, "Tiny": 0.5}},
  "capture": {"_note": "SPEC 6.5, placeholders: ticks a squad with a ground unit must stay to liberate a town or tower; Sapper lines (the sapper tag) are faster; towns hint at hidden sites within hint_range hexes.", "ticks": 60, "sapper_speed": 2, "hint_range": 15},
  "services": {"_note": "SPEC 15.1, placeholders. Revive restores full HP.", "heal": 20, "revive_per_stage": 50},

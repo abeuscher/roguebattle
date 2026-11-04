@@ -10,6 +10,7 @@ var cells: Array = []  # Squad or null per grid cell
 var pool: Array[Unit] = []
 var items: Array[Dictionary] = []  # every item owned, one entry each ({uid, id}), worn or free (§15.2)
 var _next_item := 1
+var supplies := {}  # consumable id -> count (§15.1)
 
 
 func _init(game_data: GameData) -> void:

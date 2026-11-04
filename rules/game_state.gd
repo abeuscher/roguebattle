@@ -19,6 +19,7 @@ var revealed := {}  # building index -> true for hidden sites and lairs a squad 
 var _contact_until := {}  # "player id:enemy id" -> tick before which the pair won't fight again
 var _moved := {}  # squads that entered a new hex this tick
 var _building_at := {}  # hex -> index in map.buildings
+var noon_report := ""  # the last noon's ledger, for the HUD to show once
 
 
 func _init(game_data: GameData, game_map: MapData, game_log: GameLog, game_settings := {}) -> void:
@@ -53,7 +54,8 @@ func step() -> void:
 			_rest()
 		elif event == "half_day":
 			_move_nomads()
-		# Noon income and upkeep arrive with the economy (M3 session 4).
+		if event == "noon":
+			_noon()
 	_moved.clear()
 	for s in squads.duplicate():
 		_move(s)
@@ -139,6 +141,9 @@ func _capture() -> void:
 			s.capture_ticks = 0.0
 			b["owner"] = "player"
 			log.add(clock.tick, "map", "%s liberates the %s at %s." % [s.name, data.buildings[b["type"]]["name"].to_lower(), map.hex_at(s.hex)], s.id)
+			var bonus := liberation_bonus()
+			gold += bonus
+			log.add(clock.tick, "economy", "Liberation bonus: %d gold." % bonus, s.id, {"reputation": reputation})
 
 
 ## Share of the capture done by squads on a building's hex (0 if none).
@@ -235,6 +240,152 @@ func hint(b: Dictionary) -> String:
 	var names := ["east", "southeast", "south", "southwest", "west", "northwest", "north", "northeast"]
 	var dir: String = names[posmod(roundi(delta.angle() / (PI / 4.0)), 8)]
 	return "Travellers speak of something hidden to the %s, about %d hexes away." % [dir, Hex.distance(at, map.hex_at(map.buildings[best]["hex"]))]
+
+
+# --- Economy (SPEC §15.1, §16) ------------------------------------------------------
+
+## Gold per day from the towns and towers you hold.
+func income() -> int:
+	var e: Dictionary = data.rules["economy"]
+	var held := map.buildings.filter(func(b): return b["type"] in e["income_buildings"] and b["owner"] == "player")
+	return held.size() * int(e["income_per_building"])
+
+
+## Upkeep per day for the whole army: every unit in a squad or the recruit pool.
+func army_upkeep() -> int:
+	var total := 0
+	for s in army.squads():
+		total += upkeep(s)
+	for u in army.pool:
+		total += _unit_upkeep(u)
+	return total
+
+
+func _unit_upkeep(u: Unit) -> int:
+	var k: Dictionary = data.rules["upkeep"]
+	var c: Dictionary = u.info(data)
+	return roundi(float(k["by_stage"][int(c["stage"]) - 1]) * float(k["size"][c["size"]]))
+
+
+## At noon: income comes in, then upkeep goes out. Gold never drops below zero; upkeep
+## that can't be paid is lost for now (morale and loyalty, M4).
+func _noon() -> void:
+	var gain := income()
+	var cost := army_upkeep()
+	gold += gain
+	var paid := mini(gold, cost)
+	gold -= paid
+	noon_report = "Noon: +%d income, −%d upkeep%s. Gold %d." % [gain, paid, " (%d unpaid)" % (cost - paid) if paid < cost else "", gold]
+	log.add(clock.tick, "economy", noon_report, -1, {"income": gain, "upkeep": cost, "paid": paid})
+
+
+## 100 × (0.5 + reputation/100), once per liberation.
+func liberation_bonus() -> int:
+	return roundi(float(data.rules["economy"]["liberation_bonus"]) * (0.5 + reputation / 100.0))
+
+
+func is_broke() -> bool:
+	return gold <= 0
+
+
+## What a squad sells for when you're broke: 50 × stage per unit.
+func sell_value(s: Squad) -> int:
+	var total := 0
+	for u in s.units:
+		total += int(data.rules["economy"]["sell_per_stage"]) * int(u.info(data)["stage"])
+	return total
+
+
+## Going broke (§15.1): with no gold, a squad can be sold for its value; it leaves the
+## army and the map, and its items go back to the inventory.
+func sell_squad(s: Squad) -> bool:
+	if not is_broke() or s not in army.squads():
+		return false
+	var value := sell_value(s)
+	for u in s.units:
+		for slot in u.items.keys():
+			army.unequip(u, slot)
+	army.cells[army.cells.find(s)] = null
+	squads.erase(s)
+	gold += value
+	log.add(clock.tick, "economy", "%s is sold for %d gold." % [s.name, value], s.id)
+	return true
+
+
+## The shop a squad can use where it stands: a building with a shop that the enemy
+## doesn't hold, or a temple's services. {} if none.
+func shop_at(s: Squad) -> Dictionary:
+	if s.is_moving():
+		return {}
+	var b := building_at(s.hex)
+	if b.is_empty() or b["owner"] == "enemy" or not (b.get("shop", false) or b["type"] == "temple"):
+		return {}
+	return b
+
+
+## The items a shop sells, rolled once per shop.
+func shop_stock(b: Dictionary) -> Array:
+	if not b.get("shop", false):
+		return []
+	if not b.has("stock"):
+		var r := rng.get_stream("shops")
+		var ids: Array = data.items["items"].keys()
+		b["stock"] = []
+		for i in int(data.rules["economy"]["shop_items"]):
+			b["stock"].append(ids[r.randi() % ids.size()])
+	return b["stock"]
+
+
+func item_price(id: String) -> int:
+	return int(data.items["items"][id]["price"])
+
+
+func buy_item(b: Dictionary, id: String) -> bool:
+	var stock := shop_stock(b)
+	if id not in stock or gold < item_price(id):
+		return false
+	gold -= item_price(id)
+	stock.erase(id)
+	army.add_item(id)
+	log.add(clock.tick, "economy", "Bought a %s for %d gold." % [data.items["items"][id]["name"], item_price(id)])
+	return true
+
+
+func buy_supply(b: Dictionary, id: String) -> bool:
+	var price := int(data.items["consumables"][id]["price"])
+	if not b.get("shop", false) or gold < price:
+		return false
+	gold -= price
+	army.supplies[id] = int(army.supplies.get(id, 0)) + 1
+	log.add(clock.tick, "economy", "Bought a %s for %d gold." % [data.items["consumables"][id]["name"], price])
+	return true
+
+
+## Serfs are sold at towns (and nomad camps) with shops (§16) and join the recruit pool.
+func sells_serfs(b: Dictionary) -> bool:
+	return b.get("shop", false) and b["type"] in data.rules["economy"]["serf_shops"]
+
+
+func buy_serf(b: Dictionary) -> Unit:
+	var price := int(data.rules["economy"]["serf_price"])
+	if not sells_serfs(b) or gold < price:
+		return null
+	gold -= price
+	var u := Unit.roll(data, "Serf", rng.get_stream("recruit"), names)
+	army.pool.append(u)
+	log.add(clock.tick, "economy", "%s the Serf is hired for %d gold and waits in the recruit pool." % [u.name, price])
+	return u
+
+
+## Uses a consumable on a living unit that needs it (a Herb heals 30 HP).
+func use_supply(u: Unit, id: String) -> bool:
+	var item: Dictionary = data.items["consumables"][id]
+	if int(army.supplies.get(id, 0)) <= 0 or not u.is_alive() or u.hp >= u.max_hp(data):
+		return false
+	army.supplies[id] = int(army.supplies[id]) - 1
+	u.hp = mini(u.max_hp(data), u.hp + int(item["heal"]))
+	log.add(clock.tick, "economy", "%s uses a %s." % [u.name, item["name"]])
+	return true
 
 
 # --- Base and deployment (SPEC §8.4, §6.5 Player Base, §15.1 services) ----------------
@@ -334,6 +485,14 @@ func at_base(u: Unit) -> bool:
 	return s == null or s not in squads
 
 
+## Healing and revival can be bought at base, or by a squad standing in a temple (§6.5).
+func can_service(u: Unit) -> bool:
+	if at_base(u):
+		return true
+	var s := army.squad_of(u)
+	return not s.is_moving() and building_at(s.hex).get("type", "") == "temple"
+
+
 func heal_cost(u: Unit) -> int:
 	return int(data.rules["services"]["heal"]) if u.is_alive() and u.hp < u.max_hp(data) else 0
 
@@ -346,7 +505,7 @@ func revive_cost(u: Unit) -> int:
 ## the unit isn't at base, needs nothing, or the gold is short.
 func restore(u: Unit) -> bool:
 	var cost := heal_cost(u) + revive_cost(u)
-	if cost == 0 or cost > gold or not at_base(u):
+	if cost == 0 or cost > gold or not can_service(u):
 		return false
 	var revived := not u.is_alive()
 	gold -= cost

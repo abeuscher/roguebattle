@@ -7,6 +7,8 @@ signal move
 signal fire
 signal return_to_base
 signal edit
+signal shop
+signal use_item
 signal closed
 
 var _info := Label.new()
@@ -49,7 +51,13 @@ func setup(state: GameState, s: Squad) -> void:
 	var at_base := s.hex == state.map.player_base
 	_button(col, "Edit squad", state.can_edit(s), "Open the squad in Edit Units." if state.can_edit(s) else "Only at the Player Base.") \
 			.pressed.connect(func(): edit.emit())
-	_button(col, "Use item", false, "Items arrive in M3.")
+	var herbs := 0
+	for id in state.army.supplies:
+		herbs += int(state.army.supplies[id])
+	_button(col, "Use item", herbs > 0, "Give a herb to a hurt unit." if herbs > 0 else "No supplies: buy herbs at a shop.") 			.pressed.connect(func(): use_item.emit())
+	var place := state.shop_at(s)
+	var shop_name := "Temple services" if place.get("type", "") == "temple" else "Shop"
+	_button(col, shop_name, not place.is_empty(), "Buy here." if not place.is_empty() else "Stand still in a building with a shop (not enemy-held) or a temple.") 			.pressed.connect(func(): shop.emit())
 	_button(col, "Move", true, "Click hexes to lay rally points.").pressed.connect(func(): move.emit())
 	var targets := state.fire_targets(s)
 	var why := ""
