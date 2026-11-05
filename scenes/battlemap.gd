@@ -24,6 +24,7 @@ var hud := Hud.new()
 var night := CanvasModulate.new()
 var _ui := CanvasLayer.new()
 var _log_panel: LogPanel
+var _debug_panel: DebugPanel
 var _menu: SquadMenu
 var _main_menu: MainMenu
 var _battle: BattleView
@@ -561,6 +562,28 @@ func _close_log() -> void:
 	state.clock.release()
 
 
+func _open_debug_panel() -> void:
+	_debug_panel = DebugPanel.new()
+	_ui.add_child(_debug_panel)
+	_debug_panel.setup()
+	_debug_panel.closed.connect(_close_debug_panel)
+	_debug_panel.wide_roster.connect(func():
+		for s in state.player_squads():  # the reroll renumbers from 1, which could collide with these ids
+			if _tokens.has(s.id):
+				_tokens[s.id].queue_free()
+				_tokens.erase(s.id)
+		state.reroll_wide_roster(int(data.rules["army_size"]))
+		_sync_tokens()
+		hud.set_squads(state.player_squads()))
+	state.clock.hold()
+
+
+func _close_debug_panel() -> void:
+	_debug_panel.queue_free()
+	_debug_panel = null
+	state.clock.release()
+
+
 func _open_main_menu() -> void:
 	_main_menu = MainMenu.new()
 	_ui.add_child(_main_menu)
@@ -592,7 +615,7 @@ func _on_speed_chosen(index: int) -> void:
 
 ## No menu or dialog is open.
 func _can_open() -> bool:
-	return not (_log_panel or _menu or _main_menu or _battle or _edit or _deploy_menu or _confirm or _building_popup or _shop)
+	return not (_log_panel or _debug_panel or _menu or _main_menu or _battle or _edit or _deploy_menu or _confirm or _building_popup or _shop)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -651,6 +674,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			_open_cards(false)
 		KEY_T:
 			_open_tech()
+		KEY_QUOTELEFT:
+			_open_debug_panel()
 		KEY_F8:  # debug: cycle the first squad's travel type
 			var s := state.player_squads()[0]
 			var next: String = TEST_TRAVEL[(TEST_TRAVEL.find("sky" if s.sky else s.travel_type) + 1) % TEST_TRAVEL.size()]

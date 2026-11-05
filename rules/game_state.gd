@@ -106,6 +106,24 @@ func setup_army(wide_roster_count := 0) -> void:
 		draw_card(null)
 
 
+## Debug only (the debug panel's Wide roster button): replaces every player
+## squad, on the map or at base, with a fresh Map1Setup.build_wide_roster() of
+## `count` squads. Gold, tech points and cards are untouched. Not part of the
+## real game.
+func reroll_wide_roster(count: int) -> void:
+	for s in player_squads().duplicate():
+		squads.erase(s)
+	for i in army.cells.size():
+		if army.cells[i] and army.cells[i].side == "player":
+			army.cells[i] = null
+	var built := Map1Setup.build_wide_roster(data, rng.get_stream("army_setup"), count)
+	for i in built.size():
+		var s := _form(i + 1, "", map.player_base if i == 0 else -1, built[i], "player")
+		army.cells[i] = s
+		if i == 0:
+			squads.append(s)
+
+
 # --- Buildings (SPEC §6.5) ---------------------------------------------------------------
 
 ## The building on a hex, or {} if none (hidden sites count only once revealed;

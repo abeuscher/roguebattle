@@ -13,12 +13,13 @@ Where the project stands, for picking up in a new session or on another machine.
   - Terrain coverage is checked against each squad's leader, not the squad's actual (always-Plains) travel-type vote; see `DECISIONS.md` session 024.
   - The Opinion Leader is whichever of the 6 lands in army cell 0 (unchanged convention, now fed real squads); it's the only one that starts on the map, at the Player Base. Starting cards (3), tech points (3, already wired) and gold (500, already wired) unchanged.
   - `tests/test_map1.gd`: coverage and soft rule hold over 50 seeds; the Opinion Leader squad and starting state.
-- **Tests:** 209 passing (`tools/run_tests.sh` on this Mac, `tools\run_tests.ps1` on Windows).
+  - Playtesting aid (user's request): a `--wide-roster` launch flag, and then a debug panel (backtick) with a Wide roster button, so testers don't need launch args — `ui/debug_panel.gd`, `GameState.reroll_wide_roster()`. This is the start of the real §19.2 debug panel (M4 session 6 fills in the rest).
+- **Tests:** 211 passing (`tools/run_tests.sh` on this Mac, `tools\run_tests.ps1` on Windows).
 
 ## Next up
 
 - **M4 session 2, Enemy AI (SPEC §12.3, §17):** 10 squads with garrison, leader, base guard, raider and wildcard roles; weights from data.
-- After that, the rest of M4 in `ROADMAP.md` order.
+- After that, the rest of M4 in `ROADMAP.md` order. M4 session 6 (debug panel) can build on `ui/debug_panel.gd` rather than starting fresh.
 - Parked for later: plan icons and a more compact toolbar once its full button set is known (a note under M3 in `ROADMAP.md`).
 - Open offer: extend click-off-to-close to the other small popups (building, deploy, supplies, cards). The user hasn't asked for it yet.
 

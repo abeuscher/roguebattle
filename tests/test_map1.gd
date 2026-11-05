@@ -118,3 +118,19 @@ func test_wide_roster_is_debug_only_variety() -> void:
 		check_eq(leaders.size(), 16, "16 distinct leaders (seed %d)" % seed_)
 		for t in Map1Setup.TERRAINS:
 			check(terrains.has(t), "seed %d: no squad's leader is native to %s" % [seed_, t])
+
+
+## The debug panel's Wide roster button (GameState.reroll_wide_roster()): swaps
+## the whole army, keeps progress, and still leaves one squad on the map.
+func test_reroll_wide_roster_replaces_the_army() -> void:
+	var st := _state(1)
+	var old_squad := st.player_squads()[0]
+	var gold := st.gold
+	var cards := st.cards.size()
+	st.reroll_wide_roster(16)
+	check_eq(st.army.squads().size(), 16, "16 squads after the reroll")
+	check_eq(st.player_squads().size(), 1, "still only one squad on the map")
+	check(old_squad not in st.army.squads(), "the old squad is gone")
+	check_eq(st.player_squads()[0].hex, st.map.player_base, "the new one is at the Player Base")
+	check_eq(st.gold, gold, "gold is untouched")
+	check_eq(st.cards.size(), cards, "cards are untouched")
