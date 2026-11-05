@@ -61,11 +61,14 @@ static func _stage2_classes(data: GameData) -> Array:
 	return out
 
 
-## Serf-line stage 3 leader classes grouped by native terrain.
+## Serf-line stage 3 classes that can actually lead (Herald can't, §8.2's banner
+## bonus is its whole role), grouped by native terrain.
 static func _leaders_by_terrain(data: GameData) -> Dictionary:
 	var out := {}
 	for lid in _serf_line_ids(data):
 		for c in data.lines[lid][2]:
+			if not data.units[c]["can_lead"]:
+				continue
 			var t: String = data.units[c]["terrain"]
 			if not out.has(t):
 				out[t] = []

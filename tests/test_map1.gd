@@ -37,6 +37,7 @@ func test_six_squads_of_a_leader_and_four_stage_two_units() -> void:
 		for s in squads:
 			check_eq(s.size(), 5, "a leader plus four stage 2 units (seed %d)" % seed_)
 			check_eq(int(d.units[s[0][0]]["stage"]), 3, "the first is a stage 3 leader (seed %d)" % seed_)
+			check(d.units[s[0][0]]["can_lead"], "%s can actually lead (seed %d)" % [s[0][0], seed_])
 			for m in s.slice(1):
 				check_eq(int(d.units[m[0]]["stage"]), 2, "the rest are stage 2 (seed %d)" % seed_)
 			for m in s:
@@ -83,12 +84,14 @@ func _state(seed_: int) -> GameState:
 
 
 func test_opinion_leader_squad_starts_alone_on_the_map() -> void:
-	for seed_ in range(10):
+	for seed_ in range(30):
 		var st := _state(seed_)
 		check_eq(st.army.squads().size(), 6, "6 squads in the army (seed %d)" % seed_)
 		check_eq(st.player_squads().size(), 1, "only one squad starts on the map (seed %d)" % seed_)
 		check_eq(st.player_squads()[0], st.opinion_leader_squad(), "it's the Opinion Leader's squad (seed %d)" % seed_)
 		check_eq(st.opinion_leader_squad().hex, st.map.player_base, "at the Player Base (seed %d)" % seed_)
+		for s in st.army.squads():
+			check(s.leader != null, "%s has a leader (seed %d)" % [s.name, seed_])
 
 
 func test_starting_state() -> void:
@@ -111,6 +114,7 @@ func test_wide_roster_is_debug_only_variety() -> void:
 		var terrains := {}
 		for s in squads:
 			check_eq(s.size(), 5, "a leader plus four stage 2 units (seed %d)" % seed_)
+			check(d.units[s[0][0]]["can_lead"], "%s can actually lead (seed %d)" % [s[0][0], seed_])
 			for m in s:
 				check(m[0] in serf, "%s is rolled from a Serf line (seed %d)" % [m[0], seed_])
 			leaders[s[0][0]] = true
