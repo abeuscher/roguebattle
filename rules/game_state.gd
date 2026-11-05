@@ -91,8 +91,12 @@ func add_squad(squad_name: String, at_hex: int, members: Array, side := "player"
 ## first cells; the Opinion Leader's (cell 0) is the only one that starts on the
 ## map, at the Player Base (§8.4). 3 random cards complete the starting state
 ## (starting gold and tech points are set in _init).
-func setup_army() -> void:
-	var built := Map1Setup.build(data, rng.get_stream("army_setup"))
+## `wide_roster_count`, when > 0, is a developer override (Battlemap's
+## --wide-roster) that swaps in Map1Setup.build_wide_roster() for playtesting
+## unit variety; it isn't part of the real game.
+func setup_army(wide_roster_count := 0) -> void:
+	var built := Map1Setup.build_wide_roster(data, rng.get_stream("army_setup"), wide_roster_count) if wide_roster_count > 0 \
+			else Map1Setup.build(data, rng.get_stream("army_setup"))
 	for i in built.size():
 		var s := _form(i + 1, "", map.player_base if i == 0 else -1, built[i], "player")
 		army.cells[i] = s

@@ -88,6 +88,30 @@ static func _is_healer_or_support(data: GameData, class_name_: String) -> bool:
 	return role == "Support" or role.to_lower().contains("healer")
 
 
+## Debug only: as many distinct Serf-line leaders as fit in `count` (one squad
+## each, still terrain-covering and soft-rule-compliant), for exercising more of
+## the unit roster in playtests. Not part of the real game; see the --wide-roster
+## check in Battlemap.start().
+static func build_wide_roster(data: GameData, rng: RandomNumberGenerator, count: int) -> Array:
+	var stage2 := _stage2_classes(data)
+	var front_stage2 := stage2.filter(func(c): return _is_front_line(data, c))
+	var healer_stage2 := stage2.filter(func(c): return _is_healer_or_support(data, c))
+	var by_terrain := _leaders_by_terrain(data)
+	var terrains := TERRAINS.duplicate()
+	_shuffle(terrains, rng)
+	var leaders := []
+	for t in terrains:
+		var options: Array = by_terrain[t]
+		leaders.append(options[rng.randi() % options.size()])
+	var rest: Array = by_terrain.values().reduce(func(a, b): return a + b, []).filter(func(c): return c not in leaders)
+	_shuffle(rest, rng)
+	leaders.append_array(rest.slice(0, maxi(0, count - leaders.size())))
+	var squads := []
+	for leader_class in leaders.slice(0, count):
+		squads.append(_build_squad(data, leader_class, stage2, front_stage2, healer_stage2, rng))
+	return squads
+
+
 static func _shuffle(arr: Array, rng: RandomNumberGenerator) -> void:
 	for i in range(arr.size() - 1, 0, -1):
 		var j := rng.randi_range(0, i)

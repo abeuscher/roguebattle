@@ -77,7 +77,7 @@ func start(game_data: GameData, game_log: GameLog, config: GameConfig, map: MapD
 			map.settings["size"], map.width, map.height, config.to_code()]
 	state = GameState.new(data, map, log, config.game_settings())
 	view.show_map(map, data)
-	state.setup_army()
+	state.setup_army(_wide_roster_count())
 	state.place_enemies()
 	_sync_tokens()
 	hud.set_squads(state.player_squads())
@@ -88,6 +88,17 @@ func start(game_data: GameData, game_log: GameLog, config: GameConfig, map: MapD
 	camera.fit.call_deferred()  # again once the camera is live, so the minimap frame is right
 	_update_help()
 	print("Battlemap ready in %d ms" % (Time.get_ticks_msec() - started))
+
+
+## Developer override for playtesting unit variety: --wide-roster or
+## --wide-roster=N on the command line (or Project Settings' editor/run/main_run_args,
+## prefixed with --) swaps in Map1Setup.build_wide_roster() for the real §18 army.
+## 0 (the default) means the real game's 6-squad roster.
+func _wide_roster_count() -> int:
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--wide-roster"):
+			return clampi(int(arg.split("=")[1]) if "=" in arg else int(data.rules["army_size"]), 1, int(data.rules["army_size"]))
+	return 0
 
 
 func _process(delta: float) -> void:

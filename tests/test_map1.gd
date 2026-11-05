@@ -96,3 +96,25 @@ func test_starting_state() -> void:
 	check_eq(st.gold, 500, "500 gold")
 	check_eq(st.tech_points, 3, "3 tech points")
 	check_eq(st.cards.size(), 3, "3 random cards")
+
+
+## The --wide-roster developer override (Battlemap._wide_roster_count()): not part
+## of the real game, just a playtesting aid for exercising more of the roster.
+func test_wide_roster_is_debug_only_variety() -> void:
+	var serf := _serf_classes()
+	var rng := RandomNumberGenerator.new()
+	for seed_ in SEEDS:
+		rng.seed = seed_
+		var squads: Array = Map1Setup.build_wide_roster(d, rng, 16)
+		check_eq(squads.size(), 16, "16 squads (seed %d)" % seed_)
+		var leaders := {}
+		var terrains := {}
+		for s in squads:
+			check_eq(s.size(), 5, "a leader plus four stage 2 units (seed %d)" % seed_)
+			for m in s:
+				check(m[0] in serf, "%s is rolled from a Serf line (seed %d)" % [m[0], seed_])
+			leaders[s[0][0]] = true
+			terrains[d.units[s[0][0]]["terrain"]] = true
+		check_eq(leaders.size(), 16, "16 distinct leaders (seed %d)" % seed_)
+		for t in Map1Setup.TERRAINS:
+			check(terrains.has(t), "seed %d: no squad's leader is native to %s" % [seed_, t])
