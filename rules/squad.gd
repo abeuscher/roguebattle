@@ -8,6 +8,7 @@ var id: int
 var name: String
 var side := "player"  # "player", "enemy" or "neutral"; only player and non-player squads fight
 var role := ""  # enemy role (§17): leader, base_guard, garrison, raider, wildcard
+var ai_mode := ""  # a wildcard's roll (§17): "attack" or "defend", once at placement
 var fire_ready := 0  # tick from which the squad may make a ranged map attack again (§11.2)
 var hex: int
 var units: Array[Unit] = []

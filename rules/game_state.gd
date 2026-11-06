@@ -58,6 +58,7 @@ func step() -> void:
 	for event in clock.step():
 		_clock_event(event)
 	_moved.clear()
+	_run_enemy_ai()
 	for s in squads.duplicate():
 		_move(s)
 		if s.entering_base and s.hex == map.player_base:
@@ -889,11 +890,23 @@ func hostile(a: Squad, b: Squad) -> bool:
 	return (a.side == "player") != (b.side == "player")
 
 
-# --- Enemy squads (SPEC §17) --------------------------------------------------------
+# --- Enemy squads (SPEC §17, §12.3 AI) -----------------------------------------------
+
+## Gives an idle enemy squad a new order from EnemyAI.target_hex, if it needs one
+## (none if it's already there or already moving).
+func _run_enemy_ai() -> void:
+	for s in squads:
+		if s.side != "enemy" or s.is_moving() or s.living().is_empty():
+			continue
+		var target := EnemyAI.target_hex(self, s)
+		if target >= 0 and target != s.hex:
+			order_move(s, PackedInt32Array([target]))
+
 
 ## Places the enemy's squads by role: the leader on the Enemy Base, the base guard and
 ## raider next to it, garrisons and wildcards on separate enemy-held buildings
-## (towns and towers until liberation arrives). They stand still until the AI (M4).
+## (towns and towers until liberation arrives). A wildcard rolls Attack or Defend
+## once here (§17); the leader, base guard and garrisons just hold their post.
 func place_enemies() -> void:
 	var e: Dictionary = data.enemy
 	var r := rng.get_stream("enemy")
@@ -926,6 +939,8 @@ func place_enemies() -> void:
 			var title: String = e["names"][entry["role"]]
 			var s := add_squad("%s %d" % [title, k + 1] if count > 1 else title, at, builds[r.randi() % builds.size()], "enemy")
 			s.role = entry["role"]
+			if s.role == "wildcard":
+				s.ai_mode = "attack" if r.randf() < float(data.ai["wildcard_attack_chance"]) else "defend"
 
 
 ## The nearest hex to `center` (not center itself) that a ground squad can stand on and no squad holds.
