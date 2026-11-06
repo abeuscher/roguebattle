@@ -15,6 +15,7 @@ var settings: Dictionary  # victory, defeat, squad cap, fairness (from the confi
 var gold: int
 var reputation: int
 var pending: Battle  # a battle waiting to be fought; the map holds until it's resolved
+var pending_recruit := {}  # {player, neutral, defender}: a Recruit-or-Fight choice waiting on the player (§16)
 var revealed := {}  # building index -> true for hidden sites and lairs a squad has seen
 var _contact_until := {}  # "player id:enemy id" -> tick before which the pair won't fight again
 var _moved := {}  # squads that entered a new hex this tick
@@ -53,12 +54,13 @@ func _init(game_data: GameData, game_map: MapData, game_log: GameLog, game_setti
 ## Runs the simulation for one tick. Stops early if two hostile squads meet:
 ## `pending` then holds the battle until resolve_pending().
 func step() -> void:
-	if pending:
+	if pending or not pending_recruit.is_empty():
 		return
 	for event in clock.step():
 		_clock_event(event)
 	_moved.clear()
 	_run_enemy_ai()
+	_run_neutral_ai()
 	for s in squads.duplicate():
 		_move(s)
 		if s.entering_base and s.hex == map.player_base:
@@ -482,6 +484,8 @@ func _who(units: Array) -> String:
 ## gains 1 charisma against a stronger enemy and loses 1 against a much weaker one.
 ## A win: the enemy is wiped out, or (no one retreated) it lost the larger share of its HP.
 func _battle_standing(b: Battle, out: Dictionary) -> void:
+	if b.sides[0].side != "player":  # an enemy-neutral fight (§6.7): no player squad to credit
+		return
 	var st: Dictionary = data.rules["standing"]
 	var units := b.sides[0].living().filter(func(u: Unit): return u in army.units())
 	var weaker := b.odds in ["Weaker", "Much weaker"]
@@ -886,8 +890,9 @@ func player_squads() -> Array[Squad]:
 	return out
 
 
+## Neutrals fight both sides (§6.7); only same-side squads never fight.
 func hostile(a: Squad, b: Squad) -> bool:
-	return (a.side == "player") != (b.side == "player")
+	return a.side != b.side
 
 
 # --- Enemy squads (SPEC §17, §12.3 AI) -----------------------------------------------
@@ -943,6 +948,37 @@ func place_enemies() -> void:
 				s.ai_mode = "attack" if r.randf() < float(data.ai["wildcard_attack_chance"]) else "defend"
 
 
+## Gives an idle roamer a new order from NeutralAI.target_hex, if it needs one.
+func _run_neutral_ai() -> void:
+	for s in squads:
+		if s.side != "neutral" or s.is_moving() or s.living().is_empty():
+			continue
+		var target := NeutralAI.target_hex(self, s)
+		if target >= 0 and target != s.hex:
+			order_move(s, PackedInt32Array([target]))
+
+
+## Places one roamer squad per lair (§6.7): a race line native to the lair's home
+## terrain, strength scaled by its danger. A lair with no matching line (an odd
+## density/terrain mix) gets no squad.
+func place_neutrals() -> void:
+	var r := rng.get_stream("neutral")
+	for lair in map.lairs:
+		var units := NeutralSquads.roll(data, lair["home"], lair["danger"], r, names)
+		if units.is_empty():
+			continue
+		var number := 1 + squads.filter(func(o: Squad): return o.side == "neutral").size() + 200
+		var s := Squad.new(number, units[0].unit_class, lair["hex"])
+		s.side = "neutral"
+		s.role = "roamer"
+		s.lair_hex = lair["hex"]
+		for u in units:
+			if s.add(data, u, "front"):
+				log.add(clock.tick, "progression", "%s the %s joins %s." % [u.name, u.unit_class, s.name], s.id)
+		s.morale = int(data.rules["starting_morale"])
+		squads.append(s)
+
+
 ## The nearest hex to `center` (not center itself) that a ground squad can stand on and no squad holds.
 func _free_near(center: int) -> int:
 	var seen_hexes := {center: true}
@@ -972,25 +1008,69 @@ func _squad_on(i: int) -> Squad:
 
 ## Two hostile squads on the same or adjacent hexes fight. The squad that moved into
 ## contact attacks; the battle uses the defender's hex. A pair that just fought waits
-## a short cooldown before fighting again.
+## a short cooldown before fighting again. Meeting a neutral, the player chooses
+## Recruit or Fight (§16) instead of fighting outright; an enemy-neutral fight (§6.7)
+## resolves on the spot since neither side is the player's to watch.
 func _check_contact() -> void:
-	for p in squads:
-		if p.side != "player" or p.living().is_empty():
+	for i in squads.size():
+		var a := squads[i]
+		if a.living().is_empty():
 			continue
-		for e in squads:
-			if not hostile(p, e) or e.living().is_empty():
+		for j in range(i + 1, squads.size()):
+			var b := squads[j]
+			if not hostile(a, b) or b.living().is_empty():
 				continue
-			if Hex.distance(map.hex_at(p.hex), map.hex_at(e.hex)) > 1:
+			if Hex.distance(map.hex_at(a.hex), map.hex_at(b.hex)) > 1:
 				continue
-			if clock.tick < int(_contact_until.get(_pair(p, e), -1)):
+			if clock.tick < int(_contact_until.get(_pair(a, b), -1)):
 				continue
-			var defender := e if _moved.has(p) or not _moved.has(e) else p
-			pending = start_battle(p, e, defender)
+			var defender := b if _moved.has(a) or not _moved.has(b) else a
+			if a.side == "player" and b.side == "neutral":
+				pending_recruit = {"player": a, "neutral": b, "defender": defender}
+				return
+			if b.side == "player" and a.side == "neutral":
+				pending_recruit = {"player": b, "neutral": a, "defender": defender}
+				return
+			pending = start_battle(a, b, defender)
+			if a.side != "player" and b.side != "player":
+				resolve_pending()
 			return
 
 
 func _pair(p: Squad, e: Squad) -> String:
-	return "%d:%d" % [p.id, e.id]
+	return "%d:%d" % [mini(p.id, e.id), maxi(p.id, e.id)]
+
+
+## The neutral squad's class in a pending Recruit-or-Fight choice, without its count (§16).
+func recruit_class() -> String:
+	return pending_recruit["neutral"].units[0].unit_class if not pending_recruit.is_empty() else ""
+
+
+## Resolves a pending Recruit-or-Fight choice (§16). Recruit rolls the chance: on
+## success the neutrals join the recruit pool and the leader gains charisma; on
+## failure they fight having resisted, taking their whole first round. Fight skips
+## straight to a normal battle.
+func resolve_recruit(try_recruit: bool) -> void:
+	var enc := pending_recruit
+	pending_recruit = {}
+	var player: Squad = enc["player"]
+	var neutral: Squad = enc["neutral"]
+	if try_recruit:
+		var large: bool = neutral.units[0].info(data)["size"] == "Large"
+		var chance := recruit_chance(player, neutral.living().size(), neutral.alignment(), large)
+		if rng.get_stream("recruit").randf() < chance:
+			for u in neutral.living():
+				army.pool.append(u)
+			if player.leader:
+				change_charisma([player.leader], 3, "recruiting the %s" % neutral.units[0].unit_class)
+			log.add(clock.tick, "map", "%s recruits the %s." % [player.name, neutral.name], player.id)
+			squads.erase(neutral)
+			return
+		log.add(clock.tick, "map", "The %s resist recruitment." % neutral.name, player.id)
+		pending = start_battle(player, neutral, neutral)
+		pending.first_side = 1
+		return
+	pending = start_battle(player, neutral, enc["defender"])
 
 
 ## Fights the pending battle to the end (the battle view may have played it already)
@@ -1131,16 +1211,19 @@ func start_battle(player: Squad, enemy: Squad, defender: Squad) -> Battle:
 	b.attacker = 0 if defender == enemy else 1
 	b.defense = [building_defense(player), building_defense(enemy)]
 	b.odds = Threat.label(data, player, enemy)
-	b.tech[0] = tech
+	if player.side == "player":
+		b.tech[0] = tech
 	log.add(clock.tick, "battle", "Battle: %s against %s on %s. The enemy looks %s." % [player.name, enemy.name, info["name"],
 			Threat.label(data, player, enemy).to_lower()], player.id)
 	return b
 
 
 ## Ends a battle and applies its outcome on the map (§11.3, §11.6): a wiped-out player
-## squad returns to base (an enemy one leaves the map), a squad that lost its leader
-## marches home, a retreating squad steps back 1 hex and each unit loses 1 charisma,
-## and the side that lost more of its HP is pushed back.
+## squad returns to base (anyone else leaves the map), a squad that lost its leader
+## marches home (a neutral has none to march to, so it just fights on), a retreating
+## squad steps back 1 hex and each unit loses 1 charisma, and the side that lost more
+## of its HP is pushed back. Standing and XP are player-only (§16: an enemy-neutral
+## fight has no player squad in it at all).
 func end_battle(b: Battle) -> Dictionary:
 	for e in b.events:
 		log.add(clock.tick, "battle", b.log_line(e), b.sides[0].id, e.get("hidden", {}))
@@ -1151,7 +1234,7 @@ func end_battle(b: Battle) -> Dictionary:
 		if out["wiped"][side]:
 			s.path.clear()
 			s.rally.clear()
-			if side == 0:
+			if s.side == "player":
 				_leave_map(s)
 				log.add(clock.tick, "battle", "%s is wiped out and carried back to base." % s.name, s.id)
 			else:
@@ -1160,14 +1243,14 @@ func end_battle(b: Battle) -> Dictionary:
 			continue
 		if out["retreated"] == side:
 			_push(s, enemy.hex, 1)
-			if side == 0:
+			if s.side == "player":
 				change_charisma(s.units, -1, "retreating")
 		elif out["pushed"] == side:
 			_push(s, enemy.hex, int(data.battle["push_back"]["on_travel_terrain" if _on_travel_terrain(s) else "otherwise"]))
-		if out["leader_dead"][side] and not s.marching_home:
+		if out["leader_dead"][side] and not s.marching_home and s.side != "neutral":
 			s.marching_home = true
-			order_move(s, PackedInt32Array([map.player_base if side == 0 else map.enemy_base]))
-			s.entering_base = side == 0
+			order_move(s, PackedInt32Array([map.player_base if s.side == "player" else map.enemy_base]))
+			s.entering_base = s.side == "player"
 			log.add(clock.tick, "battle", "%s lost its leader and marches home." % s.name, s.id)
 	_battle_standing(b, out)
 	_award_xp(b, out)
@@ -1181,6 +1264,8 @@ func _award_xp(b: Battle, out: Dictionary) -> void:
 	var s := b.sides[0]
 	out["xp"] = {}
 	out["level_ups"] = []
+	if s.side != "player":  # an enemy-neutral fight (§6.7): no one to award XP to
+		return
 	# The share of the enemy's losses dealt by cards goes to the Opinion Leader's squad (§9.4, §13).
 	var share := clampf(float(b.card_damage) / maxi(1, b.hp_lost(1)), 0.0, 1.0)
 	var leader_squad := opinion_leader_squad()

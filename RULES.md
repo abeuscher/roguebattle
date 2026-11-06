@@ -67,7 +67,7 @@ This describes how the game actually plays right now, not the full design (that'
 
 ## Reputation, charisma and alignment
 
-- **Reputation** is one army-wide 0–100 meter (starting at 50). It rises or falls with liberations and with time spent in a matching-alignment building, moving opposite ways for holy vs. evil squads (neutral squads don't move it). It sets your liberation bonus size and shop prices (cheaper near 100, pricier near 0) — doubled for a squad with a Smuggler or Fence. Its effect on recruit chance is calculated already but has nothing to apply to yet (see "Not yet in the game").
+- **Reputation** is one army-wide 0–100 meter (starting at 50). It rises or falls with liberations and with time spent in a matching-alignment building, moving opposite ways for holy vs. evil squads (neutral squads don't move it). It sets your liberation bonus size, shop prices (cheaper near 100, pricier near 0) and your chance to recruit a neutral squad you meet — doubled for a squad with a Smuggler or Fence on prices.
 - **Charisma**, per unit: up from liberating a matching building (leader only), from beating a notably stronger enemy; down from retreating or beating a much weaker one.
 - **Alignment**, per unit, each battle: up against an even-or-stronger enemy, down against a weaker one; liberating a town pushes every unit's alignment toward holy, a tower toward evil.
 
@@ -101,13 +101,21 @@ Ten enemy squads (4 units each, no healers) are placed at the start, with distin
 
 A squad that holds its post (leader, base guard, garrison) only ever moves if it's pushed back from losing a fight there — it never goes looking for a fight on its own. None of the enemy's roles currently flip a reached building back to enemy ownership; they just stand and fight whoever's there, same as any other contact.
 
+## Neutrals and recruiting
+
+- **Lairs** are scattered off-road, each home to one race (never a Serf-line class) native to that spot's terrain; the further a lair is from the Player Base, the stronger and higher-level its squad. Unlike towns and towers, you can't tell a lair is there until a squad's sight reaches it.
+- Each lair's squad **roams** a short patrol around its lair, chasing down the nearest player or enemy squad that wanders into range; with nothing nearby it just wanders near home. Neutrals fight both you and the enemy — an enemy squad that stumbles into one fights it out on its own, with no pause for you to watch.
+- **Meeting one yourself** offers a choice: you're told its class, not how many of them there are, then pick Recruit or Fight.
+  - **Recruit** rolls a chance from the neutrals' numbers, how far your squad's alignment is from theirs, and your reputation; success adds them to your recruit pool for free and gives your leader +3 charisma, no fight at all. Failure means they fight you having resisted — they get a full round of attacks before you do.
+  - **Fight** skips the roll and goes straight into a normal battle.
+- This is the only way the rarer race lines (the sheet's R, N, L and T lines) enter your army — they never appear in a starting squad or an ordinary promotion.
+
 ---
 
 ## Not yet in the game
 
 These are named in the design but not working yet — don't expect them when testing. See `ROADMAP.md` for the plan and `STATUS.md` for current session.
 
-- **Neutral squad encounters.** Lairs and hidden sites already generate on the map, but roaming neutral squads, the recruit-or-fight choice, and recruit chance aren't live yet.
 - **Morale, loyalty and bonds.** A squad's morale field exists (starts at 50) but nothing moves it yet, so the morale-based damage penalty and the drive-off option never trigger. Loyalty (for recruited neutrals) and unit bonds don't exist yet.
 - **Victory and defeat.** There is currently no way to win or lose a map — defeating the Enemy Base's leader, losing your own, and every other victory/defeat condition in the configurator are not yet checked. There's no end-of-map summary or bonus either.
 - **The full debug panel.** Backtick opens a small panel with just a "Wide roster" playtesting button. The rest of §19.2's tools (reveal map, teleport a squad, time controls, spawn/edit units, force a battle result, AI inspection, a headless sim runner) aren't built yet. Some debug aids exist outside that panel already: O cycles map overlays, G toggles the hex grid, H reveals hidden sites, and F8 cycles a squad's travel type for testing.

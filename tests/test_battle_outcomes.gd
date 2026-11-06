@@ -311,7 +311,7 @@ func test_push_back_on_the_map() -> void:
 func test_wipe_out_and_march_home() -> void:
 	var st := _state()
 	var ours := st.add_squad("Ours", st.map.index_of(Hex.from_offset(Vector2i(5, 2))), [["Knight", "front"]])
-	var theirs := st.add_squad("Theirs", st.map.index_of(Hex.from_offset(Vector2i(6, 2))), [["Knight", "front"], ["Fighter", "front"]])
+	var theirs := st.add_squad("Theirs", st.map.index_of(Hex.from_offset(Vector2i(6, 2))), [["Knight", "front"], ["Fighter", "front"]], "enemy")
 	var b := st.start_battle(ours, theirs, theirs)
 	ours.units[0].hp = 0
 	theirs.leader.hp = 0

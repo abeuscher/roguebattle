@@ -1,0 +1,5 @@
+{
+  "_about": "Neutral squads (SPEC §6.7, §16): one race line (the sheet's R, N, L and T lines) native to a lair's home terrain. Danger (0..1, set at placement by distance from the Player Base) picks how far along that line's stages the squad is and adds levels on top. 1-9 units of that one class try to join, however many the squad's slots (§8.2) actually fit.",
+  "level_span": 12,
+  "patrol_radius": 4
+}

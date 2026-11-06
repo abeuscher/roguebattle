@@ -7,8 +7,9 @@ extends RefCounted
 var id: int
 var name: String
 var side := "player"  # "player", "enemy" or "neutral"; only player and non-player squads fight
-var role := ""  # enemy role (§17): leader, base_guard, garrison, raider, wildcard
+var role := ""  # enemy role (§17): leader, base_guard, garrison, raider, wildcard; "roamer" for a neutral
 var ai_mode := ""  # a wildcard's roll (§17): "attack" or "defend", once at placement
+var lair_hex := -1  # a roamer's home lair, to patrol around (§6.7); -1 for non-neutrals
 var fire_ready := 0  # tick from which the squad may make a ranged map attack again (§11.2)
 var hex: int
 var units: Array[Unit] = []

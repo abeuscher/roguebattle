@@ -25,6 +25,7 @@ var night := CanvasModulate.new()
 var _ui := CanvasLayer.new()
 var _log_panel: LogPanel
 var _debug_panel: DebugPanel
+var _recruit_popup: RecruitPopup
 var _menu: SquadMenu
 var _main_menu: MainMenu
 var _battle: BattleView
@@ -80,6 +81,7 @@ func start(game_data: GameData, game_log: GameLog, config: GameConfig, map: MapD
 	view.show_map(map, data)
 	state.setup_army(_wide_roster_count())
 	state.place_enemies()
+	state.place_neutrals()
 	_sync_tokens()
 	hud.set_squads(state.player_squads())
 	hud.minimap.set_map(map, data)
@@ -107,10 +109,12 @@ func _process(delta: float) -> void:
 		return
 	for i in state.clock.advance(delta):
 		state.step()
-		if state.pending:
+		if state.pending or not state.pending_recruit.is_empty():
 			break
 	if state.pending and _battle == null:
 		_open_battle()
+	if not state.pending_recruit.is_empty() and _recruit_popup == null:
+		_open_recruit_popup()
 	if not state.card_offer.is_empty() and _can_open() and _selected == null:
 		_open_cards(true)
 	if state.noon_report != "":
@@ -584,6 +588,28 @@ func _close_debug_panel() -> void:
 	state.clock.release()
 
 
+## A neutral squad in reach (§16): offers Recruit or Fight. The class shows, not the count.
+func _open_recruit_popup() -> void:
+	_recruit_popup = RecruitPopup.new()
+	_ui.add_child(_recruit_popup)
+	_recruit_popup.setup(state.recruit_class())
+	_recruit_popup.recruit.connect(func():
+		state.resolve_recruit(true)
+		_close_recruit_popup())
+	_recruit_popup.fight.connect(func():
+		state.resolve_recruit(false)
+		_close_recruit_popup())
+	state.clock.hold()
+
+
+func _close_recruit_popup() -> void:
+	_recruit_popup.queue_free()
+	_recruit_popup = null
+	state.clock.release()
+	if state.pending and _battle == null:
+		_open_battle()
+
+
 func _open_main_menu() -> void:
 	_main_menu = MainMenu.new()
 	_ui.add_child(_main_menu)
@@ -615,7 +641,7 @@ func _on_speed_chosen(index: int) -> void:
 
 ## No menu or dialog is open.
 func _can_open() -> bool:
-	return not (_log_panel or _debug_panel or _menu or _main_menu or _battle or _edit or _deploy_menu or _confirm or _building_popup or _shop)
+	return not (_log_panel or _debug_panel or _menu or _main_menu or _battle or _edit or _deploy_menu or _confirm or _building_popup or _shop or _recruit_popup)
 
 
 func _unhandled_input(event: InputEvent) -> void:

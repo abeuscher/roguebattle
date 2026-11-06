@@ -49,13 +49,19 @@ Goal: a generated map the player can look at, and one squad they can move.
 
 **Later (UI):** once the toolbar's full button set is known (likely after M4, when the debug panel and any end-of-map screens are in), plan icons for the toolbar buttons and a more compact toolbar.
 
+**Parked for discussion after M4** (user's own notes, to talk through, not yet decided):
+- Front/rear row placement at half-slot granularity, with coverage from front to rear taken more literally by position rather than just by row — visual/positional rework, not sure yet if it's a good idea.
+- Unit graphics: a playing-card-style graphic for attack mode, and a character sheet built around that same graphic space. Presentation-layer attention to detail.
+- Iconography in the full Edit Units view: small per-class icons, and a ranged-vs-melee icon instead of spelling it out — current text is a lot to scan.
+- A small campaign mode (small/medium/large stages) as a separate mode layered on top of the single-map work here, adding as little as possible on top of it.
+
 ## M4: Map 1
 
 | # | Session | Spec | Verify | Status |
 | --- | --- | --- | --- | --- |
 | 1 | **Map 1 setup.** Roll 6 Serf-line squads with the coverage and soft rules, Opinion Leader, starting cards, tech and gold | §18 | Tests over many seeds: rules hold | Done |
 | 2 | **Enemy AI.** 10 squads with garrison, leader, base guard, raider and wildcard roles; weights from data | §12.3, §17 | Headless runs: roles behave (raider reaches a target, garrisons stay) | Done |
-| 3 | **Neutrals and recruiting.** Lairs, roamers, danger by distance, recruit or fight, race lines only from neutrals | §6.7, §16 | Tests: recruit chance formula; sim of roamer patrol | |
+| 3 | **Neutrals and recruiting.** Lairs, roamers, danger by distance, recruit or fight, race lines only from neutrals | §6.7, §16 | Tests: recruit chance formula; sim of roamer patrol | Done |
 | 4 | **Hidden mechanics.** Morale, loyalty, bonds, with their visible signs | §12.2 | Tests per rule; log messages appear | |
 | 5 | **Victory, defeat, end screen.** All victory options, defeat conditions, end-of-map summary and bonus | §6.8, §4 | Tests per condition | |
 | 6 | **Debug panel complete.** Every tool in §19.2; debug log toggle | §19.2, §19.1 | Each tool exercised; screenshot | |
