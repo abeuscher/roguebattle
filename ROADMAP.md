@@ -54,6 +54,7 @@ Goal: a generated map the player can look at, and one squad they can move.
 - Unit graphics: a playing-card-style graphic for attack mode, and a character sheet built around that same graphic space. Presentation-layer attention to detail.
 - Iconography in the full Edit Units view: small per-class icons, and a ranged-vs-melee icon instead of spelling it out — current text is a lot to scan.
 - A small campaign mode (small/medium/large stages) as a separate mode layered on top of the single-map work here, adding as little as possible on top of it.
+- A player-friendly, readable slice of the log shown on screen (or a small notifier box with the most recent message) as a lighter-weight alternative to popups for telling the player what's currently happening. Noted 2026-11-07 alongside the liberation popup work; not started.
 
 ## M4: Map 1
 

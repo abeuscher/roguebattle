@@ -6,6 +6,9 @@ export_credentials.cfg
 # Python
 __pycache__/
 
+# macOS
+.DS_Store
+
 # Local output
 logs/
 *.tmp

@@ -26,6 +26,7 @@ var _ui := CanvasLayer.new()
 var _log_panel: LogPanel
 var _debug_panel: DebugPanel
 var _recruit_popup: RecruitPopup
+var _liberation_popup: LiberationPopup
 var _menu: SquadMenu
 var _main_menu: MainMenu
 var _battle: BattleView
@@ -115,6 +116,7 @@ func _process(delta: float) -> void:
 		_open_battle()
 	if not state.pending_recruit.is_empty() and _recruit_popup == null:
 		_open_recruit_popup()
+	_pump_liberations()
 	if not state.card_offer.is_empty() and _can_open() and _selected == null:
 		_open_cards(true)
 	if state.noon_report != "":
@@ -610,6 +612,27 @@ func _close_recruit_popup() -> void:
 		_open_battle()
 
 
+## Shows the next unshown liberation (§6.5), if any.
+func _pump_liberations() -> void:
+	if not state.liberations.is_empty() and _can_open():
+		_open_liberation_popup(state.liberations.pop_front())
+
+
+func _open_liberation_popup(entry: Dictionary) -> void:
+	camera.center_on(MapView.hex_center(state.map, entry["building"]["hex"]))
+	_liberation_popup = LiberationPopup.new()
+	_ui.add_child(_liberation_popup)
+	_liberation_popup.setup(state, entry["building"], entry["card"])
+	_liberation_popup.closed.connect(_close_liberation_popup)
+	state.clock.hold()
+
+
+func _close_liberation_popup() -> void:
+	_liberation_popup.queue_free()
+	_liberation_popup = null
+	state.clock.release()
+
+
 func _open_main_menu() -> void:
 	_main_menu = MainMenu.new()
 	_ui.add_child(_main_menu)
@@ -641,7 +664,8 @@ func _on_speed_chosen(index: int) -> void:
 
 ## No menu or dialog is open.
 func _can_open() -> bool:
-	return not (_log_panel or _debug_panel or _menu or _main_menu or _battle or _edit or _deploy_menu or _confirm or _building_popup or _shop or _recruit_popup)
+	return not (_log_panel or _debug_panel or _menu or _main_menu or _battle or _edit or _deploy_menu or _confirm or _building_popup \
+			or _shop or _recruit_popup or _liberation_popup)
 
 
 func _unhandled_input(event: InputEvent) -> void:

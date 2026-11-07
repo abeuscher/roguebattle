@@ -58,7 +58,7 @@ This describes how the game actually plays right now, not the full design (that'
 
 ## Buildings and the economy
 
-- **Liberating** a town or tower (stand a living ground unit there for 60 ticks, twice as fast with a Sapper) flips its owner, gives reputation and alignment swings, +5 charisma to a matching-alignment leader, a gold bonus, a card, and a tech point.
+- **Liberating** a town or tower (stand a living ground unit there for 60 ticks, twice as fast with a Sapper) flips its owner, gives reputation and alignment swings, +5 charisma to a matching-alignment leader, a gold bonus, a card, and a tech point. A popup names what you took, focuses the camera on it, and shows the card you drew (or lets you pick one, if a Seer or Oracle offers a choice) right there.
 - **Resting in a building** heals a squad's living units a share of their max HP each day: 15% in your own base, 15% in a town/tower matching your alignment, 10% otherwise, 5% in a temple. Squads and the recruit pool at the Player Base heal the base's 15% too.
 - **Income and upkeep**, settled every noon: you earn gold per town/tower you hold, then pay upkeep for every unit in the army (in a squad or the recruit pool, fallen units included) — upkeep scales with a unit's stage and size. Gold never goes negative; unpaid upkeep is currently just lost (no morale/loyalty penalty yet — see below).
 - **Going broke:** at zero gold, any squad can be sold from Edit Units for a gold value based on its units' stages; it leaves the army, the map and loses its items.

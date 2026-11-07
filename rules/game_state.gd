@@ -16,6 +16,7 @@ var gold: int
 var reputation: int
 var pending: Battle  # a battle waiting to be fought; the map holds until it's resolved
 var pending_recruit := {}  # {player, neutral, defender}: a Recruit-or-Fight choice waiting on the player (§16)
+var liberations: Array[Dictionary] = []  # {building, card}, oldest first: liberations the UI hasn't shown yet
 var revealed := {}  # building index -> true for hidden sites and lairs a squad has seen
 var _contact_until := {}  # "player id:enemy id" -> tick before which the pair won't fight again
 var _moved := {}  # squads that entered a new hex this tick
@@ -182,7 +183,9 @@ func _capture() -> void:
 
 ## Standing changes for a liberation (§9.5, §9.6, §10): reputation by the squad's
 ## alignment, +5 charisma for a leader whose alignment matches the building, and each
-## unit's alignment +3 for a town or −3 for a tower.
+## unit's alignment +3 for a town or −3 for a tower. Queues it for the UI (`liberations`),
+## with the card drawn if it went straight into the hand (empty if there was none, or if
+## it's a Seer/Oracle offer instead, left for the UI to read from `card_offer`).
 func _liberated(s: Squad, b: Dictionary) -> void:
 	var st: Dictionary = data.rules["standing"]
 	var aligned: String = data.buildings[b["type"]].get("aligned", "")
@@ -191,8 +194,10 @@ func _liberated(s: Squad, b: Dictionary) -> void:
 	if s.leader and s.leader.alignment_band(data) == aligned:
 		change_charisma([s.leader], int(st["liberate_charisma"]), "liberating a %s that matches their alignment" % what)
 	change_alignment(s.units, int(st["liberate_alignment"]) * (1 if aligned == "holy" else -1), "liberating a %s" % what)
+	var before := cards.size()
 	draw_card(s)
 	earn_tech_points(int(data.tech["points"]["liberation"]), "a liberation")
+	liberations.append({"building": b, "card": cards[-1] if cards.size() > before else ""})
 
 
 ## +1 when the squad's band matches the building's (holy town, evil tower), −1 for the

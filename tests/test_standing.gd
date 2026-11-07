@@ -69,6 +69,30 @@ func test_liberating_a_tower() -> void:
 	check_eq(st3.reputation, 50, "a neutral squad: no change")
 
 
+## Queued for the battlemap to show a focused popup (user request, 2026-11-07).
+func test_liberation_is_queued_for_the_ui() -> void:
+	var st := _state()
+	check(st.liberations.is_empty(), "nothing queued yet")
+	_squad(st, 8, 80)
+	_liberate(st)
+	check_eq(st.liberations.size(), 1, "one liberation queued")
+	var entry: Dictionary = st.liberations[0]
+	check_eq(entry["building"]["hex"], _at(st.map, 8, 3), "the building that was taken")
+	check_eq(entry["card"], st.cards[-1], "the card it drew, for the same popup")
+	check(st.card_offer.is_empty(), "no Seer/Oracle here: straight into the hand, no offer")
+
+
+## A Seer offers a choice instead of drawing straight into the hand (§13); the queued
+## entry leaves "card" empty so the UI reads the choice from card_offer instead.
+func test_liberation_with_a_seer_queues_an_offer_not_a_card() -> void:
+	var st := _state()
+	_squad(st, 8, 80, [["Knight", "front"], ["Seer", "back"]])
+	_liberate(st)
+	check_eq(st.liberations.size(), 1, "one liberation queued")
+	check_eq(st.liberations[0]["card"], "", "no card drawn directly: it's an offer")
+	check_eq(st.card_offer.size(), 2, "a Seer chooses from 2")
+
+
 func test_black_market_doubles_swings() -> void:
 	var st := _state()
 	_squad(st, 8, 80, [["Knight", "front"], ["Fence", "back"]])

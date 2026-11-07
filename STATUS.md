@@ -26,7 +26,8 @@ Where the project stands, for picking up in a new session or on another machine.
   - That fix exposed a deeper assumption: `end_battle`/`_award_xp`/`_battle_standing` keyed off *position* ("side 0") assuming it was always the player, which only enemy-vs-neutral fights could ever violate. Reworked to key off each squad's actual `.side`. See `DECISIONS.md` session 026 for the full list (plus a pre-existing test that only passed because of the old assumption, now fixed).
   - Recruit-or-fight (§16): `GameState.pending_recruit` + `resolve_recruit()`, a new `ui/recruit_popup.gd` modal (shows the class, not the count). Recruit rolls the existing `recruit_chance()`; failure fights with the neutrals going first (`Battle.first_side`, a field that already existed for this but was never set until now).
   - `tests/test_neutrals.gd` (11 tests); also ran 5 real generated maps 3000 ticks each headless (full setup: army, enemies, neutrals) with no hangs or crashes.
-- **Tests:** 228 passing (`tools/run_tests.sh` on this Mac, `tools\run_tests.ps1` on Windows).
+- **Between sessions (2026-11-07), liberation popup:** liberating any building now opens a popup focused on it, with the card it draws (or a Seer/Oracle's choice of one) shown in the same dialog instead of a separate one. No Options toggle in the end — see `DECISIONS.md`, a liberation always draws a card, so a "only pop up when there's a card" toggle would never do anything; the user chose to always show it instead. `GameState.liberations` (queued, oldest first), `ui/liberation_popup.gd`.
+- **Tests:** 230 passing (`tools/run_tests.sh` on this Mac, `tools\run_tests.ps1` on Windows).
 
 ## Next up
 
@@ -53,7 +54,7 @@ Where the project stands, for picking up in a new session or on another machine.
 
 - **Godot 4.5.1** console binary on the old machine: `C:\Godot\Godot_v4.5.1-stable_win64_console.exe`. The new machine (macOS) uses **Godot 4.7.2**, installed at `/Users/al/Downloads/Godot.app`.
 - **First run after cloning:** run `godot --headless --path . --import` so the `class_name` scripts register before the tests run.
-- **Screenshots:** a temporary SceneTree script in the project root. It builds a `Battlemap` in `_process` (not `_init`) using `GameConfig.create(data, seed)`, saves `root.get_texture().get_image()` to a PNG, then quits. Delete the script afterwards.
+- **Screenshots:** a temporary SceneTree script in the project root. It builds a `Battlemap` in `_process` (not `_init`) using `GameConfig.create(data, seed)`, saves `root.get_texture().get_image()` to a PNG, then quits. **Doesn't work under `--headless` on this machine** (confirmed 2026-11-07): `root.get_texture()` comes back null (the dummy rendering driver headless forces has no framebuffer to read), so `get_image()`/`save_png()` fail. `tools/map_preview.gd` gets away with it because it builds the PNG straight from map data (`MinimapImage.build`), not from a live render — that data-driven approach is the only one that's actually worked here. A real screenshot of a scene would need a non-headless run (or a virtual display), which isn't set up on this machine. Delete the script afterwards.
 - **Parse errors:** a script that fails to parse makes a headless `-s` run hang. Use `--check-only -s res://file.gd` and wrap runs in `timeout`. On this Mac there's no `timeout`/`gtimeout` on PATH; rely on the shell tool's own timeout instead.
 - **`-s` scripts must `extends SceneTree`,** not `Node`: a `Node`-based script loads but never ticks `_process` under `-s`, so it sits idle forever with no CPU use (easy to mistake for a hang). `tests/run_tests.gd` is the model to copy.
 - **Types:** inferring a type from a Variant with `:=` is an error; give such variables an explicit type.
