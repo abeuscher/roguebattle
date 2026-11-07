@@ -144,6 +144,9 @@
  "view": {"beat": 0.6, "round_pause": 0.8, "speeds": [1, 2, 4]},
  "push_back": {"on_travel_terrain": 1, "otherwise": 2},
  "drive_off": {"morale_below": 25, "halved_from": 10},
+ "morale": {"outnumbered": -5, "leader_hit": -5, "unit_died": -10, "off_home_terrain": -5, "wrong_time_of_day": -5,
+  "win": 10, "liberation": 10, "temple_rest": 5, "damage_penalty_below": 30, "damage_penalty": 0.1},
+ "bonds": {"battles_to_bond": 6, "damage": 0.05, "dodge_points": 5},
  "threat": {"support_share": 0.5, "group": {"row": 2.0, "all": 3.0, "cleave 2": 1.6, "pierce": 1.6, "chain 3": 2.0}},
  "threat_labels": [["Much weaker", 0.5], ["Weaker", 0.8], ["Even", 1.25], ["Stronger", 1.75], ["Dangerous", 1000000]]
 }

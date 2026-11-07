@@ -32,6 +32,7 @@ var events: Array[Dictionary] = []
 var retreated := -1  # the side that got away
 var round := 0  # the current round, from 1
 var _auras := [[], []]  # per side: the leader aura's effects, scaled for stage 4
+var fought := [[], []]  # per side: units alive when the battle began, for morale and bonds (§12.2)
 var _start_hp := [0, 0]
 var _queue: Array[Unit] = []  # this round's turns still to come
 var _attacks := {}  # Unit -> attacks left
@@ -61,7 +62,8 @@ func _init(game_data: GameData, player: Squad, enemy: Squad, terrain_key: String
 		for u in sides[side].units:
 			_side[u] = side
 	for side in 2:
-		for u in sides[side].living():
+		fought[side] = sides[side].living()
+		for u in fought[side]:
 			_start_hp[side] += u.hp
 			_join(u)
 
@@ -1038,6 +1040,8 @@ func _dealt_multiplier(u: Unit, t: Unit, base: String) -> float:
 		m *= float(cfg["traits"]["Charge"]["first_attack"])
 	if u.has_trait(data, "Execute") and _hp_share(t) < float(cfg["traits"]["Execute"]["under"]):
 		m *= float(cfg["traits"]["Execute"]["multiplier"])
+	if sides[side_of(u)].bonded_partner(u):  # §12.2: a bonded pair fights better while both live
+		m *= 1.0 + float(cfg["bonds"]["damage"])
 	if base in PHYSICAL:
 		for s in _status.get(u, {}):
 			m *= float(cfg["statuses"][s].get("physical_dealt", 1.0))
@@ -1073,7 +1077,7 @@ func _taken_multiplier(u: Unit, t: Unit, base: String) -> float:
 ## Each damage multiplier that isn't ×1, for the log's hidden values.
 func modifiers(u: Unit, t: Unit, base: String) -> Dictionary:
 	var out := {}
-	var all := {"terrain": terrain_modifier(u), "day": day_modifier(u), "matchup": matchup_modifier(u, t),
+	var all := {"terrain": terrain_modifier(u), "day": day_modifier(u), "matchup": matchup_modifier(u, t), "morale": morale_modifier(u),
 			"traits and auras": _dealt_multiplier(u, t, base), "element": element_multiplier(attack_element(u, base), element(t)),
 			"building": 1.0 - defense[side_of(t)], "taken": _taken_multiplier(u, t, base)}
 	for k in all:
@@ -1082,9 +1086,15 @@ func modifiers(u: Unit, t: Unit, base: String) -> Dictionary:
 	return out
 
 
-## Home terrain, day and night, and matchups, multiplied together.
+## Home terrain, day and night, matchups, and low morale, multiplied together.
 func modifier(u: Unit, t: Unit) -> float:
-	return terrain_modifier(u) * day_modifier(u) * matchup_modifier(u, t)
+	return terrain_modifier(u) * day_modifier(u) * matchup_modifier(u, t) * morale_modifier(u)
+
+
+## −10% once the unit's squad's morale drops below 30 (§12.2).
+func morale_modifier(u: Unit) -> float:
+	var m: Dictionary = cfg["morale"]
+	return 1.0 - float(m["damage_penalty"]) if sides[side_of(u)].morale < int(m["damage_penalty_below"]) else 1.0
 
 
 ## +15% on the unit's home terrain, −15% on other difficulty-3 terrain (not for flyers).
@@ -1143,6 +1153,8 @@ func hit_chance(u: Unit, t: Unit, base := "Melee") -> float:
 		c += float(cfg["statuses"][s].get("hit", 0.0))
 	if not daytime and t.has_trait(data, "Night evasion"):
 		c -= float(cfg["traits"]["Night evasion"]["night_dodge"])
+	if sides[side_of(t)].bonded_partner(t):  # §12.2: a bonded pair dodges better while both live
+		c -= float(cfg["bonds"]["dodge_points"])
 	if base == "Ranged":
 		for e in _effects_on(t):
 			c -= float(e.get("dodge", 0.0)) if e.get("vs", "") == "ranged" else 0.0

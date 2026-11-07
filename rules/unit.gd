@@ -23,6 +23,9 @@ var growth := {}  # non-key stat -> chance to grow per level, before talent
 var since_growth := {}  # non-key stat -> levels since it last grew (§12.2 guarantee)
 var talent := "ordinary"
 var luck := 0
+var recruited := false  # joined via Recruit (§16), not rolled for a Serf-line squad; loyalty only applies to these
+var loyalty := 0  # 0-100, recruited units only; set from data.rules.starting_loyalty when one joins
+var loyalty_warned := false  # had a day's notice at very low loyalty; clears once loyalty recovers
 
 
 ## Rolls a new unit of `class_name` (§9.3): base stats, flex points weighted toward

@@ -2,7 +2,7 @@
 
 Where the project stands, for picking up in a new session or on another machine. Update it at the end of each session.
 
-## Where we are (2026-11-06)
+## Where we are (2026-11-07)
 
 - **M1 (Map), M2 (Battle), M3 (Army): all sessions done.** See the Status column in `ROADMAP.md`.
 - **M3 milestone check:** the user has been playing between sessions and is happy with the state of it. The two pacing flags are still open; they're logged in `DECISIONS.md`:
@@ -27,12 +27,18 @@ Where the project stands, for picking up in a new session or on another machine.
   - Recruit-or-fight (§16): `GameState.pending_recruit` + `resolve_recruit()`, a new `ui/recruit_popup.gd` modal (shows the class, not the count). Recruit rolls the existing `recruit_chance()`; failure fights with the neutrals going first (`Battle.first_side`, a field that already existed for this but was never set until now).
   - `tests/test_neutrals.gd` (11 tests); also ran 5 real generated maps 3000 ticks each headless (full setup: army, enemies, neutrals) with no hangs or crashes.
 - **Between sessions (2026-11-07), liberation popup:** liberating any building now opens a popup focused on it, with the card it draws (or a Seer/Oracle's choice of one) shown in the same dialog instead of a separate one. No Options toggle in the end — see `DECISIONS.md`, a liberation always draws a card, so a "only pop up when there's a card" toggle would never do anything; the user chose to always show it instead. `GameState.liberations` (queued, oldest first), `ui/liberation_popup.gd`.
-- **Tests:** 230 passing (`tools/run_tests.sh` on this Mac, `tools\run_tests.ps1` on Windows).
+- **Last work (session 027), M4 session 4, Hidden mechanics (SPEC §12.2):**
+  - Morale and drive-off already existed (from M2) but nothing ever moved `Squad.morale` off its starting 50, so drive-off could never actually trigger. It now falls on being outnumbered, the leader getting hit, a unit dying, fighting off the leader's home terrain, or at the wrong time of day (holy by night, evil by day); it rises on a win, a liberation or resting in a temple. Both sides of every battle, not just the player's — an enemy or neutral squad has to be drivable-off too. Below 30 it's −10% damage (`Battle.modifier()`); below 25, drive-off (already built) becomes reachable. All numbers are placeholders in `data/battle.json`'s new `morale` key; the spec gives none.
+  - Bonds (new): two units that fight 6 battles together in the same squad gain +5% damage and +5% dodge while both live, announced once in the log. Tracked on `Squad` (`bond_battles`, `bonded_pairs`), not `Unit` — an earlier draft stored it on `Unit` as direct Unit↔Unit references, which is a reference cycle RefCounted can't collect; caught because the full test suite started reporting leaked objects that a pre-change run didn't. See `DECISIONS.md`.
+  - Loyalty (new, recruited neutrals only): `Unit.recruited`/`Unit.loyalty`, set when `resolve_recruit()` succeeds. Rises on a win or with high reputation; falls sitting unused in the recruit pool. Very low loyalty warns for a day (logged) before it may actually leave the army for good (`Army.remove()`, new) — never mid-battle, since this only runs on a day change.
+  - Deferred: the spec's portrait-level visible signs (a shaken leader portrait, an uneasy one) — no portraits exist yet to shift. Every mechanic's log-line signal is in place, matching the ROADMAP's own verify line.
+  - `tests/test_hidden_mechanics.gd` (19 tests); also ran 5 real generated maps 4000 ticks each headless with no hangs or crashes.
+- **Tests:** 249 passing (`tools/run_tests.sh` on this Mac, `tools\run_tests.ps1` on Windows).
 
 ## Next up
 
-- **M4 session 4, Hidden mechanics (SPEC §12.2):** morale, loyalty, bonds, with their visible signs.
-- After that, the rest of M4 in `ROADMAP.md` order. M4 session 6 (debug panel) can build on `ui/debug_panel.gd` rather than starting fresh.
+- **M4 session 5, Victory, defeat, end screen (SPEC §6.8, §4):** all victory options, defeat conditions, end-of-map summary and bonus.
+- After that, M4 session 6 (debug panel) can build on `ui/debug_panel.gd` rather than starting fresh — the last session before the first real playtest.
 - Deferred from session 025: in-battle AI (a retreat threshold, and battle-tactic weighting per role) — currently the enemy side always uses the "best" tactic and never retreats mid-battle. Not scheduled to a specific M4 session yet.
 - **Parked for discussion after M4** (user's own notes, logged 2026-11-06, not yet decided — see `ROADMAP.md`): half-slot front/rear placement with literal coverage; unit graphics (a playing-card-style attack view, a character sheet); class/ranged-vs-melee iconography in Edit Units; a small 3-stage campaign mode layered on the single-map game.
 - Parked for later: plan icons and a more compact toolbar once its full button set is known (a note under M3 in `ROADMAP.md`).
@@ -40,7 +46,7 @@ Where the project stands, for picking up in a new session or on another machine.
 
 ## How the user works
 
-- **One git branch per session,** named `session-NNN` (next: `session-027`), cut from `main`.
+- **One git branch per session,** named `session-NNN` (next: `session-028`), cut from `main`.
 - **Commit locally only:**
   - Never push or merge; the user merges and pushes, then says "continue".
   - Commit messages end with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.

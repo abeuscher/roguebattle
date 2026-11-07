@@ -14,6 +14,8 @@
  "services": {"_note": "SPEC 15.1, placeholders. Revive restores full HP.", "heal": 20, "revive_per_stage": 50},
  "starting_reputation": 50,
  "starting_morale": 50,
+ "starting_loyalty": 50,
+ "loyalty": {"win": 5, "high_reputation": 70, "high_reputation_gain": 2, "unused": -3, "very_low": 15, "leave_chance": 0.3},
  "sight": {"base": 7, "flying": 2, "on_travel_terrain": 1, "off_travel_terrain": -1, "target_terrain": {"mountain": -2, "forest": -1}, "range": [5, 10]},
  "ranged_attack": {"range": 2, "high_ground_range": 3, "high_ground_terrains": ["mountain"], "high_ground_buildings": ["tower"], "cooldown_ticks": 120, "attack_kinds": ["Ranged", "Magic"]},
  "hex_seconds_by_tier": [1.0, 0.6, 0.3],

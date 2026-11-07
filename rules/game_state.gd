@@ -76,6 +76,7 @@ func _clock_event(event: String) -> void:
 	if event == "new_day":
 		log.add(clock.tick, "system", "Day %d begins." % clock.day())
 		_rest()
+		_loyalty_day()
 	elif event == "half_day":
 		_move_nomads()
 	if event == "noon":
@@ -194,6 +195,7 @@ func _liberated(s: Squad, b: Dictionary) -> void:
 	if s.leader and s.leader.alignment_band(data) == aligned:
 		change_charisma([s.leader], int(st["liberate_charisma"]), "liberating a %s that matches their alignment" % what)
 	change_alignment(s.units, int(st["liberate_alignment"]) * (1 if aligned == "holy" else -1), "liberating a %s" % what)
+	change_morale(s, int(data.battle["morale"]["liberation"]), "liberating a %s" % what)
 	var before := cards.size()
 	draw_card(s)
 	earn_tech_points(int(data.tech["points"]["liberation"]), "a liberation")
@@ -224,6 +226,8 @@ func _rest() -> void:
 		var b := building_at(s.hex)
 		if not b.is_empty():
 			_heal_share(s.living(), building_effect(b, s)[1])
+			if b["type"] == "temple" and not s.living().is_empty():
+				change_morale(s, int(data.battle["morale"]["temple_rest"]), "resting in a temple")
 			if s.side == "player" and b["type"] in ["town", "tower", "nomads"]:  # nomads count as towns
 				var aligned: String = data.buildings[b["type"]]["aligned"]
 				change_reputation(s, _swing(aligned, s.alignment_band(data)) * int(data.rules["standing"]["stay_reputation"]),
@@ -240,6 +244,45 @@ func _heal_share(units: Array, share: float) -> void:
 		return
 	for u in units:
 		u.hp = mini(u.max_hp(data), u.hp + maxi(1, roundi(u.max_hp(data) * share)))
+
+
+## Loyalty's daily tick (§12.2, recruited units only): sitting unused in the recruit
+## pool costs loyalty; high reputation earns it. Very low loyalty warns for a day
+## (never leaving without that warning first) before it may actually leave — this
+## only runs on a day change, so it can never happen mid-battle either.
+func _loyalty_day() -> void:
+	var l: Dictionary = data.rules["loyalty"]
+	for u in army.units():
+		if not u.recruited or not u.is_alive():
+			continue
+		var delta := 0
+		var why: Array[String] = []
+		if u in army.pool:
+			delta += int(l["unused"])
+			why.append("unused")
+		if reputation >= int(l["high_reputation"]):
+			delta += int(l["high_reputation_gain"])
+			why.append("high reputation")
+		change_loyalty(u, delta, ", ".join(why))
+		if u.loyalty >= int(l["very_low"]):
+			u.loyalty_warned = false
+			continue
+		if not u.loyalty_warned:
+			u.loyalty_warned = true
+			log.add(clock.tick, "progression", "%s is growing restless." % u.name)
+			continue
+		if rng.get_stream("loyalty").randf() < float(l["leave_chance"]):
+			_unit_leaves(u)
+
+
+## A unit whose loyalty ran out for good (§12.2): leaves the army, no sale, no gold.
+## If it was its squad's last unit and that squad was on the map, the squad leaves too.
+func _unit_leaves(u: Unit) -> void:
+	var s := army.squad_of(u)
+	army.remove(u)
+	if s and s.units.is_empty() and s in squads:
+		_leave_map(s)
+	log.add(clock.tick, "progression", "%s's loyalty runs out. They leave the army." % u.name)
 
 
 ## Nomads (§6.5) move 4–6 hexes every half day over the terrains they can camp on,
@@ -484,10 +527,32 @@ func _who(units: Array) -> String:
 	return "each unit in %s" % s.name if s else "%d units" % units.size()
 
 
+## Morale (§12.2), clamped 0-100, with a log line. Applies to any squad, not just
+## the player's — an enemy or neutral squad's morale has to move too, for it to ever
+## drop low enough to be driven off (§11.6).
+func change_morale(s: Squad, amount: int, why: String) -> void:
+	if amount == 0:
+		return
+	s.morale = clampi(s.morale + amount, 0, 100)
+	log.add(clock.tick, "progression", "%s's morale %+d (%s): now %d." % [s.name, amount, why, s.morale], s.id)
+
+
+## Loyalty (§12.2, recruited neutrals only), clamped 0-100, with a log line.
+func change_loyalty(u: Unit, amount: int, why: String) -> void:
+	if amount == 0:
+		return
+	u.loyalty = clampi(u.loyalty + amount, 0, 100)
+	log.add(clock.tick, "progression", "%s's loyalty %+d (%s): now %d." % [u.name, amount, why, u.loyalty])
+
+
+## A win: the side's enemy is wiped out, or (no one retreated) it lost the larger share of its HP.
+func _won(out: Dictionary, side: int) -> bool:
+	return out["wiped"][1 - side] or (out["retreated"] < 0 and out["hp_lost"][1 - side] > out["hp_lost"][side])
+
+
 ## After a battle (§9.5, §9.6): each living unit of your squad shifts alignment +2
 ## against an equal or stronger enemy and −2 against a weaker one; after a win, each
 ## gains 1 charisma against a stronger enemy and loses 1 against a much weaker one.
-## A win: the enemy is wiped out, or (no one retreated) it lost the larger share of its HP.
 func _battle_standing(b: Battle, out: Dictionary) -> void:
 	if b.sides[0].side != "player":  # an enemy-neutral fight (§6.7): no player squad to credit
 		return
@@ -495,7 +560,7 @@ func _battle_standing(b: Battle, out: Dictionary) -> void:
 	var units := b.sides[0].living().filter(func(u: Unit): return u in army.units())
 	var weaker := b.odds in ["Weaker", "Much weaker"]
 	change_alignment(units, int(st["battle_alignment"]) * (-1 if weaker else 1), "fighting a %s enemy" % b.odds.to_lower())
-	var won: bool = out["wiped"][1] or (out["retreated"] < 0 and out["hp_lost"][1] > out["hp_lost"][0])
+	var won := _won(out, 0)
 	if won:
 		earn_tech_points(int(data.tech["points"]["battle_win"]), "a battle won")
 	if won and b.odds in ["Stronger", "Dangerous"]:
@@ -1065,6 +1130,8 @@ func resolve_recruit(try_recruit: bool) -> void:
 		var chance := recruit_chance(player, neutral.living().size(), neutral.alignment(), large)
 		if rng.get_stream("recruit").randf() < chance:
 			for u in neutral.living():
+				u.recruited = true
+				u.loyalty = int(data.rules["starting_loyalty"])
 				army.pool.append(u)
 			if player.leader:
 				change_charisma([player.leader], 3, "recruiting the %s" % neutral.units[0].unit_class)
@@ -1257,9 +1324,73 @@ func end_battle(b: Battle) -> Dictionary:
 			order_move(s, PackedInt32Array([map.player_base if s.side == "player" else map.enemy_base]))
 			s.entering_base = s.side == "player"
 			log.add(clock.tick, "battle", "%s lost its leader and marches home." % s.name, s.id)
+	_update_morale(b, out)
+	_update_bonds(b)
+	_update_loyalty_wins(b, out)
 	_battle_standing(b, out)
 	_award_xp(b, out)
 	return out
+
+
+## Morale (§12.2): falls when outnumbered, the leader is hit, a unit dies, off home
+## terrain (the leader's native one) or fighting at the wrong time of day (holy by
+## night, evil by day); rises on a win. Both sides, win or lose, so an enemy or
+## neutral squad's morale can fall low enough to be driven off (§11.6) too.
+func _update_morale(b: Battle, out: Dictionary) -> void:
+	var m: Dictionary = data.battle["morale"]
+	for side in 2:
+		var s := b.sides[side]
+		var delta := 0
+		var why: Array[String] = []
+		if b.fought[side].size() < b.fought[1 - side].size():
+			delta += int(m["outnumbered"])
+			why.append("outnumbered")
+		if s.leader and b.events.any(func(e): return e.get("type", "") == "attack" and e.get("hit", false) and e.get("target") == s.leader):
+			delta += int(m["leader_hit"])
+			why.append("leader hit")
+		if b.fought[side].any(func(u: Unit): return not u.is_alive()):
+			delta += int(m["unit_died"])
+			why.append("a unit died")
+		if s.leader and b.terrain["key"] != data.rules["travel_types"].get(s.leader.terrain(data), ""):
+			delta += int(m["off_home_terrain"])
+			why.append("off home terrain")
+		var band := s.alignment_band(data)
+		if (band == "holy" and not b.daytime) or (band == "evil" and b.daytime):
+			delta += int(m["wrong_time_of_day"])
+			why.append("the wrong time of day")
+		if _won(out, side):
+			delta += int(m["win"])
+			why.append("a win")
+		change_morale(s, delta, ", ".join(why))
+
+
+## Bonds (§12.2): two units that fight battles_to_bond battles together in the same
+## squad gain +5% damage and +5% dodge (Battle.gd) while both live; announced once.
+func _update_bonds(b: Battle) -> void:
+	var need := int(data.battle["bonds"]["battles_to_bond"])
+	for side in 2:
+		var squad := b.sides[side]
+		var together: Array = b.fought[side]
+		for i in together.size():
+			for j in range(i + 1, together.size()):
+				var a: Unit = together[i]
+				var c: Unit = together[j]
+				var key := "%d:%d" % [mini(a.get_instance_id(), c.get_instance_id()), maxi(a.get_instance_id(), c.get_instance_id())]
+				squad.bond_battles[key] = int(squad.bond_battles.get(key, 0)) + 1
+				var already: bool = squad.bonded_pairs.any(func(p: Array): return (p[0] == a and p[1] == c) or (p[0] == c and p[1] == a))
+				if squad.bond_battles[key] >= need and not already:
+					squad.bonded_pairs.append([a, c])
+					log.add(clock.tick, "progression", "%s and %s have fought enough battles together to trust each other: they're bonded." % [a.name, c.name], squad.id)
+
+
+## Loyalty (§12.2): a recruited unit's loyalty rises after a win.
+func _update_loyalty_wins(b: Battle, out: Dictionary) -> void:
+	for side in 2:
+		if not _won(out, side):
+			continue
+		for u in b.fought[side]:
+			if u.recruited:
+				change_loyalty(u, int(data.rules["loyalty"]["win"]), "winning a battle")
 
 
 ## Every living unit of your squad earns XP (§9.4) and may level up; a leader reaching

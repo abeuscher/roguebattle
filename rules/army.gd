@@ -72,6 +72,20 @@ func move(u: Unit, cell: int, to_row := "front", to_col := -1) -> bool:
 	return true
 
 
+## Removes u from the army for good (its loyalty ran out, §12.2) — no sale, no gold.
+## If it was its squad's last unit, the now-empty squad's cell frees up too.
+func remove(u: Unit) -> void:
+	var s := squad_of(u)
+	_take(s, u)
+	if s:
+		if s.units.is_empty():
+			cells[s.id - 1] = null
+		else:
+			if s.leader == null:
+				s.leader = best_leader(s)
+			s.refresh(data)
+
+
 ## Makes u its squad's leader, if it can lead and the squad still fits its slots.
 func set_leader(u: Unit) -> bool:
 	var s := squad_of(u)

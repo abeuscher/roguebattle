@@ -63,7 +63,7 @@ Goal: a generated map the player can look at, and one squad they can move.
 | 1 | **Map 1 setup.** Roll 6 Serf-line squads with the coverage and soft rules, Opinion Leader, starting cards, tech and gold | §18 | Tests over many seeds: rules hold | Done |
 | 2 | **Enemy AI.** 10 squads with garrison, leader, base guard, raider and wildcard roles; weights from data | §12.3, §17 | Headless runs: roles behave (raider reaches a target, garrisons stay) | Done |
 | 3 | **Neutrals and recruiting.** Lairs, roamers, danger by distance, recruit or fight, race lines only from neutrals | §6.7, §16 | Tests: recruit chance formula; sim of roamer patrol | Done |
-| 4 | **Hidden mechanics.** Morale, loyalty, bonds, with their visible signs | §12.2 | Tests per rule; log messages appear | |
+| 4 | **Hidden mechanics.** Morale, loyalty, bonds, with their visible signs | §12.2 | Tests per rule; log messages appear | Done |
 | 5 | **Victory, defeat, end screen.** All victory options, defeat conditions, end-of-map summary and bonus | §6.8, §4 | Tests per condition | |
 | 6 | **Debug panel complete.** Every tool in §19.2; debug log toggle | §19.2, §19.1 | Each tool exercised; screenshot | |
 

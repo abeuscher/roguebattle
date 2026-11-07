@@ -20,11 +20,13 @@ var speed_tier := 2
 var path := PackedInt32Array()  # hexes still to enter, in order
 var rally := PackedInt32Array()  # rally points still ahead, each also on the path
 var progress := 0.0  # ticks spent so far toward entering path[0]
-var morale := 50  # 0-100, hidden (§12.2); what moves it arrives in M4
+var morale := 50  # 0-100, hidden (§12.2); below 30 deals less damage, below 25 can be driven off
 var marching_home := false  # lost its leader: heads for base on its own (§11.3)
 var entering_base := false  # leaves the map when it reaches the Player Base (§8.4)
 var capture_ticks := 0.0  # time spent so far liberating the building it stands in (§6.5)
 var tech: Array = []  # the army's tech nodes (the player's squads share GameState.tech)
+var bond_battles := {}  # "id:id" (lowest instance id first) -> battles two units have fought together, toward a bond (§12.2)
+var bonded_pairs: Array = []  # [Unit, Unit] once bonded; a +5% combat bonus while both live (Battle.gd)
 
 
 func _init(squad_id: int, squad_name: String, at_hex: int) -> void:
@@ -35,6 +37,16 @@ func _init(squad_id: int, squad_name: String, at_hex: int) -> void:
 
 func is_moving() -> bool:
 	return not path.is_empty()
+
+
+## The living unit u is bonded with (§12.2), or null.
+func bonded_partner(u: Unit) -> Unit:
+	for pair in bonded_pairs:
+		if u == pair[0] and pair[1].is_alive():
+			return pair[1]
+		if u == pair[1] and pair[0].is_alive():
+			return pair[0]
+	return null
 
 
 ## The average of its units' alignment, the leader counted twice (§10).
