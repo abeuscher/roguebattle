@@ -18,12 +18,12 @@ func setup(config: GameConfig) -> void:
 	col.add_theme_constant_override("separation", 12)
 	panel.add_child(col)
 	col.add_child(UiStyle.label("Ready to start", 34))
-	var size: String = config.values["size"]
-	var dims: Array = config.data.mapgen["sizes"][size]
+	var width := int(config.values["width"])
+	var height := int(config.values["height"])
 	for line in [
 		["Game type", "Custom map"],
 		["Map", "%s" % String(config.values["preset"]).capitalize()],
-		["Map size", "%s (%d x %d hexes)" % [size.capitalize(), dims[0], dims[1]]],
+		["Map size", "%s (%d x %d hexes)" % [GameConfig.size_name(config.data, width, height), width, height]],
 		["Seed", str(config.seed)],
 		["Share code", config.to_code()],
 	]:

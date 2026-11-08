@@ -1,5 +1,6 @@
 [
- {"key": "size", "group": "Size", "label": "Map size", "target": "map", "options": ["small", "medium", "large"]},
+ {"key": "width", "group": "Size", "label": "Map width (hexes)", "target": "map", "range": [100, 1200, 50]},
+ {"key": "height", "group": "Size", "label": "Map height (hexes)", "target": "map", "range": [60, 675, 15]},
  {"key": "preset", "group": "Land shape", "label": "Map type", "target": "map",
   "options": ["continent", "islands", "archipelago", "floating_isles", "highlands", "river_valley", "deep_forest", "tundra", "volcanic"]},
  {"key": "land_pct", "group": "Land shape", "label": "Land %", "target": "map", "range": [25, 75, 1]},

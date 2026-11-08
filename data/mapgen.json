@@ -30,7 +30,8 @@
   "neutral_danger": "low",
   "roamer_aggression": "low",
   "spawn_side": "west",
-  "size": "small",
+  "width": 400,
+  "height": 225,
   "preset": "continent",
   "terrain_amounts": {
    "forest": "medium", "desert": "low", "snow": "medium", "mountain": "medium",

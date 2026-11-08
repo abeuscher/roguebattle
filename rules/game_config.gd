@@ -5,7 +5,7 @@ extends RefCounted
 ## (victory, defeat, squad cap, fairness) feed the game. Settings and seed
 ## pack into a short share code.
 
-const CODE_VERSION := 1
+const CODE_VERSION := 2  # bumped when "size" (small/medium/large) became "width"/"height" (§6.1)
 const ALPHABET := "0123456789ABCDEFGHJKMNPQRSTVWXYZ"  # 32 symbols, no I, L, O or U
 
 var data: GameData
@@ -21,7 +21,8 @@ static func create(game_data: GameData, game_seed := 0) -> GameConfig:
 		if f["target"] == "game":
 			c.values[f["key"]] = f["default"]
 	c.values["preset"] = game_data.mapgen["defaults"]["preset"]
-	c.values["size"] = game_data.mapgen["defaults"]["size"]
+	c.values["width"] = game_data.mapgen["defaults"]["width"]
+	c.values["height"] = game_data.mapgen["defaults"]["height"]
 	c.apply_preset()
 	return c
 
@@ -36,6 +37,16 @@ static func options(f: Dictionary) -> Array:
 		out.append(v)
 		v += r[2]
 	return out
+
+
+## "Small"/"Medium"/"Large" for an exact match with data/mapgen.json's named
+## sizes (§6.1), or "Custom" for any other width and height.
+static func size_name(game_data: GameData, width: int, height: int) -> String:
+	for n in game_data.mapgen["sizes"]:
+		var dims: Array = game_data.mapgen["sizes"][n]
+		if int(dims[0]) == width and int(dims[1]) == height:
+			return String(n).capitalize()
+	return "Custom"
 
 
 func field(key: String) -> Dictionary:
@@ -54,9 +65,9 @@ func set_value(key: String, value: Variant) -> void:
 
 ## Map fields take the generator's defaults overlaid with the chosen preset's values.
 func apply_preset() -> void:
-	var s := MapGen.resolve_settings(data, {"preset": values["preset"], "size": values["size"]})
+	var s := MapGen.resolve_settings(data, {"preset": values["preset"]})
 	for f in data.config_fields:
-		if f["target"] != "map" or f["key"] in ["preset", "size"]:
+		if f["target"] != "map" or f["key"] in ["preset", "width", "height"]:
 			continue
 		var v: Variant = _lookup(s, f["key"])
 		if f.has("scale"):

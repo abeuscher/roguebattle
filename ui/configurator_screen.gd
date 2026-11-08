@@ -175,17 +175,19 @@ func _draw_stops(slider: HSlider) -> void:
 		slider.draw_circle(Vector2(x, y), 5.0, color)
 
 
-## How a slider shows option i: its label, its number, or its name (map size adds its hexes).
+## How a slider shows option i: its label, its number (width/height also name a
+## matching Small/Medium/Large), or its name.
 func _readout(f: Dictionary, i: int) -> String:
 	if f.has("labels"):
 		return str(f["labels"][i])
 	var v: Variant = GameConfig.options(f)[i]
 	if v is String:
-		var text: String = v.capitalize()
-		if f["key"] == "size":
-			var dims: Array = data.mapgen["sizes"][v]
-			text += "  ·  %d × %d" % [dims[0], dims[1]]
-		return text
+		return v.capitalize()
+	if f["key"] in ["width", "height"]:
+		var width := int(v) if f["key"] == "width" else int(config.values["width"])
+		var height := int(v) if f["key"] == "height" else int(config.values["height"])
+		var name := GameConfig.size_name(data, width, height)
+		return str(int(v)) + ("  ·  %s" % name if name != "Custom" else "")
 	return str(int(v)) if float(v) == floorf(float(v)) else str(v)
 
 
@@ -251,6 +253,8 @@ func _changed(key: String, value: Variant) -> void:
 	config.set_value(key, value)
 	if key == "preset":
 		_refresh_controls()  # the map type resets land, islands and terrain
+	elif key in ["width", "height"]:
+		_refresh_controls()  # the other one's "· Small/Medium/Large" hint may now match or not
 	_code.text = config.to_code()
 	if config.field(key)["target"] == "map":
 		_dirty = true

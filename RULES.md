@@ -9,7 +9,7 @@ This describes how the game actually plays right now, not the full design (that'
 ## Starting a map
 
 - **Title → Start → Configurator → Game summary → the map.** The configurator sets every map-generation option (size, land shape, terrain amounts, building density, road coverage, neutral density, victory/defeat toggles, squad cap, a fairness toggle), with a seed you can randomize and a live minimap preview. Settings plus seed can be copied as a short share code and reproduce the exact same map.
-- **Map sizes:** Small (400×225 hexes, the default), Medium, Large.
+- **Map size:** width and height in hexes, each its own slider (400×225 — Small — by default). Landing exactly on Small, Medium (800×450) or Large (1200×675) shows that name next to the numbers; any other combination just shows the numbers. A much smaller custom map generates and plays through in a fraction of the time, handy for a quick playtest.
 - **Map 1's setup** (the only map that exists so far) always gives you 6 starting squads, the Opinion Leader on the map, 3 random cards, 3 tech points and 500 gold — see "Your starting army" below.
 - The game opens on the battlemap with your one deployed squad standing on the Player Base.
 

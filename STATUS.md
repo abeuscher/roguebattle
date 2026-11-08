@@ -39,12 +39,17 @@ Where the project stands, for picking up in a new session or on another machine.
   - `ui/end_screen.gd`: a modal like the other popups, naming why the map ended plus gold, reputation, enemy squads defeated, towns held, and tech points (the map-completion bonus from `data/tech.json`, awarded on victory only, finally wired up). The only way out is back to the title — no second map to continue to yet.
   - **Caught a real hang, not just a wrong test:** the first version defaulted the on-by-default toggles to `true` when a `GameState` had no settings at all, which is true of most of the test suite — so nearly every other test's map looked "lost" from its very first tick, freezing the clock for good. One pre-existing test looped `while clock.minute_of_day() != noon: step()`, which then never ends. Fixed by defaulting every toggle to off instead; the real game always supplies the full settings dict, so only ad hoc test `GameState`s were affected. See `DECISIONS.md`.
   - `tests/test_victory_defeat.gd` (16 tests); also ran 5 real generated maps headless end-to-end with no player orders at all (so each lost quickly) purely to confirm the new paths run without crashing.
-- **Tests:** 265 passing (`tools/run_tests.sh` on this Mac, `tools\run_tests.ps1` on Windows).
+- **Last work (session 029), M4 session 7, Variable map size (SPEC §6.1, §6.2):** done ahead of session 6, at the user's request, for faster playtesting.
+  - The configurator's old 3-way "Map size" (Small/Medium/Large) is now two independent sliders, "Map width (hexes)" and "Map height (hexes)" (100–1200 and 60–675), defaulting to Small's 400×225. Landing exactly on a named size (Small, Medium, Large) still shows that name next to the numbers (`GameConfig.size_name()`); any other combination just shows the numbers, no "Custom" field needed anywhere else. `data/mapgen.json`'s `"sizes"` dict stays, just as the source for that naming and for `tools/map_preview.gd`'s CLI (which now also takes a literal `WxH` in place of a named size).
+  - Every place that read the old `settings["size"]` string now reads `map.width`/`map.height` directly (both already existed on `MapData`): the new-map log line, the battlemap's info line, the share code, the summary screen. `GameConfig.CODE_VERSION` bumped to 2 so an old share code is cleanly rejected instead of silently misreading into the new field layout.
+  - Checked generation at width/height down to 100×60 across four presets — all generate in well under a second with a sane building count and both bases placed; no floor beyond the slider's own 100/60 minimum was needed.
+  - A red herring while testing: a "small map plays start to finish with zero player orders" test looked hung, but the actual cause was the test script itself holding a stale reference to an enemy squad that had been wiped in combat and removed from the live simulation — the game was fine, simulating normally without it. Rewrote that test around the survive-timer instead (deterministic, doesn't depend on how combat plays out) rather than chasing combat RNG. See `DECISIONS.md`.
+  - `tests/test_map_size.gd` (4 tests, 269 total).
+- **Tests:** 269 passing (`tools/run_tests.sh` on this Mac, `tools\run_tests.ps1` on Windows).
 
 ## Next up
 
-- **M4 session 6, Debug panel complete (SPEC §19.2, §19.1):** every tool in §19.2, building on `ui/debug_panel.gd` rather than starting fresh — the last session before the first real playtest.
-- **M4 session 7, Variable map size:** a custom width/height (or a small/fast preset) in the configurator instead of only Small/Medium/Large, so a full playtest doesn't take a large map's runtime. Added to `ROADMAP.md` at the user's request (2026-11-07), for playtesting; not started.
+- **M4 session 6, Debug panel complete (SPEC §19.2, §19.1):** every tool in §19.2, building on `ui/debug_panel.gd` rather than starting fresh — the last session before the first real playtest. (Session 7 was done first, at the user's request, for faster playtesting.)
 - Deferred from session 025: in-battle AI (a retreat threshold, and battle-tactic weighting per role) — currently the enemy side always uses the "best" tactic and never retreats mid-battle. Not scheduled to a specific M4 session yet.
 - **Parked for discussion after M4** (user's own notes, logged 2026-11-06, not yet decided — see `ROADMAP.md`): half-slot front/rear placement with literal coverage; unit graphics (a playing-card-style attack view, a character sheet); class/ranged-vs-melee iconography in Edit Units; a small 3-stage campaign mode layered on the single-map game.
 - Parked for later: plan icons and a more compact toolbar once its full button set is known (a note under M3 in `ROADMAP.md`).
@@ -52,7 +57,7 @@ Where the project stands, for picking up in a new session or on another machine.
 
 ## How the user works
 
-- **One git branch per session,** named `session-NNN` (next: `session-029`), cut from `main`.
+- **One git branch per session,** named `session-NNN` (next: `session-030`), cut from `main`.
 - **Commit locally only:**
   - Never push or merge; the user merges and pushes, then says "continue".
   - Commit messages end with a `Co-Authored-By:` line naming whatever Claude model is doing the session (the harness's own attribution instructions say exactly what to write).

@@ -22,8 +22,7 @@ static func generate(game_data: GameData, game_seed: int, overrides: Dictionary 
 	g.data = game_data
 	g.settings = resolve_settings(game_data, overrides)
 	g.rng = RngStreams.new(game_seed).get_stream("map")
-	var dims: Array = game_data.mapgen["sizes"][g.settings["size"]]
-	g.map = MapData.new(int(dims[0]), int(dims[1]))
+	g.map = MapData.new(int(g.settings["width"]), int(g.settings["height"]))
 	g.map.seed = game_seed
 	g.map.settings = g.settings
 	g._layout()

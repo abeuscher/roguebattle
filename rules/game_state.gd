@@ -52,7 +52,7 @@ func _init(game_data: GameData, game_map: MapData, game_log: GameLog, game_setti
 		b["owner"] = data.buildings[b["type"]].get("owner", "neutral")
 		b["away"] = false  # nomads that moved out of sight until the next half day
 		_building_at[b["hex"]] = i
-	log.add(clock.tick, "system", "New map: seed %d, %s %s." % [map.seed, map.settings["preset"], map.settings["size"]],
+	log.add(clock.tick, "system", "New map: seed %d, %s %dx%d." % [map.seed, map.settings["preset"], map.width, map.height],
 			-1, {"settings": map.settings, "game": settings})
 
 

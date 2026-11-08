@@ -77,8 +77,8 @@ func start(game_data: GameData, game_log: GameLog, config: GameConfig, map: MapD
 	var started := Time.get_ticks_msec()
 	if map == null:
 		map = MapGen.generate(data, config.seed, config.map_overrides())
-	_info = "Seed %d  ·  %s  ·  %s %dx%d  ·  share code %s" % [config.seed, map.settings["preset"].capitalize(),
-			map.settings["size"], map.width, map.height, config.to_code()]
+	_info = "Seed %d  ·  %s  ·  %dx%d  ·  share code %s" % [config.seed, map.settings["preset"].capitalize(),
+			map.width, map.height, config.to_code()]
 	state = GameState.new(data, map, log, config.game_settings())
 	view.show_map(map, data)
 	state.setup_army(_wide_roster_count())

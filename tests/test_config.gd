@@ -5,7 +5,8 @@ var d := GameData.load_dir()
 
 func test_defaults() -> void:
 	var c := GameConfig.create(d, 42)
-	check_eq(c.values["size"], "small", "default size")
+	check_eq(int(c.values["width"]), 400, "default width")
+	check_eq(int(c.values["height"]), 225, "default height")
 	check_eq(c.values["preset"], "continent", "default map type")
 	check_eq(int(c.values["land_pct"]), 55, "continent land %")
 	check_eq(c.values["terrain_amounts.desert"], "low", "desert low by default")
