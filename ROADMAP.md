@@ -64,7 +64,8 @@ Goal: a generated map the player can look at, and one squad they can move.
 | 2 | **Enemy AI.** 10 squads with garrison, leader, base guard, raider and wildcard roles; weights from data | §12.3, §17 | Headless runs: roles behave (raider reaches a target, garrisons stay) | Done |
 | 3 | **Neutrals and recruiting.** Lairs, roamers, danger by distance, recruit or fight, race lines only from neutrals | §6.7, §16 | Tests: recruit chance formula; sim of roamer patrol | Done |
 | 4 | **Hidden mechanics.** Morale, loyalty, bonds, with their visible signs | §12.2 | Tests per rule; log messages appear | Done |
-| 5 | **Victory, defeat, end screen.** All victory options, defeat conditions, end-of-map summary and bonus | §6.8, §4 | Tests per condition | |
+| 5 | **Victory, defeat, end screen.** All victory options, defeat conditions, end-of-map summary and bonus | §6.8, §4 | Tests per condition | Done |
 | 6 | **Debug panel complete.** Every tool in §19.2; debug log toggle | §19.2, §19.1 | Each tool exercised; screenshot | |
+| 7 | **Variable map size.** Configurator takes a custom width/height (or a small/fast preset) instead of only Small/Medium/Large, so a full playtest doesn't require a large map's runtime; share code and any size-keyed logic (map generator entry point, recruiting/building counts already scale off dimensions) updated to carry arbitrary sizes | §6.2 | Tests: share code round-trips a custom size; a small custom map plays start to finish quickly | |
 
 **M4 milestone check:** first real playtest.

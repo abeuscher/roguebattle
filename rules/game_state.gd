@@ -27,6 +27,10 @@ var next_card := ""  # the next card to be drawn, rolled ahead so Foresight can 
 var card_offer: Array[String] = []  # cards to choose one from (a Seer or Oracle drew), shown by the HUD
 var tech: Array[String] = []  # tech nodes bought (§14), shared with the army and its squads
 var tech_points := 0
+var game_over := ""  # "", "victory" or "defeat" (§6.8), once a condition is met
+var game_over_reason := ""  # the sentence the end screen shows
+var enemy_squads_defeated := 0  # wiped or driven off, for "defeat N enemy squads" (§6.8)
+var _towns_held_since := -1  # tick the player started holding the required share of towns continuously; -1 if not currently
 
 
 func _init(game_data: GameData, game_map: MapData, game_log: GameLog, game_settings := {}) -> void:
@@ -53,9 +57,10 @@ func _init(game_data: GameData, game_map: MapData, game_log: GameLog, game_setti
 
 
 ## Runs the simulation for one tick. Stops early if two hostile squads meet:
-## `pending` then holds the battle until resolve_pending().
+## `pending` then holds the battle until resolve_pending(). Also stops for good
+## once `game_over` is set (§6.8).
 func step() -> void:
-	if pending or not pending_recruit.is_empty():
+	if pending or not pending_recruit.is_empty() or game_over != "":
 		return
 	for event in clock.step():
 		_clock_event(event)
@@ -69,6 +74,7 @@ func step() -> void:
 	_capture()
 	_reveal_sites()
 	_check_contact()
+	_check_game_over()
 
 
 ## Daily rest, nomads every half day, the noon ledger (§7).
@@ -143,12 +149,12 @@ func building_at(i: int) -> Dictionary:
 
 
 ## A building's numbers for a squad: [defense, HP healed per day]. Towns and towers
-## (and nomads, as towns) give more to squads of their alignment; a base gives its own side.
+## (and nomads, as towns) give more to squads of their alignment; a base gives its
+## current owner's side the bonus — a captured base (§6.8) gives it to its new owner.
 func building_effect(b: Dictionary, s: Squad) -> Array:
 	var info: Dictionary = data.buildings[b["type"]]
 	if info.has("own_base"):
-		var own: bool = info["owner"] == ("player" if s.side == "player" else "enemy")
-		return [float(info["own_base"]["defense"]), float(info["own_base"]["rest"])] if own else [0.0, 0.0]
+		return [float(info["own_base"]["defense"]), float(info["own_base"]["rest"])] if b["owner"] == s.side else [0.0, 0.0]
 	if not info.has("defense"):
 		return [0.0, 0.0]
 	var k := 1 if info.get("aligned", "") == s.alignment_band(data) else 0
@@ -160,13 +166,19 @@ func building_defense(s: Squad) -> float:
 	return building_effect(b, s)[0] if not b.is_empty() else 0.0
 
 
-## Liberation (§6.5): a player squad with a living ground unit that stays in an enemy-held
-## town or tower for 60 ticks takes it; Sapper lines take it twice as fast.
+## Liberation and capture (§6.5): a squad with a living ground unit that stays in a
+## building it doesn't already hold for 60 ticks takes it; Sapper lines take it twice
+## as fast. Works both ways (§6.8): the enemy can retake a liberated town or tower, or
+## take the Player Base for a defeat, just as the player liberates an enemy-held one or
+## takes the Enemy Base. A player capture keeps its full liberation flavor (bonus gold,
+## reputation, alignment, a card); an enemy capture just flips the owner and log line.
 func _capture() -> void:
 	var c: Dictionary = data.rules["capture"]
-	for s in player_squads():
+	for s in squads:
+		if s.side == "neutral":
+			continue
 		var b := building_at(s.hex)
-		if s.is_moving() or b.is_empty() or not data.buildings[b["type"]].get("capturable", false) or b["owner"] == "player" \
+		if s.is_moving() or b.is_empty() or not data.buildings[b["type"]].get("capturable", false) or b["owner"] == s.side \
 				or not s.living().any(func(u: Unit): return not u.has_tag(data, "flyer")):
 			s.capture_ticks = 0.0
 			continue
@@ -174,12 +186,17 @@ func _capture() -> void:
 		s.capture_ticks += float(c["sapper_speed"]) if sapper else 1.0
 		if s.capture_ticks >= float(c["ticks"]):
 			s.capture_ticks = 0.0
-			b["owner"] = "player"
-			log.add(clock.tick, "map", "%s liberates the %s at %s." % [s.name, data.buildings[b["type"]]["name"].to_lower(), map.hex_at(s.hex)], s.id)
-			var bonus := liberation_bonus()
-			gold += bonus
-			log.add(clock.tick, "economy", "Liberation bonus: %d gold." % bonus, s.id, {"reputation": reputation})
-			_liberated(s, b)
+			b["owner"] = s.side
+			var what: String = data.buildings[b["type"]]["name"].to_lower()
+			if s.side == "player":
+				log.add(clock.tick, "map", "%s liberates the %s at %s." % [s.name, what, map.hex_at(s.hex)], s.id)
+				var bonus := liberation_bonus()
+				gold += bonus
+				log.add(clock.tick, "economy", "Liberation bonus: %d gold." % bonus, s.id, {"reputation": reputation})
+				_liberated(s, b)
+			else:
+				log.add(clock.tick, "map", "%s captures the %s at %s." % [s.name, what, map.hex_at(s.hex)], s.id)
+				change_morale(s, int(data.battle["morale"]["liberation"]), "capturing a %s" % what)
 
 
 ## Standing changes for a liberation (§9.5, §9.6, §10): reputation by the squad's
@@ -217,6 +234,79 @@ func capture_progress(b: Dictionary) -> float:
 		if s.hex == b["hex"]:
 			best = maxf(best, s.capture_ticks / float(data.rules["capture"]["ticks"]))
 	return best
+
+
+## Victory and defeat (§6.8): each toggle in `settings` is checked independently; any one
+## of them met ends the map. Defeat is checked first, on the (arbitrary) call that losing
+## should win a tie. A missing toggle defaults to off, not the configurator's on-by-default
+## choice: the real game always supplies the full dict (GameConfig.game_settings()), and a
+## GameState built without one — most tests — has no opinion leader or enemy leader placed,
+## so defaulting those two to on would call the map lost from the very first tick.
+func _check_game_over() -> void:
+	if game_over != "":
+		return
+	if settings.get("defeat_leader", false):
+		var ol := opinion_leader_squad()
+		if ol == null or ol.leader == null or not ol.leader.is_alive():
+			_end_game("defeat", "The Opinion Leader has died.")
+			return
+	if settings.get("defeat_base", false):
+		var pb := building_at(map.player_base)
+		if not pb.is_empty() and pb["owner"] != "player":
+			_end_game("defeat", "The Player Base has been captured.")
+			return
+	if settings.get("victory_leader", false) and not squads.any(func(s: Squad): return s.side == "enemy" and s.role == "leader"):
+		_end_game("victory", "The enemy leader is defeated.")
+		return
+	if settings.get("victory_goal", false) and squads.any(func(s: Squad): return s.side == "player" and s.hex == map.enemy_base and not s.living().is_empty()):
+		_end_game("victory", "You reached the goal.")
+		return
+	if settings.get("victory_squads", false):
+		var n: Variant = settings.get("victory_squads_n", "all")
+		var is_all := typeof(n) == TYPE_STRING
+		var enemies_left := squads.any(func(s: Squad): return s.side == "enemy")
+		if (is_all and not enemies_left) or (not is_all and enemy_squads_defeated >= int(n)):
+			_end_game("victory", "The enemy is defeated." if is_all else "You defeated %d enemy squads." % int(n))
+			return
+	if settings.get("victory_towns", false):
+		var buildings: Array = map.buildings.filter(func(b): return b["type"] in data.rules["economy"]["income_buildings"])
+		var pct := (buildings.filter(func(b): return b["owner"] == "player").size() / float(buildings.size()) * 100.0) if not buildings.is_empty() else 0.0
+		var need := float(settings.get("victory_towns_pct", 100))
+		if pct >= need:
+			if _towns_held_since < 0:
+				_towns_held_since = clock.tick
+			elif clock.tick - _towns_held_since >= float(settings.get("victory_towns_days", 1)) * GameClock.TICKS_PER_DAY:
+				_end_game("victory", "You held %d%% of the towns for %s." % [int(need), duration_text(clock.tick - _towns_held_since)])
+				return
+		else:
+			_towns_held_since = -1
+	if settings.get("victory_timer", false) and clock.tick >= float(settings.get("victory_timer_days", 7)) * GameClock.TICKS_PER_DAY:
+		_end_game("victory", "You survived.")
+
+
+func _end_game(kind: String, reason: String) -> void:
+	game_over = kind
+	game_over_reason = reason
+	log.add(clock.tick, "system", "%s: %s" % ["Victory" if kind == "victory" else "Defeat", reason])
+	if kind == "victory":
+		earn_tech_points(int(data.tech["points"]["map_end"]), "finishing the map")
+
+
+## Stats for the end-of-map summary (§4, §6.8): gold, reputation, days played,
+## enemy squads defeated and towns held of the total.
+func end_summary() -> Dictionary:
+	var towns: Array = map.buildings.filter(func(b): return b["type"] in data.rules["economy"]["income_buildings"])
+	return {
+		"outcome": game_over,
+		"reason": game_over_reason,
+		"day": clock.day(),
+		"gold": gold,
+		"reputation": reputation,
+		"enemy_squads_defeated": enemy_squads_defeated,
+		"towns_held": towns.filter(func(b): return b["owner"] == "player").size(),
+		"towns_total": towns.size(),
+		"tech_points": tech_points,
+	}
 
 
 ## Daily rest (§6.5): squads in buildings heal their living units by the building's
@@ -1311,6 +1401,8 @@ func end_battle(b: Battle) -> Dictionary:
 				log.add(clock.tick, "battle", "%s is wiped out and carried back to base." % s.name, s.id)
 			else:
 				squads.erase(s)
+				if s.side == "enemy":
+					enemy_squads_defeated += 1
 				log.add(clock.tick, "battle", "%s is wiped out." % s.name, s.id)
 			continue
 		if out["retreated"] == side:
@@ -1511,6 +1603,8 @@ func drive_off(s: Squad, enemy: Squad) -> bool:
 	var ok := rng.get_stream("battle").randf() < drive_off_chance(s, enemy)
 	if ok:
 		squads.erase(enemy)
+		if enemy.side == "enemy":
+			enemy_squads_defeated += 1
 	log.add(clock.tick, "battle", "%s %s." % [enemy.name, "flees the map" if ok else "refuses to flee"], s.id)
 	return ok
 

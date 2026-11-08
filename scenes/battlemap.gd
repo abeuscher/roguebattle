@@ -27,6 +27,7 @@ var _log_panel: LogPanel
 var _debug_panel: DebugPanel
 var _recruit_popup: RecruitPopup
 var _liberation_popup: LiberationPopup
+var _end_screen: EndScreen
 var _menu: SquadMenu
 var _main_menu: MainMenu
 var _battle: BattleView
@@ -110,7 +111,7 @@ func _process(delta: float) -> void:
 		return
 	for i in state.clock.advance(delta):
 		state.step()
-		if state.pending or not state.pending_recruit.is_empty():
+		if state.pending or not state.pending_recruit.is_empty() or state.game_over != "":
 			break
 	if state.pending and _battle == null:
 		_open_battle()
@@ -119,6 +120,8 @@ func _process(delta: float) -> void:
 	_pump_liberations()
 	if not state.card_offer.is_empty() and _can_open() and _selected == null:
 		_open_cards(true)
+	if state.game_over != "" and _end_screen == null and _can_open():
+		_open_end_screen()
 	if state.noon_report != "":
 		hud.show_banner(state.noon_report, 5.0)
 		state.noon_report = ""
@@ -633,6 +636,15 @@ func _close_liberation_popup() -> void:
 	state.clock.release()
 
 
+## The map has ended (§6.8): the player's only way out is to the title screen.
+func _open_end_screen() -> void:
+	_end_screen = EndScreen.new()
+	_ui.add_child(_end_screen)
+	_end_screen.setup(state)
+	_end_screen.to_title.connect(func(): to_title.emit())
+	state.clock.hold()
+
+
 func _open_main_menu() -> void:
 	_main_menu = MainMenu.new()
 	_ui.add_child(_main_menu)
@@ -665,7 +677,7 @@ func _on_speed_chosen(index: int) -> void:
 ## No menu or dialog is open.
 func _can_open() -> bool:
 	return not (_log_panel or _debug_panel or _menu or _main_menu or _battle or _edit or _deploy_menu or _confirm or _building_popup \
-			or _shop or _recruit_popup or _liberation_popup)
+			or _shop or _recruit_popup or _liberation_popup or _end_screen)
 
 
 func _unhandled_input(event: InputEvent) -> void:

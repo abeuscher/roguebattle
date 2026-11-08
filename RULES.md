@@ -82,7 +82,7 @@ This describes how the game actually plays right now, not the full design (that'
 
 ## Tech tree
 
-- One army-wide tree, four tiers, six branches (Arms, Archery, Arcana, Cavalry, Beasts and flyers, Logistics) plus a terrain node per terrain per tier. You start with 3 tech points, earning more from liberations and battle wins (a map-completion bonus arrives with victory conditions — see below).
+- One army-wide tree, four tiers, six branches (Arms, Archery, Arcana, Cavalry, Beasts and flyers, Logistics) plus a terrain node per terrain per tier. You start with 3 tech points, earning more from liberations, battle wins, and a bonus for finishing the map in victory.
 - A node costs its tier number in points. A tier opens once 80% of the previous tier's branch nodes (not counting terrain nodes) are bought. Spend any time from the Tech screen.
 
 ## Your starting army (Map 1 setup)
@@ -102,7 +102,7 @@ Ten enemy squads (4 units each, no healers) are placed at the start, with distin
 - **1 Raider** — marches on whichever player-held town or tower currently has the weakest defense, or the Player Base if you don't hold any; re-targets whenever it's free to move again.
 - **3 Wildcards** — each rolls, once, to either act like a raider (marching on your weakest-held building) or to defend (march to reinforce the nearest enemy-held building that a player squad is actively fighting for); a defending wildcard that has nothing to reinforce just holds its ground.
 
-A squad that holds its post (leader, base guard, garrison) only ever moves if it's pushed back from losing a fight there — it never goes looking for a fight on its own. None of the enemy's roles currently flip a reached building back to enemy ownership; they just stand and fight whoever's there, same as any other contact.
+A squad that holds its post (leader, base guard, garrison) only ever moves if it's pushed back from losing a fight there — it never goes looking for a fight on its own. The enemy can retake a building the same way you liberate one: a living ground unit of theirs sitting unopposed in it for 60 ticks flips it back, including your own Player Base.
 
 ## Neutrals and recruiting
 
@@ -113,13 +113,19 @@ A squad that holds its post (leader, base guard, garrison) only ever moves if it
   - **Fight** skips the roll and goes straight into a normal battle.
 - This is the only way the rarer race lines (the sheet's R, N, L and T lines) enter your army — they never appear in a starting squad or an ordinary promotion.
 
+## Victory and defeat
+
+- The configurator turns each condition on or off; any one you've enabled ends the map the moment it's met (checked every tick). If both a defeat and a victory condition are met on the same tick, defeat wins.
+- **Victory**, any you've enabled: defeat the enemy leader (on by default — their squad never moves from the Enemy Base, so this always means beating or driving it off there); reach the goal (stand a living squad on the Enemy Base's hex); defeat a set number of enemy squads, or all of them; hold a share of the map's towns and towers for a set stretch of time running (losing the share partway through resets the clock); or just survive until a timer runs out.
+- **Defeat**, any you've enabled: the Opinion Leader dies (on by default); the Player Base is captured — the enemy takes it the same way you liberate a town, so this only becomes a real threat once you're not holding ground for them to march on instead.
+- The map freezes the instant it ends — no more movement, battles or ticking — and a summary shows the result, the day you ended on, your gold and reputation, enemy squads defeated, and towns held. From there the only way out is back to the title; there's no second map yet.
+
 ---
 
 ## Not yet in the game
 
 These are named in the design but not working yet — don't expect them when testing. See `ROADMAP.md` for the plan and `STATUS.md` for current session.
 
-- **Victory and defeat.** There is currently no way to win or lose a map — defeating the Enemy Base's leader, losing your own, and every other victory/defeat condition in the configurator are not yet checked. There's no end-of-map summary or bonus either.
 - **The full debug panel.** Backtick opens a small panel with just a "Wide roster" playtesting button. The rest of §19.2's tools (reveal map, teleport a squad, time controls, spawn/edit units, force a battle result, AI inspection, a headless sim runner) aren't built yet. Some debug aids exist outside that panel already: O cycles map overlays, G toggles the hex grid, H reveals hidden sites, and F8 cycles a squad's travel type for testing.
 - **In-battle AI tactics and retreat.** The enemy side always fights with the default "Best" tactic and never retreats mid-battle. A retreat threshold and per-role tactic weighting are planned but not scheduled to a specific session yet.
 - **Morale and loyalty portraits.** Both are fully working and logged (see "Units" above), but the spec's visual signs — a leader's portrait shifting from confident to shaken, an uneasy portrait at low loyalty — have no portraits to shift yet.
