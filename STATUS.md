@@ -74,8 +74,9 @@ Where the project stands, for picking up in a new session or on another machine.
 
 ## Next up
 
-- **Open question for the user:** should a retreating (or losing) squad still earn battle XP? SPEC §9.4 says yes today.
-- **M4 milestone check: the first real playtest.** Every M4 session is done.
+- **M4 session 10: playtest round 3** (user's notes, 2026-11-09, listed in `ROADMAP.md`): the battle view's look (a terrain hex background, "vs." and the battle info in the middle, smaller name backings), Cards pausing the battle, the map zoom not seen in play (a bug to chase), a quarter of the XP on retreat (settles the open question), enemies revived only at their base and heading home at half strength, and front-line units dying too fast.
+- Waiting on the user: a concept for card art.
+- **M4 milestone check: the first real playtest** after that.
 - Then the post-M4 discussions in `ROADMAP.md`: campaign and progression first (the user's top item), then unit iconography and the other parked notes.
 - Deferred from session 025: in-battle AI (a retreat threshold, and battle-tactic weighting per role) — currently the enemy side always uses the "best" tactic and never retreats mid-battle. Not scheduled to a specific M4 session yet.
 - **Parked for discussion after M4** (user's own notes, logged 2026-11-06, not yet decided — see `ROADMAP.md`): half-slot front/rear placement with literal coverage; unit graphics (a playing-card-style attack view, a character sheet); class/ranged-vs-melee iconography in Edit Units; a small 3-stage campaign mode layered on the single-map game.
