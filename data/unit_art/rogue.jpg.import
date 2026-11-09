@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://v3xtnmb5umv4"
-path="res://.godot/imported/longbowman.jpg-224069803cc2c0f95513752dd89f1133.ctex"
+uid="uid://wjc7884jc7vx"
+path="res://.godot/imported/rogue.jpg-7d0ae25aa0e933eab245f0f21c758b85.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://data/unit_art/longbowman.jpg"
-dest_files=["res://.godot/imported/longbowman.jpg-224069803cc2c0f95513752dd89f1133.ctex"]
+source_file="res://data/unit_art/rogue.jpg"
+dest_files=["res://.godot/imported/rogue.jpg-7d0ae25aa0e933eab245f0f21c758b85.ctex"]
 
 [params]
 

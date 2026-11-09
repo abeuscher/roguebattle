@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://wjc7884jc7vx"
-path="res://.godot/imported/thief.jpg-0b03032aeeafeb7d58f76136edc5b893.ctex"
+uid="uid://v3xtnmb5umv4"
+path="res://.godot/imported/bowman.jpg-f40920910d39873d7bb24d1014960d55.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://data/unit_art/thief.jpg"
-dest_files=["res://.godot/imported/thief.jpg-0b03032aeeafeb7d58f76136edc5b893.ctex"]
+source_file="res://data/unit_art/bowman.jpg"
+dest_files=["res://.godot/imported/bowman.jpg-f40920910d39873d7bb24d1014960d55.ctex"]
 
 [params]
 
