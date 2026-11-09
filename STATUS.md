@@ -67,7 +67,8 @@ Where the project stands, for picking up in a new session or on another machine.
 
 ## Next up
 
-- **M4 milestone check: the first real playtest.** Every M4 session is done.
+- **M4 session 9: playtest round 2** (user's notes, 2026-11-09, listed in `ROADMAP.md`): party names with "vs." in the battle view, the recruit result shown before battle, neutrals met only once, an animated zoom to the fight, and a question about XP for retreating.
+- **M4 milestone check: the first real playtest** after that.
 - Then the post-M4 discussions in `ROADMAP.md`: campaign and progression first (the user's top item), then unit iconography and the other parked notes.
 - Deferred from session 025: in-battle AI (a retreat threshold, and battle-tactic weighting per role) — currently the enemy side always uses the "best" tactic and never retreats mid-battle. Not scheduled to a specific M4 session yet.
 - **Parked for discussion after M4** (user's own notes, logged 2026-11-06, not yet decided — see `ROADMAP.md`): half-slot front/rear placement with literal coverage; unit graphics (a playing-card-style attack view, a character sheet); class/ranged-vs-melee iconography in Edit Units; a small 3-stage campaign mode layered on the single-map game.
