@@ -1,10 +1,15 @@
 class_name RecruitPopup
 extends Control
 ## A neutral squad met on the map (SPEC §16): shown the class, not the count, and
-## asked to Recruit or Fight. A modal: 50% dark overlay.
+## asked to Recruit or Fight. After Recruit, the same panel shows how it went before
+## any battle starts. A modal: 50% dark overlay.
 
 signal recruit
 signal fight
+signal done  # the result was read
+
+var _col := VBoxContainer.new()
+var _title: Label
 
 
 func setup(class_name_: String) -> void:
@@ -19,15 +24,30 @@ func setup(class_name_: String) -> void:
 	var panel := PanelContainer.new()
 	panel.add_theme_stylebox_override("panel", UiStyle.box(UiStyle.PANEL, 22))
 	center.add_child(panel)
-	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 10)
-	col.custom_minimum_size.x = 320
-	panel.add_child(col)
-	col.add_child(UiStyle.label("A band of %s" % class_name_, 22))
-	col.add_child(UiStyle.label("Recruit them, or fight?", 14, Color(0.7, 0.72, 0.76)))
+	_col.add_theme_constant_override("separation", 10)
+	_col.custom_minimum_size = Vector2(320, 150)
+	panel.add_child(_col)
+	_title = UiStyle.label("A band of %s" % class_name_, 22)
+	_col.add_child(_title)
+	_col.add_child(UiStyle.label("Recruit them, or fight?", 14, Color(0.7, 0.72, 0.76)))
 	var recruit_button := UiStyle.button("Recruit", 280)
 	recruit_button.pressed.connect(func(): recruit.emit())
-	col.add_child(recruit_button)
+	_col.add_child(recruit_button)
 	var fight_button := UiStyle.button("Fight", 280)
 	fight_button.pressed.connect(func(): fight.emit())
-	col.add_child(fight_button)
+	_col.add_child(fight_button)
+
+
+## Swaps the question for the outcome, in the same panel.
+func show_result(joined: bool, text: String) -> void:
+	for c in _col.get_children():
+		if c != _title:
+			c.queue_free()
+	_title.text = "They join you!" if joined else "They refuse"
+	var body := UiStyle.label(text, 14, Color(0.7, 0.72, 0.76))
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.custom_minimum_size.x = 280
+	_col.add_child(body)
+	var ok := UiStyle.button("Continue" if joined else "To battle", 280, true)
+	ok.pressed.connect(func(): done.emit())
+	_col.add_child(ok)

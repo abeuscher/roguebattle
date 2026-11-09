@@ -90,16 +90,28 @@ func setup(game_state: GameState, b: Battle, is_replay := false, wait_for_fight 
 	_build_controls()
 
 
-func _header() -> HBoxContainer:
+## Each party's name centered over its own cards, "vs." between them, and the ground,
+## time of day and attacker on a quiet line below.
+func _header() -> VBoxContainer:
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 2)
 	var row := HBoxContainer.new()
-	var a := battle.sides[0]
-	var e := battle.sides[1]
-	var title := UiStyle.label("%s%s  vs  %s" % ["Replay: " if replay else "", a.name, e.name], 24)
-	title.size_flags_horizontal = SIZE_EXPAND_FILL
-	row.add_child(title)
+	var side_w := (EDGE + CARD.x * 2 + ROW_GAP) * 1.1
+	var parts := [[battle.sides[0].name, 26, Color(LOG_COLORS[0]), side_w],
+			["vs.", 20, Color(0.75, 0.78, 0.82), FIELD.x - side_w * 2],
+			[battle.sides[1].name, 26, Color(LOG_COLORS[1]), side_w]]
+	for p in parts:
+		var l := UiStyle.label(p[0], p[1], p[2])
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		l.custom_minimum_size.x = p[3]
+		l.clip_text = true
+		row.add_child(l)
+	box.add_child(row)
 	var what := "Ranged attack" if battle.ranged_only else "%s attacks" % battle.sides[battle.attacker].name
-	row.add_child(UiStyle.label("%s  ·  %s  ·  %s" % [battle.terrain["name"], "Day" if battle.daytime else "Night", what], 18, Color(0.75, 0.78, 0.82)))
-	return row
+	var info := UiStyle.label("%s%s  ·  %s  ·  %s" % ["Replay  ·  " if replay else "", battle.terrain["name"], "Day" if battle.daytime else "Night", what], 15, Color(0.6, 0.63, 0.68))
+	info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(info)
+	return box
 
 
 func _build_controls() -> void:

@@ -2,7 +2,7 @@
 
 Where the project stands, for picking up in a new session or on another machine. Update it at the end of each session.
 
-## Where we are (2026-11-08)
+## Where we are (2026-11-09)
 
 - **M1 (Map), M2 (Battle), M3 (Army): all sessions done.** See the Status column in `ROADMAP.md`.
 - **M3 milestone check:** the user has been playing between sessions and is happy with the state of it. The two pacing flags are still open; they're logged in `DECISIONS.md`:
@@ -64,11 +64,18 @@ Where the project stands, for picking up in a new session or on another machine.
     - One cure potion per status (8 of them), used from a new Items button in battle; each shop carries 4.
     - SPEC §15.1's consumables row is updated to match (the user's design call).
   - 290 tests passing.
+- **Last work (session 032), M4 session 9, Playtest round 2:**
+  - The battle view puts each party's name over its side with "vs." between them; the old title line is gone.
+  - Recruit shows its result in the same popup before any battle ("They join you!" or "They refuse", with the chance and the main reason). `resolve_recruit()` returns `{joined, chance, text}`.
+  - A neutral squad leaves the map after any battle with the player (`_neutral_leaves()` in `end_battle`).
+  - The encounter camera glides and zooms to the fight (`MapCamera.fly_to()`, `encounter_camera` in `data/battle.json`) and stays on the map; the dialog appears below the squads once it lands.
+  - XP after a retreat follows SPEC §9.4 (every survivor earns XP); left as is, waiting on the user's call. `RULES.md` corrected.
+  - 290 tests passing.
 
 ## Next up
 
-- **M4 session 9: playtest round 2** (user's notes, 2026-11-09, listed in `ROADMAP.md`): party names with "vs." in the battle view, the recruit result shown before battle, neutrals met only once, an animated zoom to the fight, and a question about XP for retreating.
-- **M4 milestone check: the first real playtest** after that.
+- **Open question for the user:** should a retreating (or losing) squad still earn battle XP? SPEC §9.4 says yes today.
+- **M4 milestone check: the first real playtest.** Every M4 session is done.
 - Then the post-M4 discussions in `ROADMAP.md`: campaign and progression first (the user's top item), then unit iconography and the other parked notes.
 - Deferred from session 025: in-battle AI (a retreat threshold, and battle-tactic weighting per role) — currently the enemy side always uses the "best" tactic and never retreats mid-battle. Not scheduled to a specific M4 session yet.
 - **Parked for discussion after M4** (user's own notes, logged 2026-11-06, not yet decided — see `ROADMAP.md`): half-slot front/rear placement with literal coverage; unit graphics (a playing-card-style attack view, a character sheet); class/ranged-vs-melee iconography in Edit Units; a small 3-stage campaign mode layered on the single-map game.
@@ -77,7 +84,7 @@ Where the project stands, for picking up in a new session or on another machine.
 
 ## How the user works
 
-- **One git branch per session,** named `session-NNN` (next: `session-032`), cut from `main`.
+- **One git branch per session,** named `session-NNN` (next: `session-033`), cut from `main`.
 - **Commit locally only:**
   - Never push or merge; the user merges and pushes, then says "continue".
   - Commit messages end with a `Co-Authored-By:` line naming whatever Claude model is doing the session (the harness's own attribution instructions say exactly what to write).

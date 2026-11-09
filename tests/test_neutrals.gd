@@ -105,6 +105,8 @@ func test_fight_skips_straight_to_a_battle() -> void:
 	st.resolve_recruit(false)
 	check(st.pending_recruit.is_empty(), "the encounter is resolved")
 	check(st.pending != null, "straight into a battle")
+	st.resolve_pending()
+	check(n not in st.squads, "met once: the neutrals leave after the fight, whoever won")
 
 
 func test_recruit_failure_resists_and_fights_first() -> void:
@@ -116,10 +118,14 @@ func test_recruit_failure_resists_and_fights_first() -> void:
 	for u in n.units:
 		u.alignment = 100  # a full alignment gap: recruit_chance is exactly 0 (§16)
 	st.pending_recruit = {"player": p, "neutral": n, "defender": n}
-	st.resolve_recruit(true)
+	var result := st.resolve_recruit(true)
+	check(not result["joined"], "they refuse")
+	check(String(result["text"]).contains("refuse") and String(result["text"]).contains("ideals"), "the result says why: " + String(result["text"]))
 	check(st.pending_recruit.is_empty(), "the encounter is resolved")
 	check(st.pending != null, "resisted, so it fights")
 	check_eq(st.pending.first_side, 1, "the neutrals take their whole first round (§16)")
+	st.resolve_pending()
+	check(n not in st.squads, "and then they're gone")
 
 
 func test_recruit_success_joins_the_pool() -> void:
@@ -135,7 +141,8 @@ func test_recruit_success_joins_the_pool() -> void:
 	var before := st.army.pool.size()
 	var leader_charisma := p.leader.charisma
 	st.pending_recruit = {"player": p, "neutral": n, "defender": n}
-	st.resolve_recruit(true)
+	var result := st.resolve_recruit(true)
+	check(result["joined"] and String(result["text"]).contains("join"), "the result says they joined")
 	check(st.pending_recruit.is_empty() and st.pending == null, "no battle: it joined")
 	check_eq(st.army.pool.size(), before + n.units.size(), "the neutrals join the recruit pool")
 	check_eq(p.leader.charisma, leader_charisma + 3, "the leader gains charisma")

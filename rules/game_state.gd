@@ -1293,7 +1293,9 @@ func recruit_class() -> String:
 ## success the neutrals join the recruit pool and the leader gains charisma; on
 ## failure they fight having resisted, taking their whole first round. Fight skips
 ## straight to a normal battle.
-func resolve_recruit(try_recruit: bool) -> void:
+## Returns what happened, for the popup to show before any battle: {joined, chance,
+## text}. "joined" is false for Fight as well.
+func resolve_recruit(try_recruit: bool) -> Dictionary:
 	var enc := pending_recruit
 	pending_recruit = {}
 	var player: Squad = enc["player"]
@@ -1301,7 +1303,11 @@ func resolve_recruit(try_recruit: bool) -> void:
 	if try_recruit:
 		var large: bool = neutral.units[0].info(data)["size"] == "Large"
 		var chance := recruit_chance(player, neutral.living().size(), neutral.alignment(), large)
+		var result := {"joined": false, "chance": chance}
 		if rng.get_stream("recruit").randf() < chance:
+			result["joined"] = true
+			result["text"] = "The %s join you. %d %s wait in the recruit pool at the base." % [neutral.name, neutral.living().size(),
+					"unit" if neutral.living().size() == 1 else "units"]
 			for u in neutral.living():
 				u.recruited = true
 				u.loyalty = int(data.rules["starting_loyalty"])
@@ -1310,12 +1316,31 @@ func resolve_recruit(try_recruit: bool) -> void:
 				change_charisma([player.leader], 3, "recruiting the %s" % neutral.units[0].unit_class)
 			log.add(clock.tick, "map", "%s recruits the %s." % [player.name, neutral.name], player.id)
 			squads.erase(neutral)
-			return
+			return result
 		log.add(clock.tick, "map", "The %s resist recruitment." % neutral.name, player.id)
+		result["text"] = "The %s refuse to join (a %d%% chance: %s). They fight, and strike first." % [neutral.name,
+				roundi(chance * 100), _recruit_drag(player, neutral)]
 		pending = start_battle(player, neutral, neutral)
 		pending.first_side = 1
-		return
+		return result
 	pending = start_battle(player, neutral, enc["defender"])
+	return {"joined": false, "chance": 0.0, "text": ""}
+
+
+## What held a recruit chance down most (§16's three factors): the band's size, the
+## gap in alignment, or the army's reputation.
+func _recruit_drag(player: Squad, neutral: Squad) -> String:
+	var size := (10 - neutral.living().size()) / 9.0
+	var ideals := 1.0 - absf(player.alignment() - neutral.alignment()) / 100.0
+	var standing := 0.5 + reputation / 100.0
+	var low := minf(size, minf(ideals, standing))
+	if low >= 0.8:
+		return "bad luck"
+	if low == ideals:
+		return "your squad's ideals are far from theirs"
+	if low == standing:
+		return "your reputation is low"
+	return "a big band is hard to win over"
 
 
 ## Fights the pending battle to the end (the battle view may have played it already)
@@ -1512,7 +1537,18 @@ func end_battle(b: Battle) -> Dictionary:
 	_update_loyalty_wins(b, out)
 	_battle_standing(b, out)
 	_award_xp(b, out)
+	_neutral_leaves(b)
 	return out
+
+
+## A neutral squad is met once (user's playtest notes, 2026-11-09): after any battle
+## with the player, win or lose, it leaves the map rather than coming back for more.
+func _neutral_leaves(b: Battle) -> void:
+	for side in 2:
+		var s := b.sides[side]
+		if s.side == "neutral" and b.sides[1 - side].side == "player" and s in squads:
+			squads.erase(s)
+			log.add(clock.tick, "map", "The %s scatter and leave the area." % s.name, b.sides[1 - side].id)
 
 
 ## Morale (§12.2): falls when outnumbered, the leader is hit, a unit dies, off home

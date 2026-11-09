@@ -117,7 +117,7 @@ func _process(delta: float) -> void:
 		state.step()
 		if state.pending or not state.pending_recruit.is_empty() or state.game_over != "":
 			break
-	if state.pending and _battle == null and _encounter == null:
+	if state.pending and _battle == null and _encounter == null and _recruit_popup == null:
 		if _announced or state.pending.ranged_only:
 			_open_battle()
 		else:
@@ -553,10 +553,14 @@ func _close_confirm() -> void:
 func _open_encounter() -> void:
 	var b := state.pending
 	var at := [b.sides[0], b.sides[1]].map(func(s: Squad): return _tokens[s.id].position if _tokens.has(s.id) else MapView.hex_center(state.map, s.hex))
-	camera.center_on((at[0] + at[1]) / 2.0)
+	var cam: Dictionary = data.battle["encounter_camera"]
 	_encounter = EncounterPopup.new()
 	_ui.add_child(_encounter)
 	_encounter.setup(b)
+	_encounter.hide()  # until the camera lands on the fight
+	camera.fly_to((at[0] + at[1]) / 2.0, float(cam["map_share"]), float(cam["seconds"])).finished.connect(func():
+		if _encounter:
+			_encounter.show())
 	_encounter.go.connect(func():
 		_encounter.queue_free()
 		_encounter = null
@@ -657,8 +661,10 @@ func _open_recruit_popup() -> void:
 	_ui.add_child(_recruit_popup)
 	_recruit_popup.setup(state.recruit_class())
 	_recruit_popup.recruit.connect(func():
-		state.resolve_recruit(true)
-		_close_recruit_popup())
+		var result := state.resolve_recruit(true)
+		_announced = true  # the result panel already announced any fight
+		_recruit_popup.show_result(result["joined"], result["text"]))
+	_recruit_popup.done.connect(_close_recruit_popup)
 	_recruit_popup.fight.connect(func():
 		_announced = true  # the recruit popup already announced this fight
 		state.resolve_recruit(false)

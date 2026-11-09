@@ -1,8 +1,9 @@
 class_name EncounterPopup
 extends Control
 ## Shown when one of your squads runs into a hostile one (SPEC §11.1): the map is
-## paused and centered on the fight; Go to fight opens the battle view.
-## A modal: 50% dark overlay.
+## paused and the camera has flown to the fight; Go to fight opens the battle view.
+## A modal, with a light shade and the panel in the lower part of the screen so the
+## two squads stay in view at its center.
 
 signal go
 
@@ -10,11 +11,13 @@ signal go
 func setup(b: Battle) -> void:
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	var shade := ColorRect.new()
-	shade.color = Color(0, 0, 0, 0.5)
+	shade.color = Color(0, 0, 0, 0.2)
 	shade.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	add_child(shade)
 	var center := CenterContainer.new()
 	center.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	center.anchor_top = 0.62
+	center.anchor_bottom = 0.9
 	add_child(center)
 	var panel := PanelContainer.new()
 	panel.add_theme_stylebox_override("panel", UiStyle.box(UiStyle.PANEL, 22))
