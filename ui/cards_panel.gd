@@ -78,11 +78,16 @@ func _refresh() -> void:
 			_refresh(), counts[id])
 
 
-## One card face with its button (CardFace).
+## One card face (CardFace) with its button, or a blank space the button's height
+## for a card that can't be played here.
 func _row(id: String, button: String, enabled: bool, action: Callable, count := 1) -> void:
-	var b := UiStyle.button(button, 140, enabled)
-	b.disabled = not enabled
-	b.tooltip_text = "" if enabled else "Play it during a battle."
+	var b := UiStyle.button(button, 140, true)
+	if not enabled:
+		var gap := Control.new()
+		gap.custom_minimum_size.y = b.get_combined_minimum_size().y
+		b.free()
+		_list.add_child(CardFace.make(state.data, id, count, gap))
+		return
 	b.pressed.connect(action)
 	_list.add_child(CardFace.make(state.data, id, count, b))
 

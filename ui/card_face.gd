@@ -1,6 +1,7 @@
 class_name CardFace
 ## A card drawn as a card (SPEC §13): the animal's line drawing on parchment at the
-## top, its name, then what it does at the bottom, with an optional button under that.
+## top, its name, then what it does at the bottom, with an optional button (or a
+## blank space of the same height) under that.
 ## Drawings are data/card_art/<card id>.svg; a card without one just shows its text.
 
 const SIZE := Vector2(210, 360)
@@ -10,7 +11,7 @@ const PARCHMENT := Color("#efe3c6")
 static var _art := {}  # card id -> Texture2D, or null when there's no drawing
 
 
-static func make(data: GameData, id: String, count := 1, button: Button = null) -> PanelContainer:
+static func make(data: GameData, id: String, count := 1, button: Control = null) -> PanelContainer:
 	var c: Dictionary = data.cards["cards"][id]
 	var tile := PanelContainer.new()
 	var look := UiStyle.box(Color("#2a2433"), 10)
