@@ -40,10 +40,32 @@ func setup(game_state: GameState, building: Dictionary, drawn_card: String) -> v
 			_card(col, id, "", "Take", func():
 				state.choose_card(id)
 				closed.emit())
+	_hand(col)
 	if not _offering:
 		var close := UiStyle.button("Close (Esc)", 280)
 		close.pressed.connect(func(): closed.emit())
 		col.add_child(close)
+
+
+## A "View all cards" toggle that lists the current hand inside this dialog.
+func _hand(col: VBoxContainer) -> void:
+	var toggle := UiStyle.button("View all cards (%d)" % state.cards.size(), 280)
+	toggle.disabled = state.cards.is_empty()
+	col.add_child(toggle)
+	var list := VBoxContainer.new()
+	list.visible = false
+	col.add_child(list)
+	var counts := {}
+	for id in state.cards:
+		counts[id] = counts.get(id, 0) + 1
+	for id in counts:
+		var c: Dictionary = state.data.cards["cards"][id]
+		var l := UiStyle.label("%s%s  ·  %s" % [c["name"], "  ×%d" % counts[id] if counts[id] > 1 else "", c["text"]], 14, Color(0.8, 0.82, 0.86))
+		l.autowrap_mode = TextServer.AUTOWRAP_WORD
+		list.add_child(l)
+	toggle.pressed.connect(func():
+		list.visible = not list.visible
+		toggle.text = ("Hide cards (%d)" if list.visible else "View all cards (%d)") % state.cards.size())
 
 
 func _card(col: VBoxContainer, id: String, prefix: String, button_text: String, action: Callable) -> void:

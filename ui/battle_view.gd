@@ -20,6 +20,7 @@ const TACTIC_TIPS := {"best": "Each unit hits the target it hurts most", "strong
 
 var state: GameState
 var battle: Battle
+var replay := false  # the debug panel's replay (§19.2): copies of the squads, nothing on the map changes
 var _view: Dictionary  # data.battle["view"]: pacing
 var _ground := Panel.new()
 var _field := Control.new()  # cards and floating numbers, placed by hand
@@ -42,9 +43,10 @@ var _retreat_btn: Button
 var _tactic := OptionButton.new()
 
 
-func setup(game_state: GameState, b: Battle) -> void:
+func setup(game_state: GameState, b: Battle, is_replay := false) -> void:
 	state = game_state
 	battle = b
+	replay = is_replay
 	_view = state.data.battle["view"]
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	var shade := ColorRect.new()
@@ -87,7 +89,7 @@ func _header() -> HBoxContainer:
 	var row := HBoxContainer.new()
 	var a := battle.sides[0]
 	var e := battle.sides[1]
-	var title := UiStyle.label("%s  vs  %s" % [a.name, e.name], 24)
+	var title := UiStyle.label("%s%s  vs  %s" % ["Replay: " if replay else "", a.name, e.name], 24)
 	title.size_flags_horizontal = SIZE_EXPAND_FILL
 	row.add_child(title)
 	var what := "Ranged attack" if battle.ranged_only else "%s attacks" % battle.sides[battle.attacker].name
@@ -131,6 +133,9 @@ func _build_controls() -> void:
 	var skip := UiStyle.button("Skip to end", 170)
 	skip.pressed.connect(_skip)
 	_controls.add_child(skip)
+	if replay:
+		_retreat_btn.disabled = true
+		_cards_btn.disabled = true
 
 
 func _update_speed() -> void:
@@ -281,7 +286,10 @@ func _play(e: Dictionary, animate: bool) -> float:
 
 
 func _log(e: Dictionary) -> void:
-	var line := battle.log_line(e).replace("[", "[lb]")
+	var line := battle.log_line(e)
+	if state.log.show_hidden and not e.get("hidden", {}).is_empty():
+		line += "  " + JSON.stringify(e["hidden"])
+	line = line.replace("[", "[lb]")
 	if e["type"] == "round":
 		_ticker.append_text("[color=#ffe08a]%s[/color]\n" % line)
 	else:
@@ -361,7 +369,7 @@ func _finish() -> void:
 	for c in _controls.get_children():
 		if c is BaseButton:
 			c.disabled = true
-	var out := state.resolve_pending()
+	var out := battle.finish() if replay else state.resolve_pending()
 	var player := battle.sides[0]
 	var enemy := battle.sides[1]
 	var box := PanelContainer.new()
@@ -404,7 +412,7 @@ func _finish() -> void:
 		buttons.add_child(drive)
 	col.add_child(note)
 	var go := UiStyle.button("Continue", 200, true)
-	go.pressed.connect(func(): finished.emit(out["text"]))
+	go.pressed.connect(func(): finished.emit(out.get("text", "Replay finished.")))
 	buttons.add_child(go)
 	col.add_child(buttons)
 	var dim := ColorRect.new()

@@ -43,7 +43,10 @@ func _ready() -> void:
 	_squad.item_selected.connect(func(_i): _refresh())
 	top.add_child(_squad)
 	_hidden.text = "Show hidden values (debug)"
-	_hidden.toggled.connect(func(_on): _refresh())
+	_hidden.toggled.connect(func(on: bool):
+		if _log:
+			_log.show_hidden = on
+		_refresh())
 	top.add_child(_hidden)
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = SIZE_EXPAND_FILL
@@ -60,6 +63,7 @@ func _ready() -> void:
 
 func show_log(log: GameLog) -> void:
 	_log = log
+	_hidden.set_pressed_no_signal(log.show_hidden)
 	_squad.clear()
 	_squad.add_item("All squads")
 	_squad.set_item_metadata(0, -1)

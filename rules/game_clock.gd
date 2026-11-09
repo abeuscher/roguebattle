@@ -16,6 +16,8 @@ var _speeds: Array
 var _ticks_per_second: float
 var _carry := 0.0  # fraction of a tick owed from earlier frames
 var _holds := 0
+var frozen := false  # debug (§19.2): time of day stands still while ticks still pass
+var _frozen_offset := 0  # ticks the shown time lags behind `tick` from freezing
 
 
 func _init(rules: Dictionary, start_tick := 0) -> void:
@@ -65,6 +67,9 @@ func fraction() -> float:
 func step() -> PackedStringArray:
 	tick += 1
 	var events := PackedStringArray()
+	if frozen:
+		_frozen_offset -= 1
+		return events
 	match minute_of_day():
 		0:
 			events.append_array(["new_day", "half_day"])
@@ -77,12 +82,18 @@ func step() -> PackedStringArray:
 	return events
 
 
+## Debug (§19.2): jumps forward to the next time the clock reads `minute` (0-1439),
+## without the scheduled events in between.
+func set_minute(minute: int) -> void:
+	tick += posmod(minute - minute_of_day(), TICKS_PER_DAY)
+
+
 func day() -> int:
-	return tick / TICKS_PER_DAY + 1
+	return (tick + _frozen_offset) / TICKS_PER_DAY + 1
 
 
 func minute_of_day() -> int:
-	return tick % TICKS_PER_DAY
+	return (tick + _frozen_offset) % TICKS_PER_DAY
 
 
 func is_day() -> bool:

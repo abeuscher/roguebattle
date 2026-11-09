@@ -73,6 +73,9 @@ func start_game() -> void:
 	b.to_title.connect(show_title)
 	b.quit_game.connect(func(): get_tree().quit())
 	b.save_settings.connect(_save_settings)
+	b.regenerate.connect(func(seed: int):
+		config.seed = seed
+		start_game())
 
 
 ## The configurator starts from the last saved settings (seed included), or the defaults.

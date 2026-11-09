@@ -28,6 +28,16 @@ var loyalty := 0  # 0-100, recruited units only; set from data.rules.starting_lo
 var loyalty_warned := false  # had a day's notice at very low loyalty; clears once loyalty recovers
 
 
+## A deep copy (the debug panel's battle replay, §19.2).
+func clone() -> Unit:
+	var c := Unit.new()
+	for p in get_property_list():
+		if p["usage"] & PROPERTY_USAGE_SCRIPT_VARIABLE:
+			var v = get(p["name"])
+			c.set(p["name"], v.duplicate(true) if v is Dictionary or v is Array else v)
+	return c
+
+
 ## Rolls a new unit of `class_name` (§9.3): base stats, flex points weighted toward
 ## key stats, alignment inside the class's lean, hidden growth, talent and luck, and a name.
 static func roll(data: GameData, unit_class_name: String, rng: RandomNumberGenerator, names: NameBook) -> Unit:

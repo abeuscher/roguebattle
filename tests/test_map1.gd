@@ -138,3 +138,24 @@ func test_reroll_wide_roster_replaces_the_army() -> void:
 	check_eq(st.player_squads()[0].hex, st.map.player_base, "the new one is at the Player Base")
 	check_eq(st.gold, gold, "gold is untouched")
 	check_eq(st.cards.size(), cards, "cards are untouched")
+
+
+## Every generated squad (player, enemy, neutral) starts with its rows evened out:
+## neither row more than one unit over half (5 units 3:2 or 2:3, never 4:1). User's
+## playtest note, see DECISIONS.md session 030.
+func test_generated_squads_have_balanced_rows() -> void:
+	for seed_ in [3, 11, 27]:
+		var m := MapGen.generate(d, seed_, {"width": 160, "height": 90})
+		var st := GameState.new(d, m, GameLog.new())
+		st.setup_army()
+		st.place_enemies()
+		st.place_neutrals()
+		var all: Array = st.army.squads() + st.squads.filter(func(s: Squad): return s.side != "player")
+		check(all.size() > 6, "enemies and neutrals placed too (seed %d)" % seed_)
+		for s: Squad in all:
+			var f := s.row("front").size()
+			var b := s.row("back").size()
+			check(absi(f - b) <= 1, "%s (%s) rows %d:%d (seed %d)" % [s.name, s.side, f, b, seed_])
+			for which in ["front", "back"]:
+				for i in s.row(which).size():
+					check(s.at(which, i) != null, "%s %s positions run 0..n-1 (seed %d)" % [s.name, which, seed_])

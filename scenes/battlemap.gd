@@ -8,6 +8,7 @@ extends Node2D
 signal to_title
 signal quit_game
 signal save_settings
+signal regenerate(seed: int)  # debug panel: a fresh map from this seed, same settings
 
 const NIGHT := Color(0.45, 0.5, 0.78)  # map tint at night
 const ENEMY := Color("#c8402f")
@@ -222,13 +223,34 @@ func _update_paths() -> void:
 	var paths := view.paths
 	paths.committed.clear()
 	for s in state.squads:
-		if s.is_moving() and not (_planning and s == _selected):
+		if s.side == "player" and s.is_moving() and not (_planning and s == _selected):  # enemy routes would give hidden squads away (§8.5)
 			paths.committed.append(_line(s.hex, s.path))
 	paths.planned = _line(_selected.hex, _planned) if _planning else PackedVector2Array()
 	paths.rally.clear()
 	for p in (_points if _planning else PackedInt32Array()):
 		paths.rally.append(MapView.hex_center(state.map, p))
+	_update_debug_paths(paths)
 	paths.queue_redraw()
+
+
+## Debug overlays (§19.2): enemy and neutral roles and targets, player sight radii.
+func _update_debug_paths(paths: PathView) -> void:
+	paths.ai_lines.clear()
+	paths.sight_rings.clear()
+	if paths.show_ai:
+		for s in state.squads:
+			if s.side == "player":
+				continue
+			var target := s.path[s.path.size() - 1] if s.is_moving() else -1
+			var role := s.role.replace("_", " ") + (" (%s)" % s.ai_mode if s.ai_mode != "" else "")
+			var at: Vector2 = _tokens[s.id].position if _tokens.has(s.id) else MapView.hex_center(state.map, s.hex)
+			paths.ai_lines.append([at, MapView.hex_center(state.map, target) if target >= 0 else at,
+					"%s: %s" % [role, "moving" if target >= 0 else "holds"]])
+	if paths.show_sight:
+		var step := MapView.hex_center(state.map, 0).distance_to(MapView.hex_center(state.map, state.map.neighbor_indices(0)[0]))
+		for s in state.player_squads():
+			if _tokens.has(s.id):
+				paths.sight_rings.append([_tokens[s.id].position, state.sight(s, s.hex) * step])
 
 
 func _line(start: int, route: PackedInt32Array) -> PackedVector2Array:
@@ -574,8 +596,21 @@ func _close_log() -> void:
 func _open_debug_panel() -> void:
 	_debug_panel = DebugPanel.new()
 	_ui.add_child(_debug_panel)
-	_debug_panel.setup()
+	var under := _hex_at(get_global_mouse_position())
+	_debug_panel.setup(state, view, under)
 	_debug_panel.closed.connect(_close_debug_panel)
+	_debug_panel.changed.connect(func():
+		_sync_tokens()
+		hud.set_squads(state.player_squads()))
+	_debug_panel.regenerate.connect(func(seed: int): regenerate.emit(seed))
+	_debug_panel.replay.connect(func():
+		var b := DebugTools.replay(state)
+		_close_debug_panel()
+		_battle = BattleView.new()
+		_ui.add_child(_battle)
+		_battle.setup(state, b, true)
+		_battle.finished.connect(_close_battle)
+		state.clock.hold())
 	_debug_panel.wide_roster.connect(func():
 		for s in state.player_squads():  # the reroll renumbers from 1, which could collide with these ids
 			if _tokens.has(s.id):

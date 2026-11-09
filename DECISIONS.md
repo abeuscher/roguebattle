@@ -354,3 +354,35 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **Picked a slider floor (100×60) by testing it, not guessing.** Ran `MapGen.generate()` at 100×60, 150×90 and 200×120 across four presets (continent, islands, floating_isles, river_valley): all generated in well under a second, with a sane building count and both bases placed every time. No evidence the generator needs a higher floor than the slider's own range, so none was added.
 - **A debugging detour, kept here so it isn't repeated:** a test that let a small map run start-to-finish with *zero* player orders looked hung — the raider squad's hex appeared frozen for thousands of ticks. The real cause: the test captured `var raider := st.squads.filter(...)[0]` once, and that specific squad was later wiped in combat and `squads.erase()`'d from the live simulation — the GDScript variable still happily pointed at the now-detached object, frozen at its last position, while the rest of the game kept running fine without it. Confirmed by instrumenting `_run_enemy_ai()` directly: it had in fact stopped being called for that squad at all (because it was no longer in `squads`), not stopped giving it orders. The underlying flakiness — whether an undefended map reaches an ending in a bounded number of ticks with no player participation — depends on combat RNG (does a raider reach the player base before getting waylaid by a neutral) and isn't something this feature should be tested against. Rewrote the test around `victory_timer` (survive one day) instead, which is deterministic regardless of how combat goes, and is what "plays start to finish quickly" actually needs to demonstrate: generation plus a day of ticks on a small map completes fast.
 - **Tests:** `tests/test_map_size.gd`, 4 tests (custom dimensions actually generate that size; `size_name()` for all three named sizes plus a custom one; a share code round-trips a custom size; a 100×60 map generates and simulates a full day in well under a playtest's patience). 269 total.
+
+## Session 030 (2026-11-08): debug panel, first playtest fixes
+
+- **The user's playtest notes are folded into the plan** (`ROADMAP.md`). Five small fixes were done this session. The battle-start pause, an Options screen, and shop stock and potions became M4 session 8. Campaign/progression and unit iconography are parked as the first post-M4 discussions.
+- **Balanced rows for every generated squad** (the user: "imbalanced squads are not successful in battle").
+  - `Squad.balance_rows()` runs after the player's starting squads, enemy squads and neutral squads are formed. Neither row may hold more than one unit over half: 5 units split 3:2 or 2:3, 4 units 2:2.
+  - It moves non-leaders out of the full row, preferring the unit with the most attacks in the other row (role template counts); a tie goes to the rightmost.
+  - It runs after forming, not on the build lists, because a neutral squad only knows how many units fit once they're added.
+  - The enemy builds in `data/enemy.json` are 3:1, so every enemy squad now plays 2:2. That changes enemy play, but the user asked for all squads.
+  - Squads built by hand (tests, Edit Units moves) aren't touched.
+- **Enemy routes hidden.** `_update_paths()` drew every moving squad's route, so a hidden enemy's line gave its position away (§8.5). Only player routes are drawn now.
+- **The level earmark and first names** are on the Edit Units overview's small unit chips only, per the user's answer. The chip is now 72 px wide instead of 62, so first names fit.
+- **"View all cards" on the liberation popup** is a toggle that lists the current hand inside the same dialog. It doesn't open the Cards panel on top.
+- **The debug panel's rules live in `rules/debug_tools.gd`** (`DebugTools`), so tests can run them; the panel only shows state and passes input on.
+  - The flags the simulation checks are on `GameState`: `debug_reveal`, `debug_freeze_ai`, `debug_force`, `debug_fairness` and `last_battle`.
+  - "At the cursor" means the hex under the mouse when backtick was pressed, since the panel covers the map.
+- **"Freeze the clock" freezes the time of day** (`GameClock.frozen`). Ticks still pass, so movement and cooldowns work, but the shown time and day stand still and no day events fire. A plain pause already exists on Space.
+  - "Set time of day" jumps forward to that hour without running the events in between.
+- **A forced outcome is a standing setting** that applies to every battle a player squad joins. It isn't per battle: the panel can't open during a battle (the battle view is modal), and a standing setting suits repeated testing.
+  - Win or loss: the losing side's living units drop to 0 HP when the battle starts.
+  - Draw: `Battle.halted` ends the battle before anyone acts.
+- **Replay.** `start_battle` snapshots both squads (deep copies via `Unit.clone()`) and the battle RNG stream's seed and state. Replay then fights the same battle on fresh copies in the battle view with `replay = true`. It skips `resolve_pending`, so nothing on the map changes.
+  - Cards and mid-battle tactic changes aren't recorded, so a battle that used them can replay differently.
+- **Each fairness rule can be switched off** (`Battle.fairness_rules`).
+  - The spec gives no "unfair" damage spread, so switching spread off uses a placeholder ±25% (`spread_unfair` in `data/battle.json`).
+  - With the other three off, the game uses a plain d100 hit roll, a flat crit chance and no streak breaker.
+- **"Show hidden numbers" is one switch,** `GameLog.show_hidden`. The log panel's existing checkbox and the battle view's ticker share it. That covers §19.1's debug log toggle.
+- **The sight radius overlay is an approximation.** It draws one ring per player squad, at that squad's sight on its own hex, not a per-hex coverage map, because the target-terrain modifier changes from hex to hex.
+- **The AI overlay** shows each squad's role, its wildcard mode, and "moving" or "holds", with a line to the end of its route. Neutral roamers are included.
+- **The Simulation tab** runs `BattleSim` on the two picked squads' builds (classes and rows), so the units are freshly rolled, not the exact units picked. The report says so.
+- **`tools/run_tests.ps1`** now falls back to the Godot 4.7.2 console binary.
+- **Tests:** `tests/test_debug_tools.gd` has 13 tests, one or more per tool. `test_map1.gd` gained one for balanced rows on real generated maps. 283 total.

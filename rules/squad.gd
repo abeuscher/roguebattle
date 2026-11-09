@@ -106,6 +106,39 @@ func at(which: String, column: int) -> Unit:
 	return null
 
 
+## Evens out a freshly generated squad's rows so neither holds more than one unit
+## over half (5 units: 3:2 or 2:3; 4 units: 2:2), never 4:1 (user's playtest note,
+## see DECISIONS.md session 030). Moves non-leaders from the full row, preferring
+## the one with the most attacks in the other row (role template counts), then
+## renumbers each row's positions from 0.
+func balance_rows(data: GameData) -> void:
+	var lo := floori(units.size() / 2.0)
+	var hi := units.size() - lo
+	while true:
+		var front := row("front").size()
+		var to := "back" if front > hi else ("front" if front < lo else "")
+		if to == "":
+			break
+		var from := "front" if to == "back" else "back"
+		var pool := row(from).filter(func(u: Unit): return u != leader)
+		if pool.is_empty():
+			pool = row(from)
+		var best: Unit = null
+		var best_count := -1
+		for u: Unit in pool:
+			var n := int(data.role_templates[u.info(data)["role"]][to + "_count"])
+			if n > best_count or (n == best_count and u.col > best.col):
+				best = u
+				best_count = n
+		best.row = to
+		best.col = next_col(to)
+	for which in ["front", "back"]:
+		var r := row(which)
+		r.sort_custom(func(a: Unit, b: Unit): return a.col < b.col)
+		for i in r.size():
+			r[i].col = i
+
+
 ## The unit in the other row at the same position: behind a front-row unit, or in front of a back-row one.
 func across(u: Unit) -> Unit:
 	return at("back" if u.row == "front" else "front", u.col)

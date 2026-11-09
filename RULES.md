@@ -22,12 +22,13 @@ This describes how the game actually plays right now, not the full design (that'
 - **Roads** connect the visible buildings and bases; a non-flying squad moves at ×0.75 time on them.
 - **Day and night:** day 06:00–18:00, night 18:00–06:00. Holy units fight +15% by day and −15% at night; evil units the reverse; neutral units are unaffected.
 - **Game speed:** five tiers (×0.25, ×0.5, ×1, ×2, ×4), PgUp/PgDn to change, Space to pause. A day at normal speed takes 5 real minutes. Opening any menu or a battle pauses the clock too.
-- **Fog of war:** terrain is always visible; enemy and neutral squads only show within your nearest squad's sight radius (base 7 hexes, further out while flying or on your own travel terrain, closer in mountains or forest, clamped 5–10 and never shown as a number). Hidden sites reveal the same way.
+- **Fog of war:** terrain is always visible; enemy and neutral squads only show within your nearest squad's sight radius (base 7 hexes, further out while flying or on your own travel terrain, closer in mountains or forest, clamped 5–10 and never shown as a number). Hidden sites reveal the same way. Enemy and neutral routes are never drawn on the map, only your own.
 - **The log (L)** records every battle action, every map order and arrival, every economic flow, and every progression change, filterable by squad and category. A debug toggle in it shows the hidden numbers behind each entry (hit chance, the actual roll, growth, luck, and so on).
 
 ## Squads and movement
 
 - Each squad has a **front row** and a **back row**; a unit's class decides whether it fights (and is attacked) from the front or back.
+- **Every squad the game generates starts with its rows evened out**: yours, the enemy's and the neutrals'. 5 units split 3:2 or 2:3, 4 units 2:2, never 4:1. The units moved are the ones that fight about as well from either row. You can still rearrange your own however you like in Edit Units.
 - **Slots:** every squad starts with 5. A Small unit costs 1 slot, Large costs 2, and two Tiny units can share a single slot. A leader earns +1 slot at level 5/10/15/20, but only if their charisma is at least 5 × their level at that moment (a Herald or Standard-Bearer in the squad helps toward this).
 - **Travel type:** a squad's one native terrain, decided by a weighted vote of its living units' home terrain (Small 1, the leader and Large units 2, Tiny ½; ties go to the leader). Moving through that terrain costs the squad its base speed; other terrain costs more (see difficulty above). A squad that's entirely flyers moves as Sky (flies over everything but air gaps); a squad that's entirely water natives or amphibians can cross deep water.
 - **Speed tier** is set by the squad's slowest living unit and decides how fast it crosses a hex; losing units to death slows the squad further, proportional to the slots lost.
@@ -94,7 +95,7 @@ This describes how the game actually plays right now, not the full design (that'
 
 ## The enemy
 
-Ten enemy squads (4 units each, no healers) are placed at the start, with distinct jobs:
+Ten enemy squads (4 units each, 2 front and 2 back, no healers) are placed at the start, with distinct jobs:
 
 - **1 Leader** — holds the Enemy Base and never moves.
 - **1 Base guard** — stationed beside the Enemy Base, never moves.
@@ -122,11 +123,24 @@ A squad that holds its post (leader, base guard, garrison) only ever moves if it
 
 ---
 
+## Testing tools (debug panel)
+
+Backtick opens the debug panel. It's for testers only and isn't part of the game. Squad tools act on the squad you pick at the top, and "at the cursor" means the hex under the mouse when you opened the panel.
+
+- **Map:** reveal every enemy and hidden site; teleport a squad; a fresh map from any seed with the same settings; map overlays (terrain, movement cost, roads, buildings per quadrant, lair danger), the hex grid, and your squads' sight radius.
+- **Time:** jump to any hour, run the map on for N hours, or freeze the time of day while everything else keeps going.
+- **Units:** spawn a squad of any class and size for any side; set a squad's level, a stat or alignment; heal and revive all your units; remove a squad; the Wide roster button (16 varied squads).
+- **Resources:** add gold, tech points or any card.
+- **Battle:** force every battle to a win, loss or draw; replay the last battle with the same rolls (on copies, so nothing on the map changes; cards played and tactic changes made the first time aren't replayed); show hidden numbers in the log and battle view; switch off each fairness rule.
+- **AI:** show every enemy and neutral squad's role and whether it's moving, with a line to its target; freeze enemy and neutral AI.
+- **Simulation:** fight two squads' builds against each other N times and report win rates and HP lost.
+
+Outside the panel: O cycles overlays, G the grid, H hidden sites, F8 a squad's travel type.
+
 ## Not yet in the game
 
 These are named in the design but not working yet — don't expect them when testing. See `ROADMAP.md` for the plan and `STATUS.md` for current session.
 
-- **The full debug panel.** Backtick opens a small panel with just a "Wide roster" playtesting button. The rest of §19.2's tools (reveal map, teleport a squad, time controls, spawn/edit units, force a battle result, AI inspection, a headless sim runner) aren't built yet. Some debug aids exist outside that panel already: O cycles map overlays, G toggles the hex grid, H reveals hidden sites, and F8 cycles a squad's travel type for testing.
 - **In-battle AI tactics and retreat.** The enemy side always fights with the default "Best" tactic and never retreats mid-battle. A retreat threshold and per-role tactic weighting are planned but not scheduled to a specific session yet.
 - **Morale and loyalty portraits.** Both are fully working and logged (see "Units" above), but the spec's visual signs — a leader's portrait shifting from confident to shaken, an uneasy portrait at low loyalty — have no portraits to shift yet.
 - **Maps 2 and 3, the campaign layer, difficulty settings, and final art** are all explicitly out of scope for this build (`SPEC.md` §2).

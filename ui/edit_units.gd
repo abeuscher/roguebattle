@@ -780,7 +780,7 @@ class Chip extends Control:
 		color = colors.get(kind, Color.GRAY)
 		var c: Dictionary = u.info(data)
 		line = "Lv %d  ·  %s" % [u.level, c["front_attack"] if u.row == "front" or squad == null else c["back_attack"]]
-		custom_minimum_size = {"compact": Vector2(62, 48), "wide": Vector2(272, 58), "slot": Vector2(148, 104), "menu": Vector2(104, 70)}[mode]
+		custom_minimum_size = {"compact": Vector2(72, 48), "wide": Vector2(272, 58), "slot": Vector2(148, 104), "menu": Vector2(104, 70)}[mode]
 		mouse_default_cursor_shape = CURSOR_DRAG
 
 	func _draw() -> void:
@@ -802,12 +802,14 @@ class Chip extends Control:
 				draw_rect(Rect2(10, size.y - 16, size.x - 20, 6), Color(0.05, 0.05, 0.06))
 				draw_rect(Rect2(10, size.y - 16, (size.x - 20) * share, 6), fill)
 			"compact":
-				draw_string(font, Vector2(8, 20), unit.unit_class, HORIZONTAL_ALIGNMENT_LEFT, size.x - (22 if leader else 10), 11, ink)
+				draw_string(font, Vector2(8, 18), unit.name.get_slice(" ", 0), HORIZONTAL_ALIGNMENT_LEFT, size.x - 24, 11, ink)
+				var marks := (1 if leader else 0) + (1 if promotable else 0)
+				draw_string(font, Vector2(8, 32), unit.unit_class, HORIZONTAL_ALIGNMENT_LEFT, size.x - 12 - 12 * marks, 10, ink.darkened(0.3))
 				if leader:
-					_star(Vector2(size.x - 10, 15), 6.0)
+					_star(Vector2(size.x - 10, 28), 5.5)
 				if promotable:
-					_arrow(Vector2(size.x - 10, 33), 5.0)
-				draw_string(font, Vector2(8, 34), "Lv %d" % unit.level, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, ink.darkened(0.3))
+					_arrow(Vector2(size.x - (22 if leader else 10), 28), 4.5)
+				_earmark(font, dead)
 				draw_rect(Rect2(6, size.y - 9, size.x - 12, 4), Color(0.05, 0.05, 0.06))
 				draw_rect(Rect2(6, size.y - 9, (size.x - 12) * share, 4), fill)
 			_:
@@ -826,6 +828,13 @@ class Chip extends Control:
 				if mode == "slot" or mode == "wide":
 					draw_string(font, Vector2(size.x - 80, 38 if mode == "wide" else 74), "%d/%d" % [unit.hp, max_hp] if not dead else "Fallen",
 							HORIZONTAL_ALIGNMENT_RIGHT, 68, 11, ink.darkened(0.2))
+
+	## The level as a small number on a folded-corner triangle, top right.
+	func _earmark(font: Font, dead: bool) -> void:
+		var e := 20.0
+		draw_colored_polygon(PackedVector2Array([Vector2(size.x - e, 0), Vector2(size.x, 0), Vector2(size.x, e)]),
+				Color(0.86, 0.8, 0.62) if not dead else Color(0.4, 0.4, 0.42))
+		draw_string(font, Vector2(size.x - 13, 9), str(unit.level), HORIZONTAL_ALIGNMENT_RIGHT, 12, 9, Color(0.12, 0.1, 0.06))
 
 	## Ready to promote: a green up arrow.
 	func _arrow(at: Vector2, r: float) -> void:

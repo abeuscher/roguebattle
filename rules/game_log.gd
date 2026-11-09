@@ -7,6 +7,7 @@ const CATEGORIES := ["battle", "map", "economy", "progression", "system"]
 const TICKS_PER_DAY := GameClock.TICKS_PER_DAY
 
 var entries: Array[Dictionary] = []
+var show_hidden := false  # the debug toggle (§19.1): the log panel and battle view show hidden values
 var _file: FileAccess
 
 

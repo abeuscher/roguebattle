@@ -19,6 +19,7 @@ var terrain: Dictionary  # the battle hex's terrain (the defender's hex)
 var daytime := true
 var attacker := 0  # the side that started the battle
 var fair := [true, true]  # fairer dice per side (§12.1)
+var fairness_rules := {"two_dice": true, "ramping_crits": true, "streak_breaker": true, "spread": true}  # each can be switched off from the debug panel (§19.2)
 var defense := [0.0, 0.0]  # building defense bonus per side (§6.5)
 var tactics := ["best", "best"]
 var first_side := -1  # a side that takes its whole first round first (neutrals that resisted recruitment)
@@ -30,6 +31,7 @@ var _card_buffs: Array = []  # {side, stat, mult, left}: stat boosts from cards,
 var rng: RandomNumberGenerator
 var events: Array[Dictionary] = []
 var retreated := -1  # the side that got away
+var halted := false  # ended early with no winner (the debug panel's forced draw, §19.2)
 var round := 0  # the current round, from 1
 var _auras := [[], []]  # per side: the leader aura's effects, scaled for stage 4
 var fought := [[], []]  # per side: units alive when the battle began, for morale and bonds (§12.2)
@@ -111,7 +113,7 @@ func step() -> bool:
 
 
 func is_over() -> bool:
-	return retreated >= 0 or sides[0].living().is_empty() or sides[1].living().is_empty()
+	return halted or retreated >= 0 or sides[0].living().is_empty() or sides[1].living().is_empty()
 
 
 ## Living units with attacks left, highest Speed first. In the first round, a side that
@@ -448,7 +450,7 @@ func _attack(u: Unit, base: String, t: Unit, mult := 1.0, note := "") -> void:
 		return
 	var crit := roll_crit(u)
 	var dmg := expected_damage(u, t, base) * mult * (float(cfg["crit_multiplier"]) if crit else 1.0)
-	dmg *= 1.0 + rng.randf_range(-float(cfg["spread"]), float(cfg["spread"]))
+	dmg *= 1.0 + rng.randf_range(-_spread(), _spread())
 	var amount := maxi(1, roundi(dmg))
 	t.hp = maxi(0, t.hp - amount)
 	event.merge({"crit": crit, "damage": amount, "killed": not t.is_alive()}, true)
@@ -529,7 +531,7 @@ func _heal(u: Unit, side: int, whole_row := false) -> void:
 
 func heal_amount(u: Unit) -> int:
 	var base := stat(u, "INT") * float(cfg["heal_int_share"])
-	return maxi(1, roundi(base * (1.0 + rng.randf_range(-float(cfg["spread"]), float(cfg["spread"])))))
+	return maxi(1, roundi(base * (1.0 + rng.randf_range(-_spread(), _spread()))))
 
 
 ## A buffer raises a stat for its whole squad until its own next turn (§11.7).
@@ -565,6 +567,11 @@ func _debuff(u: Unit, side: int, whole_row := false) -> void:
 			_record({"type": "wait", "unit": u, "text": "%s's spell has no further effect on %s." % [_n(u), _n(t)]})
 	else:
 		_record({"type": "attack", "unit": u, "target": t, "kind": "Debuff", "hit": false, "text": "%s casts at %s and misses." % [_n(u), _n(t)]})
+
+
+## Damage spread (§12.1): ±10%, or the wider debug value with the rule switched off.
+func _spread() -> float:
+	return float(cfg["spread"] if fairness_rules["spread"] else cfg["spread_unfair"])
 
 
 func _hp_share(u: Unit) -> float:
@@ -716,7 +723,7 @@ func _card_hit(c: Dictionary, t: Unit, side: int) -> void:
 	dmg *= element_multiplier(str(c.get("element", "")), element(t))
 	for s in _status.get(t, {}):
 		dmg *= float(cfg["statuses"][s].get("physical_taken" if physical else "magic_taken", 1.0)) * float(cfg["statuses"][s].get("damage_taken", 1.0))
-	dmg *= 1.0 + rng.randf_range(-float(cfg["spread"]), float(cfg["spread"]))
+	dmg *= 1.0 + rng.randf_range(-_spread(), _spread())
 	var amount := mini(maxi(1, roundi(dmg)), t.hp)
 	t.hp -= amount
 	card_damage += amount
@@ -1167,14 +1174,13 @@ func hit_chance(u: Unit, t: Unit, base := "Melee") -> float:
 func roll_hit(u: Unit, t: Unit, base := "Melee") -> bool:
 	var chance := hit_chance(u, t, base)
 	var hit: bool
-	if fair[side_of(u)]:
-		if _misses[u] >= int(cfg["streak_breaker_misses"]):
-			_last_roll = 0
-			hit = true
-		else:
-			var roll := (rng.randi_range(1, 100) + rng.randi_range(1, 100)) / 2.0
-			_last_roll = roundi(roll)
-			hit = roll <= chance
+	if fair[side_of(u)] and fairness_rules["streak_breaker"] and _misses[u] >= int(cfg["streak_breaker_misses"]):
+		_last_roll = 0
+		hit = true
+	elif fair[side_of(u)] and fairness_rules["two_dice"]:
+		var roll := (rng.randi_range(1, 100) + rng.randi_range(1, 100)) / 2.0
+		_last_roll = roundi(roll)
+		hit = roll <= chance
 	else:
 		_last_roll = rng.randi_range(1, 100)
 		hit = _last_roll <= chance
@@ -1192,7 +1198,7 @@ func crit_chance(u: Unit) -> float:
 
 func roll_crit(u: Unit) -> bool:
 	var p := crit_chance(u)
-	if fair[side_of(u)]:
+	if fair[side_of(u)] and fairness_rules["ramping_crits"]:
 		_since_crit[u] += 1
 		p = minf(1.0, prd_constant(p) * _since_crit[u])
 	var crit := rng.randf() < p

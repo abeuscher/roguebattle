@@ -30,6 +30,12 @@ var tech_points := 0
 var game_over := ""  # "", "victory" or "defeat" (§6.8), once a condition is met
 var game_over_reason := ""  # the sentence the end screen shows
 var enemy_squads_defeated := 0  # wiped or driven off, for "defeat N enemy squads" (§6.8)
+# Debug panel switches (SPEC §19.2); never set in the real game.
+var debug_reveal := false  # every squad shows, whatever the sight radius
+var debug_freeze_ai := false  # enemy and neutral squads take no orders and stand still
+var debug_force := ""  # "", "win", "loss" or "draw": every battle a player squad joins ends that way
+var debug_fairness := {"two_dice": true, "ramping_crits": true, "streak_breaker": true, "spread": true}
+var last_battle := {}  # the last player battle as it began, for DebugTools.replay()
 var _towns_held_since := -1  # tick the player started holding the required share of towns continuously; -1 if not currently
 
 
@@ -65,9 +71,12 @@ func step() -> void:
 	for event in clock.step():
 		_clock_event(event)
 	_moved.clear()
-	_run_enemy_ai()
-	_run_neutral_ai()
+	if not debug_freeze_ai:
+		_run_enemy_ai()
+		_run_neutral_ai()
 	for s in squads.duplicate():
+		if debug_freeze_ai and s.side != "player":
+			continue
 		_move(s)
 		if s.entering_base and s.hex == map.player_base:
 			return_to_base(s)
@@ -110,6 +119,7 @@ func setup_army(wide_roster_count := 0) -> void:
 			else Map1Setup.build(data, rng.get_stream("army_setup"))
 	for i in built.size():
 		var s := _form(i + 1, "", map.player_base if i == 0 else -1, built[i], "player")
+		s.balance_rows(data)
 		army.cells[i] = s
 		if i == 0:
 			squads.append(s)
@@ -130,6 +140,7 @@ func reroll_wide_roster(count: int) -> void:
 	var built := Map1Setup.build_wide_roster(data, rng.get_stream("army_setup"), count)
 	for i in built.size():
 		var s := _form(i + 1, "", map.player_base if i == 0 else -1, built[i], "player")
+		s.balance_rows(data)
 		army.cells[i] = s
 		if i == 0:
 			squads.append(s)
@@ -1103,6 +1114,7 @@ func place_enemies() -> void:
 				at = _free_near(map.enemy_base)
 			var title: String = e["names"][entry["role"]]
 			var s := add_squad("%s %d" % [title, k + 1] if count > 1 else title, at, builds[r.randi() % builds.size()], "enemy")
+			s.balance_rows(data)
 			s.role = entry["role"]
 			if s.role == "wildcard":
 				s.ai_mode = "attack" if r.randf() < float(data.ai["wildcard_attack_chance"]) else "defend"
@@ -1135,6 +1147,7 @@ func place_neutrals() -> void:
 		for u in units:
 			if s.add(data, u, "front"):
 				log.add(clock.tick, "progression", "%s the %s joins %s." % [u.name, u.unit_class, s.name], s.id)
+		s.balance_rows(data)
 		s.morale = int(data.rules["starting_morale"])
 		squads.append(s)
 
@@ -1295,7 +1308,7 @@ func seen(target_hex: int) -> bool:
 
 ## Player squads always show; others only within sight.
 func is_visible(s: Squad) -> bool:
-	return s.side == "player" or seen(s.hex)
+	return s.side == "player" or debug_reveal or seen(s.hex)
 
 
 func _reveal_sites() -> void:
@@ -1369,7 +1382,11 @@ func fire(s: Squad, target: Squad) -> void:
 ## Opens a battle between a player squad and an enemy, fought on the defender's hex.
 func start_battle(player: Squad, enemy: Squad, defender: Squad) -> Battle:
 	var info: Dictionary = data.terrains[map.terrain[defender.hex]]
-	var b := Battle.new(data, player, enemy, info["key"], clock.is_day(), rng.get_stream("battle"), settings.get("fairness", "both"))
+	var stream := rng.get_stream("battle")
+	if player.side == "player":
+		last_battle = DebugTools.snapshot(player, enemy, stream)
+	var b := Battle.new(data, player, enemy, info["key"], clock.is_day(), stream, settings.get("fairness", "both"))
+	b.fairness_rules = debug_fairness.duplicate()
 	b.attacker = 0 if defender == enemy else 1
 	b.defense = [building_defense(player), building_defense(enemy)]
 	b.odds = Threat.label(data, player, enemy)
@@ -1377,6 +1394,10 @@ func start_battle(player: Squad, enemy: Squad, defender: Squad) -> Battle:
 		b.tech[0] = tech
 	log.add(clock.tick, "battle", "Battle: %s against %s on %s. The enemy looks %s." % [player.name, enemy.name, info["name"],
 			Threat.label(data, player, enemy).to_lower()], player.id)
+	if player.side == "player":
+		last_battle["battle"] = b
+		if debug_force != "":
+			DebugTools.force(b, debug_force)
 	return b
 
 

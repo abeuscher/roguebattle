@@ -47,9 +47,22 @@ Where the project stands, for picking up in a new session or on another machine.
   - `tests/test_map_size.gd` (4 tests, 269 total).
 - **Tests:** 269 passing (`tools/run_tests.sh` on this Mac, `tools\run_tests.ps1` on Windows).
 
+- **Last work (session 030), M4 session 6, Debug panel complete (SPEC §19.2, §19.1), plus the first playtest fixes:**
+  - **Debug panel:** backtick now has every §19.2 tool, in tabs: Map, Time, Units, Resources, Battle, AI, Simulation. The rules are in `rules/debug_tools.gd` (`DebugTools`); the switches the simulation checks are `GameState.debug_*`. Battle replay runs on deep copies with the saved RNG state, so nothing on the map changes. Each fairness rule can be switched off. "Show hidden numbers" is one switch, `GameLog.show_hidden`, shared by the log panel and the battle view (§19.1's debug toggle).
+  - **Playtest fixes (user's notes, 2026-11-08):**
+    - Every generated squad (player, enemy, neutral) gets balanced rows: 3:2 or 2:3, and 2:2 for 4-unit enemies (`Squad.balance_rows()`).
+    - Enemy routes are no longer drawn, since they gave away hidden squads.
+    - Edit Units overview chips show the first name, and the level on a small corner earmark.
+    - The liberation popup has a "View all cards" toggle that lists the hand.
+  - `tools/run_tests.ps1` defaults to Godot 4.7.2. 283 tests passing.
+
 ## Next up
 
-- **M4 session 6, Debug panel complete (SPEC §19.2, §19.1):** every tool in §19.2, building on `ui/debug_panel.gd` rather than starting fresh — the last session before the first real playtest. (Session 7 was done first, at the user's request, for faster playtesting.)
+- **M4 session 8, Playtest round 1** (user's notes; see `ROADMAP.md` for the full row):
+  - Battle start becomes 2 steps. First, a map dialog: "X's party has encountered the enemy", centering the map, with a Go to fight button. Then the battle view shows both squads and waits on Fight. That wait is an option, on by default.
+  - A real Options screen, saved per player, reached from the Start screen and the in-game menu.
+  - Shops: quantity shown left of each Buy button; limited stock that refills at noon; a Revive item usable anywhere on the map (about 50–100 g); one cure potion per status (Antidote for poison, and so on).
+- Then the **M4 milestone check:** the first real playtest.
 - Deferred from session 025: in-battle AI (a retreat threshold, and battle-tactic weighting per role) — currently the enemy side always uses the "best" tactic and never retreats mid-battle. Not scheduled to a specific M4 session yet.
 - **Parked for discussion after M4** (user's own notes, logged 2026-11-06, not yet decided — see `ROADMAP.md`): half-slot front/rear placement with literal coverage; unit graphics (a playing-card-style attack view, a character sheet); class/ranged-vs-melee iconography in Edit Units; a small 3-stage campaign mode layered on the single-map game.
 - Parked for later: plan icons and a more compact toolbar once its full button set is known (a note under M3 in `ROADMAP.md`).
@@ -57,7 +70,7 @@ Where the project stands, for picking up in a new session or on another machine.
 
 ## How the user works
 
-- **One git branch per session,** named `session-NNN` (next: `session-030`), cut from `main`.
+- **One git branch per session,** named `session-NNN` (next: `session-031`), cut from `main`.
 - **Commit locally only:**
   - Never push or merge; the user merges and pushes, then says "continue".
   - Commit messages end with a `Co-Authored-By:` line naming whatever Claude model is doing the session (the harness's own attribution instructions say exactly what to write).
@@ -69,7 +82,7 @@ Where the project stands, for picking up in a new session or on another machine.
 
 ## Practical notes
 
-- **Godot 4.5.1** console binary on the old machine: `C:\Godot\Godot_v4.5.1-stable_win64_console.exe`. The new machine (macOS) uses **Godot 4.7.2**, installed at `/Users/al/Downloads/Godot.app`.
+- **Godot 4.7.2** on both machines. Windows: `C:\Godot\Godot_v4.7.2-stable_win64_console.exe` (4.5.1 is still installed beside it; don't use it). macOS: `/Users/al/Downloads/Godot.app`. On Windows the Git Bash tool has `timeout`; Windows Python writes CRLF, which git normalizes.
 - **First run after cloning:** run `godot --headless --path . --import` so the `class_name` scripts register before the tests run.
 - **Screenshots:** a temporary SceneTree script in the project root. It builds a `Battlemap` in `_process` (not `_init`) using `GameConfig.create(data, seed)`, saves `root.get_texture().get_image()` to a PNG, then quits. **Drop `--headless`** for this one (confirmed 2026-11-07): under `--headless`, `root.get_texture()` comes back null (that flag forces a dummy rendering driver with no framebuffer at all), so `get_image()`/`save_png()` fail every time. Run the same script without `--headless` (still fine with `--resolution WxH`) and it renders through the real GPU backend (Vulkan on this Mac) and works — it briefly opens a real window on screen while it runs, then quits. `tools/map_preview.gd` stays headless-safe because it builds its PNG straight from map data (`MinimapImage.build`), never from a live render. Delete the script afterwards.
 - **Parse errors:** a script that fails to parse makes a headless `-s` run hang. Use `--check-only -s res://file.gd` and wrap runs in `timeout`. On this Mac there's no `timeout`/`gtimeout` on PATH; rely on the shell tool's own timeout instead.
