@@ -1,0 +1,10 @@
+{
+ "_note": "Player options (the Options screen), saved per player in user://options.json. Each is an on/off switch with its default; more kinds of option can come later.",
+ "options": {
+  "battle_wait_for_fight": {
+   "label": "Show both squads before a battle and wait for Fight",
+   "tip": "Off: a battle starts playing as soon as it opens.",
+   "default": true
+  }
+ }
+}

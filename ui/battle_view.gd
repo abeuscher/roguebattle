@@ -21,6 +21,8 @@ const TACTIC_TIPS := {"best": "Each unit hits the target it hurts most", "strong
 var state: GameState
 var battle: Battle
 var replay := false  # the debug panel's replay (§19.2): copies of the squads, nothing on the map changes
+var _waiting := false  # both squads shown; nothing happens until Fight (an option, on by default)
+var _fight_btn: Button
 var _view: Dictionary  # data.battle["view"]: pacing
 var _ground := Panel.new()
 var _field := Control.new()  # cards and floating numbers, placed by hand
@@ -34,6 +36,8 @@ var _done := false  # the result is showing
 var _retreat_asked := false
 var _card_asked := ""  # a card to play before the next action
 var _cards_btn: Button
+var _items_btn: Button
+var _item_asked := []  # [potion id, unit]: a cure potion to use before the next action
 var _round := UiStyle.label("", 28, UiStyle.ACCENT)
 var _ticker := RichTextLabel.new()
 var _controls := HBoxContainer.new()
@@ -43,10 +47,11 @@ var _retreat_btn: Button
 var _tactic := OptionButton.new()
 
 
-func setup(game_state: GameState, b: Battle, is_replay := false) -> void:
+func setup(game_state: GameState, b: Battle, is_replay := false, wait_for_fight := false) -> void:
 	state = game_state
 	battle = b
 	replay = is_replay
+	_waiting = wait_for_fight
 	_view = state.data.battle["view"]
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	var shade := ColorRect.new()
@@ -99,9 +104,16 @@ func _header() -> HBoxContainer:
 
 func _build_controls() -> void:
 	_controls.add_theme_constant_override("separation", 12)
+	_fight_btn = UiStyle.button("Fight (Space)", 190, true)
+	_fight_btn.pressed.connect(_start)
+	_fight_btn.visible = _waiting
+	_controls.add_child(_fight_btn)
 	_pause_btn = UiStyle.button("Pause (Space)", 190)
 	_pause_btn.pressed.connect(_toggle_pause)
+	_pause_btn.visible = not _waiting
 	_controls.add_child(_pause_btn)
+	if _waiting:
+		_fight_btn.grab_focus.call_deferred()
 	_speed_btn = UiStyle.button("", 130)
 	_speed_btn.pressed.connect(func():
 		_speed = (_speed + 1) % _view["speeds"].size()
@@ -130,12 +142,17 @@ func _build_controls() -> void:
 	_cards_btn.pressed.connect(_choose_card)
 	_controls.add_child(_cards_btn)
 	_update_cards()
+	_items_btn = UiStyle.button("", 140)
+	_items_btn.pressed.connect(_choose_item)
+	_controls.add_child(_items_btn)
+	_update_items()
 	var skip := UiStyle.button("Skip to end", 170)
 	skip.pressed.connect(_skip)
 	_controls.add_child(skip)
 	if replay:
 		_retreat_btn.disabled = true
 		_cards_btn.disabled = true
+		_items_btn.disabled = true
 
 
 func _update_speed() -> void:
@@ -184,6 +201,38 @@ func _choose_card() -> void:
 	menu.popup(Rect2i(Vector2i(get_viewport().get_mouse_position()) - Vector2i(0, 40 * ids.size() + 20), Vector2i.ZERO))
 
 
+## Cure potions (§15.1) that would help one of your units right now.
+func _update_items() -> void:
+	var uses := state.battle_supply_uses(battle)
+	_items_btn.text = "Items (%d)" % uses.size()
+	_items_btn.disabled = replay or uses.is_empty() or not _item_asked.is_empty()
+	_items_btn.tooltip_text = "Cure potions for a status one of your units has." if not uses.is_empty() \
+			else "No cure potion fits a status your units have."
+
+
+func _choose_item() -> void:
+	var menu := PopupMenu.new()
+	menu.add_theme_font_size_override("font_size", 18)
+	var uses := state.battle_supply_uses(battle)
+	for i in uses.size():
+		var item: Dictionary = state.data.items["consumables"][uses[i][0]]
+		menu.add_item("%s on %s (%s)  ·  you have %d" % [item["name"], uses[i][1].name, item["cures"],
+				int(state.army.supplies.get(uses[i][0], 0))], i)
+	menu.id_pressed.connect(func(i: int):
+		_item_asked = uses[i]
+		_update_items())
+	menu.popup_hide.connect(menu.queue_free)
+	add_child(menu)
+	menu.popup(Rect2i(Vector2i(get_viewport().get_mouse_position()) - Vector2i(0, 40 * uses.size() + 20), Vector2i.ZERO))
+
+
+## Fight pressed: the battle starts playing.
+func _start() -> void:
+	_waiting = false
+	_fight_btn.visible = false
+	_pause_btn.visible = true
+
+
 func _toggle_pause() -> void:
 	_paused = not _paused
 	_pause_btn.text = "Resume (Space)" if _paused else "Pause (Space)"
@@ -192,7 +241,7 @@ func _toggle_pause() -> void:
 # --- Playing the battle ---------------------------------------------------------------
 
 func _process(delta: float) -> void:
-	if battle == null or _done or _paused:
+	if battle == null or _done or _paused or _waiting:
 		return
 	_wait -= delta * float(_view["speeds"][_speed])
 	if _wait > 0.0:
@@ -200,12 +249,18 @@ func _process(delta: float) -> void:
 	if _shown < battle.events.size():
 		_wait = _play(battle.events[_shown], true)
 		_shown += 1
+		if battle.events[_shown - 1]["type"] == "status":
+			_update_items()
 	elif _ended or battle.is_over():
 		_finish()
 	elif _card_asked != "":
 		state.play_battle_card(battle, _card_asked)
 		_card_asked = ""
 		_update_cards()
+	elif not _item_asked.is_empty():
+		state.use_battle_supply(battle, _item_asked[0], _item_asked[1])
+		_item_asked = []
+		_update_items()
 	elif _retreat_asked:
 		_retreat_asked = false
 		battle.retreat(0)
@@ -215,6 +270,7 @@ func _process(delta: float) -> void:
 
 
 func _skip() -> void:
+	_start()
 	battle.run()
 	while _shown < battle.events.size():
 		_play(battle.events[_shown], false)
@@ -445,7 +501,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if not event.is_pressed():
 		return
 	var key := (event as InputEventKey).keycode
-	if key == KEY_SPACE and not _done:
+	if key == KEY_SPACE and _waiting:
+		_start()
+	elif key == KEY_SPACE and not _done:
 		_toggle_pause()
 	get_viewport().set_input_as_handled()
 

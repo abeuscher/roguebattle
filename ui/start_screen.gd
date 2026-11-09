@@ -4,6 +4,7 @@ extends Control
 ## continue come later.
 
 signal start_game
+signal options
 signal quit
 
 
@@ -21,10 +22,9 @@ func setup() -> void:
 	var start := UiStyle.button("Start Game", 300, true)
 	start.pressed.connect(func(): start_game.emit())
 	col.add_child(start)
-	var options := UiStyle.button("Options", 300)
-	options.disabled = true
-	options.tooltip_text = "No options yet."
-	col.add_child(options)
+	var opts := UiStyle.button("Options", 300)
+	opts.pressed.connect(func(): options.emit())
+	col.add_child(opts)
 	var leave := UiStyle.button("Quit", 300)
 	leave.pressed.connect(func(): quit.emit())
 	col.add_child(leave)

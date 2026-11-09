@@ -84,15 +84,17 @@ func test_shop() -> void:
 	town["owner"] = "player"
 	check_eq(st.shop_at(s), town, "a shop once it's liberated")
 	var stock := st.shop_stock(town)
-	check_eq(stock.size(), int(d.rules["economy"]["shop_items"]), "a few items in stock")
+	var items: Array = stock.keys().filter(func(k): return d.items["items"].has(k))
+	check(items.size() >= 1 and items.size() <= int(d.rules["economy"]["shop_items"]), "a few items in stock")
 	check_eq(st.shop_stock(town), stock, "the same stock each visit")
-	var id: String = stock[0]
+	var id: String = items[0]
+	var left := int(stock[id])
 	var gold := st.gold
 	var owned := st.army.items.size()
 	check(st.buy_item(town, id), "buy an item")
 	check_eq(st.gold, gold - st.item_price(id), "pay its price")
 	check_eq(st.army.items.size(), owned + 1, "it joins the inventory")
-	check_eq(st.shop_stock(town).size(), stock.size(), "and leaves the shop")
+	check_eq(int(st.shop_stock(town)[id]), left - 1, "one fewer in the shop")
 	check(st.buy_supply(town, "herb"), "buy a herb")
 	check_eq(int(st.army.supplies["herb"]), 1, "one herb")
 	var pool := st.army.pool.size()

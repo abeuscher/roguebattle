@@ -55,14 +55,20 @@ Where the project stands, for picking up in a new session or on another machine.
     - Edit Units overview chips show the first name, and the level on a small corner earmark.
     - The liberation popup has a "View all cards" toggle that lists the hand.
   - `tools/run_tests.ps1` defaults to Godot 4.7.2. 283 tests passing.
+- **Last work (session 031), M4 session 8, Playtest round 1:**
+  - **Battle start:** `ui/encounter_popup.gd` pauses and centers the map, with Go to fight. The battle view then waits on a Fight button. That wait is the `battle_wait_for_fight` option, on by default. Ranged attacks and fights after the recruit popup skip the dialog.
+  - **Options:** a real Options screen (`ui/options_screen.gd`), reached from the Start screen and the in-game menu. Defaults are in `data/options.json`; the player's choices are saved in `user://options.json` (`rules/player_options.gd`).
+  - **Shops:**
+    - Limited stock, shown left of each Buy button, refilled at noon (`shop_stock()` is now id -> count, plus `restock()`).
+    - A Revival Draught (80 g) usable anywhere on the map.
+    - One cure potion per status (8 of them), used from a new Items button in battle; each shop carries 4.
+    - SPEC §15.1's consumables row is updated to match (the user's design call).
+  - 290 tests passing.
 
 ## Next up
 
-- **M4 session 8, Playtest round 1** (user's notes; see `ROADMAP.md` for the full row):
-  - Battle start becomes 2 steps. First, a map dialog: "X's party has encountered the enemy", centering the map, with a Go to fight button. Then the battle view shows both squads and waits on Fight. That wait is an option, on by default.
-  - A real Options screen, saved per player, reached from the Start screen and the in-game menu.
-  - Shops: quantity shown left of each Buy button; limited stock that refills at noon; a Revive item usable anywhere on the map (about 50–100 g); one cure potion per status (Antidote for poison, and so on).
-- Then the **M4 milestone check:** the first real playtest.
+- **M4 milestone check: the first real playtest.** Every M4 session is done.
+- Then the post-M4 discussions in `ROADMAP.md`: campaign and progression first (the user's top item), then unit iconography and the other parked notes.
 - Deferred from session 025: in-battle AI (a retreat threshold, and battle-tactic weighting per role) — currently the enemy side always uses the "best" tactic and never retreats mid-battle. Not scheduled to a specific M4 session yet.
 - **Parked for discussion after M4** (user's own notes, logged 2026-11-06, not yet decided — see `ROADMAP.md`): half-slot front/rear placement with literal coverage; unit graphics (a playing-card-style attack view, a character sheet); class/ranged-vs-melee iconography in Edit Units; a small 3-stage campaign mode layered on the single-map game.
 - Parked for later: plan icons and a more compact toolbar once its full button set is known (a note under M3 in `ROADMAP.md`).
@@ -70,7 +76,7 @@ Where the project stands, for picking up in a new session or on another machine.
 
 ## How the user works
 
-- **One git branch per session,** named `session-NNN` (next: `session-031`), cut from `main`.
+- **One git branch per session,** named `session-NNN` (next: `session-032`), cut from `main`.
 - **Commit locally only:**
   - Never push or merge; the user merges and pushes, then says "continue".
   - Commit messages end with a `Co-Authored-By:` line naming whatever Claude model is doing the session (the harness's own attribution instructions say exactly what to write).

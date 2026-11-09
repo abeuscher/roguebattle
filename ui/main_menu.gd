@@ -5,6 +5,7 @@ extends Control
 
 signal resume
 signal save_settings
+signal options
 signal to_title
 signal quit
 
@@ -27,15 +28,11 @@ func setup() -> void:
 	col.add_theme_constant_override("separation", 10)
 	panel.add_child(col)
 	col.add_child(UiStyle.label("Menu", 26))
-	for entry in [["Resume (Esc)", resume], ["Save settings", save_settings], ["Options", null],
+	for entry in [["Resume (Esc)", resume], ["Save settings", save_settings], ["Options", options],
 			["Return to title", to_title], ["Quit", quit]]:
 		var b := UiStyle.button(entry[0], 280)
-		if entry[1] == null:
-			b.disabled = true
-			b.tooltip_text = "No options yet."
-		else:
-			var sig: Signal = entry[1]
-			b.pressed.connect(func(): sig.emit())
+		var sig: Signal = entry[1]
+		b.pressed.connect(func(): sig.emit())
 		col.add_child(b)
 	col.add_child(_note)
 

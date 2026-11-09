@@ -17,6 +17,7 @@ const STACK_SPREAD := 16.0  # world units between flags of squads standing on th
 const TEST_TRAVEL := ["plains", "forest", "mountain", "swamp", "snow", "desert", "shallow", "deep", "sky", ""]
 
 var data: GameData
+var options := {}  # the player's options (PlayerOptions), set by main
 var log: GameLog
 var state: GameState
 var view := MapView.new()
@@ -32,6 +33,8 @@ var _end_screen: EndScreen
 var _menu: SquadMenu
 var _main_menu: MainMenu
 var _battle: BattleView
+var _encounter: EncounterPopup
+var _announced := false  # the pending battle needs no encounter popup (already announced, or a recruit refused)
 var _edit: EditUnits
 var _deploy_menu: DeployMenu
 var _confirm: ConfirmDialog
@@ -114,8 +117,11 @@ func _process(delta: float) -> void:
 		state.step()
 		if state.pending or not state.pending_recruit.is_empty() or state.game_over != "":
 			break
-	if state.pending and _battle == null:
-		_open_battle()
+	if state.pending and _battle == null and _encounter == null:
+		if _announced or state.pending.ranged_only:
+			_open_battle()
+		else:
+			_open_encounter()
 	if not state.pending_recruit.is_empty() and _recruit_popup == null:
 		_open_recruit_popup()
 	_pump_liberations()
@@ -543,10 +549,27 @@ func _close_confirm() -> void:
 
 # --- Battle, log and Esc menu ---------------------------------------------------------
 
+## A fight has started (§11.1): pause, center the map on it, and say so before the battle view.
+func _open_encounter() -> void:
+	var b := state.pending
+	var at := [b.sides[0], b.sides[1]].map(func(s: Squad): return _tokens[s.id].position if _tokens.has(s.id) else MapView.hex_center(state.map, s.hex))
+	camera.center_on((at[0] + at[1]) / 2.0)
+	_encounter = EncounterPopup.new()
+	_ui.add_child(_encounter)
+	_encounter.setup(b)
+	_encounter.go.connect(func():
+		_encounter.queue_free()
+		_encounter = null
+		state.clock.release()
+		_open_battle())
+	state.clock.hold()
+
+
 func _open_battle() -> void:
+	_announced = false
 	_battle = BattleView.new()
 	_ui.add_child(_battle)
-	_battle.setup(state, state.pending)
+	_battle.setup(state, state.pending, false, bool(options.get("battle_wait_for_fight", true)))
 	_battle.finished.connect(_close_battle)
 	state.clock.hold()
 
@@ -637,6 +660,7 @@ func _open_recruit_popup() -> void:
 		state.resolve_recruit(true)
 		_close_recruit_popup())
 	_recruit_popup.fight.connect(func():
+		_announced = true  # the recruit popup already announced this fight
 		state.resolve_recruit(false)
 		_close_recruit_popup())
 	state.clock.hold()
@@ -685,6 +709,11 @@ func _open_main_menu() -> void:
 	_ui.add_child(_main_menu)
 	_main_menu.setup()
 	_main_menu.resume.connect(_close_main_menu)
+	_main_menu.options.connect(func():
+		var o := OptionsScreen.new()
+		_ui.add_child(o)
+		o.setup(data, options)
+		o.closed.connect(o.queue_free))
 	_main_menu.save_settings.connect(func():
 		save_settings.emit()
 		_main_menu.note("Settings saved. The configurator will start from them."))
@@ -711,7 +740,7 @@ func _on_speed_chosen(index: int) -> void:
 
 ## No menu or dialog is open.
 func _can_open() -> bool:
-	return not (_log_panel or _debug_panel or _menu or _main_menu or _battle or _edit or _deploy_menu or _confirm or _building_popup \
+	return not (_log_panel or _debug_panel or _menu or _main_menu or _battle or _encounter or _edit or _deploy_menu or _confirm or _building_popup \
 			or _shop or _recruit_popup or _liberation_popup or _end_screen)
 
 

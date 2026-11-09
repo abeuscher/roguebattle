@@ -528,8 +528,13 @@ func _item_picker(u: Unit, slot: String, locked: bool) -> Control:
 
 ## The gutter's Items tab: every item by slot, free ones first.
 func _item_list() -> void:
+	var carried := PackedStringArray()
 	for id in data.items["consumables"]:
-		_pool.add_child(UiStyle.label("%ss: %d" % [data.items["consumables"][id]["name"], int(army.supplies.get(id, 0))], 15, UiStyle.ACCENT))
+		if int(army.supplies.get(id, 0)) > 0:
+			carried.append("%s ×%d" % [data.items["consumables"][id]["name"], int(army.supplies[id])])
+	var supplies := UiStyle.label("Supplies: %s" % (", ".join(carried) if not carried.is_empty() else "none"), 15, UiStyle.ACCENT)
+	supplies.autowrap_mode = TextServer.AUTOWRAP_WORD
+	_pool.add_child(supplies)
 	if army.items.is_empty():
 		_pool.add_child(UiStyle.label("No items yet. Shops and hidden sites will have some.", 14, Color(0.6, 0.62, 0.66)))
 	for slot in data.items["slots"]:

@@ -555,7 +555,7 @@ All values are placeholders.
 | End-of-map bonus | Scaled by reputation, like the liberation bonus |
 | Going broke | At zero gold, the player can pull a squad back to base for gold equal to its total value. Tune so this gives room to recover rather than prolonging a loss |
 | Services | Cure one status 10, heal a unit to full 20, revive 50 × stage |
-| Consumables | Herb (+30 HP) 15, Remedy (cure one status) 10 |
+| Consumables | Herb (+30 HP) 15; Revival Draught (revive a fallen unit anywhere on the map) 80; one cure potion per status, used in battle (Antidote for poison, and so on) 10–20. Shops hold limited stock, refilled at noon (user's playtest notes, 2026-11-08) |
 
 ### 15.2 Items
 

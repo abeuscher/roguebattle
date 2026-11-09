@@ -1,8 +1,8 @@
 class_name ShopScreen
 extends Control
 ## A shop (SPEC §4 Shop, §15.1, §16), opened from the squad menu when the squad stands
-## in a building with a shop: Serfs at towns and nomad camps, herbs, and the shop's few
-## items. In a temple it offers healing and revival for the squad instead. Prices follow
+## in a building with a shop: Serfs at towns and nomad camps, supplies, and the shop's few
+## items, each with how many are left (restocked at noon). In a temple it offers healing and revival for the squad instead. Prices follow
 ## reputation and the squad's Smuggler or Fence (§10).
 ## A modal: 50% dark overlay.
 
@@ -32,7 +32,7 @@ func setup(game_state: GameState, s: Squad, b: Dictionary) -> void:
 	center.add_child(panel)
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 12)
-	col.custom_minimum_size.x = 640
+	col.custom_minimum_size.x = 760
 	panel.add_child(col)
 	var head := HBoxContainer.new()
 	col.add_child(head)
@@ -70,24 +70,27 @@ func _refresh() -> void:
 		_heading("Recruits")
 		var price := state.serf_price(squad)
 		_row("Serf: joins the recruit pool at the Player Base", "Hire  %d g" % price, price, func(): state.buy_serf(building, squad))
-	_heading("Supplies")
+	var stock := state.shop_stock(building)
+	_heading("Supplies  ·  restocked every day at noon")
 	for id in data.items["consumables"]:
+		if not stock.has(id):
+			continue
 		var c: Dictionary = data.items["consumables"][id]
 		var price := state.supply_price(id, squad)
-		_row("%s: %s  (you have %d)" % [c["name"], c["text"], int(state.army.supplies.get(id, 0))], "Buy  %d g" % price, price,
-				func(): state.buy_supply(building, id, squad))
+		var use := "in battle" if c["where"] == "battle" else "anywhere on the map"
+		_row("%s: %s Use %s. (you have %d)" % [c["name"], c["text"], use, int(state.army.supplies.get(id, 0))], "Buy  %d g" % price, price,
+				func(): state.buy_supply(building, id, squad), int(stock[id]))
 	_heading("Items")
-	var stock := state.shop_stock(building)
-	if stock.is_empty():
-		_note("Sold out.")
-	for id in stock.duplicate():
+	for id in stock:
+		if not data.items["items"].has(id):
+			continue
 		var item: Dictionary = data.items["items"][id]
 		var parts := []
 		for st in item["stats"]:
 			parts.append("%s %+d" % [st, int(item["stats"][st])])
 		var price := state.item_price(id, squad)
 		_row("%s: %s" % [item["name"], ", ".join(parts)], "Buy  %d g" % price, price,
-				func(): state.buy_item(building, id, squad))
+				func(): state.buy_item(building, id, squad), int(stock[id]))
 
 
 func _heading(text: String) -> void:
@@ -98,15 +101,23 @@ func _note(text: String) -> void:
 	_list.add_child(UiStyle.label(text, 15, Color(0.6, 0.62, 0.66)))
 
 
-func _row(text: String, button: String, price: int, buy: Callable) -> void:
+## A line with its Buy button; `left` (if not -1) shows how many the shop has left,
+## just left of the button, and sold out disables it.
+func _row(text: String, button: String, price: int, buy: Callable, left := -1) -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 12)
 	var l := UiStyle.label(text, 16)
 	l.size_flags_horizontal = SIZE_EXPAND_FILL
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD
 	row.add_child(l)
+	if left >= 0:
+		var q := UiStyle.label("×%d" % left if left > 0 else "Sold out", 16, UiStyle.ACCENT if left > 0 else Color(0.6, 0.62, 0.66))
+		q.custom_minimum_size.x = 80
+		q.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		row.add_child(q)
 	var b := UiStyle.button(button, 150)
-	b.disabled = price > state.gold
-	b.tooltip_text = "Not enough gold." if b.disabled else ""
+	b.disabled = price > state.gold or left == 0
+	b.tooltip_text = "Sold out until noon." if left == 0 else ("Not enough gold." if b.disabled else "")
 	b.pressed.connect(func():
 		buy.call()
 		_refresh())

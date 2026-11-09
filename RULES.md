@@ -50,7 +50,7 @@ This describes how the game actually plays right now, not the full design (that'
 
 ## Battle
 
-- **Trigger:** a player squad and a hostile squad land on the same or adjacent hexes, or you order a ranged attack from the squad menu. The map pauses and the battle view opens, played on the defending hex's terrain.
+- **Trigger:** a player squad and a hostile squad land on the same or adjacent hexes, or you order a ranged attack from the squad menu. The map pauses and centers on the fight, with a "X's party has encountered the enemy" dialog; Go to fight opens the battle view, played on the defending hex's terrain. The battle view shows both squads and waits for you to press Fight (Space), unless you turn that off in Options. A ranged attack you ordered yourself, or a fight with neutrals that refused to join, skips the dialog, since you already know it's coming.
 - **Turn order:** every living unit with attacks left acts once per round, fastest (SPD) first, until both sides are out of attacks or one side is wiped. A squad that resisted recruitment, or has First strike/Charge, can act first.
 - **Targeting:** plain melee hits the front row first (the back row only once the front is empty); ranged and magic can hit any row; several classes have group attacks (hit a whole row, the whole squad, a cleave, a pierce, a chain) per their class sheet.
 - **Your controls mid-battle:** switch tactic any time (Best/Strong/Weak/Leader — who your units focus), retreat, or play any cards in your hand.
@@ -66,8 +66,10 @@ This describes how the game actually plays right now, not the full design (that'
 - **Resting in a building** heals a squad's living units a share of their max HP each day: 15% in your own base, 15% in a town/tower matching your alignment, 10% otherwise, 5% in a temple. Squads and the recruit pool at the Player Base heal the base's 15% too.
 - **Income and upkeep**, settled every noon: you earn gold per town/tower you hold, then pay upkeep for every unit in the army (in a squad or the recruit pool, fallen units included) — upkeep scales with a unit's stage and size. Gold never goes negative; unpaid upkeep is currently just lost (no morale/loyalty penalty yet — see below).
 - **Going broke:** at zero gold, any squad can be sold from Edit Units for a gold value based on its units' stages; it leaves the army, the map and loses its items.
-- **Shops** open from the squad menu when a squad stands still in a building with one (not enemy-held). Towns and nomad camps also sell Serfs into your recruit pool. Every shop stocks herbs and a handful of random items, priced by your reputation (and cheaper still for a squad with a Smuggler or Fence). Temples sell healing and revival from the same screen.
-- **Services and consumables:** heal a hurt unit to full, or revive a fallen one, for gold — only at the Player Base, in the recruit pool, or for a squad standing still in a temple. Herbs (+30 HP) are a carried consumable, used from the squad menu.
+- **Shops** open from the squad menu when a squad stands still in a building with one (not enemy-held). Towns and nomad camps also sell Serfs into your recruit pool. Every shop stocks Herbs, Revival Draughts, 4 of the 8 cure potions (which 4 is fixed per shop) and a few random items, priced by your reputation (and cheaper still for a squad with a Smuggler or Fence). Stock is limited: each line shows how many are left, and every shop refills to full at noon. Temples sell healing and revival from the same screen.
+- **Services and consumables:** heal a hurt unit to full, or revive a fallen one, for gold — only at the Player Base, in the recruit pool, or for a squad standing still in a temple. Carried consumables:
+  - **Herb** (+30 HP) and **Revival Draught** (a fallen unit back at full HP; reviving a leader cancels its march home): use them anywhere on the map from the squad menu's Use item.
+  - **Cure potions**, one per status: Antidote (poison), Burn Salve, Thaw Tonic (freeze), Insulating Balm (shock), Softening Oil (petrify), Smelling Salts (sleep), Eye Drops (blind) and Echo Herb (silence). Use them in battle from the Items button, which lists only potions that fit a status one of your units has. A potion takes effect before the next action, like a card, and doesn't cost a turn. Statuses all clear after a battle anyway.
 
 ## Reputation, charisma and alignment
 
@@ -122,6 +124,10 @@ A squad that holds its post (leader, base guard, garrison) only ever moves if it
 - The map freezes the instant it ends — no more movement, battles or ticking — and a summary shows the result, the day you ended on, your gold and reputation, enemy squads defeated, and towns held. From there the only way out is back to the title; there's no second map yet.
 
 ---
+
+## Options
+
+Options on the Start screen and in the in-game menu (Esc) hold your own settings, saved between sessions. For now there's one: whether a battle shows both squads and waits for Fight (on by default).
 
 ## Testing tools (debug panel)
 

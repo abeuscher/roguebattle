@@ -386,3 +386,27 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **The Simulation tab** runs `BattleSim` on the two picked squads' builds (classes and rows), so the units are freshly rolled, not the exact units picked. The report says so.
 - **`tools/run_tests.ps1`** now falls back to the Godot 4.7.2 console binary.
 - **Tests:** `tests/test_debug_tools.gd` has 13 tests, one or more per tool. `test_map1.gd` gained one for balanced rows on real generated maps. 283 total.
+
+## Session 031 (2026-11-08): playtest round 1 (M4 session 8)
+
+- **Battle start, 2 steps.**
+  - First: `EncounterPopup` on the map. The clock holds, the camera centers on the midpoint of the two squads, and Go to fight opens the battle view.
+  - Second: the battle view opens with a Fight button in place of Pause; the battle doesn't step until Fight or Space. Skip to end also starts it. This is the `battle_wait_for_fight` option, on by default.
+  - The dialog is skipped for a ranged attack (the player ordered it from the squad menu) and for a fight that follows the recruit popup (it already announced the meeting). This uses `Battlemap._announced`, set when the player picks Fight there.
+  - The popup's subtitle names the enemy squad and the existing threat label ("they look dangerous").
+- **Options.**
+  - Defaults live in `data/options.json`. `rules/player_options.gd` merges the defaults with `user://options.json`, kept apart from `user://settings.json` (the configurator's map settings).
+  - `main.gd` loads the options once and shares the same dictionary with the battlemap and the Options screens, so a change applies at once and saves straight away.
+  - Only on/off options exist for now; the screen draws one checkbox per entry.
+- **Shop stock.**
+  - `shop_stock()` now returns id -> count for items and consumables together, rolled once per shop and kept in `b["full_stock"]`. `restock()` copies it back at noon, before income.
+  - Equipment: `shop_items` rolls with `item_stock` (2) each; duplicate rolls add up. Herbs and Revival Draughts are in every shop. Cure potions: `shop_cures` (4) of the 8, picked once per shop, so different shops matter.
+  - A sold-out line stays visible with "Sold out" and a disabled button, so it's clear it will come back at noon.
+- **The Revival Draught** (user: pricey but reachable, 50–100) costs 80 and revives at full HP like the base and temple service. It's used from the map's Use item menu (`supply_helps()` decides who it fits). Reviving a squad's leader cancels its march home, which §11.3 already promises for "reviving the leader in time".
+- **Cure potions, one per status** (the user's call). This replaces the spec's single "Remedy (cure one status)"; SPEC §15.1's row is updated to match.
+  - They cover the 8 afflictions a potion makes sense for: poison, burn, freeze, shock, petrify, sleep, blind, silence.
+  - Left out: charm (lasts one turn), fear (its lost attack is already spent), and the weak/down debuffs, which come from cards and debuff casters rather than being "basic" afflictions.
+  - Every status clears at the end of a battle (§11.7), so cures only work in battle. They use a new Items button in the battle view, queued before the next action like a card, without costing a turn. `Battle.cure()` records a "cured" status event, so the card and the log update.
+  - Prices: 10–20 g placeholders.
+- **The Edit Units supplies line** now lists only what you carry ("Herb ×3, Antidote ×1"), not a zero line for every one of 10 consumables.
+- **Tests:** `tests/test_shops.gd` has 7 tests: stock shape, selling out and noon restock, an unstocked cure can't be bought, the revive (and leader-march cancel), cures in battle, and options defaults and saving. `test_economy.gd` is updated for the new stock shape. 290 total.

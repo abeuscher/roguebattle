@@ -720,6 +720,7 @@ func _unit_upkeep(u: Unit) -> int:
 func _noon() -> void:
 	var gain := income()
 	var cost := army_upkeep()
+	restock()
 	gold += gain
 	var paid := mini(gold, cost)
 	gold -= paid
@@ -771,17 +772,44 @@ func shop_at(s: Squad) -> Dictionary:
 	return b
 
 
-## The items a shop sells, rolled once per shop.
-func shop_stock(b: Dictionary) -> Array:
+## What a shop holds right now: item or consumable id -> how many are left (0 once
+## sold out). Rolled once per shop: a few random items, every map consumable, and a
+## few of the cure potions. Refilled to that at noon (restock()).
+func shop_stock(b: Dictionary) -> Dictionary:
 	if not b.get("shop", false):
-		return []
+		return {}
 	if not b.has("stock"):
 		var r := rng.get_stream("shops")
+		var e: Dictionary = data.rules["economy"]
 		var ids: Array = data.items["items"].keys().filter(func(id): return data.items["items"][id].get("requires", "") in tech or not data.items["items"][id].has("requires"))
-		b["stock"] = []
-		for i in int(data.rules["economy"]["shop_items"]):
-			b["stock"].append(ids[r.randi() % ids.size()])
+		var full := {}
+		for i in int(e["shop_items"]):
+			var id: String = ids[r.randi() % ids.size()]
+			full[id] = int(full.get(id, 0)) + int(e["item_stock"])
+		var cures := []
+		for id in data.items["consumables"]:
+			var c: Dictionary = data.items["consumables"][id]
+			if c.has("cures"):
+				cures.append(id)
+			else:
+				full[id] = int(c["stock"])
+		for i in range(cures.size() - 1, 0, -1):  # seeded shuffle
+			var j := r.randi_range(0, i)
+			var t = cures[i]
+			cures[i] = cures[j]
+			cures[j] = t
+		for id in cures.slice(0, int(e["shop_cures"])):
+			full[id] = int(data.items["consumables"][id]["stock"])
+		b["full_stock"] = full
+		b["stock"] = full.duplicate()
 	return b["stock"]
+
+
+## At noon every shop that's been opened refills to its full stock.
+func restock() -> void:
+	for b in map.buildings:
+		if b.has("full_stock"):
+			b["stock"] = b["full_stock"].duplicate()
 
 
 func item_price(id: String, s: Squad = null) -> int:
@@ -799,10 +827,10 @@ func serf_price(s: Squad = null) -> int:
 func buy_item(b: Dictionary, id: String, s: Squad = null) -> bool:
 	var stock := shop_stock(b)
 	var cost := item_price(id, s)
-	if id not in stock or gold < cost:
+	if int(stock.get(id, 0)) <= 0 or gold < cost:
 		return false
 	gold -= cost
-	stock.erase(id)
+	stock[id] -= 1
 	army.add_item(id)
 	log.add(clock.tick, "economy", "Bought a %s for %d gold." % [data.items["items"][id]["name"], cost])
 	return true
@@ -810,9 +838,11 @@ func buy_item(b: Dictionary, id: String, s: Squad = null) -> bool:
 
 func buy_supply(b: Dictionary, id: String, s: Squad = null) -> bool:
 	var cost := supply_price(id, s)
-	if not b.get("shop", false) or gold < cost:
+	var stock := shop_stock(b)
+	if int(stock.get(id, 0)) <= 0 or gold < cost:
 		return false
 	gold -= cost
+	stock[id] -= 1
 	army.supplies[id] = int(army.supplies.get(id, 0)) + 1
 	log.add(clock.tick, "economy", "Bought a %s for %d gold." % [data.items["consumables"][id]["name"], cost])
 	return true
@@ -834,14 +864,54 @@ func buy_serf(b: Dictionary, s: Squad = null) -> Unit:
 	return u
 
 
-## Uses a consumable on a living unit that needs it (a Herb heals 30 HP).
+## Whether a map consumable would do anything for this unit: a Herb for a hurt
+## living unit, a Revival Draught for a fallen one.
+func supply_helps(u: Unit, id: String) -> bool:
+	var item: Dictionary = data.items["consumables"][id]
+	if item.get("revive", false):
+		return not u.is_alive()
+	return item.has("heal") and u.is_alive() and u.hp < u.max_hp(data)
+
+
+## Uses a map consumable on a unit that needs it, anywhere on the map.
 func use_supply(u: Unit, id: String) -> bool:
 	var item: Dictionary = data.items["consumables"][id]
-	if int(army.supplies.get(id, 0)) <= 0 or not u.is_alive() or u.hp >= u.max_hp(data):
+	if int(army.supplies.get(id, 0)) <= 0 or not supply_helps(u, id):
 		return false
 	army.supplies[id] = int(army.supplies[id]) - 1
+	if item.get("revive", false):
+		u.hp = u.max_hp(data)
+		log.add(clock.tick, "economy", "%s is revived with a %s." % [u.name, item["name"]])
+		var s := army.squad_of(u)
+		if s and s.marching_home and s.leader == u:  # reviving the leader in time cancels the march (§11.3)
+			s.marching_home = false
+			s.entering_base = false
+			s.path.clear()
+			s.rally.clear()
+		return true
 	u.hp = mini(u.max_hp(data), u.hp + int(item["heal"]))
 	log.add(clock.tick, "economy", "%s uses a %s." % [u.name, item["name"]])
+	return true
+
+
+## The cure potions the player could use in this battle right now: [potion id, unit] pairs.
+func battle_supply_uses(b: Battle) -> Array:
+	var out := []
+	for id in data.items["consumables"]:
+		var item: Dictionary = data.items["consumables"][id]
+		if item.has("cures") and int(army.supplies.get(id, 0)) > 0:
+			for u in b.sides[0].living():
+				if b.has_status(u, item["cures"]):
+					out.append([id, u])
+	return out
+
+
+## Uses a cure potion on one of the player's units in battle (§15.1).
+func use_battle_supply(b: Battle, id: String, u: Unit) -> bool:
+	var item: Dictionary = data.items["consumables"][id]
+	if int(army.supplies.get(id, 0)) <= 0 or not item.has("cures") or not b.cure(u, item["cures"], item["name"]):
+		return false
+	army.supplies[id] = int(army.supplies[id]) - 1
 	return true
 
 

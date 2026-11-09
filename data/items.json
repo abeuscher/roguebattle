@@ -1,8 +1,17 @@
 {
- "_note": "Items (SPEC §15.2) and consumables (§15.1). All numbers and prices are placeholders. 'use': any, melee (a unit with a Melee attack in either row), archer (the archer tag).",
+ "_note": "Items (SPEC §15.2) and consumables (§15.1). All numbers and prices are placeholders. 'use': any, melee (a unit with a Melee attack in either row), archer (the archer tag). Consumables: 'stock' is how many a shop holds when full (refilled at noon); 'where' is map (squad menu, anywhere on the map) or battle (the battle view's Items button); a 'cures' potion removes that one status; each shop carries economy.shop_cures of the cure potions, picked once per shop.",
  "slots": ["weapon", "armor", "jewelry"],
  "consumables": {
-  "herb": {"name": "Herb", "price": 15, "heal": 30, "text": "Heals a unit 30 HP."}
+  "herb":       {"name": "Herb", "price": 15, "heal": 30, "stock": 5, "where": "map", "text": "Heals a unit 30 HP."},
+  "revive":     {"name": "Revival Draught", "price": 80, "revive": true, "stock": 2, "where": "map", "text": "Brings a fallen unit back at full HP."},
+  "antidote":   {"name": "Antidote", "price": 12, "cures": "poison", "stock": 3, "where": "battle", "text": "Cures poison."},
+  "burn_salve": {"name": "Burn Salve", "price": 12, "cures": "burn", "stock": 3, "where": "battle", "text": "Cures burn."},
+  "thaw_tonic": {"name": "Thaw Tonic", "price": 12, "cures": "freeze", "stock": 3, "where": "battle", "text": "Cures freeze."},
+  "insulator":  {"name": "Insulating Balm", "price": 12, "cures": "shock", "stock": 3, "where": "battle", "text": "Cures shock."},
+  "soft_oil":   {"name": "Softening Oil", "price": 20, "cures": "petrify", "stock": 2, "where": "battle", "text": "Cures petrify."},
+  "salts":      {"name": "Smelling Salts", "price": 10, "cures": "sleep", "stock": 3, "where": "battle", "text": "Wakes a sleeping unit."},
+  "eye_drops":  {"name": "Eye Drops", "price": 10, "cures": "blind", "stock": 3, "where": "battle", "text": "Cures blind."},
+  "echo_herb":  {"name": "Echo Herb", "price": 15, "cures": "silence", "stock": 3, "where": "battle", "text": "Cures silence."}
  },
  "items": {
   "dagger":   {"name": "Dagger", "price": 30,   "slot": "weapon",  "use": "melee",  "stats": {"STR": 1, "AGI": 2}},

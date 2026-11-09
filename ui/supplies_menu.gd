@@ -1,6 +1,7 @@
 class_name SuppliesMenu
 extends Control
-## Use item (squad menu): give a herb to one of the squad's hurt units.
+## Use item (squad menu), anywhere on the map: a Herb for a hurt unit, a Revival
+## Draught for a fallen one. Cure potions are for battle and don't show here.
 ## A modal: 50% dark overlay.
 
 signal closed
@@ -40,13 +41,17 @@ func setup(game_state: GameState, s: Squad) -> void:
 func _refresh() -> void:
 	for c in _list.get_children():
 		c.queue_free()
+	var any := false
 	for id in state.data.items["consumables"]:
 		var item: Dictionary = state.data.items["consumables"][id]
+		if item["where"] != "map":
+			continue
 		var have := int(state.army.supplies.get(id, 0))
 		_list.add_child(UiStyle.label("%s: %s  You have %d." % [item["name"], item["text"], have], 16, UiStyle.ACCENT))
-		for u in squad.living():
-			if u.hp >= u.max_hp(state.data):
+		for u in squad.units:
+			if not state.supply_helps(u, id):
 				continue
+			any = true
 			var row := HBoxContainer.new()
 			var l := UiStyle.label("%s (%s): HP %d/%d" % [u.name, u.unit_class, u.hp, u.max_hp(state.data)], 16)
 			l.size_flags_horizontal = SIZE_EXPAND_FILL
@@ -58,8 +63,8 @@ func _refresh() -> void:
 				_refresh())
 			row.add_child(b)
 			_list.add_child(row)
-	if squad.living().all(func(u: Unit): return u.hp >= u.max_hp(state.data)):
-		_list.add_child(UiStyle.label("No one in %s is hurt." % squad.name, 15, Color(0.6, 0.62, 0.66)))
+	if not any:
+		_list.add_child(UiStyle.label("No one in %s is hurt or fallen." % squad.name, 15, Color(0.6, 0.62, 0.66)))
 
 
 func _unhandled_key_input(event: InputEvent) -> void:

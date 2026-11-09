@@ -8,6 +8,7 @@ const SETTINGS_PATH := "user://settings.json"
 var data: GameData
 var log: GameLog
 var config: GameConfig
+var options: Dictionary  # the player's options (PlayerOptions), shared live with the screens that read them
 var _screens := CanvasLayer.new()
 var _current: Node
 var _preview_map: MapData
@@ -19,6 +20,7 @@ func _ready() -> void:
 	RenderingServer.set_default_clear_color(UiStyle.BACKGROUND)
 	add_child(_screens)
 	config = _load_settings()
+	options = PlayerOptions.load_values(data)
 	show_title()
 
 
@@ -44,6 +46,11 @@ func show_start() -> void:
 	_swap(s)
 	s.setup()
 	s.start_game.connect(show_configurator)
+	s.options.connect(func():
+		var o := OptionsScreen.new()
+		s.add_child(o)
+		o.setup(data, options)
+		o.closed.connect(o.queue_free))
 	s.quit.connect(func(): get_tree().quit())
 
 
@@ -67,6 +74,7 @@ func show_summary() -> void:
 
 func start_game() -> void:
 	var b := Battlemap.new()
+	b.options = options
 	_swap(b, false)
 	b.start(data, log, config, _preview_map)
 	_preview_map = null

@@ -777,6 +777,15 @@ func statuses_of(u: Unit) -> Array:
 	return _status.get(u, {}).keys().map(func(s: String): return s.replace("_up", " up").replace("_", " "))
 
 
+## Removes one status with a potion (§15.1); false if the unit doesn't have it.
+func cure(u: Unit, status: String, potion: String) -> bool:
+	if not u.is_alive() or not has_status(u, status):
+		return false
+	_status[u].erase(status)
+	_record({"type": "status", "unit": u, "status": "cured", "text": "%s uses %s: no more %s." % [_n(u), potion, status.replace("_", " ")]})
+	return true
+
+
 ## Removes every harmful status (Cleanse).
 func cleanse(u: Unit) -> void:
 	for s in _status[u].keys():
