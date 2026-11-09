@@ -30,6 +30,8 @@ func _all(data: GameData, builds: Dictionary, trials: int, seed: int) -> void:
 	var keys := builds.keys()
 	var lost := 0.0
 	var rout := 0.0
+	var front := 0.0
+	var back := 0.0
 	var pairs := 0
 	var worst := 0.0
 	var worst_pair := ""
@@ -42,6 +44,8 @@ func _all(data: GameData, builds: Dictionary, trials: int, seed: int) -> void:
 			print(BattleSim.report(keys[i], keys[j], r))
 			lost += r["loser_hp_lost"]
 			rout += r["battles_to_rout"]
+			front += r["front_survival"]
+			back += r["back_survival"]
 			pairs += 1
 			var ratio: float = r["threat_ratio"]
 			var top: float = maxf(r["win_a"], r["win_b"])
@@ -55,6 +59,7 @@ func _all(data: GameData, builds: Dictionary, trials: int, seed: int) -> void:
 	print("")
 	print("Average first-battle HP lost by the loser: %.0f%% (target 35-50%%)" % (lost / pairs * 100))
 	print("Average battles to rout: %.1f (target 2-3)" % (rout / pairs))
+	print("Units alive after a first battle: front row %.0f%%, back row %.0f%%" % [front / pairs * 100, back / pairs * 100])
 	points.sort_custom(func(p, q): return p[0] < q[0])
 	print("Threat ratio -> second build's win share: " + ", ".join(points.map(func(p): return "%.2f:%.0f%%" % [p[0], p[1] * 100])))
 	print("The higher-rated build won %d of %d clear-cut pairs" % [right, calls])

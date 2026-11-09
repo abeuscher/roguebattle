@@ -552,21 +552,27 @@ func _close_confirm() -> void:
 ## A fight has started (§11.1): pause, center the map on it, and say so before the battle view.
 func _open_encounter() -> void:
 	var b := state.pending
-	var at := [b.sides[0], b.sides[1]].map(func(s: Squad): return _tokens[s.id].position if _tokens.has(s.id) else MapView.hex_center(state.map, s.hex))
-	var cam: Dictionary = data.battle["encounter_camera"]
 	_encounter = EncounterPopup.new()
 	_ui.add_child(_encounter)
 	_encounter.setup(b)
-	_encounter.hide()  # until the camera lands on the fight
-	camera.fly_to((at[0] + at[1]) / 2.0, float(cam["map_share"]), float(cam["seconds"])).finished.connect(func():
-		if _encounter:
-			_encounter.show())
+	_fly_to_meeting(b.sides[0], b.sides[1], _encounter)
 	_encounter.go.connect(func():
 		_encounter.queue_free()
 		_encounter = null
 		state.clock.release()
 		_open_battle())
 	state.clock.hold()
+
+
+## Glides the camera to two squads that just met (zooming in, never out), with the
+## popup hidden until it lands.
+func _fly_to_meeting(a: Squad, b: Squad, popup: Control) -> void:
+	var at := [a, b].map(func(s: Squad): return _tokens[s.id].position if _tokens.has(s.id) else MapView.hex_center(state.map, s.hex))
+	var cam: Dictionary = data.battle["encounter_camera"]
+	popup.hide()
+	camera.fly_to((at[0] + at[1]) / 2.0, float(cam["map_share"]), float(cam["seconds"])).finished.connect(func():
+		if is_instance_valid(popup):
+			popup.show())
 
 
 func _open_battle() -> void:
@@ -660,6 +666,7 @@ func _open_recruit_popup() -> void:
 	_recruit_popup = RecruitPopup.new()
 	_ui.add_child(_recruit_popup)
 	_recruit_popup.setup(state.recruit_class())
+	_fly_to_meeting(state.pending_recruit["player"], state.pending_recruit["neutral"], _recruit_popup)
 	_recruit_popup.recruit.connect(func():
 		var result := state.resolve_recruit(true)
 		_announced = true  # the result panel already announced any fight

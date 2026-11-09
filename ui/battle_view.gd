@@ -11,6 +11,7 @@ signal finished(text: String)
 const FIELD := Vector2(1400, 600)
 const CARD := Vector2(200, 104)
 const GAP := 10.0
+const HEX := 34.0  # the backdrop's hex size
 const EDGE := 40.0  # back rows' distance from the field's sides
 const ROW_GAP := 34.0  # between a squad's back and front rows
 const SIDE_COLORS := [Color("#3b6fd6"), Color("#c8402f")]
@@ -36,6 +37,7 @@ var _done := false  # the result is showing
 var _retreat_asked := false
 var _card_asked := ""  # a card to play before the next action
 var _cards_btn: Button
+var _picker: Control  # the hand, shown large; the battle holds while it's open
 var _items_btn: Button
 var _item_asked := []  # [potion id, unit]: a cure potion to use before the next action
 var _round := UiStyle.label("", 28, UiStyle.ACCENT)
@@ -67,12 +69,13 @@ func setup(game_state: GameState, b: Battle, is_replay := false, wait_for_fight 
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 10)
 	panel.add_child(col)
-	col.add_child(_header())
 	_ground.custom_minimum_size = FIELD
 	_ground.add_theme_stylebox_override("panel", UiStyle.box(Color(battle.terrain["color"]).darkened(0.72), 0))
 	_ground.clip_contents = true
 	col.add_child(_ground)
+	_ground.add_child(_backdrop())
 	_ground.add_child(_field)
+	_add_tags()
 	_round.position = Vector2(FIELD.x / 2.0 - 70, 16)
 	_round.custom_minimum_size.x = 140
 	_round.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -90,28 +93,55 @@ func setup(game_state: GameState, b: Battle, is_replay := false, wait_for_fight 
 	_build_controls()
 
 
-## Each party's name centered over its own cards, "vs." between them, and the ground,
-## time of day and attacker on a quiet line below.
-func _header() -> VBoxContainer:
-	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 2)
-	var row := HBoxContainer.new()
-	var side_w := (EDGE + CARD.x * 2 + ROW_GAP) * 1.1
-	var parts := [[battle.sides[0].name, 26, Color(LOG_COLORS[0]), side_w],
-			["vs.", 20, Color(0.75, 0.78, 0.82), FIELD.x - side_w * 2],
-			[battle.sides[1].name, 26, Color(LOG_COLORS[1]), side_w]]
-	for p in parts:
-		var l := UiStyle.label(p[0], p[1], p[2])
-		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		l.custom_minimum_size.x = p[3]
-		l.clip_text = true
-		row.add_child(l)
-	box.add_child(row)
-	var what := "Ranged attack" if battle.ranged_only else "%s attacks" % battle.sides[battle.attacker].name
-	var info := UiStyle.label("%s%s  ·  %s  ·  %s" % ["Replay  ·  " if replay else "", battle.terrain["name"], "Day" if battle.daytime else "Night", what], 15, Color(0.6, 0.63, 0.68))
-	info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	box.add_child(info)
-	return box
+## The field's ground: hexes of the battle's terrain, dimmed so the cards stand out.
+func _backdrop() -> Control:
+	var tile: Texture2D = ImageTexture.create_from_image(TerrainTiles.draw_tile(battle.terrain["key"], Color(battle.terrain["color"]), HEX))
+	var back := Control.new()
+	back.custom_minimum_size = FIELD
+	back.draw.connect(func():
+		var step := Vector2(HEX * Hex.SQRT3, HEX * 1.5)
+		for row in ceili(FIELD.y / step.y) + 1:
+			for col in ceili(FIELD.x / step.x) + 1:
+				var at := Vector2(col * step.x + (step.x / 2.0 if row % 2 else 0.0), row * step.y)
+				back.draw_texture(tile, at - Vector2(tile.get_size()) / 2.0)
+		back.draw_rect(Rect2(Vector2.ZERO, FIELD), Color(0, 0, 0, 0.35)))
+	return back
+
+
+## Each party's name on a small dark tag over its own cards, and in the middle of the
+## field a "vs." box with the ground, the time of day and who attacks, stacked.
+func _add_tags() -> void:
+	var side_w := EDGE * 2 + CARD.x * 2 + ROW_GAP
+	for side in 2:
+		var tag := _tag([[battle.sides[side].name, 22, Color(LOG_COLORS[side])]])
+		tag.position = Vector2(EDGE + (side_w - EDGE * 2 - tag.size.x) / 2.0, 14)
+		if side == 1:
+			tag.position.x = FIELD.x - tag.position.x - tag.size.x
+		_field.add_child(tag)
+	var lines := [["vs.", 26, UiStyle.ACCENT]]
+	if replay:
+		lines.append(["Replay", 15, Color(0.8, 0.82, 0.86)])
+	lines.append([battle.terrain["name"], 15, Color(0.8, 0.82, 0.86)])
+	lines.append(["Day" if battle.daytime else "Night", 15, Color(0.8, 0.82, 0.86)])
+	lines.append(["Ranged attack" if battle.ranged_only else "%s attacks" % battle.sides[battle.attacker].name, 15, Color(0.8, 0.82, 0.86)])
+	var mid := _tag(lines)
+	mid.position = (FIELD - mid.size) / 2.0 + Vector2(0, 20)
+	_field.add_child(mid)
+
+
+## A small 50%-black box of centered lines, sized to fit them.
+func _tag(lines: Array) -> PanelContainer:
+	var tag := PanelContainer.new()
+	tag.add_theme_stylebox_override("panel", UiStyle.box(Color(0, 0, 0, 0.5), 8))
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 0)
+	tag.add_child(col)
+	for l in lines:
+		var label := UiStyle.label(l[0], l[1], l[2])
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		col.add_child(label)
+	tag.size = tag.get_combined_minimum_size()
+	return tag
 
 
 func _build_controls() -> void:
@@ -197,20 +227,78 @@ func _update_cards() -> void:
 	_cards_btn.tooltip_text = "No battle cards in hand." if n == 0 else "Play a card before the next action."
 
 
+## The hand, large in the middle of the screen. The battle holds while it's open, so
+## there's time to choose (user's playtest notes, 2026-11-09). Playing a card closes it.
 func _choose_card() -> void:
-	var menu := PopupMenu.new()
-	menu.add_theme_font_size_override("font_size", 18)
-	var ids := _battle_cards().keys()
-	for i in ids.size():
-		var c: Dictionary = state.data.cards["cards"][ids[i]]
-		var n: int = _battle_cards()[ids[i]]
-		menu.add_item("%s%s: %s" % [c["name"], " ×%d" % n if n > 1 else "", c["text"]], i)
-	menu.id_pressed.connect(func(i: int):
-		_card_asked = ids[i]
-		_update_cards())
-	menu.popup_hide.connect(menu.queue_free)
-	add_child(menu)
-	menu.popup(Rect2i(Vector2i(get_viewport().get_mouse_position()) - Vector2i(0, 40 * ids.size() + 20), Vector2i.ZERO))
+	_picker = Control.new()
+	_picker.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	add_child(_picker)
+	var shade := ColorRect.new()
+	shade.color = Color(0, 0, 0, 0.6)
+	shade.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	_picker.add_child(shade)
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	_picker.add_child(center)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 18)
+	col.alignment = BoxContainer.ALIGNMENT_CENTER
+	center.add_child(col)
+	var title := UiStyle.label("Play a card  ·  the battle waits", 26)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	col.add_child(title)
+	var row := HFlowContainer.new()
+	row.add_theme_constant_override("h_separation", 16)
+	row.add_theme_constant_override("v_separation", 16)
+	row.alignment = FlowContainer.ALIGNMENT_CENTER
+	row.custom_minimum_size.x = minf(1200.0, 236.0 * _battle_cards().size())
+	col.add_child(row)
+	for id in _battle_cards():
+		row.add_child(_card_tile(id, int(_battle_cards()[id])))
+	var close := UiStyle.button("Close (Esc)", 200)
+	close.pressed.connect(_close_picker)
+	close.size_flags_horizontal = SIZE_SHRINK_CENTER
+	col.add_child(close)
+
+
+## One card as a large upright tile (room for card art later): name, count, effect, Play.
+func _card_tile(id: String, count: int) -> Control:
+	var c: Dictionary = state.data.cards["cards"][id]
+	var tile := PanelContainer.new()
+	var look := UiStyle.box(Color("#2a2433"), 16)
+	look.border_color = UiStyle.ACCENT
+	look.set_border_width_all(2)
+	look.set_corner_radius_all(10)
+	tile.add_theme_stylebox_override("panel", look)
+	tile.custom_minimum_size = Vector2(220, 320)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 10)
+	tile.add_child(col)
+	var heading := UiStyle.label(c["name"], 24, UiStyle.ACCENT)
+	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	heading.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	col.add_child(heading)
+	var many := UiStyle.label("×%d" % count if count > 1 else " ", 16, Color(0.75, 0.78, 0.82))
+	many.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	col.add_child(many)
+	var text := UiStyle.label(c["text"], 16, Color(0.88, 0.89, 0.92))
+	text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	text.size_flags_vertical = SIZE_EXPAND_FILL
+	col.add_child(text)
+	var play := UiStyle.button("Play", 188, true)
+	play.pressed.connect(func():
+		_card_asked = id
+		_close_picker())
+	col.add_child(play)
+	return tile
+
+
+func _close_picker() -> void:
+	if _picker:
+		_picker.queue_free()
+		_picker = null
+	_update_cards()
 
 
 ## Cure potions (§15.1) that would help one of your units right now.
@@ -253,7 +341,7 @@ func _toggle_pause() -> void:
 # --- Playing the battle ---------------------------------------------------------------
 
 func _process(delta: float) -> void:
-	if battle == null or _done or _paused or _waiting:
+	if battle == null or _done or _paused or _waiting or _picker:
 		return
 	_wait -= delta * float(_view["speeds"][_speed])
 	if _wait > 0.0:
@@ -513,7 +601,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if not event.is_pressed():
 		return
 	var key := (event as InputEventKey).keycode
-	if key == KEY_SPACE and _waiting:
+	if _picker:
+		if key == KEY_ESCAPE:
+			_close_picker()
+	elif key == KEY_SPACE and _waiting:
 		_start()
 	elif key == KEY_SPACE and not _done:
 		_toggle_pause()

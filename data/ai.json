@@ -1,4 +1,5 @@
 {
  "_about": "AI weights (SPEC §12.3), map-level targeting only for now (session scope: in-battle tactic and retreat weights are deferred). A wildcard rolls Attack vs Defend once, at placement.",
- "wildcard_attack_chance": 0.5
+ "wildcard_attack_chance": 0.5,
+ "go_home_fallen_share": 0.5
 }

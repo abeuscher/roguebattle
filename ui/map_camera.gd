@@ -27,11 +27,12 @@ func center_on(world_point: Vector2) -> void:
 
 
 ## Glides to a point, zooming and panning together, until the view spans `map_share`
-## of the whole map. Returns the tween, so the caller can wait for it to land.
+## of the whole map, or stays as close as it is if already closer (it never pulls
+## back). Returns the tween, so the caller can wait for it to land.
 func fly_to(world_point: Vector2, map_share: float, seconds: float) -> Tween:
 	var from_pos := position
 	var from_zoom := zoom.x
-	var to_zoom := clampf(_fit_zoom / map_share, _fit_zoom * 0.5, MAX_ZOOM)
+	var to_zoom := clampf(maxf(from_zoom, _fit_zoom / map_share), _fit_zoom * 0.5, MAX_ZOOM)
 	# Keep the view on the map: near an edge, stop short of centering exactly.
 	var half := get_viewport_rect().size / to_zoom / 2.0
 	var origin := -Vector2(MapView.HEX_SIZE * Hex.SQRT3 / 2.0, MapView.HEX_SIZE)

@@ -112,3 +112,39 @@ func test_wildcards_roll_attack_or_defend_at_placement() -> void:
 	check_eq(wildcards.size(), 3, "three wildcards")
 	for s in wildcards:
 		check(s.ai_mode in ["attack", "defend"], "%s rolled a mode: %s" % [s.name, s.ai_mode])
+
+
+## Enemy units come back only at the Enemy Base; a squad down half its units goes
+## there, revives, and returns to its post (user's playtest notes, 2026-11-09).
+func test_half_beaten_squad_goes_home_revives_and_returns() -> void:
+	var st := _state()
+	var post := _at(st.map, 20, 4)
+	var s := _enemy_squad(st, 20, 4, "garrison")
+	s.post = post
+	s.units[0].hp = 0
+	s.units[1].hp = 0
+	st.step()
+	check(s.marching_home and s.is_moving(), "two of three down: it heads home")
+	var reached := false
+	for i in 2000:
+		st.step()
+		if s.hex == st.map.enemy_base:
+			reached = true
+		if reached and s.hex == post and not s.is_moving():
+			break
+	check(reached, "it reached the Enemy Base")
+	check_eq(s.living().size(), s.units.size(), "everyone revived there, at full HP")
+	check_eq(s.units[0].hp, s.units[0].max_hp(d), "full HP")
+	check_eq(s.hex, post, "and it went back to its post")
+
+
+func test_lighter_losses_stay_down_away_from_base() -> void:
+	var st := _state()
+	var s := _enemy_squad(st, 20, 4, "garrison")
+	s.post = s.hex
+	s.add(d, Unit.roll(d, "Fighter", st.rng.get_stream("test"), NameBook.new(d)), "front")
+	s.units[0].hp = 0  # one of four
+	for i in 24 * 60:
+		st.step()
+	check(not s.marching_home and s.hex == s.post, "one of four down: it holds its post")
+	check(not s.units[0].is_alive(), "and no one revives it away from the base")

@@ -307,7 +307,7 @@ Read classes from the sheet: stage, lines, size, slots, can lead, alignment lean
 
 ### 9.4 XP, levels and promotion
 
-- **Who earns XP.** Every unit alive at the end of a battle earns XP = 40 × level ratio × charisma factor × talent bonus.
+- **Who earns XP.** Every unit alive at the end of a battle earns XP = 40 × level ratio × charisma factor × talent bonus. A squad that retreated earns 0.25 of that (user's playtest notes, 2026-11-09).
   - **Level ratio:** enemy squad average level ÷ own squad average level, clamped 0.5–2.
   - **Charisma factor:** 0.5 + leader charisma ÷ 100.
   - **Talent bonus:** see §12.2.

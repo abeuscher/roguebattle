@@ -28,6 +28,8 @@ static func run(data: GameData, build_a: Array, build_b: Array, trials: int, see
 	var winner_lost := 0.0
 	var battles_total := 0
 	var threat_ratio := 0.0
+	var alive := {"front": 0, "back": 0}  # units still standing after each trial's first battle, both sides
+	var seen := {"front": 0, "back": 0}
 	for trial in trials:
 		var names := NameBook.new(data)
 		var sides := [roll_squad(data, build_a, rng, names, 1), roll_squad(data, build_b, rng, names, 2)]
@@ -42,6 +44,10 @@ static func run(data: GameData, build_a: Array, build_b: Array, trials: int, see
 			var out := b.finish()
 			if battles == 0:
 				first_lost = out["hp_lost"]
+				for s in sides:
+					for u in s.units:
+						seen[u.row] += 1
+						alive[u.row] += int(u.is_alive())
 			battles += 1
 			var routed := [out["wiped"][0] or out["leader_dead"][0], out["wiped"][1] or out["leader_dead"][1]]
 			if routed[0] != routed[1]:
@@ -61,10 +67,12 @@ static func run(data: GameData, build_a: Array, build_b: Array, trials: int, see
 	return {"trials": trials, "win_a": float(wins[0]) / trials, "win_b": float(wins[1]) / trials,
 			"draws": float(draws) / trials, "loser_hp_lost": loser_lost / decided,
 			"winner_hp_lost": winner_lost / decided, "battles_to_rout": float(battles_total) / decided,
-			"threat_ratio": threat_ratio / trials}
+			"threat_ratio": threat_ratio / trials,
+			"front_survival": float(alive["front"]) / maxi(1, seen["front"]),
+			"back_survival": float(alive["back"]) / maxi(1, seen["back"])}
 
 
 static func report(name_a: String, name_b: String, r: Dictionary) -> String:
-	return "%s vs %s (%d trials, threat ratio %.2f): %s wins %.0f%%, %s wins %.0f%%, draws %.0f%%. First battle: loser loses %.0f%% HP, winner %.0f%%. Battles to rout: %.1f" % [
+	return "%s vs %s (%d trials, threat ratio %.2f): %s wins %.0f%%, %s wins %.0f%%, draws %.0f%%. First battle: loser loses %.0f%% HP, winner %.0f%%. Battles to rout: %.1f. Survive the first battle: front %.0f%%, back %.0f%%" % [
 			name_a, name_b, r["trials"], r["threat_ratio"], name_a, r["win_a"] * 100, name_b, r["win_b"] * 100,
-			r["draws"] * 100, r["loser_hp_lost"] * 100, r["winner_hp_lost"] * 100, r["battles_to_rout"]]
+			r["draws"] * 100, r["loser_hp_lost"] * 100, r["winner_hp_lost"] * 100, r["battles_to_rout"], r["front_survival"] * 100, r["back_survival"] * 100]

@@ -419,3 +419,24 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **Neutrals are met once.** After any battle with the player (Fight, a refused recruit, or a ranged attack on them), win or lose, the neutral squad leaves the map with a log line. Enemy-neutral fights are unchanged. No neutral respawning yet ("more can appear later" is for a future session).
 - **Encounter camera.** `MapCamera.fly_to()` tweens position and zoom together (sine ease) to a zoom of the fit zoom ÷ `map_share`, so the view spans that share of the map. `data/battle.json` has `"encounter_camera": {"map_share": 0.5, "seconds": 1.0}`. The target is clamped so the view stays on the map, so a fight near the edge is in view but not dead center. The encounter dialog appears when the camera lands; it now sits in the lower part of the screen with a lighter shade (20%), so the two squads stay visible.
 - **XP for retreating, to discuss.** The user saw XP after a retreat. That follows SPEC §9.4: "every unit alive at the end of a battle earns XP", whatever the outcome. `RULES.md` wrongly said "the winning side" and is corrected. Nothing changed in the code; it's an open question for the user.
+
+## Session 033 (2026-11-09): playtest round 3 (M4 session 10)
+
+- **Battle view look.** The header row is gone. The field is tiled with the battle terrain's hex tile (`TerrainTiles.draw_tile`, hex size 34) under a 35% dark wash so the cards read. Each squad's name sits on a small 50%-black tag centered over its own cards; a matching box in the middle of the field stacks "vs.", the terrain, Day/Night and who attacked (and "Replay" in a replay).
+- **Cards in battle.** The Cards button opens a picker over the battle view: the hand as large upright tiles (220×320, name, count, effect, Play), with room for card art later. The battle doesn't step while it's open. Play queues the card for before the next action, as before, and closes the picker; Close or Esc goes back without playing.
+- **The zoom "not happening".** In a real-flow check (a squad ordered into an enemy, the clock running), the camera did glide and zoom: 0.087 to 0.173 over 1 s on a 400×225 map. The likely cause is the starting zoom. The target is half the map, so a player already zoomed in closer saw it pull back, or only pan, rather than zoom in. Now it never zooms out: the target is the larger of the current zoom and half-map. Neutral meetings (the recruit popup) also fly now; they skipped it before, and they're often the first meeting of a game.
+- **Retreat XP:** a quarter of the normal battle XP (`progression.retreat_xp_share` 0.25; SPEC §9.4 updated, the user's call). Card-XP redirection works off the reduced amount.
+- **Enemy revival.**
+  - An enemy squad that has lost at least `ai.go_home_fallen_share` (0.5) of its units sets `marching_home` and heads for the Enemy Base, even mid-route.
+  - Any enemy squad standing still on the Enemy Base has its fallen revived at full HP and its march ends. The leader squad is always there, so it revives between fights.
+  - `Squad.post` records where an enemy squad was placed. Holding roles (leader, base guard, garrison) return to it; raiders and wildcards pick their next target.
+  - Revival on arrival is instant (the player pays gold at their base; the enemy has no economy). There's no log line for it, since enemy movements are hidden.
+- **Front-line survival.** `hp_per_con` goes from 3 to 4 (+33% HP for everyone). Battle sim, all build pairs, 200 trials each (now also reporting the share of units alive after a first battle):
+
+  | hp_per_con | front alive | back alive | loser HP lost (target 35–50%) | battles to rout (target 2–3) |
+  | --- | --- | --- | --- | --- |
+  | 3 (was) | 63% | 85% | 49% | 2.7 |
+  | 4 (now) | 73% | 92% | 40% | 3.3 |
+  | 5 | 81% | 95% | 34% | 3.9 |
+
+  4 keeps HP lost in its target band and raises front-row survival by 10 points; routs take a little longer than §12.4's 2–3. 5 would push both targets out. A front-row-only damage cut would be a new mechanic, so it wasn't used; raise it with the user if 73% still feels low.

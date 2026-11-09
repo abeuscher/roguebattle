@@ -1142,11 +1142,32 @@ func hostile(a: Squad, b: Squad) -> bool:
 ## (none if it's already there or already moving).
 func _run_enemy_ai() -> void:
 	for s in squads:
-		if s.side != "enemy" or s.is_moving() or s.living().is_empty():
+		if s.side != "enemy" or s.living().is_empty():
+			continue
+		if s.hex == map.enemy_base and not s.is_moving():
+			_revive_at_enemy_base(s)
+		elif not s.marching_home and _fallen(s) > 0 and _fallen(s) >= s.units.size() * float(data.ai["go_home_fallen_share"]):
+			s.marching_home = true
+			order_move(s, PackedInt32Array([map.enemy_base]))
+		if s.is_moving() or s.marching_home:
 			continue
 		var target := EnemyAI.target_hex(self, s)
 		if target >= 0 and target != s.hex:
 			order_move(s, PackedInt32Array([target]))
+
+
+func _fallen(s: Squad) -> int:
+	return s.units.size() - s.living().size()
+
+
+## The Enemy Base is the only place enemy units come back (user's playtest notes,
+## 2026-11-09): a squad standing there has its fallen revived at full HP, and any
+## march home ends. EnemyAI then sends it back to its post or its target.
+func _revive_at_enemy_base(s: Squad) -> void:
+	for u in s.units:
+		if not u.is_alive():
+			u.hp = u.max_hp(data)
+	s.marching_home = false
 
 
 ## Places the enemy's squads by role: the leader on the Enemy Base, the base guard and
@@ -1186,6 +1207,7 @@ func place_enemies() -> void:
 			var s := add_squad("%s %d" % [title, k + 1] if count > 1 else title, at, builds[r.randi() % builds.size()], "enemy")
 			s.balance_rows(data)
 			s.role = entry["role"]
+			s.post = at
 			if s.role == "wildcard":
 				s.ai_mode = "attack" if r.randf() < float(data.ai["wildcard_attack_chance"]) else "defend"
 
@@ -1627,10 +1649,11 @@ func _award_xp(b: Battle, out: Dictionary) -> void:
 	if leader_squad == s:
 		share = 0.0
 	var redirected := 0
+	var retreat := float(data.rules["progression"]["retreat_xp_share"]) if out["retreated"] == 0 else 1.0
 	for u in s.living():
 		if u not in army.units():
 			continue
-		var full := Progression.battle_xp(data, s, b.sides[1], u)
+		var full := roundi(Progression.battle_xp(data, s, b.sides[1], u) * retreat)
 		var amount := roundi(full * (1.0 - share))
 		redirected = maxi(redirected, full - amount)
 		out["xp"][u] = amount

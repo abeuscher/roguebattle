@@ -1,7 +1,8 @@
 class_name EnemyAI
 extends RefCounted
 ## Enemy map AI (SPEC §12.3, §17), map-level targeting only: where an idle
-## enemy squad should go, by role. The leader, base guard and garrisons hold
+## enemy squad should go, by role. (GameState first sends a squad that has lost
+## half or more of its units home to the Enemy Base, where its fallen revive.) The leader, base guard and garrisons hold
 ## their post; the existing contact and ranged-attack rules handle anything
 ## that comes close, so they need no AI of their own. Raiders, and wildcards
 ## that rolled Attack, march on the weakest player-held town or tower (or the
@@ -13,10 +14,11 @@ extends RefCounted
 const MOVING_ROLES := ["raider", "wildcard"]
 
 
-## The hex an idle enemy squad should move to, or -1 to hold its ground.
+## The hex an idle enemy squad should move to, or -1 to hold its ground. A holding
+## squad that went home to revive heads back to its post.
 static func target_hex(state: GameState, s: Squad) -> int:
 	if s.role not in MOVING_ROLES:
-		return -1
+		return s.post if s.post != s.hex else -1
 	if s.role == "wildcard" and s.ai_mode == "defend":
 		return _nearest_threatened_building_hex(state, s)
 	return _weakest_player_building_hex(state)

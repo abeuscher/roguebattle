@@ -122,6 +122,27 @@ func test_after_battle() -> void:
 	check(out["level_ups"].any(func(l: String): return l.contains("reaches level 2")), "the result lists the level-up")
 
 
+
+func test_retreating_earns_a_quarter() -> void:
+	var m := MapData.new(20, 5)
+	for i in m.size():
+		m.terrain[i] = d.terrain_ids["plains"]
+	m.seed = 2
+	m.settings = {"preset": "continent", "size": "small"}
+	m.player_base = m.index_of(Hex.from_offset(Vector2i(1, 2)))
+	m.enemy_base = m.index_of(Hex.from_offset(Vector2i(18, 2)))
+	var st := GameState.new(d, m, GameLog.new())
+	st.setup_army()
+	var ours := st.player_squads()[0]
+	var foe := st.add_squad("Them", m.index_of(Hex.from_offset(Vector2i(3, 2))), [["Knight", "front"]], "enemy")
+	var u := ours.units[1]
+	var full := Progression.battle_xp(d, ours, foe, u)
+	var b := st.start_battle(ours, foe, foe)
+	b.retreated = 0
+	var out := st.end_battle(b)
+	check_eq(out["xp"][u], roundi(full * float(d.rules["progression"]["retreat_xp_share"])), "a quarter of the XP for running")
+
+
 func test_promote_at_base() -> void:
 	var m := MapData.new(20, 5)
 	for i in m.size():
