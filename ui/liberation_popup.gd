@@ -33,13 +33,22 @@ func setup(game_state: GameState, building: Dictionary, drawn_card: String) -> v
 	var what: String = state.data.buildings[building["type"]]["name"]
 	col.add_child(UiStyle.label("%s liberated!" % what, 24))
 	if drawn_card != "":
-		_card(col, drawn_card, "You draw ", "", Callable())
+		col.add_child(UiStyle.label("You draw:", 16, Color(0.7, 0.72, 0.76)))
+		var face := CardFace.make(state.data, drawn_card)
+		face.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		col.add_child(face)
 	elif _offering:
 		col.add_child(UiStyle.label("Choose a card:", 16, Color(0.7, 0.72, 0.76)))
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 12)
+		row.alignment = BoxContainer.ALIGNMENT_CENTER
+		col.add_child(row)
 		for id in state.card_offer:
-			_card(col, id, "", "Take", func():
+			var take := UiStyle.button("Take", 150, true)
+			take.pressed.connect(func():
 				state.choose_card(id)
 				closed.emit())
+			row.add_child(CardFace.make(state.data, id, 1, take))
 	_hand(col)
 	if not _offering:
 		var close := UiStyle.button("Close (Esc)", 280)
@@ -66,21 +75,3 @@ func _hand(col: VBoxContainer) -> void:
 	toggle.pressed.connect(func():
 		list.visible = not list.visible
 		toggle.text = ("Hide cards (%d)" if list.visible else "View all cards (%d)") % state.cards.size())
-
-
-func _card(col: VBoxContainer, id: String, prefix: String, button_text: String, action: Callable) -> void:
-	var c: Dictionary = state.data.cards["cards"][id]
-	col.add_child(UiStyle.label("%s%s" % [prefix, c["name"]], 18))
-	var l := UiStyle.label(c["text"], 14, Color(0.8, 0.82, 0.86))
-	l.autowrap_mode = TextServer.AUTOWRAP_WORD
-	col.add_child(l)
-	if button_text != "":
-		var b := UiStyle.button(button_text, 150)
-		b.pressed.connect(action)
-		col.add_child(b)
-
-
-func _unhandled_key_input(event: InputEvent) -> void:
-	if not _offering and event.is_pressed() and (event as InputEventKey).keycode == KEY_ESCAPE:
-		closed.emit()
-		get_viewport().set_input_as_handled()

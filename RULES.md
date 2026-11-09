@@ -82,6 +82,7 @@ This describes how the game actually plays right now, not the full design (that'
 
 - You start with 3 random cards, and draw one more per building liberated or hidden site found (a Seer-led squad chooses from 2 options, an Oracle from 3; a Foresight leader previews what's coming). No limit on cards held or played.
 - Most cards are played during a battle (stat boosts, heals, attacks on the whole enemy squad, debuffs, extra turns); Rooster and Fox are played from the map and jump the clock to the next noon or midnight.
+- Every card shows as a picture card: a line drawing of its animal at the top, its name, and what it does at the bottom (in the Cards panel, the battle card picker and the liberation popup).
 - XP that comes specifically from card damage is redirected to the Opinion Leader's squad instead of whichever squad is fighting (unless that's the same squad).
 
 ## Tech tree

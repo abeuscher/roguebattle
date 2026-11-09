@@ -440,3 +440,10 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
   | 5 | 81% | 95% | 34% | 3.9 |
 
   4 keeps HP lost in its target band and raises front-row survival by 10 points; routs take a little longer than §12.4's 2–3. 5 would push both targets out. A front-row-only damage cut would be a new mechanic, so it wasn't used; raise it with the user if 73% still feels low.
+
+## Session 034 (2026-11-09): card art experiment
+
+- The user asked for a trial: a simple line drawing of each animal, with the cards shown as pictures.
+- **Art:** one SVG per card in `data/card_art/<card id>.svg` (23 of them), a 200×200 viewBox, dark ink strokes (5 px, round caps), no fill except eyes and markings. Drawn by hand as placeholders, in keeping with the rest of the art. Missing art is fine: the card just shows its text. The drawings come from a scratch script, not a tool in `tools/`; edit the SVGs directly from now on.
+- **Card face:** `ui/card_face.gd` (`CardFace.make(data, id, count, button)`) is a 210×360 card: the drawing on a parchment panel at the top, the name (with ×N), the effect anchored to the bottom, then an optional button. It's rasterized once per card at 2× with `Image.load_svg_from_string` and cached, so it doesn't depend on the editor's SVG import.
+- **Used in:** the battle card picker (Play), the map's Cards panel (now a 5-wide grid of faces, Play or "In battle"), and the liberation popup (the drawn card, or the Seer/Oracle offer side by side with Take). The liberation popup's "View all cards" list stays as compact text.

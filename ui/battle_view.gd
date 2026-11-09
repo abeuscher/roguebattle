@@ -251,7 +251,7 @@ func _choose_card() -> void:
 	row.add_theme_constant_override("h_separation", 16)
 	row.add_theme_constant_override("v_separation", 16)
 	row.alignment = FlowContainer.ALIGNMENT_CENTER
-	row.custom_minimum_size.x = minf(1200.0, 236.0 * _battle_cards().size())
+	row.custom_minimum_size.x = minf(1250.0, (CardFace.SIZE.x + 16) * _battle_cards().size())
 	col.add_child(row)
 	for id in _battle_cards():
 		row.add_child(_card_tile(id, int(_battle_cards()[id])))
@@ -261,37 +261,13 @@ func _choose_card() -> void:
 	col.add_child(close)
 
 
-## One card as a large upright tile (room for card art later): name, count, effect, Play.
+## One card face (CardFace) with a Play button.
 func _card_tile(id: String, count: int) -> Control:
-	var c: Dictionary = state.data.cards["cards"][id]
-	var tile := PanelContainer.new()
-	var look := UiStyle.box(Color("#2a2433"), 16)
-	look.border_color = UiStyle.ACCENT
-	look.set_border_width_all(2)
-	look.set_corner_radius_all(10)
-	tile.add_theme_stylebox_override("panel", look)
-	tile.custom_minimum_size = Vector2(220, 320)
-	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 10)
-	tile.add_child(col)
-	var heading := UiStyle.label(c["name"], 24, UiStyle.ACCENT)
-	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	heading.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	col.add_child(heading)
-	var many := UiStyle.label("×%d" % count if count > 1 else " ", 16, Color(0.75, 0.78, 0.82))
-	many.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	col.add_child(many)
-	var text := UiStyle.label(c["text"], 16, Color(0.88, 0.89, 0.92))
-	text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	text.size_flags_vertical = SIZE_EXPAND_FILL
-	col.add_child(text)
 	var play := UiStyle.button("Play", 188, true)
 	play.pressed.connect(func():
 		_card_asked = id
 		_close_picker())
-	col.add_child(play)
-	return tile
+	return CardFace.make(state.data, id, count, play)
 
 
 func _close_picker() -> void:

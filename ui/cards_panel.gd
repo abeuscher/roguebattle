@@ -9,7 +9,8 @@ signal closed
 
 var state: GameState
 var offer := false
-var _list := VBoxContainer.new()
+var _list := HFlowContainer.new()
+var _note := UiStyle.label("", 16, UiStyle.ACCENT)
 var _title := UiStyle.label("", 24)
 
 
@@ -29,14 +30,16 @@ func setup(game_state: GameState, is_offer := false) -> void:
 	center.add_child(panel)
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 12)
-	col.custom_minimum_size.x = 760
+	col.custom_minimum_size.x = (CardFace.SIZE.x + 12) * 5 + 12
 	panel.add_child(col)
 	col.add_child(_title)
+	col.add_child(_note)
 	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size.y = 520
+	scroll.custom_minimum_size.y = CardFace.SIZE.y * 2 + 24
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	col.add_child(scroll)
-	_list.add_theme_constant_override("separation", 8)
+	_list.add_theme_constant_override("h_separation", 12)
+	_list.add_theme_constant_override("v_separation", 12)
 	_list.size_flags_horizontal = SIZE_EXPAND_FILL
 	scroll.add_child(_list)
 	if not offer:
@@ -58,10 +61,13 @@ func _refresh() -> void:
 				closed.emit())
 		return
 	_title.text = "Cards (%d)" % state.cards.size()
+	_note.text = ""
 	if state.foresight():
-		_list.add_child(UiStyle.label("Foresight: the next card drawn will be %s." % state.card_name(state.next_card), 16, UiStyle.ACCENT))
+		_note.text = "Foresight: the next card drawn will be %s." % state.card_name(state.next_card)
 	if state.cards.is_empty():
-		_list.add_child(UiStyle.label("No cards. Liberate buildings and find hidden sites to draw more.", 16, Color(0.6, 0.62, 0.66)))
+		_note.text += ("
+" if _note.text != "" else "") + "No cards. Liberate buildings and find hidden sites to draw more."
+	_note.visible = _note.text != ""
 	var counts := {}
 	for id in state.cards:
 		counts[id] = counts.get(id, 0) + 1
@@ -72,23 +78,13 @@ func _refresh() -> void:
 			_refresh(), counts[id])
 
 
+## One card face with its button (CardFace).
 func _row(id: String, button: String, enabled: bool, action: Callable, count := 1) -> void:
-	var c: Dictionary = state.data.cards["cards"][id]
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 12)
-	var text := VBoxContainer.new()
-	text.size_flags_horizontal = SIZE_EXPAND_FILL
-	text.add_child(UiStyle.label("%s%s  ·  %s" % [c["name"], "  ×%d" % count if count > 1 else "", c["group"]], 18))
-	var l := UiStyle.label(c["text"], 15, Color(0.8, 0.82, 0.86))
-	l.autowrap_mode = TextServer.AUTOWRAP_WORD
-	text.add_child(l)
-	row.add_child(text)
 	var b := UiStyle.button(button, 140, enabled)
 	b.disabled = not enabled
 	b.tooltip_text = "" if enabled else "Play it during a battle."
 	b.pressed.connect(action)
-	row.add_child(b)
-	_list.add_child(row)
+	_list.add_child(CardFace.make(state.data, id, count, b))
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
