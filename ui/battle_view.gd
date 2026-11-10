@@ -12,6 +12,8 @@ const FIELD := Vector2(1400, 600)
 const CARD := Vector2(200, 104)
 const GAP := 10.0
 const HEX := 34.0  # the backdrop's hex size
+const PANEL_MARGIN := 16
+const PLAY_SIZE := 52.0  # the round Play/Pause button
 const CONTROLS_H := 44.0  # the button row's height, reserved while it's hidden
 const EDGE := 40.0  # back rows' distance from the field's sides
 const ROW_GAP := 34.0  # between a squad's back and front rows
@@ -69,7 +71,12 @@ func setup(game_state: GameState, b: Battle, is_replay := false, wait_for_fight 
 	center.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	add_child(center)
 	_panel = PanelContainer.new()
-	_panel.add_theme_stylebox_override("panel", UiStyle.box(UiStyle.PANEL, 16))
+	# The panel draws its own background (_draw_panel): all of it while paused, only an
+	# even frame around the field while the battle plays, so the space below is see-through.
+	var margin := StyleBoxEmpty.new()
+	margin.set_content_margin_all(PANEL_MARGIN)
+	_panel.add_theme_stylebox_override("panel", margin)
+	_panel.draw.connect(_draw_panel)
 	center.add_child(_panel)
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 10)
@@ -111,7 +118,6 @@ func setup(game_state: GameState, b: Battle, is_replay := false, wait_for_fight 
 ## next to it the latest action, outlined so it reads against the ground.
 func _add_play_button() -> void:
 	_play_btn = UiStyle.button("", 150, true)
-	_play_btn.position = Vector2(14, FIELD.y - 58)
 	# No keyboard focus: Space is handled once, in _unhandled_key_input. A focused button
 	# would also take Space as a press, so the battle paused and played again at once.
 	_play_btn.focus_mode = FOCUS_NONE
@@ -121,8 +127,8 @@ func _add_play_button() -> void:
 		else:
 			_toggle_pause())
 	_ground.add_child(_play_btn)
-	_action.position = Vector2(180, FIELD.y - 50)
-	_action.custom_minimum_size.x = FIELD.x - 200
+	_action.position = Vector2(14 + PLAY_SIZE + 16, FIELD.y - 14 - PLAY_SIZE / 2.0 - 12)
+	_action.custom_minimum_size.x = FIELD.x - _action.position.x - 20
 	_action.clip_text = true
 	_action.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
 	_action.add_theme_constant_override("outline_size", 5)
@@ -135,9 +141,41 @@ func _add_play_button() -> void:
 ## or waiting to start, the log and controls show under it.
 func _show_chrome() -> void:
 	var still := _paused or _waiting
-	_play_btn.text = "Fight (Space)" if _waiting else ("Play (Space)" if _paused else "Pause (Space)")
+	if _waiting:
+		_play_btn.text = "Fight (Space)"
+		_play_btn.position = Vector2(14, FIELD.y - 58)
+	else:
+		_round_play_button()
+		_play_btn.icon = UiStyle.icon("play" if _paused else "pause", 22)
+		_play_btn.tooltip_text = "Play (Space)" if _paused else "Pause (Space)"
 	_below.visible = still
 	_action.visible = not still
+	_panel.queue_redraw()
+
+
+## The panel's background: the whole panel while paused or waiting; while the battle
+## plays, only the field with an even border on all four sides.
+func _draw_panel() -> void:
+	var r := Rect2(Vector2.ZERO, _panel.size)
+	if not (_paused or _waiting):
+		r.size.y = FIELD.y + PANEL_MARGIN * 2
+	UiStyle.box(UiStyle.PANEL, 0).draw(_panel.get_canvas_item(), r)
+
+
+## Once the battle starts, Play/Pause is an icon on a small round button.
+func _round_play_button() -> void:
+	if _play_btn.text == "":
+		return
+	_play_btn.text = ""
+	_play_btn.custom_minimum_size = Vector2(PLAY_SIZE, PLAY_SIZE)
+	_play_btn.size = _play_btn.custom_minimum_size
+	_play_btn.position = Vector2(14, FIELD.y - 14 - PLAY_SIZE)
+	_play_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	for st in ["normal", "hover", "pressed", "disabled"]:
+		var box := (_play_btn.get_theme_stylebox(st) as StyleBoxFlat).duplicate() as StyleBoxFlat
+		box.set_corner_radius_all(int(PLAY_SIZE / 2.0))
+		box.set_content_margin_all(0)
+		_play_btn.add_theme_stylebox_override(st, box)
 
 
 ## The field's ground: hexes of the battle's terrain, dimmed so the cards stand out.

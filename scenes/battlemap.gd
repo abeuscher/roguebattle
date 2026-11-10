@@ -303,7 +303,7 @@ func _choose(found: Array[Squad], building: Dictionary) -> void:
 		var s := found[i]
 		menu.add_item("%d  %s" % [s.id, s.name] if s.side == "player" else "%s (%s)" % [s.name, s.role.replace("_", " ")], i)
 	if not building.is_empty():
-		menu.add_item(state.data.buildings[building["type"]]["name"], found.size())
+		menu.add_item(building.get("name", state.data.buildings[building["type"]]["name"]), found.size())
 	menu.id_pressed.connect(func(i: int):
 		if i < found.size():
 			_pick(found[i])

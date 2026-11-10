@@ -202,3 +202,20 @@ func test_buildings_seeded() -> void:
 	var b := MapGen.generate(_data, 9)
 	check_eq(JSON.stringify(a.buildings), JSON.stringify(b.buildings), "same seed, same buildings")
 	check(a.road == b.road, "same seed, same roads")
+
+
+## Town names (user's playtest notes, 2026-11-10): every town has one, no two alike,
+## the same for the same seed, and nothing else on the map moves because of them.
+func test_towns_get_unique_seeded_names() -> void:
+	var m := _map()
+	var names := _of_type(m, "town").map(func(b): return b.get("name", ""))
+	check(names.all(func(n): return n != ""), "every town is named")
+	var unique := {}
+	for n in names:
+		unique[n] = true
+	check_eq(unique.size(), names.size(), "no two towns share a name")
+	var again := MapGen.generate(_data, 1, {"preset": "continent"})
+	check_eq(_of_type(again, "town").map(func(b): return b["name"]), names, "the same seed gives the same names")
+	check(_of_type(m, "tower").all(func(b): return not b.has("name")), "towers go by their type")
+	var other := _of_type(_map("continent", 2), "town").map(func(b): return b["name"])
+	check(other != names, "another seed, other names")

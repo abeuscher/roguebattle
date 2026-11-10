@@ -1,0 +1,7 @@
+{
+ "_about": "Town names (user's playtest notes, 2026-11-10): a prefix and a suffix joined into one word (Ash + ford = Ashford), and now and then a separate word in front (Old Ashford). Seeded with the map; every town on a map gets a different name. Add or remove parts freely.",
+ "prefixes": ["Ash", "Barrow", "Black", "Bram", "Bright", "Brook", "Cold", "Crow", "Dun", "Elder", "Elm", "Fair", "Fen", "Frost", "Glen", "Gold", "Gray", "Hal", "Har", "Hawk", "Hazel", "High", "Holl", "Iron", "Kel", "Kings", "Lark", "Lin", "Long", "Marl", "Mead", "Mill", "Moor", "Nor", "Oak", "Pen", "Quarry", "Raven", "Red", "Rook", "Rose", "Salt", "Shep", "Silver", "Stan", "Stone", "Strat", "Thorn", "Tod", "Wal", "Wen", "West", "Whit", "Wil", "Win", "Wolf", "Wyn", "Yar"],
+ "suffixes": ["bridge", "brook", "bury", "by", "caster", "combe", "dale", "den", "field", "ford", "gate", "ham", "haven", "hill", "holm", "hurst", "ley", "mere", "mouth", "moor", "port", "stead", "stoke", "stow", "thorpe", "ton", "wall", "well", "wick", "wood", "worth"],
+ "words": ["Old", "Little", "Upper", "Lower", "Great", "East", "North", "South", "West"],
+ "word_chance": 0.12
+}

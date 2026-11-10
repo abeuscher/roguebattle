@@ -213,14 +213,22 @@ func _capture() -> void:
 			b["owner"] = s.side
 			var what: String = data.buildings[b["type"]]["name"].to_lower()
 			if s.side == "player":
-				log.add(clock.tick, "map", "%s liberates the %s at %s." % [s.name, what, map.hex_at(s.hex)], s.id)
+				log.add(clock.tick, "map", "%s liberates %s." % [s.name, place_label(b)], s.id)
 				var bonus := liberation_bonus()
 				gold += bonus
 				log.add(clock.tick, "economy", "Liberation bonus: %d gold." % bonus, s.id, {"reputation": reputation})
 				_liberated(s, b)
 			else:
-				log.add(clock.tick, "map", "%s captures the %s at %s." % [s.name, what, map.hex_at(s.hex)], s.id)
+				log.add(clock.tick, "map", "%s captures %s." % [s.name, place_label(b)], s.id)
 				change_morale(s, int(data.battle["morale"]["liberation"]), "capturing a %s" % what)
+
+
+## A building as the log names it: a town by its name ("Ashford"), anything else by
+## its type and place ("the tower at (12, 40)").
+func place_label(b: Dictionary) -> String:
+	if b.has("name"):
+		return b["name"]
+	return "the %s at %s" % [str(data.buildings[b["type"]]["name"]).to_lower(), map.hex_at(b["hex"])]
 
 
 ## Standing changes for a liberation (§9.5, §9.6, §10): reputation by the squad's
@@ -1179,6 +1187,8 @@ func _run_enemy_ai() -> void:
 			continue
 		if s.hex == map.enemy_base and not s.is_moving():
 			_revive_at_enemy_base(s)
+		elif s.marching_home and not s.is_moving():  # stopped on the way (no route left): set off again
+			order_move(s, PackedInt32Array([map.enemy_base]))
 		elif not s.marching_home and _fallen(s) > 0 and _fallen(s) >= s.units.size() * float(data.ai["go_home_fallen_share"]):
 			s.marching_home = true
 			s.goal = -1
@@ -1585,11 +1595,12 @@ func end_battle(b: Battle) -> Dictionary:
 				change_charisma(s.units, -1, "retreating")
 		elif out["pushed"] == side:
 			_push(s, enemy.hex, int(data.battle["push_back"]["on_travel_terrain" if _on_travel_terrain(s) else "otherwise"]))
-		if out["leader_dead"][side] and not s.marching_home and s.side != "neutral":
-			s.marching_home = true
+		if s.side != "neutral" and (s.marching_home or out["leader_dead"][side]):
+			if not s.marching_home:
+				log.add(clock.tick, "battle", "%s lost its leader and marches home." % s.name, s.id)
+			s.marching_home = true  # a push cleared its route: it sets off home again
 			order_move(s, PackedInt32Array([map.player_base if s.side == "player" else map.enemy_base]))
 			s.entering_base = s.side == "player"
-			log.add(clock.tick, "battle", "%s lost its leader and marches home." % s.name, s.id)
 	_update_morale(b, out)
 	_update_bonds(b)
 	_update_loyalty_wins(b, out)

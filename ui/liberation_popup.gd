@@ -30,7 +30,7 @@ func setup(game_state: GameState, building: Dictionary, drawn_card: String) -> v
 	col.add_theme_constant_override("separation", 10)
 	col.custom_minimum_size.x = 420
 	panel.add_child(col)
-	var what: String = state.data.buildings[building["type"]]["name"]
+	var what: String = building.get("name", state.data.buildings[building["type"]]["name"])
 	col.add_child(UiStyle.label("%s liberated!" % what, 24))
 	if drawn_card != "":
 		col.add_child(UiStyle.label("You draw:", 16, Color(0.7, 0.72, 0.76)))

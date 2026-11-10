@@ -151,6 +151,21 @@ func test_half_beaten_squad_goes_home_revives_and_returns() -> void:
 	check_eq(s.hex, post, "and it went back to its post")
 
 
+## Playtest round 5: a squad down to its leader stayed out. A push after a battle on
+## the way home clears its route; it must set off home again.
+func test_a_squad_stopped_on_its_way_home_sets_off_again() -> void:
+	var st := _state()
+	var s := _enemy_squad(st, 15, 4, "field")
+	s.units[1].hp = 0
+	s.units[2].hp = 0
+	st.step()
+	check(s.marching_home and s.is_moving(), "leader alone: it heads home")
+	st._push(s, _at(st.map, 20, 4), 1)  # what a lost battle does
+	check(not s.is_moving(), "the push clears its route")
+	st.step()
+	check(s.marching_home and s.is_moving(), "and it sets off home again")
+
+
 func test_lighter_losses_stay_down_away_from_base() -> void:
 	var st := _state()
 	var s := _enemy_squad(st, 20, 4, "base_guard")

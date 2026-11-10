@@ -56,7 +56,7 @@ static func _outlined(fill: Color, edge: Color) -> StyleBoxFlat:
 	return s
 
 
-## A small white icon drawn in code: "copy", "apply", "open", "closed", "clock", "calendar",
+## A small white icon drawn in code: "copy", "apply", "open", "closed", "play", "pause", "clock", "calendar",
 ## or an alignment: "holy" (a sun), "neutral" (a half-filled circle), "evil" (a horned head).
 static func icon(kind: String, n := ICON_SIZE) -> ImageTexture:
 	var img := Image.create(n, n, false, Image.FORMAT_RGBA8)
@@ -79,6 +79,10 @@ static func _icon_covers(kind: String, p: Vector2) -> bool:
 			return Geometry2D.is_point_in_polygon(p, PackedVector2Array([Vector2(0.15, 0.3), Vector2(0.85, 0.3), Vector2(0.5, 0.75)]))
 		"closed":
 			return Geometry2D.is_point_in_polygon(p, PackedVector2Array([Vector2(0.3, 0.15), Vector2(0.75, 0.5), Vector2(0.3, 0.85)]))
+		"play":  # a triangle pointing right, nudged right so it looks centered
+			return Geometry2D.is_point_in_polygon(p, PackedVector2Array([Vector2(0.24, 0.12), Vector2(0.88, 0.5), Vector2(0.24, 0.88)]))
+		"pause":  # two bars
+			return Rect2(0.2, 0.14, 0.2, 0.72).has_point(p) or Rect2(0.6, 0.14, 0.2, 0.72).has_point(p)
 		"clock":  # a ring with two hands
 			var d := p.distance_to(Vector2(0.5, 0.5))
 			return (d > 0.36 and d < 0.47) or _near(p, Vector2(0.5, 0.5), Vector2(0.5, 0.24)) or _near(p, Vector2(0.5, 0.5), Vector2(0.7, 0.5))

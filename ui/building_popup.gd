@@ -27,7 +27,7 @@ func setup(state: GameState, b: Dictionary) -> void:
 	col.add_theme_constant_override("separation", 10)
 	col.custom_minimum_size.x = 560
 	panel.add_child(col)
-	col.add_child(UiStyle.label(info["name"], 26))
+	col.add_child(UiStyle.label("%s  ·  %s" % [b["name"], info["name"]] if b.has("name") else info["name"], 26))
 	col.add_child(UiStyle.label(OWNERS[b["owner"]], 17, UiStyle.ACCENT))
 	var lines := []
 	if info.has("own_base"):

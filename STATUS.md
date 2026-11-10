@@ -92,10 +92,16 @@ Where the project stands, for picking up in a new session or on another machine.
   - Space in the battle view no longer toggles twice.
   - Headless: with the player idle, the enemy takes most of the 26 towns and towers within a day or so. Tunable if it feels too fast.
   - 296 tests passing.
+- **Session 037 (between sessions):** Grave pact unit stuck off the squad grid after battle, fixed; round 6 notes planned as M4 session 14.
+- **Last work (session 038), M4 session 13, Playtest round 5 smaller notes:**
+  - Battle view: Play/Pause is a round icon button; while playing, the panel draws only an even frame around the field and the space below is see-through.
+  - Enemy (and player) squads marching home now set off again if a fight on the way pushes them back; that's why a leader-alone enemy squad stayed out.
+  - Towns are named from `data/town_names.json` parts, seeded with the map; shown in the building popup, liberation popup and log.
+  - 298 tests passing.
 
 ## Next up
 
-- **M4 session 13 (playtest round 5, smaller notes)** is planned in `ROADMAP.md`: Play/Pause icons, a see-through area under the field while playing, an enemy squad down to its leader going home (investigate why it didn't), and town names.
+- **M4 session 13 done (session 038):** round Play/Pause icons, the see-through area under the field while playing, the enemy go-home fix (a push on the way home left squads stranded), and town names. See `DECISIONS.md` session 038.
 - **M4 session 14 (playtest round 6, small notes)** is planned in `ROADMAP.md`: the cards window laid out like the battle picker, no map zoom under popups, cards (and cure potions) taking effect at once in battle, and Use item in the encounter popup.
 - **M4 milestone check: the first real playtest**, after session 14.
 - **Unit portraits:** the user's first 8 large unit images are committed in `data/unit_art/` (not used in the game yet). Building them into the unit detail view is a future task in `ROADMAP.md`, waiting on more of the set.
@@ -108,7 +114,7 @@ Where the project stands, for picking up in a new session or on another machine.
 
 ## How the user works
 
-- **One git branch per session,** named `session-NNN` (next: `session-037`), cut from `main`.
+- **One git branch per session,** named `session-NNN` (next: `session-039`), cut from `main`.
 - **Commit locally only:**
   - Never push or merge; the user merges and pushes, then says "continue".
   - Commit messages end with a `Co-Authored-By:` line naming whatever Claude model is doing the session (the harness's own attribution instructions say exactly what to write).

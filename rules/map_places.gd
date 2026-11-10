@@ -35,6 +35,7 @@ static func place_all(m: MapData, game_data: GameData, settings: Dictionary, map
 	p._hidden_sites()
 	p._lairs()
 	p._cover_regions()
+	p._town_names()
 
 
 func _setup() -> void:
@@ -569,3 +570,38 @@ static func terrain_regions(m: MapData, game_data: GameData) -> PackedInt32Array
 					stack.append(n)
 		next_id += 1
 	return region
+
+## Names every town from the parts in town_names.json (user's playtest notes,
+## 2026-11-10): prefix + suffix, sometimes with a word in front; no two alike. Its own
+## RNG from the map seed, so names never shift where anything else is placed.
+func _town_names() -> void:
+	var t: Dictionary = data.town_names
+	var r := RandomNumberGenerator.new()
+	r.seed = hash([map.seed, "town_names"])
+	var used := {}
+	for b in map.buildings:
+		if b["type"] != "town":
+			continue
+		var name := ""
+		for attempt in 200:
+			name = town_name(t, r)
+			if not used.has(name):
+				break
+		used[name] = true
+		b["name"] = name
+
+
+static func town_name(t: Dictionary, r: RandomNumberGenerator) -> String:
+	var name := ""
+	while true:
+		var a: String = t["prefixes"][r.randi() % t["prefixes"].size()]
+		var b: String = t["suffixes"][r.randi() % t["suffixes"].size()]
+		name = a + b
+		var j := a.length()  # no three letters alike at the join (Mill + ley)
+		if not (name[j - 1] == name[j] and (name[j - 2].to_lower() == name[j] or (j + 1 < name.length() and name[j + 1] == name[j]))):
+			break
+	if r.randf() < float(t["word_chance"]):
+		var word: String = t["words"][r.randi() % t["words"].size()]
+		if not name.begins_with(word):  # not West Westwick
+			name = "%s %s" % [word, name]
+	return name
