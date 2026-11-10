@@ -264,10 +264,21 @@ func _build_controls() -> void:
 	var skip := UiStyle.button("Skip to end", 170)
 	skip.pressed.connect(_skip)
 	_controls.add_child(skip)
+	_no_focus(_controls)
 	if replay:
 		_retreat_btn.disabled = true
 		_cards_btn.disabled = true
 		_items_btn.disabled = true
+
+
+## Battle-view buttons never take keyboard focus: Space is handled once, in
+## _unhandled_key_input. A focused button would take Space as a press too (Cards
+## pressed again opened a second, unclosable card picker).
+func _no_focus(node: Node) -> void:
+	if node is Control:
+		(node as Control).focus_mode = FOCUS_NONE
+	for c in node.get_children():
+		_no_focus(c)
 
 
 func _update_speed() -> void:
@@ -303,6 +314,8 @@ func _update_cards() -> void:
 ## The hand, large in the middle of the screen. The battle holds while it's open, so
 ## there's time to choose (user's playtest notes, 2026-11-09). Playing a card closes it.
 func _choose_card() -> void:
+	if _picker:
+		return
 	_picker = Control.new()
 	_picker.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	add_child(_picker)
@@ -330,6 +343,7 @@ func _choose_card() -> void:
 		row.add_child(_card_tile(id, int(_battle_cards()[id])))
 	var close := UiStyle.button("Close (Esc)", 200)
 	close.pressed.connect(_close_picker)
+	_no_focus.call_deferred(_picker)
 	close.size_flags_horizontal = SIZE_SHRINK_CENTER
 	col.add_child(close)
 
