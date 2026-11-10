@@ -105,6 +105,8 @@ Where the project stands, for picking up in a new session or on another machine.
   - The Cards panel matches the battle card picker's layout.
   - 299 tests passing.
 - **Last work (session 040), user's requests:** front-row units take 20% less damage (`battle.json` `front_row_damage_cut`; sim: front-row survival 73% → 85%, loser HP loss at the §12.4 floor of 35%); clicking outside a window closes it wherever that's safe; all 23 cards listed in `RULES.md`. Then the final fight: revival at the Enemy Base is slow (one fallen unit per 2 h, `enemy.json` `base_revive_ticks`) and the base doesn't heal (sim: one pass of six squads beats the Warlord in 10 of 20 games, was 2); the battle results explain Demand they flee. 302 tests passing.
+- **Last work (session 041), unit icons (data and art only):** every class has an icon in `data/unit_icons/`, built by `python tools/unit_icons.py` from four new sheet columns (Icon base / hand / head / crest; see `DECISIONS.md`). `UnitIcons.texture()` / `UnitIcons.on_card()` load them at any size; nothing in the UI uses them yet (next: squad cards, map tokens, unit detail). 304 tests passing.
+- **Last work (session 042), unit icons in the UI:** unit chips in Edit Units, the squad detail, the recruit pool and the squad menu lead with the class icon; the unit panel shows the icon and the promotion choices as icons; map tokens are the leader's icon ringed in the side's color, numbered on the pole. 305 tests passing.
 
 ## Next up
 
@@ -120,7 +122,7 @@ Where the project stands, for picking up in a new session or on another machine.
 
 ## How the user works
 
-- **One git branch per session,** named `session-NNN` (next: `session-041`), cut from `main`.
+- **One git branch per session,** named `session-NNN` (next: `session-043`), cut from `main`.
 - **Commit locally only:**
   - Never push or merge; the user merges and pushes, then says "continue".
   - Commit messages end with a `Co-Authored-By:` line naming whatever Claude model is doing the session (the harness's own attribution instructions say exactly what to write).

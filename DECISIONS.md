@@ -507,3 +507,30 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **Revival:** `enemy.json` `base_revive_ticks` 120: one fallen unit, leader first, at full HP per 2 game hours, while the squad stands on the base (`Squad.revive_at`; the clock resets when it leaves). A squad that marched home stays until all are back. `buildings.json` enemy_base rest 0, so the daily rest doesn't heal it (that also means a player squad sitting on a captured Enemy Base doesn't heal there; the building popup says "don't heal").
 - **Sim after** (20 games each): six squads 30 minutes apart, one pass, start levels: 10 of 20 (7 by wiping the Warlord out, 3 by driving him off); two passes: 20 of 20; one pass with +5 levels: 20 of 20; one pass with 4 hours between attacks: 3 of 20. A concentrated assault is the strategy.
 - **Results screen hints** (`BattleView._hints`): when Demand they flee is offered, what it does and that the chance is the leader's charisma; after a win when it isn't offered yet (morale ≥ 25), that it will be once their spirit breaks; for the Warlord, that it's a way to win without wiping his squad. After a fight that began on the Enemy Base (recorded at setup, since the loser is often pushed off), that the enemy's fallen come back only one per 2 h there. The Enemy Base popup says the same. Morale itself stays hidden (§12.2).
+
+## Session 041 (2026-11-10): unit icons (data and art)
+
+- **The grammar** (user's design): one icon per class, built up stage by stage so a stage 4 icon shows all three symbols before it. Each stage owns one place on the tile and a symbol never moves once added:
+  - **Base** (stage 1, or stage 2 for R lines that start there): the line's silhouette. Human for every Serf line; its own figure for each race and beast (elf, troll, wolf, dragon...).
+  - **Hand** (stage 2), lower right: what the unit carries (sword, bow, staff...). On beasts it's the branch mark instead (ember, barding, wing), since beast lines split at stage 2. R lines have none; their base is the stage 2 identity.
+  - **Head** (stage 3), on the head: helm, hood, hat, horns. Placed per base so it lands on that creature's head.
+  - **Crest** (stage 4): a white glyph in the top-right badge. Splits at stage 4 (Sentinel/Champion, the four mages, dragon colours) differ only here.
+  - **Colors carry two facts only:** frame = Alignment lean (gray Any, gold Holy, crimson Evil, green Neutral; "By alignment" and "Varies by color" are gray); badge = Element (dark gray with none). Large units get a double frame (two slots); Tiny units are two small figures, with a third joining at stage 3 (head `pack`).
+  - Every overlay gets a parchment halo underneath so stacked parts read as separate objects.
+- **Data flow:** the four parts are sheet columns (`Icon base`, `Icon hand`, `Icon head`, `Icon crest`), so they reach `units.json` through `xlsx_to_json.py` unchanged. `tools/unit_icons.py` reads `units.json` and writes `data/unit_icons/<class>.svg` (lower case, `_` for anything else). An unknown part name is listed and nothing is written; a class removed from the sheet has its file removed. Regenerate: `python tools/xlsx_to_json.py` then `python tools/unit_icons.py`. Adding a new part means drawing it in `unit_icons.py`.
+- **One SVG set, two looks:** icons use exactly two colors, ink `#1d1b1a` and paper `#f4efe4`. `UnitIcons.texture(class, px)` gives dark-on-parchment; `UnitIcons.on_card(class, px, card_color)` swaps them for parchment ink on a colored unit card. Loaded the way `CardFace.art` loads card drawings (`Image.load_svg_from_string`), cached per size and colors.
+- **Sheet edit:** the columns were added with openpyxl, then the file was round-tripped through LibreOffice so the Stat total formulas keep their cached values (openpyxl drops them, and the converter reads values). Checked: every existing cell value, sheet, freeze pane and column width is unchanged. Rows also added to the Change log and How to read sheets.
+- **Symbol choices** are proposals for the user to veto; the contact sheet is on the PR. A few calls: Squire = lance, Slinger = slingshot, Acolyte = ankh rod; Spearman's stage 3 head is a morion; Pride Lion wears a spiked helm (a crown disappeared into the mane).
+- **Not done here:** nothing in the UI shows icons yet. That's the follow-up (squad cards at 48 px with `on_card`, map tokens at ~28 px from the leader, unit detail header).
+
+## Session 042 (2026-11-10): unit icons in the UI
+
+- **Unit chips lead with the class icon** (`EditUnits.Chip._icon`, drawn with `UnitIcons.texture` on the chip's own color so the halos cut cleanly; grayed out once fallen):
+  - Squad cards (compact, 72×48): the icon replaces the name and class text. The name is in the tooltip and the unit panel; the card already says who leads. The level earmark, leader star, promote arrow and HP bar stay. The cards couldn't grow: the 4×4 grid already fills the 1000 px panel.
+  - Squad detail (slot): taller, 148×122 in a 156×130 slot (there was room below), 60 px icon, then level and attack beside it, name and class and HP under it.
+  - Recruit pool (wide): 46 px icon on the left, text as before beside it.
+  - Squad menu on the map: 36 px icon, level and first name beside it; the class is in the tooltip.
+- **Unit panel:** 72 px icon before the name. "Promotes at level N to:" lists each class as its icon and name, and the Promote buttons carry the class icon.
+- **Map tokens:** the leader's icon on a dark disc ringed in the side's color (player blue, enemy red), on the pole where the flag was, with the squad's number (enemies: role initial) on a small tag on the pole below it. The tag sat at first on the disc's lower right, but that covered the hand symbol, the part that most tells classes apart. Icons for tokens drop their frame (`UnitIcons.on_token`) and are rasterized at 72 px with mipmaps so they stay sharp zoomed in and smooth zoomed out. A squad with no leader still flies the old numbered flag. The route cursor is the same token, so it follows.
+- Checked with screenshots of Edit Units, squad detail, unit panel, squad menu and tokens at two scales (Xvfb + OpenGL on Linux).
+

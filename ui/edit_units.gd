@@ -281,7 +281,7 @@ func _slot(s: Squad, r: String, c: int) -> Control:
 	style.set_border_width_all(1)
 	style.border_color = Color(0.25, 0.27, 0.32)
 	slot.add_theme_stylebox_override("panel", style)
-	slot.custom_minimum_size = Vector2(156, 112)
+	slot.custom_minimum_size = Vector2(156, 130)
 	# Even in the field, units can move between this squad's slots (_can_drop checks).
 	slot.set_drag_forwarding(Callable(), _can_drop.bind(_cell, r, c), _drop.bind(_cell, r, c))
 	var u := s.at(r, c)
@@ -319,6 +319,9 @@ func _show_unit() -> void:
 	var head := HBoxContainer.new()
 	head.add_theme_constant_override("separation", 16)
 	col.add_child(head)
+	var pic := TextureRect.new()
+	pic.texture = UnitIcons.texture(u.unit_class, 72)
+	head.add_child(pic)
 	head.add_child(UiStyle.label(u.name, 30))
 	var where := "%s of #%d %s" % ["Leader" if sq.leader == u else "In", sq.id, sq.name] if sq else "In the recruit pool"
 	var sub := UiStyle.label("%s  ·  %s" % [u.unit_class, where], 18, Color(0.75, 0.78, 0.82))
@@ -460,8 +463,16 @@ func _promotion(u: Unit, locked: bool) -> Control:
 	var options := Progression.promotion_options(data, u)
 	if options.is_empty():
 		var next := data.next_classes(u.unit_class)
-		box.add_child(_wrapped("Final stage." if next.is_empty() else
-				"Promotes at level %d to: %s." % [Progression.next_promotion_level(data, u), ", ".join(next)], 15))
+		if next.is_empty():
+			box.add_child(_wrapped("Final stage.", 15))
+			return box
+		box.add_child(UiStyle.label("Promotes at level %d to:" % Progression.next_promotion_level(data, u), 15))
+		var flow := HFlowContainer.new()
+		flow.add_theme_constant_override("h_separation", 18)
+		flow.add_theme_constant_override("v_separation", 6)
+		for c in next:
+			flow.add_child(_class_tag(c))
+		box.add_child(flow)
 		return box
 	box.add_child(UiStyle.label("Ready to promote:", 15, Color("#7ee08a")))
 	var row := HFlowContainer.new()
@@ -470,6 +481,7 @@ func _promotion(u: Unit, locked: bool) -> Control:
 	box.add_child(row)
 	for c in options:
 		var b := _small("Promote to %s" % c, false, true)
+		b.icon = UnitIcons.texture(c, 28)
 		b.disabled = locked or not state.at_base(u)
 		b.tooltip_text = "Promote at the Player Base." if b.disabled else _promotion_tip(u, c)
 		b.pressed.connect(func():
@@ -478,6 +490,19 @@ func _promotion(u: Unit, locked: bool) -> Control:
 			_refresh())
 		row.add_child(b)
 	return box
+
+
+## A class to promote into: its icon and name.
+func _class_tag(c: String) -> Control:
+	var tag := HBoxContainer.new()
+	tag.add_theme_constant_override("separation", 6)
+	var pic := TextureRect.new()
+	pic.texture = UnitIcons.texture(c, 32)
+	tag.add_child(pic)
+	var text := UiStyle.label(c, 15)
+	text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	tag.add_child(text)
+	return tag
 
 
 func _promotion_tip(u: Unit, c: String) -> String:
@@ -786,7 +811,7 @@ class Chip extends Control:
 		color = colors.get(kind, Color.GRAY)
 		var c: Dictionary = u.info(data)
 		line = "Lv %d  ·  %s" % [u.level, c["front_attack"] if u.row == "front" or squad == null else c["back_attack"]]
-		custom_minimum_size = {"compact": Vector2(72, 48), "wide": Vector2(272, 58), "slot": Vector2(148, 104), "menu": Vector2(104, 70)}[mode]
+		custom_minimum_size = {"compact": Vector2(72, 48), "wide": Vector2(272, 58), "slot": Vector2(148, 122), "menu": Vector2(104, 70)}[mode]
 		mouse_default_cursor_shape = CURSOR_DRAG
 
 	func _draw() -> void:
@@ -799,41 +824,62 @@ class Chip extends Control:
 		var ink := Color.WHITE if not dead else Color(0.5, 0.5, 0.52)
 		var share := float(unit.hp) / max_hp
 		var fill := Color("#5fbf5a") if share > 0.5 else (Color("#e0b03a") if share > 0.25 else Color("#d9533f"))
+		var paper := color.darkened(0.55) if not dead else Color(0.12, 0.12, 0.13)
+		# The class icon leads (DECISIONS session 042); the class name is in the tooltip and, on
+		# the larger chips, still written out.
 		match mode:
 			"menu":
-				draw_string(font, Vector2(10, 22), unit.name.get_slice(" ", 0), HORIZONTAL_ALIGNMENT_LEFT, size.x - (28 if leader else 14), 15, ink)
+				_icon(Vector2(6, 6), 36, paper, dead)
+				draw_string(font, Vector2(48, 20), "Lv %d" % unit.level, HORIZONTAL_ALIGNMENT_LEFT, size.x - (66 if leader else 52), 12, ink.darkened(0.25))
 				if leader:
-					_star(Vector2(size.x - 13, 15), 7.0)
-				draw_string(font, Vector2(10, 41), unit.unit_class, HORIZONTAL_ALIGNMENT_LEFT, size.x - 14, 12, ink.darkened(0.25))
-				draw_rect(Rect2(10, size.y - 16, size.x - 20, 6), Color(0.05, 0.05, 0.06))
-				draw_rect(Rect2(10, size.y - 16, (size.x - 20) * share, 6), fill)
+					_star(Vector2(size.x - 12, 14), 7.0)
+				draw_string(font, Vector2(48, 38), unit.name.get_slice(" ", 0), HORIZONTAL_ALIGNMENT_LEFT, size.x - 52, 13, ink)
+				draw_rect(Rect2(8, size.y - 12, size.x - 16, 5), Color(0.05, 0.05, 0.06))
+				draw_rect(Rect2(8, size.y - 12, (size.x - 16) * share, 5), fill)
 			"compact":
-				draw_string(font, Vector2(8, 18), unit.name.get_slice(" ", 0), HORIZONTAL_ALIGNMENT_LEFT, size.x - 24, 11, ink)
-				var marks := (1 if leader else 0) + (1 if promotable else 0)
-				draw_string(font, Vector2(8, 32), unit.unit_class, HORIZONTAL_ALIGNMENT_LEFT, size.x - 12 - 12 * marks, 10, ink.darkened(0.3))
+				_icon(Vector2(4, 3), 34, paper, dead)
 				if leader:
-					_star(Vector2(size.x - 10, 28), 5.5)
+					_star(Vector2(size.x - 10, 29), 5.5)
 				if promotable:
-					_arrow(Vector2(size.x - (22 if leader else 10), 28), 4.5)
+					_arrow(Vector2(size.x - (22 if leader else 10), 29), 4.5)
 				_earmark(font, dead)
-				draw_rect(Rect2(6, size.y - 9, size.x - 12, 4), Color(0.05, 0.05, 0.06))
-				draw_rect(Rect2(6, size.y - 9, (size.x - 12) * share, 4), fill)
-			_:
-				var w := size.x - 20
-				draw_string(font, Vector2(12, 21), unit.unit_class, HORIZONTAL_ALIGNMENT_LEFT, w - (20 if leader else 0), 15, ink)
+				draw_rect(Rect2(6, size.y - 8, size.x - 12, 4), Color(0.05, 0.05, 0.06))
+				draw_rect(Rect2(6, size.y - 8, (size.x - 12) * share, 4), fill)
+			"slot":
+				_icon(Vector2(8, 8), 60, paper, dead)
+				if leader:
+					_star(Vector2(size.x - 14, 16), 7.5)
+				if promotable:
+					_arrow(Vector2(size.x - 14, 38 if leader else 16), 6.5)
+				var kind := line.get_slice("  ·  ", 1)
+				draw_string(font, Vector2(76, 24), "Lv %d" % unit.level, HORIZONTAL_ALIGNMENT_LEFT, size.x - 100, 13, ink.darkened(0.1))
+				draw_string(font, Vector2(76, 44), kind, HORIZONTAL_ALIGNMENT_LEFT, size.x - 100, 11, ink.darkened(0.25))
+				draw_string(font, Vector2(10, 88), unit.name, HORIZONTAL_ALIGNMENT_LEFT, size.x - 20, 14, ink)
+				draw_string(font, Vector2(10, 105), unit.unit_class, HORIZONTAL_ALIGNMENT_LEFT, size.x - 72, 12, ink.darkened(0.2))
+				draw_string(font, Vector2(size.x - 80, 105), "%d/%d" % [unit.hp, max_hp] if not dead else "Fallen",
+						HORIZONTAL_ALIGNMENT_RIGHT, 70, 11, ink.darkened(0.2))
+				draw_rect(Rect2(10, size.y - 10, size.x - 20, 5), Color(0.05, 0.05, 0.06))
+				draw_rect(Rect2(10, size.y - 10, (size.x - 20) * share, 5), fill)
+			_:  # wide: the pool
+				_icon(Vector2(8, 6), 46, paper, dead)
+				var x := 62.0
+				var w := size.x - x - 10
+				draw_string(font, Vector2(x, 21), unit.unit_class, HORIZONTAL_ALIGNMENT_LEFT, w - (20 if leader else 0) - (20 if promotable else 0), 15, ink)
 				if leader:
 					_star(Vector2(size.x - 16, 16), 8.0)
 				if promotable:
 					_arrow(Vector2(size.x - (36 if leader else 16), 16), 7.0)
-				draw_string(font, Vector2(12, 38), unit.name, HORIZONTAL_ALIGNMENT_LEFT, w, 12, ink.darkened(0.25))
-				if mode == "slot":
-					draw_string(font, Vector2(12, 56), line, HORIZONTAL_ALIGNMENT_LEFT, w, 12, ink.darkened(0.25))
-				var y := size.y - 12
-				draw_rect(Rect2(12, y, size.x - 24, 5), Color(0.05, 0.05, 0.06))
-				draw_rect(Rect2(12, y, (size.x - 24) * share, 5), fill)
-				if mode == "slot" or mode == "wide":
-					draw_string(font, Vector2(size.x - 80, 38 if mode == "wide" else 74), "%d/%d" % [unit.hp, max_hp] if not dead else "Fallen",
-							HORIZONTAL_ALIGNMENT_RIGHT, 68, 11, ink.darkened(0.2))
+				draw_string(font, Vector2(x, 38), unit.name, HORIZONTAL_ALIGNMENT_LEFT, w - 70, 12, ink.darkened(0.25))
+				draw_string(font, Vector2(size.x - 80, 38), "%d/%d" % [unit.hp, max_hp] if not dead else "Fallen",
+						HORIZONTAL_ALIGNMENT_RIGHT, 68, 11, ink.darkened(0.2))
+				draw_rect(Rect2(x, size.y - 12, size.x - x - 12, 5), Color(0.05, 0.05, 0.06))
+				draw_rect(Rect2(x, size.y - 12, (size.x - x - 12) * share, 5), fill)
+
+	## The unit's class icon on the chip's own color; grayed out once fallen.
+	func _icon(at: Vector2, px: int, paper: Color, dead: bool) -> void:
+		var tex := UnitIcons.texture(unit.unit_class, px, paper, Color(0.5, 0.5, 0.52) if dead else Color(UnitIcons.PAPER))
+		if tex:
+			draw_texture_rect(tex, Rect2(at, Vector2(px, px)), false)
 
 	## The level as a small number on a folded-corner triangle, top right.
 	func _earmark(font: Font, dead: bool) -> void:
