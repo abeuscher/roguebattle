@@ -52,6 +52,7 @@ func setup(game_state: GameState, cell := -1) -> void:
 	var center := CenterContainer.new()
 	center.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	add_child(center)
+	UiStyle.close_on_click(shade, center, func(): closed.emit())
 	var panel := PanelContainer.new()
 	panel.add_theme_stylebox_override("panel", UiStyle.box(UiStyle.PANEL, 16))
 	panel.custom_minimum_size = Vector2(1840, 1000)

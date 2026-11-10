@@ -2,7 +2,7 @@ extends TestCase
 ## Unit sheet v3: data, positions, group attacks, Ward and Dispel, traits and leader
 ## auras (the sheet's Mechanics tab; SPEC §21 where it overrides the sheet).
 
-var d := GameData.load_dir()
+var d := _formula_data()
 
 
 func _unit(class_name_: String, row := "front", name := "") -> Unit:
@@ -438,3 +438,11 @@ func test_special_auras() -> void:
 	var fighter := _unit("Fighter")
 	var at := _battle([fm, fighter], [_unit("Knight")])
 	check_eq(at.attack_element(fighter, "Melee"), "Fire", "attunement: melee carries the leader's element")
+
+
+## The game data with the front-row damage cut off, so the formula checks keep exact numbers
+## (test_battle.test_front_row_damage_cut covers the cut itself).
+static func _formula_data() -> GameData:
+	var data := GameData.load_dir()
+	data.battle["front_row_damage_cut"] = 0.0
+	return data

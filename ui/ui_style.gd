@@ -17,6 +17,15 @@ static func box(color: Color, margin: int) -> StyleBoxFlat:
 	return b
 
 
+## Click-off-to-close for a modal: a left click on its shade (outside the popup) runs
+## `action`. The full-screen container that centers the popup lets clicks through to it.
+static func close_on_click(shade: Control, center: Control, action: Callable) -> void:
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	shade.gui_input.connect(func(e: InputEvent):
+		if e is InputEventMouseButton and e.pressed and (e as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
+			action.call())
+
+
 static func label(text: String, font_size := 16, color := Color.WHITE) -> Label:
 	var l := Label.new()
 	l.text = text

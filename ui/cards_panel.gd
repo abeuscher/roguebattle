@@ -29,6 +29,7 @@ func setup(game_state: GameState, is_offer := false) -> void:
 	var center := CenterContainer.new()
 	center.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	add_child(center)
+	UiStyle.close_on_click(shade, center, func(): if not offer: closed.emit())
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 18)
 	col.alignment = BoxContainer.ALIGNMENT_CENTER

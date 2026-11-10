@@ -21,6 +21,7 @@ func _ready() -> void:
 	var center := CenterContainer.new()
 	center.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	add_child(center)
+	UiStyle.close_on_click(shade, center, func(): closed.emit())
 	var panel := PanelContainer.new()
 	panel.add_theme_stylebox_override("panel", UiStyle.box(Color(0.1, 0.12, 0.15), 16))
 	panel.custom_minimum_size = Vector2(1100, 720)

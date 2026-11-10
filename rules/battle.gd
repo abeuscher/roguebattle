@@ -1086,6 +1086,8 @@ func _taken_multiplier(u: Unit, t: Unit, base: String) -> float:
 	var physical := base in PHYSICAL
 	var key := "physical_taken" if physical else "magic_taken"
 	var m := 1.0
+	if t.row == "front":  # the front row takes the brunt, so it takes less of each blow
+		m *= 1.0 - float(cfg["front_row_damage_cut"])
 	for s in _status.get(t, {}):
 		m *= float(cfg["statuses"][s].get(key, 1.0)) * float(cfg["statuses"][s].get("damage_taken", 1.0))
 	for name in t.info(data)["traits"]:

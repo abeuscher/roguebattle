@@ -402,6 +402,7 @@ Occultist and Necromancer lines can, once per battle, fill an empty slot with a 
 - **Healing:** based on INT.
 - **Hit chance:** 85% + 1% per point of attacker AGI over target AGI, clamped 50–95%.
 - **Crit:** base 5% (+0.5% per luck point), ×1.5 damage.
+- **Front row:** front-row units take 20% less damage from every attack (added 2026-11-10 at the user's request: they died too often and too fast; the number is in data).
 - **Damage spread:** ±10%.
 
 ### 11.5 Modifiers (multiply together)

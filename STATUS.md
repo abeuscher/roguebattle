@@ -104,6 +104,7 @@ Where the project stands, for picking up in a new session or on another machine.
   - The mouse wheel never zooms the map while it's over a popup or the HUD.
   - The Cards panel matches the battle card picker's layout.
   - 299 tests passing.
+- **Last work (session 040), user's requests:** front-row units take 20% less damage (`battle.json` `front_row_damage_cut`; sim: front-row survival 73% → 85%, loser HP loss at the §12.4 floor of 35%); clicking outside a window closes it wherever that's safe; all 23 cards listed in `RULES.md`. 300 tests passing.
 
 ## Next up
 
@@ -116,11 +117,10 @@ Where the project stands, for picking up in a new session or on another machine.
 - Deferred from session 025: in-battle AI (a retreat threshold, and battle-tactic weighting per role) — currently the enemy side always uses the "best" tactic and never retreats mid-battle. Not scheduled to a specific M4 session yet.
 - **Parked for discussion after M4** (user's own notes, logged 2026-11-06, not yet decided — see `ROADMAP.md`): half-slot front/rear placement with literal coverage; unit graphics (a playing-card-style attack view, a character sheet); class/ranged-vs-melee iconography in Edit Units; a small 3-stage campaign mode layered on the single-map game.
 - Parked for later: plan icons and a more compact toolbar once its full button set is known (a note under M3 in `ROADMAP.md`).
-- Open offer: extend click-off-to-close to the other small popups (building, deploy, supplies, cards). The user hasn't asked for it yet.
 
 ## How the user works
 
-- **One git branch per session,** named `session-NNN` (next: `session-040`), cut from `main`.
+- **One git branch per session,** named `session-NNN` (next: `session-041`), cut from `main`.
 - **Commit locally only:**
   - Never push or merge; the user merges and pushes, then says "continue".
   - Commit messages end with a `Co-Authored-By:` line naming whatever Claude model is doing the session (the harness's own attribution instructions say exactly what to write).

@@ -1,7 +1,7 @@
 extends TestCase
 ## Battle rules core (SPEC §11.3–11.5, §12.1), with fixed seeds.
 
-var d := GameData.load_dir()
+var d := _formula_data()
 
 
 ## A unit with its class's base stats, neutral alignment and no luck.
@@ -98,6 +98,20 @@ func test_physical_damage() -> void:
 	k.stats["PDEF"] = 5
 	b.defense[1] = 0.1
 	check_eq(b.expected_damage(f, k, "Melee"), (11.0 - 5.0) * 0.9, "building defense cuts damage taken")
+
+
+## Playtest notes 2026-11-10: front-row units died too often, so they take less damage.
+func test_front_row_damage_cut() -> void:
+	var cut := float(GameData.load_dir().battle["front_row_damage_cut"])
+	check(cut > 0.0, "the game has a front-row cut")
+	d.battle["front_row_damage_cut"] = cut
+	var f := _unit("Fighter")
+	var front := _unit("Serf", "front")
+	var back := _unit("Serf", "back")
+	var b := _battle([f], [front, back], "forest")
+	check(absf(b.expected_damage(f, front, "Melee") - maxf(1.0, b.expected_damage(f, back, "Melee") * (1.0 - cut))) < 0.001,
+			"a front-row unit takes %d%% less than the same unit behind it" % roundi(cut * 100))
+	d.battle["front_row_damage_cut"] = 0.0
 
 
 func test_magic_and_breath() -> void:
@@ -274,3 +288,11 @@ func test_battle_runs_to_an_end() -> void:
 ## Events without the round headers.
 func _acts(b: Battle) -> Array:
 	return b.events.filter(func(e): return e["type"] != "round")
+
+
+## The game data with the front-row damage cut off, so the formula checks keep exact numbers
+## (test_battle.test_front_row_damage_cut covers the cut itself).
+static func _formula_data() -> GameData:
+	var data := GameData.load_dir()
+	data.battle["front_row_damage_cut"] = 0.0
+	return data

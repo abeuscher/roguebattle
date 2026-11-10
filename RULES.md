@@ -28,13 +28,14 @@ This describes how the game actually plays right now, not the full design (that'
 
 ## Squads and movement
 
-- Each squad has a **front row** and a **back row**; a unit's class decides whether it fights (and is attacked) from the front or back.
+- Each squad has a **front row** and a **back row**; a unit's class decides whether it fights (and is attacked) from the front or back. Front-row units take 20% less damage from every attack, since they take the brunt.
 - **Every squad the game generates starts with its rows evened out**: yours, the enemy's and the neutrals'. 5 units split 3:2 or 2:3, 4 units 2:2, never 4:1. The units moved are the ones that fight about as well from either row. You can still rearrange your own however you like in Edit Units, even while a squad is out in the field. Adding units to a squad or taking them out only works at the Player Base.
 - **Slots:** every squad starts with 5. A Small unit costs 1 slot, Large costs 2, and two Tiny units can share a single slot. A leader earns +1 slot at level 5/10/15/20, but only if their charisma is at least 5 × their level at that moment (a Herald or Standard-Bearer in the squad helps toward this).
 - **Travel type:** a squad's one native terrain, decided by a weighted vote of its living units' home terrain (Small 1, the leader and Large units 2, Tiny ½; ties go to the leader). Moving through that terrain costs the squad its base speed; other terrain costs more (see difficulty above). A squad that's entirely flyers moves as Sky (flies over everything but air gaps); a squad that's entirely water natives or amphibians can cross deep water.
 - **Speed tier** is set by the squad's slowest living unit and decides how fast it crosses a hex; losing units to death slows the squad further, proportional to the slots lost.
 - **Deployment:** at the start, only the Opinion Leader's squad is on the map. Other squads deploy from the Player Base (via Edit Units or the Deploy Squad button, which is greyed out when the squad cap is reached or no squad is waiting at base), costing one day of their upkeep in gold, and appear on the Player Base; you lay their route as you deploy them. A squad cap (default 6, set in the configurator) limits how many of your squads can be on the map at once. A squad returns to base by marching there and going in on arrival, or instantly if it's already standing on the Player Base.
 - **Giving orders:** click a squad to open its menu (this pauses the game); Move lets you click hexes to lay a chain of rally points, and clicking the last point again commits the route. You can plan routes for as many squads as you like, one at a time, while paused.
+- **Closing windows:** clicking outside a window closes it (the squad menu, building, deploy, Use item, shop, tech, log, Edit Units, Cards, options, debug panel, a liberation message, and the Esc menu, which resumes; a yes/no question counts it as no). Windows that need an answer don't: a card choice, recruiting, the encounter dialog and the battle.
 - **Squads of yours can share a hex** freely. A hex held by a hostile squad blocks movement; your squad waits at its edge instead of stacking on it.
 
 ## Units
@@ -88,6 +89,34 @@ This describes how the game actually plays right now, not the full design (that'
 - Most cards are played during a battle (stat boosts, heals, attacks on the whole enemy squad, debuffs, extra turns); Rooster and Fox are played from the map and jump the clock to the next noon or midnight.
 - Every card shows as a picture card: a line drawing of its animal at the top, its name, and what it does at the bottom (in the Cards panel, the battle card picker and the liberation popup). The Cards panel (C) looks like the battle picker: your hand large in the middle of the screen, with Play under Rooster and Fox.
 - XP that comes specifically from card damage is redirected to the Opinion Leader's squad instead of whichever squad is fighting (unless that's the same squad).
+
+**Every card** (21 played in battle, 2 on the map):
+
+| Card | Kind | Effect |
+| --- | --- | --- |
+| Panther | Boosts | +30% STR for your squad until your leader's second turn. |
+| Owl | Boosts | +30% INT for your squad until your leader's second turn. |
+| Cheetah | Boosts | Haste: +50% SPD for your squad until your leader's second turn. |
+| Raccoon | Boosts | +30% AGI for your squad until your leader's second turn. |
+| Turtle | Boosts | +30% PDEF for your squad until your leader's second turn. |
+| Hippo | Boosts | +30% MDEF for your squad until your leader's second turn. |
+| Chameleon | Boosts | This battle plays as if on your squad's home terrain. |
+| Unicorn | Boosts | Each of your units gets one extra attack this battle. |
+| Elephant | Healing | Each of your units gains 30% of its max HP, even above full, for this battle. |
+| Dolphin | Healing | +50 HP to all your units. |
+| Whale | Healing | All your units healed to full. |
+| Narwhal | Healing | A narwhal healer at your squad's average level heals everyone twice. |
+| Walrus | Healing | Cleanses all harmful statuses from your squad. |
+| Tiger | Attacks and debuffs | A physical attack on the whole enemy squad. |
+| Crocodile | Attacks and debuffs | A water magic attack on the whole enemy squad. |
+| Rhino | Attacks and debuffs | An earth magic attack on the whole enemy squad. |
+| Condor | Attacks and debuffs | A wind attack on the whole enemy squad. |
+| Angelfish | Attacks and debuffs | A lightning attack on the whole enemy squad that shocks them. |
+| Mouse | Attacks and debuffs | The enemy squad becomes weak to physical attacks. |
+| Mink | Attacks and debuffs | The enemy squad becomes weak to magic. |
+| Sloth | Attacks and debuffs | The enemy squad loses its next action. |
+| Rooster | On the map | Time jumps to noon. |
+| Fox | On the map | Time jumps to midnight. |
 
 ## Tech tree
 

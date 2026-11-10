@@ -4,6 +4,8 @@
  "hit_range": [50, 95],
  "crit_base": 5,
  "crit_multiplier": 1.5,
+ "front_row_damage_cut": 0.2,
+ "_front_row_damage_cut": "Front-row units take this share less damage from every attack (user's playtest notes, 2026-11-10: they died too often and too fast).",
  "luck_crit_per_point": 0.5,
  "luck_dodge_per_point": 0.5,
  "spread": 0.1,
