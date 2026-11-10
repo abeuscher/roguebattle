@@ -515,3 +515,14 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **Symbol choices** are proposals for the user to veto; the contact sheet is on the PR. A few calls: Squire = lance, Slinger = slingshot, Acolyte = ankh rod; Spearman's stage 3 head is a morion; Pride Lion wears a spiked helm (a crown disappeared into the mane).
 - **Not done here:** nothing in the UI shows icons yet. That's the follow-up (squad cards at 48 px with `on_card`, map tokens at ~28 px from the leader, unit detail header).
 
+## Session 042 (2026-11-10): unit icons in the UI
+
+- **Unit chips lead with the class icon** (`EditUnits.Chip._icon`, drawn with `UnitIcons.texture` on the chip's own color so the halos cut cleanly; grayed out once fallen):
+  - Squad cards (compact, 72×48): the icon replaces the name and class text. The name is in the tooltip and the unit panel; the card already says who leads. The level earmark, leader star, promote arrow and HP bar stay. The cards couldn't grow: the 4×4 grid already fills the 1000 px panel.
+  - Squad detail (slot): taller, 148×122 in a 156×130 slot (there was room below), 60 px icon, then level and attack beside it, name and class and HP under it.
+  - Recruit pool (wide): 46 px icon on the left, text as before beside it.
+  - Squad menu on the map: 36 px icon, level and first name beside it; the class is in the tooltip.
+- **Unit panel:** 72 px icon before the name. "Promotes at level N to:" lists each class as its icon and name, and the Promote buttons carry the class icon.
+- **Map tokens:** the leader's icon on a dark disc ringed in the side's color (player blue, enemy red), on the pole where the flag was, with the squad's number (enemies: role initial) on a small tag on the pole below it. The tag sat at first on the disc's lower right, but that covered the hand symbol, the part that most tells classes apart. Icons for tokens drop their frame (`UnitIcons.on_token`) and are rasterized at 72 px with mipmaps so they stay sharp zoomed in and smooth zoomed out. A squad with no leader still flies the old numbered flag. The route cursor is the same token, so it follows.
+- Checked with screenshots of Edit Units, squad detail, unit panel, squad menu and tokens at two scales (Xvfb + OpenGL on Linux).
+
