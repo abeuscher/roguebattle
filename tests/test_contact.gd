@@ -1,5 +1,5 @@
 extends TestCase
-## Enemy squads, contact, ranged map attacks and sight (SPEC §8.5, §11.1–11.2, §17).
+## Enemy squads, contact, ranged map attacks and sight (SPEC Ã‚Â§8.5, Ã‚Â§11.1Ã¢â‚¬â€œ11.2, Ã‚Â§17).
 
 var d := GameData.load_dir()
 
@@ -33,7 +33,7 @@ func test_enemy_placement() -> void:
 	var st := GameState.new(d, m, GameLog.new())
 	st.place_enemies()
 	var enemies := st.squads.filter(func(s: Squad): return s.side == "enemy")
-	check_eq(enemies.size(), 10, "ten enemy squads (§17)")
+	check_eq(enemies.size(), 10, "ten enemy squads (Ã‚Â§17)")
 	var roles := {}
 	for s in enemies:
 		roles[s.role] = roles.get(s.role, 0) + 1
@@ -70,8 +70,24 @@ func test_adjacency_triggers_battle() -> void:
 	st.step()
 	check_eq(st.clock.tick, tick, "the map holds while a battle is pending")
 	var text: String = st.resolve_pending()["text"]
-	check(text.contains("fought"), "a summary comes back: " + text)
+	check(text.begins_with(ours.name) and text.contains("battle"), "a summary comes back: " + text)
 	check(st.pending == null, "the battle is resolved")
+
+
+## An enemy listed before the player's squad walks into it: the player is still side 0,
+## so the battle view, tactic and outcome text read the right squad as "us".
+func test_player_is_side_zero_when_attacked() -> void:
+	var st := _state()
+	var theirs := _theirs(st, 14)
+	var ours := _ours(st, 10)
+	st.order_move(theirs, PackedInt32Array([_at(st.map, 11, 4)]))
+	var ticks := 0
+	while st.pending == null and ticks < 200:
+		st.step()
+		ticks += 1
+	check(st.pending != null, "the enemy walks into contact")
+	check(st.pending.sides[0] == ours, "the player's squad is side 0")
+	check_eq(st.pending.attacker, 1, "the enemy, side 1, attacks")
 
 
 ## Squad 1 marches past an enemy that lies off its route; the battle's outcome is set by hand.
@@ -197,7 +213,7 @@ func test_fire_range() -> void:
 	st.map.buildings.append({"type": "tower", "hex": archers.hex, "shop": false, "hint": false, "hidden": false, "kind": "", "road": false})
 	check_eq(st.fire_range(archers), 3, "3 from a tower")
 	archers.at("back", 0).items["weapon"] = {"uid": 1, "id": "longbow"}
-	check_eq(st.fire_range(archers), 4, "a longbow adds 1 (§11.2)")
+	check_eq(st.fire_range(archers), 4, "a longbow adds 1 (Ã‚Â§11.2)")
 	var melee := _ours(st, 11, 7, [["Knight", "front"], ["Fighter", "front"]])
 	check(not st.can_fire(melee), "a squad without ranged or magic units can't fire")
 	check(st.fire_targets(melee).is_empty(), "so it has no targets")
@@ -211,7 +227,7 @@ func test_ranged_attack() -> void:
 	st.fire(ours, theirs)
 	check(st.pending != null and st.pending.ranged_only, "a ranged attack waits for the battle view like contact")
 	var text: String = st.resolve_pending()["text"]
-	check(text.contains("fired on"), "a summary comes back: " + text)
+	check(text.begins_with(ours.name), "a summary comes back: " + text)
 	check_eq(theirs.hex, spot, "no push-back after a ranged attack")
 	check(st.fire_targets(ours).is_empty(), "the squad must reload")
 	check_eq(ours.fire_ready, st.clock.tick + int(d.rules["ranged_attack"]["cooldown_ticks"]), "120-tick cooldown")

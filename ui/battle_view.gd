@@ -12,10 +12,13 @@ const FIELD := Vector2(1400, 600)
 const CARD := Vector2(200, 104)
 const GAP := 10.0
 const HEX := 34.0  # the backdrop's hex size
+const CONTROLS_H := 44.0  # the button row's height, reserved while it's hidden
 const EDGE := 40.0  # back rows' distance from the field's sides
 const ROW_GAP := 34.0  # between a squad's back and front rows
 const SIDE_COLORS := [Color("#3b6fd6"), Color("#c8402f")]
 const LOG_COLORS := ["#a8c4ff", "#ffaa9a"]
+const RESULT_WORDS := {"won": "Won", "lost": "Lost", "retreated": "Retreated", "even": "Draw"}
+const RESULT_COLORS := {"won": Color("#7ee08a"), "lost": Color("#ff7a66"), "retreated": Color("#e0b03a"), "even": Color("#e8e0c8")}
 const TACTIC_TIPS := {"best": "Each unit hits the target it hurts most", "strong": "Focus the strongest enemy",
 		"weak": "Focus the weakest enemy", "leader": "Focus the enemy leader"}
 
@@ -23,7 +26,10 @@ var state: GameState
 var battle: Battle
 var replay := false  # the debug panel's replay (§19.2): copies of the squads, nothing on the map changes
 var _waiting := false  # both squads shown; nothing happens until Fight (an option, on by default)
-var _fight_btn: Button
+var _play_btn: Button  # Fight, Pause or Play, at the field's bottom left
+var _action := UiStyle.label("", 16)  # the latest action, on the field while the log is hidden
+var _panel: PanelContainer  # the whole battle, hidden when the result shows
+var _below := VBoxContainer.new()  # log and controls: shown only while paused or waiting
 var _view: Dictionary  # data.battle["view"]: pacing
 var _ground := Panel.new()
 var _field := Control.new()  # cards and floating numbers, placed by hand
@@ -43,7 +49,6 @@ var _item_asked := []  # [potion id, unit]: a cure potion to use before the next
 var _round := UiStyle.label("", 28, UiStyle.ACCENT)
 var _ticker := RichTextLabel.new()
 var _controls := HBoxContainer.new()
-var _pause_btn: Button
 var _speed_btn: Button
 var _retreat_btn: Button
 var _tactic := OptionButton.new()
@@ -63,12 +68,12 @@ func setup(game_state: GameState, b: Battle, is_replay := false, wait_for_fight 
 	var center := CenterContainer.new()
 	center.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	add_child(center)
-	var panel := PanelContainer.new()
-	panel.add_theme_stylebox_override("panel", UiStyle.box(UiStyle.PANEL, 16))
-	center.add_child(panel)
+	_panel = PanelContainer.new()
+	_panel.add_theme_stylebox_override("panel", UiStyle.box(UiStyle.PANEL, 16))
+	center.add_child(_panel)
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 10)
-	panel.add_child(col)
+	_panel.add_child(col)
 	_ground.custom_minimum_size = FIELD
 	_ground.add_theme_stylebox_override("panel", UiStyle.box(Color(battle.terrain["color"]).darkened(0.72), 0))
 	_ground.clip_contents = true
@@ -84,13 +89,54 @@ func setup(game_state: GameState, b: Battle, is_replay := false, wait_for_fight 
 		for u in battle.sides[side].units:
 			_add_card(u, side)
 	_layout(false)
+	_add_play_button()
+	# The log and controls keep their space while hidden, so nothing jumps when they show.
+	var below := Control.new()
+	col.add_child(below)
+	_below.add_theme_constant_override("separation", 10)
+	_below.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	below.add_child(_below)
 	_ticker.custom_minimum_size = Vector2(FIELD.x, 150)
 	_ticker.bbcode_enabled = true
 	_ticker.scroll_following = true
 	_ticker.add_theme_font_size_override("normal_font_size", 15)
-	col.add_child(_ticker)
-	col.add_child(_controls)
+	_below.add_child(_ticker)
+	_below.add_child(_controls)
 	_build_controls()
+	below.custom_minimum_size = Vector2(FIELD.x, _ticker.custom_minimum_size.y + 10 + CONTROLS_H)
+	_show_chrome()
+
+
+## Play or Pause (or Fight, before the battle starts) at the field's bottom left, and
+## next to it the latest action, outlined so it reads against the ground.
+func _add_play_button() -> void:
+	_play_btn = UiStyle.button("", 150, true)
+	_play_btn.position = Vector2(14, FIELD.y - 58)
+	_play_btn.pressed.connect(func():
+		if _waiting:
+			_start()
+		else:
+			_toggle_pause())
+	_ground.add_child(_play_btn)
+	_action.position = Vector2(180, FIELD.y - 50)
+	_action.custom_minimum_size.x = FIELD.x - 200
+	_action.clip_text = true
+	_action.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
+	_action.add_theme_constant_override("outline_size", 5)
+	_action.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.6))
+	_action.add_theme_constant_override("shadow_offset_y", 2)
+	_ground.add_child(_action)
+	if _waiting:
+		_play_btn.grab_focus.call_deferred()
+
+
+## While the battle plays, only the field shows (with the latest action on it); paused
+## or waiting to start, the log and controls show under it.
+func _show_chrome() -> void:
+	var still := _paused or _waiting
+	_play_btn.text = "Fight (Space)" if _waiting else ("Play (Space)" if _paused else "Pause (Space)")
+	_below.visible = still
+	_action.visible = not still
 
 
 ## The field's ground: hexes of the battle's terrain, dimmed so the cards stand out.
@@ -146,16 +192,6 @@ func _tag(lines: Array) -> PanelContainer:
 
 func _build_controls() -> void:
 	_controls.add_theme_constant_override("separation", 12)
-	_fight_btn = UiStyle.button("Fight (Space)", 190, true)
-	_fight_btn.pressed.connect(_start)
-	_fight_btn.visible = _waiting
-	_controls.add_child(_fight_btn)
-	_pause_btn = UiStyle.button("Pause (Space)", 190)
-	_pause_btn.pressed.connect(_toggle_pause)
-	_pause_btn.visible = not _waiting
-	_controls.add_child(_pause_btn)
-	if _waiting:
-		_fight_btn.grab_focus.call_deferred()
 	_speed_btn = UiStyle.button("", 130)
 	_speed_btn.pressed.connect(func():
 		_speed = (_speed + 1) % _view["speeds"].size()
@@ -305,13 +341,18 @@ func _choose_item() -> void:
 ## Fight pressed: the battle starts playing.
 func _start() -> void:
 	_waiting = false
-	_fight_btn.visible = false
-	_pause_btn.visible = true
+	_show_chrome()
+
+
+## Pauses a playing battle (the game window lost focus); does nothing otherwise.
+func pause() -> void:
+	if not _paused and not _waiting and not _done:
+		_toggle_pause()
 
 
 func _toggle_pause() -> void:
 	_paused = not _paused
-	_pause_btn.text = "Resume (Space)" if _paused else "Pause (Space)"
+	_show_chrome()
 
 
 # --- Playing the battle ---------------------------------------------------------------
@@ -421,6 +462,7 @@ func _log(e: Dictionary) -> void:
 	var line := battle.log_line(e)
 	if state.log.show_hidden and not e.get("hidden", {}).is_empty():
 		line += "  " + JSON.stringify(e["hidden"])
+	_action.text = line
 	line = line.replace("[", "[lb]")
 	if e["type"] == "round":
 		_ticker.append_text("[color=#ffe08a]%s[/color]\n" % line)
@@ -496,81 +538,86 @@ func _float(c: Card, text: String, color: Color, animate: bool, font_size := 24)
 
 # --- The result ---------------------------------------------------------------------
 
+## The battle field goes away and the result shows on its own (user's playtest notes,
+## 2026-11-09): Won or Lost once at the top, then your squad and the enemy side by side
+## (HP lost, units lost), XP, the offer to drive the enemy off, and Continue.
 func _finish() -> void:
 	_done = true
-	for c in _controls.get_children():
-		if c is BaseButton:
-			c.disabled = true
 	var out := battle.finish() if replay else state.resolve_pending()
 	var player := battle.sides[0]
 	var enemy := battle.sides[1]
+	var result := GameState.battle_result(out)
+	_panel.hide()
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	add_child(center)
 	var box := PanelContainer.new()
-	var style := UiStyle.box(Color(0.08, 0.09, 0.12, 0.96), 24)
+	var style := UiStyle.box(UiStyle.PANEL, 28)
 	style.set_border_width_all(2)
 	style.border_color = UiStyle.OUTLINE
 	box.add_theme_stylebox_override("panel", style)
+	center.add_child(box)
 	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 12)
-	col.custom_minimum_size.x = 640
+	col.add_theme_constant_override("separation", 16)
+	col.custom_minimum_size.x = 620
 	box.add_child(col)
-	col.add_child(UiStyle.label(_outcome(out), 28, UiStyle.ACCENT))
-	for side in 2:
-		var s := battle.sides[side]
-		var text := "%s lost %d%% of its HP." % [s.name, roundi(out["hp_lost"][side] * 100)]
-		var fallen := s.living(false).map(func(u: Unit): return u.name)
-		text += " Fallen: %s." % ", ".join(fallen) if not fallen.is_empty() else " No one fell."
-		if out["leader_dead"][side] and not out["wiped"][side]:
-			text += " It lost its leader and marches home." if side == 0 else " It lost its leader."
-		var l := UiStyle.label(text, 17, Color(LOG_COLORS[side]))
-		l.autowrap_mode = TextServer.AUTOWRAP_WORD
+	var title := UiStyle.label(RESULT_WORDS[result], 40, RESULT_COLORS[result])
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	col.add_child(title)
+	var line := GameState.neutral_line(battle, out)
+	if replay:
+		line = ("Replay. " + line).strip_edges()
+	if line != "":
+		var l := UiStyle.label(line, 17, Color(0.8, 0.82, 0.86))
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		col.add_child(l)
-	if out["pushed"] >= 0:
-		col.add_child(UiStyle.label("%s is pushed back." % battle.sides[out["pushed"]].name, 17))
+	var sides := HBoxContainer.new()
+	sides.add_theme_constant_override("separation", 24)
+	col.add_child(sides)
+	for side in 2:
+		sides.add_child(_side_stats(side, out))
 	if not out.get("xp", {}).is_empty():
 		var amounts: Array = out["xp"].values()
 		col.add_child(UiStyle.label("XP: +%d each" % amounts[0] if amounts.min() == amounts.max() else "XP: +%d to +%d" % [amounts.min(), amounts.max()], 17))
-	for line in out.get("level_ups", []):
-		col.add_child(UiStyle.label(line, 17, Color("#7ee08a")))
+	for level_up in out.get("level_ups", []):
+		col.add_child(UiStyle.label(level_up, 17, Color("#7ee08a")))
 	var note := UiStyle.label("", 17, UiStyle.ACCENT)
+	note.visible = false
 	var buttons := HBoxContainer.new()
 	buttons.add_theme_constant_override("separation", 12)
 	buttons.alignment = BoxContainer.ALIGNMENT_END
 	var chance := state.drive_off_chance(player, enemy)
 	if chance > 0.0 and not out["wiped"][1] and out["retreated"] < 0 and out["hp_lost"][1] > out["hp_lost"][0] and enemy in state.squads:
 		var drive := UiStyle.button("Demand they flee (%d%%)" % roundi(chance * 100), 280)
+		drive.tooltip_text = "On success the enemy squad leaves the map for good, with no XP."
 		drive.pressed.connect(func():
 			drive.disabled = true
-			note.text = "%s flees the map." % enemy.name if state.drive_off(player, enemy) else "%s refuses to flee." % enemy.name)
+			note.visible = true
+			note.text = "The enemy flees the map." if state.drive_off(player, enemy) else "The enemy refuses to flee.")
 		buttons.add_child(drive)
 	col.add_child(note)
 	var go := UiStyle.button("Continue", 200, true)
 	go.pressed.connect(func(): finished.emit(out.get("text", "Replay finished.")))
 	buttons.add_child(go)
 	col.add_child(buttons)
-	var dim := ColorRect.new()
-	dim.color = Color(0, 0, 0, 0.45)
-	dim.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
-	_ground.add_child(dim)
-	var center := CenterContainer.new()
-	center.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
-	_ground.add_child(center)
-	center.add_child(box)
 	go.grab_focus.call_deferred()
 
 
-func _outcome(out: Dictionary) -> String:
-	var who := [battle.sides[0].name, battle.sides[1].name]
-	if out["wiped"][1]:
-		return "Victory: %s is wiped out" % who[1]
-	if out["wiped"][0]:
-		return "Defeat: %s is wiped out" % who[0]
-	if out["retreated"] == 0:
-		return "%s retreats" % who[0]
-	if out["pushed"] == 1:
-		return "Won: %s falls back" % who[1]
-	if out["pushed"] == 0:
-		return "Lost: %s falls back" % who[0]
-	return "An even fight"
+## One side's column: its name (the other side is always "Enemy"), HP lost, units lost.
+func _side_stats(side: int, out: Dictionary) -> Control:
+	var s := battle.sides[side]
+	var box := PanelContainer.new()
+	box.add_theme_stylebox_override("panel", UiStyle.box(Color(0, 0, 0, 0.25), 14))
+	box.size_flags_horizontal = SIZE_EXPAND_FILL
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 6)
+	box.add_child(col)
+	col.add_child(UiStyle.label(s.name if side == 0 else "Enemy", 20, Color(LOG_COLORS[side])))
+	col.add_child(UiStyle.label("HP lost: %d%%" % roundi(out["hp_lost"][side] * 100), 17))
+	col.add_child(UiStyle.label("Units lost: %d" % s.living(false).size(), 17))
+	if out["leader_dead"][side] and not out["wiped"][side] and side == 0:
+		col.add_child(UiStyle.label("Leader fell: marching home", 15, Color(0.8, 0.82, 0.86)))
+	return box
 
 
 func _unhandled_key_input(event: InputEvent) -> void:

@@ -135,6 +135,26 @@ func test_state_army_and_editing() -> void:
 	check(st.can_edit(st.army.cells[1]), "so can one waiting at base")
 	first.hex = m.index_of(Hex.from_offset(Vector2i(6, 2)))
 	check(not st.can_edit(first), "not one out in the field")
+	var u0 := first.units[0]
+	check(st.can_rearrange(u0, first), "in the field its formation can still change")
+	check(not st.can_rearrange(u0, null), "but no unit leaves it for the pool")
+	check(not st.can_rearrange(u0, st.army.cells[1]), "or for another squad")
+	check(not st.can_rearrange(st.army.cells[1].units[0], first), "and no unit joins it")
+	var cell := st.army.cells.find(first)
+	var to_row := "back" if u0.row == "front" else "front"
+	check(st.army.move(u0, cell, to_row, first.next_col(to_row)), "moved to the other row")
+	check_eq(u0.row, to_row, "the move took")
+	check_eq(st.deploy_menu_blocker(), "", "Deploy Squad is on: squads wait at base, under the cap")
+	st.settings["squad_cap"] = 1
+	check(st.deploy_menu_blocker().contains("cap"), "off at the squad cap")
+	st.settings["squad_cap"] = 10
+	for s in st.army.squads():
+		if s not in st.squads:
+			st.squads.append(s)
+	check(st.deploy_menu_blocker().contains("No squads"), "off with no squad waiting at base")
+	for s in st.army.squads():
+		if s != first:
+			st.squads.erase(s)
 	first.hex = m.player_base
 	for u in first.units.duplicate():
 		st.army.move(u, -1)

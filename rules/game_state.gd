@@ -948,6 +948,16 @@ func deploy_hex() -> int:
 
 
 ## Why the squad can't deploy, or "" if it can.
+## Why the toolbar's Deploy Squad is off: the squad cap is reached, or no squad waits at
+## the Player Base. "" when it's on (user's playtest notes, 2026-11-09).
+func deploy_menu_blocker() -> String:
+	if player_squads().size() >= squad_cap():
+		return "The squad cap is %d on the map at once." % squad_cap()
+	if not army.squads().any(func(s: Squad): return s not in squads):
+		return "No squads are waiting at the Player Base."
+	return ""
+
+
 func deploy_blocker(s: Squad) -> String:
 	if s in squads:
 		return "Already on the map."
@@ -1047,6 +1057,16 @@ func restore(u: Unit) -> bool:
 ## Squads can be changed at the Player Base, or while waiting there off the map.
 func can_edit(s: Squad) -> bool:
 	return s not in squads or (s.hex == map.player_base and not s.is_moving() and not s.marching_home)
+
+
+## Whether a unit can be moved into `target` (null: the recruit pool) in Edit Units. A
+## squad's formation can change anywhere, even out in the field; who is in it can change
+## only where it can be edited (user's playtest notes, 2026-11-09).
+func can_rearrange(u: Unit, target: Squad) -> bool:
+	var from := army.squad_of(u)
+	if from != null and from == target:
+		return true
+	return (from == null or can_edit(from)) and (target == null or can_edit(target))
 
 
 ## After Edit Units: squads emptied there leave the map.
@@ -1296,7 +1316,9 @@ func _check_contact() -> void:
 			if b.side == "player" and a.side == "neutral":
 				pending_recruit = {"player": b, "neutral": a, "defender": defender}
 				return
-			pending = start_battle(a, b, defender)
+			# The player's squad is always side 0, whoever moved in: the battle view, tactic,
+			# tech and outcome text all read side 0 as "us".
+			pending = start_battle(b, a, defender) if b.side == "player" else start_battle(a, b, defender)
 			if a.side != "player" and b.side != "player":
 				resolve_pending()
 			return
@@ -1379,7 +1401,40 @@ func resolve_pending() -> Dictionary:
 	return out
 
 
+## How the battle went for side 0 (the player's squad, when there is one): "won" (the
+## enemy was wiped out or lost the larger share of its HP), "lost", "retreated" or "even".
+static func battle_result(out: Dictionary) -> String:
+	if out["wiped"][1]:
+		return "won"
+	if out["wiped"][0]:
+		return "lost"
+	if out["retreated"] == 0:
+		return "retreated"
+	if out["retreated"] == 1 or out["hp_lost"][1] > out["hp_lost"][0]:
+		return "won"
+	if out["hp_lost"][0] > out["hp_lost"][1]:
+		return "lost"
+	return "even"
+
+
+## After a fight with neutrals, they go back to their ground, beaten or victorious
+## (user's playtest notes, 2026-11-09). Empty when side 1 isn't neutral.
+static func neutral_line(b: Battle, out: Dictionary) -> String:
+	if b.sides[1].side != "neutral":
+		return ""
+	return "The %s %s and return to the %s." % [b.sides[1].name,
+			"are beaten back" if battle_result(out) == "won" else "are victorious", str(b.terrain["name"]).to_lower()]
+
+
+## A one-line result for the map's banner. The player's squad wins or loses (against
+## neutrals, who then go home); a fight between two computer squads just says what happened.
 static func battle_summary(b: Battle, out: Dictionary) -> String:
+	if b.sides[0].side == "player":
+		var result := battle_result(out)
+		if b.sides[1].side == "neutral":
+			return "%s %s. %s" % [b.sides[0].name, "wins" if result == "won" else "loses", neutral_line(b, out)]
+		return "%s %s." % [b.sides[0].name, {"won": "wins the battle", "lost": "loses the battle",
+				"retreated": "retreats from the battle", "even": "fights the enemy to a draw"}[result]]
 	var who := [b.sides[0].name, b.sides[1].name]
 	var text := "%s %s %s: lost %d%% of its HP, took %d%% of theirs." % [who[0],
 			"fired on" if b.ranged_only else "fought", who[1], roundi(out["hp_lost"][0] * 100), roundi(out["hp_lost"][1] * 100)]
@@ -1559,18 +1614,18 @@ func end_battle(b: Battle) -> Dictionary:
 	_update_loyalty_wins(b, out)
 	_battle_standing(b, out)
 	_award_xp(b, out)
-	_neutral_leaves(b)
+	_neutral_leaves(b, out)
 	return out
 
 
 ## A neutral squad is met once (user's playtest notes, 2026-11-09): after any battle
-## with the player, win or lose, it leaves the map rather than coming back for more.
-func _neutral_leaves(b: Battle) -> void:
-	for side in 2:
-		var s := b.sides[side]
-		if s.side == "neutral" and b.sides[1 - side].side == "player" and s in squads:
-			squads.erase(s)
-			log.add(clock.tick, "map", "The %s scatter and leave the area." % s.name, b.sides[1 - side].id)
+## with the player, win or lose, it goes back to its ground and leaves the map.
+## The player's squad is always side 0, so a neutral here is side 1.
+func _neutral_leaves(b: Battle, out: Dictionary) -> void:
+	var s := b.sides[1]
+	if s.side == "neutral" and b.sides[0].side == "player" and s in squads:
+		squads.erase(s)
+		log.add(clock.tick, "map", neutral_line(b, out), b.sides[0].id)
 
 
 ## Morale (§12.2): falls when outnumbered, the leader is hit, a unit dies, off home

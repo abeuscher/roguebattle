@@ -233,7 +233,7 @@ func _detail() -> Control:
 	var facts := "%s  ·  speed %d  ·  slots %s / %d  ·  %s (%d)" % [s.travel_name(), s.speed_tier, _num(Squad.slots_filled(data, s.units)), s.capacity(data),
 			s.alignment_band(data).capitalize(), roundi(s.alignment())]
 	if locked:
-		facts += "  ·  In the field: edit it back at the Player Base"
+		facts += "  ·  In the field: rearrange it here; add or remove units back at the Player Base"
 	var bar := HBoxContainer.new()
 	bar.add_theme_constant_override("separation", 12)
 	box.add_child(bar)
@@ -268,24 +268,24 @@ func _detail() -> Control:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 8)
 		for c in cols:
-			row.add_child(_slot(s, r, c, locked))
+			row.add_child(_slot(s, r, c))
 		box.add_child(row)
 	box.add_child(UiStyle.label("Click a unit for its details. Drag units to rearrange them.", 14, Color(0.55, 0.58, 0.62)))
 	return box
 
 
-func _slot(s: Squad, r: String, c: int, locked: bool) -> Control:
+func _slot(s: Squad, r: String, c: int) -> Control:
 	var slot := PanelContainer.new()
 	var style := UiStyle.box(Color(0.09, 0.1, 0.12), 3)
 	style.set_border_width_all(1)
 	style.border_color = Color(0.25, 0.27, 0.32)
 	slot.add_theme_stylebox_override("panel", style)
 	slot.custom_minimum_size = Vector2(156, 112)
-	if not locked:
-		slot.set_drag_forwarding(Callable(), _can_drop.bind(_cell, r, c), _drop.bind(_cell, r, c))
+	# Even in the field, units can move between this squad's slots (_can_drop checks).
+	slot.set_drag_forwarding(Callable(), _can_drop.bind(_cell, r, c), _drop.bind(_cell, r, c))
 	var u := s.at(r, c)
 	if u:
-		slot.add_child(_chip(u, "slot", not locked, _cell, r, c))
+		slot.add_child(_chip(u, "slot", true, _cell, r, c))
 	return slot
 
 
@@ -704,7 +704,7 @@ func _can_drop(_at: Vector2, what: Variant, cell: int, _r: String, _c: int) -> b
 	if not (what is Dictionary and what.has("unit")):
 		return false
 	var target: Squad = army.cells[cell] if cell >= 0 else null
-	return target == null or state.can_edit(target)
+	return state.can_rearrange(what["unit"], target)
 
 
 ## A drop on a card picks the row from the unit's attacks; a drop on a slot uses that slot.

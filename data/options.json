@@ -5,6 +5,11 @@
    "label": "Show both squads before a battle and wait for Fight",
    "tip": "Off: a battle starts playing as soon as it opens.",
    "default": true
+  },
+  "pause_on_focus_loss": {
+   "label": "Pause when the game window loses focus",
+   "tip": "Switching to another window pauses the map, or the battle if one is playing.",
+   "default": true
   }
  }
 }

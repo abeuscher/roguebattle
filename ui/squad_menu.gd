@@ -87,7 +87,7 @@ func setup(state: GameState, s: Squad) -> void:
 	gap.custom_minimum_size.y = 40  # with the separation, about 50px between the squad and its actions
 	col.add_child(gap)
 	var at_base := s.hex == state.map.player_base
-	_button(col, "Edit squad", state.can_edit(s), "Open the squad in Edit Units." if state.can_edit(s) else "Only at the Player Base.") \
+	_button(col, "Edit squad", true, "Open the squad in Edit Units." if state.can_edit(s) else "Open the squad in Edit Units: in the field you can rearrange it but not add or remove units.") \
 			.pressed.connect(func(): edit.emit())
 	var herbs := 0
 	for id in state.army.supplies:

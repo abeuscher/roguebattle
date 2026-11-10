@@ -69,7 +69,7 @@ func start(game_data: GameData, game_log: GameLog, config: GameConfig, map: MapD
 		if _can_open() and _selected == null:
 			_open_edit())
 	hud.deploy_pressed.connect(func():
-		if _can_open() and _selected == null:
+		if _can_open() and _selected == null and state.deploy_menu_blocker() == "":
 			_open_deploy_menu())
 	hud.cards_pressed.connect(func():
 		if _can_open() and _selected == null:
@@ -743,6 +743,17 @@ func _close_main_menu() -> void:
 
 # --- Input ------------------------------------------------------------------------
 
+## Switching to another window pauses the battle if one is playing, else the map
+## (an option, on by default). The player resumes it themselves.
+func _notification(what: int) -> void:
+	if what != NOTIFICATION_APPLICATION_FOCUS_OUT or not bool(options.get("pause_on_focus_loss", true)) or state == null:
+		return
+	if _battle:
+		_battle.pause()
+	elif not state.clock.paused:
+		state.toggle_pause()
+
+
 ## From the top bar's dropdown: -1 pauses; a speed also unpauses.
 func _on_speed_chosen(index: int) -> void:
 	if (index < 0) != state.clock.paused:
@@ -808,7 +819,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		KEY_U:
 			_open_edit()
 		KEY_D:
-			_open_deploy_menu()
+			if state.deploy_menu_blocker() == "":
+				_open_deploy_menu()
 		KEY_C:
 			_open_cards(false)
 		KEY_T:

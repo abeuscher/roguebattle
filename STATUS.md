@@ -78,11 +78,16 @@ Where the project stands, for picking up in a new session or on another machine.
   - Enemy squads down half or more go home; only the Enemy Base revives enemy units; holding roles return to their `Squad.post`.
   - `hp_per_con` 3 → 4: front-row survival of a first battle 63% → 73% in the sim (which now reports it).
   - 293 tests passing.
+- **Last work (session 035), M4 session 11, Playtest round 4:**
+  - Bug: an enemy that walked into your squad could end up as side 0, so the result read backwards and the enemy got your tactic and tech. Contact now always puts the player on side 0.
+  - The battle view has one Fight/Pause/Play button on the field. The log and controls show only while paused or waiting, in reserved space so nothing jumps. While it plays, the latest action shows beside the button.
+  - The result replaces the field: Won/Lost/Retreated/Draw once at the top (`GameState.battle_result`), then two columns with HP lost and units lost. Neutral fights end with "<squad> wins/loses. The <neutrals> are beaten back / are victorious and return to the <terrain>." (`neutral_line`).
+  - Edit Units lets you rearrange a squad that's out in the field (`can_rearrange`); adding or removing units still needs the base. Deploy Squad is greyed out at the cap or with nothing waiting (`deploy_menu_blocker`). New option: pause when the window loses focus (on by default).
+  - 295 tests passing.
 
 ## Next up
 
-- **M4 session 11 (playtest round 4) is planned in `ROADMAP.md`:** Edit Units formation while deployed, Deploy button only when usable, pause-on-focus-loss option, neutral outcome wording, a clearer end-of-battle summary (and the "won when we lost" bug), and Play/Pause plus a hide-on-play log in the battle view. Do this next.
-- **M4 milestone check: the first real playtest.** Every other M4 session is done.
+- **M4 milestone check: the first real playtest.** Every M4 session is done.
 - **Unit portraits:** the user's first 8 large unit images are committed in `data/unit_art/` (not used in the game yet). Building them into the unit detail view is a future task in `ROADMAP.md`, waiting on more of the set.
 - **Card art experiment (session 034, on top of 033):** every card is drawn as a picture card (`ui/card_face.gd`) using a simple SVG line drawing per animal in `data/card_art/`. Waiting on the user's verdict and their own concept.
 - Then the post-M4 discussions in `ROADMAP.md`: campaign and progression first (the user's top item), then unit iconography and the other parked notes.
@@ -93,7 +98,7 @@ Where the project stands, for picking up in a new session or on another machine.
 
 ## How the user works
 
-- **One git branch per session,** named `session-NNN` (next: `session-035`), cut from `main`.
+- **One git branch per session,** named `session-NNN` (next: `session-036`), cut from `main`.
 - **Commit locally only:**
   - Never push or merge; the user merges and pushes, then says "continue".
   - Commit messages end with a `Co-Authored-By:` line naming whatever Claude model is doing the session (the harness's own attribution instructions say exactly what to write).

@@ -23,6 +23,7 @@ var _banner := Label.new()
 var _flash_until := 0
 var _toolbar := HBoxContainer.new()
 var _cards_button: Button
+var _deploy_button: Button  # off when the squad cap is reached or no squad waits at base
 
 
 func _ready() -> void:
@@ -75,6 +76,8 @@ func _ready() -> void:
 		_toolbar.add_child(b)
 		if entry[0].begins_with("Cards"):
 			_cards_button = b
+		elif entry[0].begins_with("Deploy"):
+			_deploy_button = b
 	resized.connect(place)
 
 
@@ -133,6 +136,9 @@ func refresh(state: GameState) -> void:
 	_speed.add_theme_color_override("font_color", Color("#ffe08a"))
 	_money.text = "Gold %d  (+%d / −%d a day)   ·   Reputation %d" % [state.gold, state.income(), state.army_upkeep(), state.reputation]
 	_cards_button.text = "Cards (C): %d" % state.cards.size()
+	var why: String = state.deploy_menu_blocker()
+	_deploy_button.disabled = why != ""
+	_deploy_button.tooltip_text = why
 	if _flash_until > 0 and Time.get_ticks_msec() > _flash_until:
 		_flash_until = 0
 		_banner.visible = false

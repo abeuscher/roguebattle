@@ -105,8 +105,28 @@ func test_fight_skips_straight_to_a_battle() -> void:
 	st.resolve_recruit(false)
 	check(st.pending_recruit.is_empty(), "the encounter is resolved")
 	check(st.pending != null, "straight into a battle")
-	st.resolve_pending()
+	var out := st.resolve_pending()
 	check(n not in st.squads, "met once: the neutrals leave after the fight, whoever won")
+	var won := GameState.battle_result(out) == "won"
+	var text: String = out["text"]
+	check(text.begins_with(p.name + (" wins." if won else " loses.")), "party wins or loses: " + text)
+	check(text.contains("are beaten back" if won else "are victorious") and text.ends_with("return to the plains."),
+			"the neutrals go back to their ground: " + text)
+
+
+func test_battle_result_words() -> void:
+	var base := {"wiped": [false, false], "retreated": -1, "hp_lost": [0.2, 0.5]}
+	check_eq(GameState.battle_result(base), "won", "the enemy lost more")
+	base["hp_lost"] = [0.6, 0.5]
+	check_eq(GameState.battle_result(base), "lost", "we lost more")
+	base["wiped"] = [false, true]
+	check_eq(GameState.battle_result(base), "won", "wiping them out wins whatever the HP")
+	base["wiped"] = [false, false]
+	base["retreated"] = 0
+	check_eq(GameState.battle_result(base), "retreated", "we retreated")
+	base["retreated"] = -1
+	base["hp_lost"] = [0.3, 0.3]
+	check_eq(GameState.battle_result(base), "even", "level")
 
 
 func test_recruit_failure_resists_and_fights_first() -> void:
