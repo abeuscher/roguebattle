@@ -293,3 +293,32 @@ func test_supplies_used_before_the_battle_count() -> void:
 	check_eq(b.hp_lost_share(0), 0.0, "starting HP counts the revival and the herb")
 	b.run()
 	check(b.events.any(func(e): return e["type"] == "attack" and e["unit"] == fallen) or not fallen.is_alive(), "and it acts in the battle")
+
+
+## Playtest round 7: after a fight the player can see the enemy squad's makeup.
+func test_a_fight_shows_the_enemy_makeup() -> void:
+	var st := _state()
+	var ours := _ours(st, 10)
+	var theirs := _theirs(st, 11)
+	check(not st.intel.has(theirs.id), "unknown before any fight")
+	st.pending = st.start_battle(ours, theirs, theirs)
+	st.resolve_pending()
+	if theirs in st.squads:
+		var seen: Dictionary = st.intel[theirs.id]
+		check_eq(seen["units"].size(), theirs.units.size(), "every unit seen")
+		check_eq(seen["units"].map(func(u): return u["class"]), theirs.units.map(func(u: Unit): return u.unit_class), "classes as they are")
+		check_eq(seen["units"].map(func(u): return u["alive"]), theirs.units.map(func(u: Unit): return u.is_alive()), "and who stood at the end")
+
+
+## Playtest round 7: when one of your parties stops, the log and the HUD say so.
+func test_a_party_stopping_is_announced() -> void:
+	var st := _state()
+	var ours := _ours(st, 3)
+	st.order_move(ours, PackedInt32Array([_at(st.map, 6, 4)]))
+	for i in 2000:
+		st.step()
+		if not ours.is_moving():
+			break
+	check(not ours.is_moving(), "it arrived")
+	check_eq(st.notices, ["%s has stopped at %s." % [ours.name, st.map.hex_at(ours.hex)]] as Array[String], "a notice for the HUD")
+	check(st.log.entries.any(func(e): return "has stopped at" in str(e["text"])), "and a log line")

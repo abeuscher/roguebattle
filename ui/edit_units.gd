@@ -6,8 +6,8 @@ extends Control
 ## leader, promotion and items, and an About tab for the unit type. Drag units between squads, rows and the
 ## pool. The gutter's Items tab lists every item the army owns, worn ones greyed with
 ## who has them; drag a free item onto a unit or an item slot, and drag a worn one back
-## to the list to take it off. Squads out in the field are locked until they're back at
-## the Player Base. The Player Base's services live here too: deploy a squad waiting at
+## to the list to take it off, on any squad wherever it is. A squad out in the field can
+## be rearranged but takes or gives up units only at the Player Base. The Player Base's services live here too: deploy a squad waiting at
 ## base (up to the squad cap), send one standing on the base back in, and pay to heal or
 ## revive units at base.
 ## A modal: 50% dark overlay; the battlemap holds the clock while it's open.
@@ -451,9 +451,7 @@ func _unit_overview(u: Unit, sq: Squad, locked: bool) -> Control:
 	row.add_child(gear)
 	gear.add_child(UiStyle.label("Items", 18))
 	for slot in data.items["slots"]:
-		gear.add_child(_item_picker(u, slot, locked))
-	if locked:
-		gear.add_child(UiStyle.label("Items change only at the Player Base.", 14, Color(0.55, 0.58, 0.62)))
+		gear.add_child(_item_picker(u, slot))
 	return row
 
 
@@ -516,8 +514,9 @@ func _promotion_tip(u: Unit, c: String) -> String:
 
 
 ## One of the unit's item slots as a dropdown: Empty, the item worn, and the free items
-## that fit it (identical items grouped, with a count).
-func _item_picker(u: Unit, slot: String, locked: bool) -> Control:
+## that fit it (identical items grouped, with a count). Items are the army's, shared, and
+## can be swapped on any squad wherever it is (user's playtest notes, 2026-11-10).
+func _item_picker(u: Unit, slot: String) -> Control:
 	var line := HBoxContainer.new()
 	line.add_theme_constant_override("separation", 10)
 	var l := UiStyle.label(slot.capitalize(), 15, Color(0.65, 0.68, 0.72))
@@ -540,8 +539,7 @@ func _item_picker(u: Unit, slot: String, locked: bool) -> Control:
 	for id in free:
 		choices.append(free[id][0])
 		pick.add_item(_item_label(id) + ("  (×%d)" % free[id].size() if free[id].size() > 1 else ""))
-	pick.disabled = locked
-	pick.tooltip_text = "Only at the Player Base." if locked else ("No free %s fits this unit." % slot if free.is_empty() else "")
+	pick.tooltip_text = "No free %s fits this unit." % slot if free.is_empty() else ""
 	pick.item_selected.connect(func(i: int):
 		if choices[i].is_empty():
 			army.unequip(u, slot)
@@ -698,9 +696,7 @@ func _notification(what: int) -> void:
 func _can_drop_item(_at: Vector2, what: Variant, u: Unit, slot := "") -> bool:
 	if not (what is Dictionary and what.has("item")):
 		return false
-	var s := army.squad_of(u)
-	return army.fits(u, what["item"]) and (slot == "" or data.items["items"][what["item"]["id"]]["slot"] == slot) \
-			and (s == null or state.can_edit(s))
+	return army.fits(u, what["item"]) and (slot == "" or data.items["items"][what["item"]["id"]]["slot"] == slot)
 
 
 func _drop_item(_at: Vector2, what: Variant, u: Unit) -> void:

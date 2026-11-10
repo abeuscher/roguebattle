@@ -112,6 +112,8 @@ Where the project stands, for picking up in a new session or on another machine.
 
 - **M4 session 13 done (session 038):** round Play/Pause icons, the see-through area under the field while playing, the enemy go-home fix (a push on the way home left squads stranded), and town names. See `DECISIONS.md` session 038.
 - **M4 session 14 done (session 039):** the cards window laid out like the battle picker, no map zoom under popups, cards and cure potions taking effect at once in battle, and Use item in the encounter popup. See `DECISIONS.md` session 039.
+- **M4 session 15 done (session 043):** cards land before a round's first attack (a round opens in its own step); clicking a fought enemy squad shows its makeup; items swap on any squad anywhere; neutrals 25% rarer; "X has stopped at …" banner and log line. See `DECISIONS.md` session 043.
+- **M4 sessions 16–20 next**, from the plan below.
 - **M4 sessions 15–20 planned (playtest round 7, 2026-11-10)** in `ROADMAP.md`: battle and rules fixes (cards truly at once, enemy makeup after a fight, items equippable anywhere, fewer neutrals, arrival log line); map generation (100% land, reef-like shallows around islands); HUD layout (clock under the minimap, gold coin, reputation meter, squad drawer, smaller rounded toolbar with icons); squad status icons and flag-free tokens with destination flags; debug panel overhaul; save game (3 slots, prompt to save on quit). The user's answers are in the ROADMAP rows.
 - **M4 milestone check: the first real playtest**, after session 20.
 - **Unit portraits:** the user's first 8 large unit images are committed in `data/unit_art/` (not used in the game yet). Building them into the unit detail view is a future task in `ROADMAP.md`, waiting on more of the set.
@@ -123,7 +125,7 @@ Where the project stands, for picking up in a new session or on another machine.
 
 ## How the user works
 
-- **One git branch per session,** named `session-NNN` (next: `session-043`), cut from `main`.
+- **One git branch per session,** named `session-NNN` (next: `session-044`), cut from `main`.
 - **Commit locally only:**
   - Never push or merge; the user merges and pushes, then says "continue".
   - Commit messages end with a `Co-Authored-By:` line naming whatever Claude model is doing the session (the harness's own attribution instructions say exactly what to write).

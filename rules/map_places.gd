@@ -535,15 +535,20 @@ func _cover_regions() -> void:
 			if not members.has(r):
 				members[r] = PackedInt32Array()
 			members[r].append(i)
+	var ok := _road_ok()
 	for r in members:
 		var i := _pick(members[r])
 		if i < 0:
 			continue
 		var t := map.terrain[i]
-		if s["neutral_density"] != "none" and home_of.has(t):
+		# Neutrals are 25% rarer (user's playtest notes, 2026-11-10): a region gets a lair only
+		# cover_lair_chance of the time, otherwise a tower with a road to the network.
+		if s["neutral_density"] != "none" and home_of.has(t) and rng.randf() < float(cfg["cover_lair_chance"]):
 			_add_lair(i, home_of[t])
 		else:
-			_add("tower", i, {"shop": rng.randf() < float(data.buildings["tower"].get("shop_chance", 0.0))})
+			var tower := _add("tower", i, {"shop": rng.randf() < float(data.buildings["tower"].get("shop_chance", 0.0))})
+			if s["road_coverage"] != "none":
+				tower["road"] = _road_to_nearest_road(i, ok)
 
 
 ## Connected regions of one ground terrain each: region id per hex (-1 off ground).

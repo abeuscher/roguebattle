@@ -392,18 +392,17 @@ func _choose_item() -> void:
 	menu.popup(Rect2i(Vector2i(get_viewport().get_mouse_position()) - Vector2i(0, 40 * uses.size() + 20), Vector2i.ZERO))
 
 
-## Plays a card or a cure potion at once (user's playtest notes, 2026-11-10): `act`
-## changes the battle and records its events; they move ahead of whatever of the current
-## action is still to be shown, and show now, so the card comes before any more attacks.
+## Plays a card or a cure potion at once (user's playtest notes, 2026-11-10): whatever
+## of the action under way is still to be shown plays out first, without waiting (it was
+## already decided), then `act` changes the battle and its events show, before the next
+## attack. Each battle step is one action, and a round's opening is a step of its own.
 func _now(act: Callable) -> void:
-	var from := battle.events.size()
+	while _shown < battle.events.size():
+		_play(battle.events[_shown], true)
+		_shown += 1
 	if not act.call():
 		return
-	var fresh := battle.events.slice(from)
-	battle.events.resize(from)
-	for k in fresh.size():
-		battle.events.insert(_shown + k, fresh[k])
-	for k in fresh.size():
+	while _shown < battle.events.size():
 		_wait = maxf(_wait, _play(battle.events[_shown], true))
 		_shown += 1
 

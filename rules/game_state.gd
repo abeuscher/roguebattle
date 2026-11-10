@@ -21,6 +21,7 @@ var revealed := {}  # building index -> true for hidden sites and lairs a squad 
 var _contact_until := {}  # "player id:enemy id" -> tick before which the pair won't fight again
 var _moved := {}  # squads that entered a new hex this tick
 var _building_at := {}  # hex -> index in map.buildings
+var notices: Array[String] = []  # short news for the HUD banner, oldest first (a squad of yours stopped)
 var noon_report := ""  # the last noon's ledger, for the HUD to show once
 var cards: Array[String] = []  # the hand: card ids (§13)
 var next_card := ""  # the next card to be drawn, rolled ahead so Foresight can preview it
@@ -35,6 +36,7 @@ var debug_reveal := false  # every squad shows, whatever the sight radius
 var debug_freeze_ai := false  # enemy and neutral squads take no orders and stand still
 var debug_force := ""  # "", "win", "loss" or "draw": every battle a player squad joins ends that way
 var debug_fairness := {"two_dice": true, "ramping_crits": true, "streak_breaker": true, "spread": true}
+var intel := {}  # enemy squad id -> what the player saw at their last fight: {"tick", "units": [{class, level, row, alive}]}
 var last_battle := {}  # the last player battle as it began, for DebugTools.replay()
 var _towns_held_since := -1  # tick the player started holding the required share of towns continuously; -1 if not currently
 
@@ -221,6 +223,18 @@ func _capture() -> void:
 			else:
 				log.add(clock.tick, "map", "%s captures %s." % [s.name, place_label(b)], s.id)
 				change_morale(s, int(data.battle["morale"]["liberation"]), "capturing a %s" % what)
+
+
+## A place as the player would name it: a building by its name or type ("Ashford",
+## "the tower", "the Player Base"), otherwise the hex.
+func where(hex: int) -> String:
+	var b := building_at(hex)
+	if b.is_empty():
+		return str(map.hex_at(hex))
+	if b.has("name"):
+		return b["name"]
+	var kind: String = data.buildings[b["type"]]["name"]
+	return "the " + (kind if b["type"] in ["player_base", "enemy_base"] else kind.to_lower())
 
 
 ## A building as the log names it: a town by its name ("Ashford"), anything else by
@@ -1627,6 +1641,7 @@ func end_battle(b: Battle) -> Dictionary:
 			s.marching_home = true  # a push cleared its route: it sets off home again
 			order_move(s, PackedInt32Array([map.player_base if s.side == "player" else map.enemy_base]))
 			s.entering_base = s.side == "player"
+	_record_intel(b)
 	_update_morale(b, out)
 	_update_bonds(b)
 	_update_loyalty_wins(b, out)
@@ -1634,6 +1649,16 @@ func end_battle(b: Battle) -> Dictionary:
 	_award_xp(b, out)
 	_neutral_leaves(b, out)
 	return out
+
+
+## What the player learns of an enemy squad by fighting it (user's playtest notes,
+## 2026-11-10): its units as they stood when the battle ended, kept until the next fight.
+func _record_intel(b: Battle) -> void:
+	if b.sides[0].side != "player" or b.sides[1].side != "enemy":
+		return
+	var s := b.sides[1]
+	intel[s.id] = {"tick": clock.tick, "units": s.units.map(func(u: Unit): return {"class": u.unit_class, "level": u.level,
+			"row": u.row, "alive": u.is_alive(), "leader": u == s.leader})}
 
 
 ## A neutral squad is met once (user's playtest notes, 2026-11-09): after any battle
@@ -1852,7 +1877,9 @@ func _move(s: Squad) -> void:
 		if not s.rally.is_empty() and s.hex == s.rally[0]:
 			s.rally = s.rally.slice(1)
 			if s.rally.is_empty():
-				log.add(clock.tick, "map", "%s reached its destination %s." % [s.name, map.hex_at(s.hex)], s.id)
+				log.add(clock.tick, "map", "%s has stopped at %s." % [s.name, where(s.hex)], s.id)
+				if s.side == "player":  # user's playtest notes, 2026-11-10: say when a party stops
+					notices.append("%s has stopped at %s." % [s.name, where(s.hex)])
 			else:
 				log.add(clock.tick, "map", "%s reached a rally point; %d to go." % [s.name, s.rally.size()], s.id)
 	if not s.is_moving():

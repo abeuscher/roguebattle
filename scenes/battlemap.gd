@@ -40,6 +40,7 @@ var _deploy_menu: DeployMenu
 var _confirm: ConfirmDialog
 var _deploying := false  # _selected is a squad from base whose route is being laid
 var _building_popup: BuildingPopup
+var _enemy_popup: EnemyPopup
 var _shop: Control  # the shop screen or the supplies menu
 var _cursor_flag: SquadToken  # while laying a route, the squad's flag replaces the mouse pointer
 var _tokens := {}  # squad id -> SquadToken
@@ -129,6 +130,9 @@ func _process(delta: float) -> void:
 		_open_cards(true)
 	if state.game_over != "" and _end_screen == null and _can_open():
 		_open_end_screen()
+	if not state.notices.is_empty():
+		hud.show_banner("  ·  ".join(state.notices), 4.0)
+		state.notices.clear()
 	if state.noon_report != "":
 		hud.show_banner(state.noon_report, 5.0)
 		state.noon_report = ""
@@ -408,9 +412,19 @@ func _fire_click(world: Vector2) -> void:
 
 ## Clicking an enemy shows what it is and how it compares with your first squad.
 func _show_enemy(s: Squad) -> void:
+	if state.intel.has(s.id):  # fought before: its makeup as last seen
+		_enemy_popup = EnemyPopup.new()
+		_ui.add_child(_enemy_popup)
+		_enemy_popup.setup(state, s)
+		_enemy_popup.closed.connect(func():
+			_enemy_popup.queue_free()
+			_enemy_popup = null
+			state.clock.release())
+		state.clock.hold()
+		return
 	var own := state.player_squads()
 	var label := Threat.label(state.data, own[0], s).to_lower() if not own.is_empty() else ""
-	hud.show_banner("%s (%s): %d units. It looks %s." % [s.name, s.role.replace("_", " "), s.living().size(), label], 3.0)
+	hud.show_banner("%s (%s): %d units. It looks %s. Fight it to learn its makeup." % [s.name, s.role.replace("_", " "), s.living().size(), label], 3.0)
 
 
 func _plan_click(hex: int) -> void:
@@ -774,7 +788,7 @@ func _on_speed_chosen(index: int) -> void:
 
 ## No menu or dialog is open.
 func _can_open() -> bool:
-	return not (_log_panel or _debug_panel or _menu or _main_menu or _battle or _encounter or _edit or _deploy_menu or _confirm or _building_popup \
+	return not (_log_panel or _debug_panel or _menu or _main_menu or _battle or _encounter or _edit or _deploy_menu or _confirm or _building_popup or _enemy_popup \
 			or _shop or _recruit_popup or _liberation_popup or _end_screen)
 
 

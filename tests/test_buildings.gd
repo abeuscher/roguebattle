@@ -166,13 +166,13 @@ func test_lairs() -> void:
 	var m := _map()
 	var gap := int(_data.mapgen["lair_road_gap"])
 	var near_road := m.distance_from(m.road, gap - 1)
-	check(m.lairs.size() >= int(_data.mapgen["lair_counts"]["low"]), "lairs at low density")
+	check(m.lairs.size() >= floori(float(_data.mapgen["lair_counts"]["low"])), "lairs at low density")
 	for l in m.lairs:
 		check(_key(m, l["hex"]) in _data.mapgen["lair_terrains"][l["home"]], "lair sits in its home terrain")
 		check(l["danger"] >= 0.0 and l["danger"] <= 1.0, "danger in 0..1")
 	# Lairs from the density count keep away from roads; region-cover lairs may not.
 	var far := m.lairs.filter(func(l): return near_road[l["hex"]] < 0)
-	check(far.size() >= int(_data.mapgen["lair_counts"]["low"]), "lairs away from roads")
+	check(far.size() >= floori(float(_data.mapgen["lair_counts"]["low"])), "lairs away from roads")
 	var near: Dictionary = m.lairs.reduce(func(a, l): return a if a["danger"] <= l["danger"] else l)
 	var deep: Dictionary = m.lairs.reduce(func(a, l): return a if a["danger"] >= l["danger"] else l)
 	check(Hex.distance(m.hex_at(near["hex"]), m.hex_at(m.player_base)) < Hex.distance(m.hex_at(deep["hex"]), m.hex_at(m.player_base)),

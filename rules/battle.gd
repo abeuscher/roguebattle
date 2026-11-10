@@ -114,8 +114,9 @@ func step() -> bool:
 			for side in 2:  # a leaderless side's card boosts run out by rounds instead
 				if not (sides[side].leader and sides[side].leader.is_alive()):
 					_tick_card_buffs(side)
-			if is_over():
-				return false
+			# The round's opening is a step of its own, so nothing of the round is decided
+			# while its banner shows: a card played then lands before the first attack.
+			return not is_over()
 		var u: Unit = _queue.pop_front()
 		if u.is_alive() and _attacks[u] > 0:
 			_turn(u)

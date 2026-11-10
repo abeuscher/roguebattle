@@ -286,6 +286,22 @@ func test_battle_runs_to_an_end() -> void:
 
 
 ## Events without the round headers.
+## Playtest round 7: Whale played during a round's banner didn't save a unit, because
+## that step had already decided the round's first attack. A round opens in a step of its
+## own, and a card played after it lands before the first attack.
+func test_a_round_opens_in_its_own_step() -> void:
+	var f := _unit("Fighter")
+	var k := _unit("Knight")
+	var b := _battle([f], [k])
+	check(b.step(), "the battle goes on")
+	check_eq(b.events.map(func(e): return e["type"]), ["round"], "the first step only opens round 1")
+	k.hp = 1
+	b.play_card("whale", 1)
+	check_eq(k.hp, k.max_hp(d), "a card played now heals before anyone attacks")
+	b.step()
+	check(b.events.any(func(e): return e["type"] == "attack"), "the next step is the first attack")
+
+
 func _acts(b: Battle) -> Array:
 	return b.events.filter(func(e): return e["type"] != "round")
 
