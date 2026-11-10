@@ -40,3 +40,13 @@ func test_card_colors_swap() -> void:
 	check_eq(light.get_pixel(4, 16).to_html(false), UnitIcons.PAPER.substr(1), "light icon paper")
 	check_eq(dark.get_pixel(4, 16).to_html(false), "5a2626", "card icon paper")
 	check_eq(UnitIcons.file_name("Standard-Bearer"), "standard_bearer", "file name")
+
+
+func test_token_icon_has_no_frame() -> void:
+	# On the frame's left edge: the alignment color with the frame, see-through without it.
+	var framed := UnitIcons.texture("Black Dragon", 64).get_image()
+	var token := UnitIcons.on_token("Black Dragon", 64, Color("#1b2433")).get_image()
+	check(framed.get_pixel(2, 32).a > 0.9, "framed icon has its frame")
+	check(token.get_pixel(2, 32).a < 0.1, "token icon has no frame")
+	check(framed.get_pixel(6, 50).a > 0.5, "framed Large icon has its inner frame")
+	check(token.get_pixel(6, 50).a < 0.1, "token icon has no Large inner frame")
