@@ -7,9 +7,12 @@ extends RefCounted
 var id: int
 var name: String
 var side := "player"  # "player", "enemy" or "neutral"; only player and non-player squads fight
-var role := ""  # enemy role (§17): leader, base_guard, garrison, raider, wildcard; "roamer" for a neutral
-var ai_mode := ""  # a wildcard's roll (§17): "attack" or "defend", once at placement
+var role := ""  # enemy role (§17): leader, base_guard (hold the base) or field (EnemyAI); "roamer" for a neutral
+var ai_mode := ""  # a field squad's last choice, "hold" or "move" (shown by the debug AI overlay)
 var post := -1  # an enemy squad's placed hex, to return to after reviving at the Enemy Base
+var goal := -1  # the building a field squad is heading for, so others pick something else
+var think_at := 0  # tick from which a holding field squad weighs its choice again
+var unreachable := {}  # hexes a field squad found no route to, left out of its choices
 var lair_hex := -1  # a roamer's home lair, to patrol around (§6.7); -1 for non-neutrals
 var fire_ready := 0  # tick from which the squad may make a ranged map attack again (§11.2)
 var hex: int

@@ -33,7 +33,7 @@ func _squad(st: GameState, col: int, members := [["Knight", "front"], ["Fighter"
 
 func test_owners() -> void:
 	var st := _state()
-	check_eq(st.building_at(_at(st.map, 8, 3))["owner"], "enemy", "towns start enemy-held")
+	check_eq(st.building_at(_at(st.map, 8, 3))["owner"], "neutral", "towns start neutral (2026-11-10)")
 	check_eq(st.building_at(_at(st.map, 16, 3))["owner"], "neutral", "temples belong to no one")
 	check_eq(st.building_at(_at(st.map, 2, 3))["owner"], "player", "the Player Base is yours")
 
@@ -44,7 +44,7 @@ func test_capture_takes_60_ticks() -> void:
 	var town := st.building_at(s.hex)
 	for i in 59:
 		st.step()
-	check_eq(town["owner"], "enemy", "not yet after 59 ticks")
+	check_eq(town["owner"], "neutral", "not yet after 59 ticks")
 	check(st.capture_progress(town) > 0.9, "almost there")
 	st.step()
 	check_eq(town["owner"], "player", "liberated after 60 ticks")
@@ -65,14 +65,14 @@ func test_only_ground_units_capture() -> void:
 	check(s.sky, "an all-flying squad")
 	for i in 100:
 		st.step()
-	check_eq(st.building_at(s.hex)["owner"], "enemy", "can't liberate a town")
+	check_eq(st.building_at(s.hex)["owner"], "neutral", "can't liberate a town")
 	var t := _squad(st, 12)
 	for i in 30:
 		st.step()
 	st.order_move(t, PackedInt32Array([_at(st.map, 14, 3)]))
 	for i in 40:
 		st.step()
-	check_eq(st.building_at(_at(st.map, 12, 3))["owner"], "enemy", "leaving resets the timer")
+	check_eq(st.building_at(_at(st.map, 12, 3))["owner"], "neutral", "leaving resets the timer")
 	check_eq(t.capture_ticks, 0.0, "back to zero")
 
 

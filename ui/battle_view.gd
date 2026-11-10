@@ -112,6 +112,9 @@ func setup(game_state: GameState, b: Battle, is_replay := false, wait_for_fight 
 func _add_play_button() -> void:
 	_play_btn = UiStyle.button("", 150, true)
 	_play_btn.position = Vector2(14, FIELD.y - 58)
+	# No keyboard focus: Space is handled once, in _unhandled_key_input. A focused button
+	# would also take Space as a press, so the battle paused and played again at once.
+	_play_btn.focus_mode = FOCUS_NONE
 	_play_btn.pressed.connect(func():
 		if _waiting:
 			_start()
@@ -126,8 +129,6 @@ func _add_play_button() -> void:
 	_action.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.6))
 	_action.add_theme_constant_override("shadow_offset_y", 2)
 	_ground.add_child(_action)
-	if _waiting:
-		_play_btn.grab_focus.call_deferred()
 
 
 ## While the battle plays, only the field shows (with the latest action on it); paused

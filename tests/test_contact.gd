@@ -1,5 +1,5 @@
 extends TestCase
-## Enemy squads, contact, ranged map attacks and sight (SPEC Ã‚Â§8.5, Ã‚Â§11.1Ã¢â‚¬â€œ11.2, Ã‚Â§17).
+## Enemy squads, contact, ranged map attacks and sight (SPEC §8.5, §11.1–11.2, §17).
 
 var d := GameData.load_dir()
 
@@ -33,7 +33,8 @@ func test_enemy_placement() -> void:
 	var st := GameState.new(d, m, GameLog.new())
 	st.place_enemies()
 	var enemies := st.squads.filter(func(s: Squad): return s.side == "enemy")
-	check_eq(enemies.size(), 10, "ten enemy squads (Ã‚Â§17)")
+	var towns := m.buildings.filter(func(b): return b["type"] == "town").size()
+	check_eq(enemies.size(), maxi(3, roundi(towns * 0.5)), "half as many squads as towns (%d)" % towns)
 	var roles := {}
 	for s in enemies:
 		roles[s.role] = roles.get(s.role, 0) + 1
@@ -41,15 +42,15 @@ func test_enemy_placement() -> void:
 		check(not s.units.any(func(u: Unit): return Battle.base_kind(u.info(d)["back_attack" if u.row == "back" else "front_attack"]) == "Heal"),
 				"%s: no healers" % s.name)
 		check(s.id > 100, "enemy squads are numbered from 101")
-	check_eq(roles, {"leader": 1, "base_guard": 1, "garrison": 4, "raider": 1, "wildcard": 3}, "roles")
-	var leader: Squad = enemies.filter(func(s: Squad): return s.role == "leader")[0]
-	check_eq(leader.hex, m.enemy_base, "the leader holds the Enemy Base")
-	var hexes := {}
-	for s in enemies:
-		check(not hexes.has(s.hex), "one squad per hex")
-		hexes[s.hex] = true
-	for s in enemies.filter(func(s: Squad): return s.role == "garrison"):
-		check(m.buildings.any(func(b): return b["hex"] == s.hex and b["type"] in ["town", "tower"]), "%s holds a town or tower" % s.name)
+		check_eq(s.hex, m.enemy_base, "%s starts on the Enemy Base" % s.name)
+	check_eq(roles, {"leader": 1, "base_guard": 1, "field": enemies.size() - 2}, "roles")
+	for b in m.buildings:
+		if b["type"] not in ["player_base", "enemy_base"] and b.has("owner"):
+			check_eq(b["owner"], "neutral", "%s starts neutral" % b["type"])
+	var bare := MapData.new(10, 10)
+	bare.settings = {"preset": "continent", "size": "small"}
+	var few := GameState.new(d, bare, GameLog.new())
+	check_eq(few.enemy_squad_count(), 3, "at least 3 squads with no towns")
 
 
 func test_adjacency_triggers_battle() -> void:
@@ -213,7 +214,7 @@ func test_fire_range() -> void:
 	st.map.buildings.append({"type": "tower", "hex": archers.hex, "shop": false, "hint": false, "hidden": false, "kind": "", "road": false})
 	check_eq(st.fire_range(archers), 3, "3 from a tower")
 	archers.at("back", 0).items["weapon"] = {"uid": 1, "id": "longbow"}
-	check_eq(st.fire_range(archers), 4, "a longbow adds 1 (Ã‚Â§11.2)")
+	check_eq(st.fire_range(archers), 4, "a longbow adds 1 (§11.2)")
 	var melee := _ours(st, 11, 7, [["Knight", "front"], ["Fighter", "front"]])
 	check(not st.can_fire(melee), "a squad without ranged or magic units can't fire")
 	check(st.fire_targets(melee).is_empty(), "so it has no targets")

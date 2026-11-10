@@ -1,14 +1,13 @@
 {
- "_about": "Enemy squads (SPEC §17). Roles in placement order with how many squads each. Builds are 4 units with no healers: a stage 3 leader and three stage 2 Serf-line units; [class, row], the first unit able to lead leads. Scaling by threat and difficulty arrives with the AI (M4).",
+ "_about": "Enemy squads (SPEC §17). Every enemy squad starts on the Enemy Base. How many: squads_per_town × the map's towns (rounded), at least min_squads. Roles in placement order: a number, or \"rest\" for whatever is left of that total. Leader and base guard hold the base; field squads march out to take buildings (EnemyAI, weights in ai.json). Builds are 4 units with no healers: a stage 3 leader and three stage 2 Serf-line units; [class, row], the first unit able to lead leads.",
+ "squads_per_town": 0.5,
+ "min_squads": 3,
  "roles": [
-  {"role": "leader", "count": 1, "at": "enemy_base"},
-  {"role": "base_guard", "count": 1, "at": "near_enemy_base"},
-  {"role": "garrison", "count": 4, "at": "enemy_building"},
-  {"role": "raider", "count": 1, "at": "near_enemy_base"},
-  {"role": "wildcard", "count": 3, "at": "enemy_building"}
+  {"role": "leader", "count": 1},
+  {"role": "base_guard", "count": 1},
+  {"role": "field", "count": "rest"}
  ],
- "enemy_buildings": ["town", "tower"],
- "names": {"leader": "Warlord", "base_guard": "Base Guard", "garrison": "Garrison", "raider": "Raiders", "wildcard": "Marauders"},
+ "names": {"leader": "Warlord", "base_guard": "Base Guard", "field": "Warband"},
  "builds": [
   [["Soldier", "front"], ["Fighter", "front"], ["Squire", "front"], ["Bowman", "back"]],
   [["Berserker", "front"], ["Fighter", "front"], ["Slinger", "front"], ["Apprentice", "back"]],

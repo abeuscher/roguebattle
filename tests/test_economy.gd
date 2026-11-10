@@ -80,6 +80,8 @@ func test_shop() -> void:
 	var st := _state()
 	var s := _place(st, 0, 8)
 	var town := st.building_at(s.hex)
+	check_eq(st.shop_at(s), town, "a neutral town's shop is open (towns start neutral)")
+	town["owner"] = "enemy"
 	check(st.shop_at(s).is_empty(), "no shop while the town is enemy-held")
 	town["owner"] = "player"
 	check_eq(st.shop_at(s), town, "a shop once it's liberated")

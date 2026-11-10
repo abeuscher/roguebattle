@@ -1,62 +1,93 @@
 class_name EnemyAI
 extends RefCounted
-## Enemy map AI (SPEC §12.3, §17), map-level targeting only: where an idle
-## enemy squad should go, by role. (GameState first sends a squad that has lost
-## half or more of its units home to the Enemy Base, where its fallen revive.) The leader, base guard and garrisons hold
-## their post; the existing contact and ranged-attack rules handle anything
-## that comes close, so they need no AI of their own. Raiders, and wildcards
-## that rolled Attack, march on the weakest player-held town or tower (or the
-## Player Base if the player holds none); wildcards that rolled Defend march
-## on the nearest enemy-held building a player squad is standing in, and
-## otherwise hold their ground. In-battle tactic and retreat weights are
-## deferred to a later AI session.
-
-const MOVING_ROLES := ["raider", "wildcard"]
+## Enemy map AI (SPEC §12.3, §17), map-level targeting only: where an idle enemy
+## squad should go. (GameState first sends a squad that has lost half or more of its
+## units home to the Enemy Base, where its fallen revive.) The Warlord and the base
+## guard hold the base; contact and ranged attacks handle anything that comes close.
+## Field squads (user's playtest notes, 2026-11-10) take buildings: on a building the
+## enemy doesn't hold, a field squad stays until it's taken; otherwise it scores holding
+## where it is against moving on to each neutral or player-held town or tower no other
+## enemy squad is after, makes the better choice most of the time and flips a coin
+## the rest (weights in data/ai.json "field"). In-battle tactic and retreat weights
+## come later.
 
 
-## The hex an idle enemy squad should move to, or -1 to hold its ground. A holding
-## squad that went home to revive heads back to its post.
+## The hex an idle enemy squad should move to, or -1 to stay where it is.
 static func target_hex(state: GameState, s: Squad) -> int:
-	if s.role not in MOVING_ROLES:
+	if s.role != "field":
 		return s.post if s.post != s.hex else -1
-	if s.role == "wildcard" and s.ai_mode == "defend":
-		return _nearest_threatened_building_hex(state, s)
-	return _weakest_player_building_hex(state)
+	var here := state.building_at(s.hex)
+	if _takeable(state, here) and here["owner"] != "enemy":
+		return -1  # taking it: capture needs the squad to stand still
+	if state.clock.tick < s.think_at:
+		return -1
+	var f: Dictionary = state.data.ai["field"]
+	var hold := hold_score(state, s)
+	var best := best_move(state, s)
+	var stay: bool = hold >= best[1]
+	if state.rng.get_stream("enemy_ai").randf() >= float(f["logic_chance"]):
+		stay = state.rng.get_stream("enemy_ai").randf() < 0.5
+	if best[0] < 0 or (stay and hold > 0.0):
+		s.ai_mode = "hold"
+		s.goal = -1
+		s.think_at = state.clock.tick + int(f["rethink_ticks"])
+		return -1
+	s.ai_mode = "move"
+	s.goal = best[0]
+	return best[0]
 
 
-## The player-held town or tower with the least Threat defending it (0 for an
-## undefended one), or the Player Base if the player holds none (§17).
-static func _weakest_player_building_hex(state: GameState) -> int:
-	var data := state.data
-	var held: Array = state.map.buildings.filter(func(b): return b["owner"] == "player" and b["type"] in data.rules["economy"]["income_buildings"])
-	if held.is_empty():
-		return state.map.player_base
-	var best_hex := -1
-	var best_threat := INF
-	for b in held:
-		var t := 0.0
-		for sq in state.squads:
-			if sq.side == "player" and sq.hex == b["hex"] and not sq.living().is_empty():
-				t += Threat.squad(data, sq)
-		if best_hex < 0 or t < best_threat:
-			best_threat = t
-			best_hex = b["hex"]
-	return best_hex
+## A town or tower (the buildings worth taking for income and ground).
+static func _takeable(state: GameState, b: Dictionary) -> bool:
+	return not b.is_empty() and state.data.ai["field"]["type_value"].has(b["type"])
 
 
-## The nearest enemy-held building a living player squad stands on (being
-## fought for or liberated), or -1 if nothing is threatened.
-static func _nearest_threatened_building_hex(state: GameState, s: Squad) -> int:
-	var best := -1
-	var best_dist := -1
-	var from := state.map.hex_at(s.hex)
+## What a building is worth to the enemy: its type, more toward the middle of the map
+## between the two bases, double if the player holds it.
+static func value(state: GameState, b: Dictionary) -> float:
+	var f: Dictionary = state.data.ai["field"]
+	var m := state.map
+	var at := m.hex_at(b["hex"])
+	var de := float(Hex.distance(at, m.hex_at(m.enemy_base)))
+	var dp := float(Hex.distance(at, m.hex_at(m.player_base)))
+	var middle := 1.0 - absf(de - dp) / maxf(1.0, de + dp)
+	var v := float(f["type_value"][b["type"]]) * (1.0 + float(f["middle_weight"]) * middle)
+	return v * float(f["player_held"]) if b["owner"] == "player" else v
+
+
+## Holding the building it stands on: worth more the more player strength is near,
+## nothing if it isn't an enemy-held town or tower or another enemy squad holds it too.
+static func hold_score(state: GameState, s: Squad) -> float:
+	var b := state.building_at(s.hex)
+	if not _takeable(state, b) or b["owner"] != "enemy":
+		return 0.0
+	for o in state.squads:
+		if o != s and o.side == "enemy" and o.hex == s.hex and not o.living().is_empty():
+			return 0.0
+	var f: Dictionary = state.data.ai["field"]
+	var near := 0.0
+	var at := state.map.hex_at(s.hex)
+	for o in state.squads:
+		if o.side == "player" and not o.living().is_empty() and Hex.distance(at, state.map.hex_at(o.hex)) <= int(f["threat_radius"]):
+			near += Threat.squad(state.data, o)
+	var danger := minf(1.0, near / maxf(1.0, Threat.squad(state.data, s)))
+	return value(state, b) * (float(f["hold_base"]) + float(f["threat_weight"]) * danger)
+
+
+## The best building to move to and its score: [hex, score], or [-1, 0] if there's none.
+static func best_move(state: GameState, s: Squad) -> Array:
+	var f: Dictionary = state.data.ai["field"]
+	var reach := float(f["distance_range"]) * maxf(1.0, state.map.width / 400.0)
+	var taken := {}
+	for o in state.squads:
+		if o != s and o.side == "enemy" and o.role == "field" and not o.living().is_empty():
+			taken[o.goal if o.is_moving() else o.hex] = true
+	var at := state.map.hex_at(s.hex)
+	var best := [-1, 0.0]
 	for b in state.map.buildings:
-		if b["owner"] != "enemy":
+		if not _takeable(state, b) or b["owner"] == "enemy" or b["hex"] == s.hex or taken.has(b["hex"]) or s.unreachable.has(b["hex"]) or b.get("away", false):
 			continue
-		if not state.squads.any(func(sq: Squad): return sq.side == "player" and sq.hex == b["hex"] and not sq.living().is_empty()):
-			continue
-		var d := Hex.distance(from, state.map.hex_at(b["hex"]))
-		if best < 0 or d < best_dist:
-			best = b["hex"]
-			best_dist = d
+		var score := value(state, b) / (1.0 + Hex.distance(at, state.map.hex_at(b["hex"])) / reach)
+		if score > best[1]:
+			best = [b["hex"], score]
 	return best

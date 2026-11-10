@@ -12,7 +12,7 @@ func test_defaults() -> void:
 	check_eq(c.values["terrain_amounts.desert"], "low", "desert low by default")
 	check_eq(c.values["road_coverage"], "main", "main roads")
 	check_eq(float(c.map_overrides()["hidden_road_chance"]), 0.25, "25% chance of a road to a hidden site")
-	check_eq(int(c.values["squad_cap"]), 5, "squad cap 5")
+	check_eq(int(c.values["squad_cap"]), 6, "squad cap 6, one per starting squad")
 	check_eq(c.values["victory_leader"], true, "defeat the enemy leader on by default")
 	check_eq(c.values["defeat_leader"], true, "losing the Opinion Leader on by default")
 

@@ -10,7 +10,8 @@ This describes how the game actually plays right now, not the full design (that'
 
 - **Title → Start → Configurator → Game summary → the map.** The configurator sets every map-generation option (size, land shape, terrain amounts, building density, road coverage, neutral density, victory/defeat toggles, squad cap, a fairness toggle), with a seed you can randomize and a live minimap preview. Settings plus seed can be copied as a short share code and reproduce the exact same map.
 - **Map size:** width and height in hexes, each its own slider (400×225 — Small — by default). Landing exactly on Small, Medium (800×450) or Large (1200×675) shows that name next to the numbers; any other combination just shows the numbers. A much smaller custom map generates and plays through in a fraction of the time, handy for a quick playtest.
-- **Map 1's setup** (the only map that exists so far) always gives you 6 starting squads, the Opinion Leader on the map, 3 random cards, 3 tech points and 500 gold — see "Your starting army" below.
+- **Map 1's setup** (the only map that exists so far) always gives you 6 starting squads, the Opinion Leader on the map, 3 random cards, 3 tech points, 500 gold and a starting kit of items and supplies — see "Your starting army" below.
+- **Building counts follow the map's land:** the default map gets 16 towns, 10 towers, 4 temples and 2 nomad camps (times the density setting); a map with more land gets proportionally more, one with less gets fewer. Hidden sites and lairs scale the same way. An islands map has less land, so fewer buildings than a continent of the same size.
 - The game opens on the battlemap with your one deployed squad standing on the Player Base.
 
 ## The map
@@ -32,7 +33,7 @@ This describes how the game actually plays right now, not the full design (that'
 - **Slots:** every squad starts with 5. A Small unit costs 1 slot, Large costs 2, and two Tiny units can share a single slot. A leader earns +1 slot at level 5/10/15/20, but only if their charisma is at least 5 × their level at that moment (a Herald or Standard-Bearer in the squad helps toward this).
 - **Travel type:** a squad's one native terrain, decided by a weighted vote of its living units' home terrain (Small 1, the leader and Large units 2, Tiny ½; ties go to the leader). Moving through that terrain costs the squad its base speed; other terrain costs more (see difficulty above). A squad that's entirely flyers moves as Sky (flies over everything but air gaps); a squad that's entirely water natives or amphibians can cross deep water.
 - **Speed tier** is set by the squad's slowest living unit and decides how fast it crosses a hex; losing units to death slows the squad further, proportional to the slots lost.
-- **Deployment:** at the start, only the Opinion Leader's squad is on the map. Other squads deploy from the Player Base (via Edit Units or the Deploy Squad button, which is greyed out when the squad cap is reached or no squad is waiting at base), costing one day of their upkeep in gold, and appear on the Player Base; you lay their route as you deploy them. A squad cap (default 5, set in the configurator) limits how many of your squads can be on the map at once. A squad returns to base by marching there and going in on arrival, or instantly if it's already standing on the Player Base.
+- **Deployment:** at the start, only the Opinion Leader's squad is on the map. Other squads deploy from the Player Base (via Edit Units or the Deploy Squad button, which is greyed out when the squad cap is reached or no squad is waiting at base), costing one day of their upkeep in gold, and appear on the Player Base; you lay their route as you deploy them. A squad cap (default 6, set in the configurator) limits how many of your squads can be on the map at once. A squad returns to base by marching there and going in on arrival, or instantly if it's already standing on the Player Base.
 - **Giving orders:** click a squad to open its menu (this pauses the game); Move lets you click hexes to lay a chain of rally points, and clicking the last point again commits the route. You can plan routes for as many squads as you like, one at a time, while paused.
 - **Squads of yours can share a hex** freely. A hex held by a hostile squad blocks movement; your squad waits at its edge instead of stacking on it.
 
@@ -64,7 +65,8 @@ This describes how the game actually plays right now, not the full design (that'
 
 ## Buildings and the economy
 
-- **Liberating** a town or tower (stand a living ground unit there for 60 ticks, twice as fast with a Sapper) flips its owner, gives reputation and alignment swings, +5 charisma to a matching-alignment leader, a gold bonus, a card, and a tech point. A popup names what you took, focuses the camera on it, and shows the card you drew (or lets you pick one, if a Seer or Oracle offers a choice) right there.
+- **Every building starts neutral** except the two bases: no one holds a town or tower at the start, so both sides race out to take them. You can shop in, rest in and use any building the enemy doesn't hold; you only earn income from the ones you hold.
+- **Liberating** a town or tower, neutral or enemy-held (stand a living ground unit there for 60 ticks, twice as fast with a Sapper) flips its owner, gives reputation and alignment swings, +5 charisma to a matching-alignment leader, a gold bonus, a card, and a tech point. A popup names what you took, focuses the camera on it, and shows the card you drew (or lets you pick one, if a Seer or Oracle offers a choice) right there.
 - **Resting in a building** heals a squad's living units a share of their max HP each day: 15% in your own base, 15% in a town/tower matching your alignment, 10% otherwise, 5% in a temple. Squads and the recruit pool at the Player Base heal the base's 15% too.
 - **Income and upkeep**, settled every noon: you earn gold per town/tower you hold, then pay upkeep for every unit in the army (in a squad or the recruit pool, fallen units included) — upkeep scales with a unit's stage and size. Gold never goes negative; unpaid upkeep is currently just lost (no morale/loyalty penalty yet — see below).
 - **Going broke:** at zero gold, any squad can be sold from Edit Units for a gold value based on its units' stages; it leaves the army, the map and loses its items.
@@ -96,19 +98,19 @@ This describes how the game actually plays right now, not the full design (that'
 - **6 squads**, each a stage-3 leader plus four stage-2 units, rolled only from the basic "Serf" promotion lines (never the rarer race lines).
 - Between the 6 leaders, every terrain a Serf line can reach (Plains, Forest, Swamp, Mountain, Desert) is covered by at least one squad's leader. Each squad also always has at least one front-line unit and one healer-or-support unit; everything else about the roll is random.
 - One of the 6, chosen at random, is the Opinion Leader's squad — the only one that starts deployed, standing on the Player Base. The other 5 wait in your Edit Units roster.
-- You also start with 3 random cards, 3 tech points and 500 gold.
+- You also start with 3 random cards, 3 tech points, 500 gold, 6 random items that need no tech (in the Items tab of Edit Units), 5 Revival Draughts and 20 Herbs.
+- The squad cap defaults to 6, so all six squads can be out at once.
 
 ## The enemy
 
-Ten enemy squads (4 units each, 2 front and 2 back, no healers) are placed at the start, with distinct jobs:
+The enemy fields half as many squads as the map has towns (at least 3; 8 on the default map). Each has 4 units, 2 front and 2 back, and no healers. Every one starts on the Enemy Base, just as yours start at your base:
 
-- **1 Leader** — holds the Enemy Base and never moves.
-- **1 Base guard** — stationed beside the Enemy Base, never moves.
-- **4 Garrisons** — each holds one enemy-owned town or tower, never moves.
-- **1 Raider** — marches on whichever player-held town or tower currently has the weakest defense, or the Player Base if you don't hold any; re-targets whenever it's free to move again.
-- **3 Wildcards** — each rolls, once, to either act like a raider (marching on your weakest-held building) or to defend (march to reinforce the nearest enemy-held building that a player squad is actively fighting for); a defending wildcard that has nothing to reinforce just holds its ground.
-
-A squad that holds its post (leader, base guard, garrison) only ever moves if it's pushed back from losing a fight there, or goes home to revive (below) — it never goes looking for a fight on its own.
+- **The Warlord and a Base guard** stay on the Enemy Base and never go looking for a fight. They only move if pushed back from losing a fight there, or to come back after one.
+- **Field squads** (the rest) march out to take towns and towers. Standing on one the enemy doesn't hold, a field squad stays until it's taken. Then it weighs holding it against moving on to another neutral or player-held town or tower that no other enemy squad is heading for:
+  - Towns are worth more than towers, buildings toward the middle of the map are worth more than ones near either base, and a building you hold is worth double.
+  - Holding is worth more the more of your strength is close by. It's worth little when nothing threatens the building, and nothing if another enemy squad already holds it.
+  - A target is worth less the farther away it is.
+  - It takes the better choice about 80% of the time and decides at random the rest. A squad that holds thinks again a few hours later.
 
 **Enemy units only come back at the Enemy Base.** Any enemy squad that has lost half or more of its units drops what it's doing and heads home; once there, its fallen are revived at full HP and it returns to its post (or its next target). An enemy squad with lighter losses carries its fallen until it next stands on the base. The enemy can retake a building the same way you liberate one: a living ground unit of theirs sitting unopposed in it for 60 ticks flips it back, including your own Player Base.
 

@@ -1,7 +1,7 @@
 extends TestCase
-## Enemy map AI (SPEC §12.3, §17): garrisons hold their post; raiders and
-## attacking wildcards march on the weakest player-held building; defending
-## wildcards reinforce a threatened enemy building or hold their ground.
+## Enemy map AI (SPEC §12.3, §17; even start, user's playtest notes 2026-11-10): the
+## Warlord and base guard hold the base; field squads take buildings, then score
+## holding against moving on, with an 80/20 split between logic and a coin flip.
 
 var d := GameData.load_dir()
 
@@ -15,6 +15,8 @@ func _state(w := 30, h := 9) -> GameState:
 	m.settings = {"preset": "continent", "size": "small"}
 	m.player_base = _at(m, 1, 4)
 	m.enemy_base = _at(m, w - 2, 4)
+	m.buildings.append({"type": "player_base", "hex": m.player_base, "shop": false, "hint": false, "hidden": false, "kind": "", "road": false})
+	m.buildings.append({"type": "enemy_base", "hex": m.enemy_base, "shop": false, "hint": false, "hidden": false, "kind": "", "road": false})
 	return GameState.new(d, m, GameLog.new())
 
 
@@ -22,96 +24,107 @@ func _at(m: MapData, col: int, row: int) -> int:
 	return m.index_of(Hex.from_offset(Vector2i(col, row)))
 
 
-func _town(st: GameState, col: int, row := 4, owner := "player") -> Dictionary:
-	var b := {"type": "town", "hex": _at(st.map, col, row), "shop": false, "hint": false, "hidden": false, "kind": "", "road": false, "owner": owner}
+## A town added after setup (so GameState's building index knows about it).
+func _town(st: GameState, col: int, row := 4, owner := "neutral", type := "town") -> Dictionary:
+	var b := {"type": type, "hex": _at(st.map, col, row), "shop": false, "hint": false, "hidden": false, "kind": "", "road": false,
+			"owner": owner, "away": false}
 	st.map.buildings.append(b)
+	st._building_at[b["hex"]] = st.map.buildings.size() - 1
 	return b
 
 
-func _enemy_squad(st: GameState, col: int, row: int, role: String, ai_mode := "") -> Squad:
+func _enemy_squad(st: GameState, col: int, row: int, role: String) -> Squad:
 	var s := st.add_squad(role.capitalize(), _at(st.map, col, row), [["Soldier", "front"], ["Fighter", "front"], ["Bowman", "back"]], "enemy")
 	s.role = role
-	s.ai_mode = ai_mode
+	s.post = s.hex
 	return s
 
 
-## No threat nearby: isolates the AI's own choice from push-back, which can
-## still move a stationary role if it loses a fight (a separate, pre-existing
-## mechanic, not something the AI decides).
-func test_leader_base_guard_and_garrison_hold_their_post() -> void:
-	var st := _state()
-	var roles := ["leader", "base_guard", "garrison"]
-	var posts := {}
-	for i in roles.size():
-		var s := _enemy_squad(st, 10 + i * 5, 2 + i, roles[i])
-		posts[s] = s.hex
-	for i in 50:
-		st.step()
-	check_eq(posts.size(), 3, "all three are set up")
-	for s in posts:
-		check(not s.is_moving(), "%s never gets an order" % s.role)
-		check_eq(s.hex, posts[s], "%s never leaves its post" % s.role)
-
-
-func test_raider_marches_on_the_weakest_player_building() -> void:
-	var st := _state()
-	var weak := _town(st, 10, 4)
-	var strong := _town(st, 10, 7)  # off the raider's row, so it isn't intercepted en route
-	st.add_squad("Defenders", strong["hex"], [["Knight", "front"], ["Fighter", "front"], ["Fighter", "front"]])
-	var raider := _enemy_squad(st, 25, 4, "raider")
-	for i in 400:
+func _run(st: GameState, ticks: int) -> void:
+	for i in ticks:
 		st.step()
 		if st.pending:
 			break
-	check_eq(raider.hex, weak["hex"], "it marches on the undefended town, not the defended one")
 
 
-func test_raider_targets_the_player_base_with_nothing_else_held() -> void:
+func test_leader_and_base_guard_hold_the_base() -> void:
 	var st := _state()
-	var raider := _enemy_squad(st, 25, 4, "raider")
-	for i in 400:
-		st.step()
-		if st.pending:
-			break
-	check_eq(raider.hex, st.map.player_base, "no player-held town or tower: it goes for the Player Base")
+	_town(st, 15)
+	var lead := _enemy_squad(st, 28, 4, "leader")
+	var guard := _enemy_squad(st, 28, 4, "base_guard")
+	_run(st, 100)
+	for s in [lead, guard]:
+		check(not s.is_moving() and s.hex == st.map.enemy_base, "%s stays on the Enemy Base" % s.role)
 
 
-func test_attacking_wildcard_acts_like_a_raider() -> void:
+func test_field_squad_marches_out_and_takes_a_town() -> void:
 	var st := _state()
-	var weak := _town(st, 10)
-	var wildcard := _enemy_squad(st, 25, 4, "wildcard", "attack")
-	for i in 400:
-		st.step()
-		if st.pending:
-			break
-	check_eq(wildcard.hex, weak["hex"], "an attacking wildcard marches on the weakest player building")
+	var town := _town(st, 15)
+	_enemy_squad(st, 28, 4, "field")
+	_run(st, 600)
+	check_eq(town["owner"], "enemy", "it walked to the neutral town and took it")
 
 
-func test_defending_wildcard_reinforces_a_threatened_building() -> void:
+func test_two_field_squads_pick_different_towns() -> void:
 	var st := _state()
-	var held := _town(st, 20, 4, "enemy")
-	var wildcard := _enemy_squad(st, 25, 6, "wildcard", "defend")
-	var at := wildcard.hex
-	for i in 50:
-		st.step()
-	check_eq(wildcard.hex, at, "nothing threatened yet: it holds its ground")
-	st.add_squad("Liberators", held["hex"], [["Knight", "front"]])
-	for i in 200:
-		st.step()
-		if st.pending:
-			break
-	check(Hex.distance(st.map.hex_at(wildcard.hex), st.map.hex_at(held["hex"])) <= 1,
-			"a player squad shows up at the enemy town: it marches to defend it (can't stand on the same hex as a hostile)")
+	var a := _town(st, 15, 2)
+	var b := _town(st, 15, 6)
+	_enemy_squad(st, 28, 4, "field")
+	_enemy_squad(st, 28, 4, "field")
+	_run(st, 800)
+	check(a["owner"] == "enemy" and b["owner"] == "enemy", "each went for its own town")
 
 
-func test_wildcards_roll_attack_or_defend_at_placement() -> void:
-	var m := MapGen.generate(d, 11, {"size": "small"})
-	var st := GameState.new(d, m, GameLog.new())
-	st.place_enemies()
-	var wildcards := st.squads.filter(func(s: Squad): return s.role == "wildcard")
-	check_eq(wildcards.size(), 3, "three wildcards")
-	for s in wildcards:
-		check(s.ai_mode in ["attack", "defend"], "%s rolled a mode: %s" % [s.name, s.ai_mode])
+func test_values_favour_the_middle_and_player_towns() -> void:
+	var st := _state()
+	var near_home := _town(st, 26)
+	var middle := _town(st, 15, 2)
+	var theirs := _town(st, 15, 6, "player")
+	check(EnemyAI.value(st, middle) > EnemyAI.value(st, near_home), "a town midway is worth more than one by the Enemy Base")
+	check_eq(EnemyAI.value(st, theirs), EnemyAI.value(st, middle) * 2.0, "a player-held one is worth double")
+	var tower := _town(st, 15, 8, "neutral", "tower")
+	check(EnemyAI.value(st, tower) < EnemyAI.value(st, _town(st, 15, 0)), "a tower is worth less than a town")
+
+
+func test_hold_when_threatened_move_when_safe() -> void:
+	var st := _state()
+	var here := _town(st, 20, 4, "enemy")
+	_town(st, 12, 4)
+	var s := _enemy_squad(st, 20, 4, "field")
+	var calm := EnemyAI.hold_score(st, s)
+	check(calm < EnemyAI.best_move(st, s)[1], "nothing near: moving on scores higher")
+	st.add_squad("Ours", _at(st.map, 17, 4), [["Knight", "front"], ["Fighter", "front"], ["Fighter", "front"]])
+	check(EnemyAI.hold_score(st, s) > calm, "a player squad close by makes holding worth more")
+	check(EnemyAI.hold_score(st, s) > EnemyAI.best_move(st, s)[1], "and now holding wins")
+	_enemy_squad(st, 20, 4, "field")
+	check_eq(EnemyAI.hold_score(st, s), 0.0, "not worth holding what another enemy squad already holds")
+	check(here["owner"] == "enemy", "setup")
+
+
+func test_logic_wins_about_80_percent() -> void:
+	var st := _state()
+	_town(st, 20, 4, "enemy")
+	_town(st, 12, 4)
+	var moves := 0
+	var n := 400
+	for i in n:
+		var s := _enemy_squad(st, 20, 4, "field")
+		s.think_at = 0
+		if EnemyAI.target_hex(st, s) >= 0:
+			moves += 1
+		st.squads.erase(s)
+	# Logic says move (nothing near); the coin flip holds half of the other 20%: ~90% move.
+	check(moves > n * 0.84 and moves < n * 0.96, "moves %d of %d, about 90%%" % [moves, n])
+
+
+func test_a_holding_squad_thinks_again_later() -> void:
+	var st := _state()
+	_town(st, 20, 4, "enemy")
+	var s := _enemy_squad(st, 20, 4, "field")
+	check_eq(EnemyAI.target_hex(st, s), -1, "nowhere else to go: it holds")
+	check_eq(s.think_at, st.clock.tick + int(d.ai["field"]["rethink_ticks"]), "and waits before thinking again")
+	_town(st, 12, 4)
+	check_eq(EnemyAI.target_hex(st, s), -1, "until then it keeps holding")
 
 
 ## Enemy units come back only at the Enemy Base; a squad down half its units goes
@@ -119,7 +132,7 @@ func test_wildcards_roll_attack_or_defend_at_placement() -> void:
 func test_half_beaten_squad_goes_home_revives_and_returns() -> void:
 	var st := _state()
 	var post := _at(st.map, 20, 4)
-	var s := _enemy_squad(st, 20, 4, "garrison")
+	var s := _enemy_squad(st, 20, 4, "base_guard")
 	s.post = post
 	s.units[0].hp = 0
 	s.units[1].hp = 0
@@ -140,8 +153,7 @@ func test_half_beaten_squad_goes_home_revives_and_returns() -> void:
 
 func test_lighter_losses_stay_down_away_from_base() -> void:
 	var st := _state()
-	var s := _enemy_squad(st, 20, 4, "garrison")
-	s.post = s.hex
+	var s := _enemy_squad(st, 20, 4, "base_guard")
 	s.add(d, Unit.roll(d, "Fighter", st.rng.get_stream("test"), NameBook.new(d)), "front")
 	s.units[0].hp = 0  # one of four
 	for i in 24 * 60:

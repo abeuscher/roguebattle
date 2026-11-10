@@ -10,7 +10,7 @@ var data: GameData
 var s: Dictionary
 var rng: RandomNumberGenerator
 var cfg: Dictionary  # data.mapgen
-var _area := 1.0  # map size relative to a small map
+var _area := 1.0  # the map's land relative to mapgen.json's reference_land: scales every count
 var _blocked: PackedByteArray  # hexes too close to a building or lair for another
 var _road_cost: PackedFloat32Array  # per terrain id; < 0 where roads can't go
 var _river: PackedByteArray
@@ -38,7 +38,6 @@ static func place_all(m: MapData, game_data: GameData, settings: Dictionary, map
 
 
 func _setup() -> void:
-	_area = float(map.size()) / (400.0 * 225.0)
 	_blocked.resize(map.size())
 	_river.resize(map.size())
 	for path in map.rivers:
@@ -47,6 +46,11 @@ func _setup() -> void:
 	for t in data.terrains:
 		_road_cost.append(float(t.get("road_cost", -1.0)))
 	_water = MapGen.terrain_flags(data, "water")
+	var land := 0
+	for i in map.size():
+		if not _water[map.terrain[i]]:
+			land += 1
+	_area = land / float(cfg["reference_land"])
 	_g.resize(map.size())
 	_g.fill(INF)
 	_parent.resize(map.size())

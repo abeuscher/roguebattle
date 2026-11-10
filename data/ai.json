@@ -1,5 +1,19 @@
 {
- "_about": "AI weights (SPEC §12.3), map-level targeting only for now (session scope: in-battle tactic and retreat weights are deferred). A wildcard rolls Attack vs Defend once, at placement.",
- "wildcard_attack_chance": 0.5,
- "go_home_fallen_share": 0.5
+ "_about": "AI weights (SPEC §12.3, §17), map-level only (in-battle tactic and retreat weights come later). A field squad, when idle, scores holding the building it's on against moving to each neutral or player-held town or tower no other enemy squad is after (EnemyAI).",
+ "go_home_fallen_share": 0.5,
+ "field": {
+  "_value": "A building's worth: type_value × (1 + middle_weight × how central it is between the two bases, 0 at a base to 1 midway) × player_held if the player holds it.",
+  "type_value": {"town": 3.0, "tower": 2.0},
+  "middle_weight": 1.0,
+  "player_held": 2.0,
+  "_hold": "Holding: the value × (hold_base + threat_weight × min(1, player Threat within threat_radius ÷ the squad's own Threat)); 0 if another enemy squad already holds it.",
+  "hold_base": 0.3,
+  "threat_weight": 1.0,
+  "threat_radius": 6,
+  "_move": "Moving: the target's value ÷ (1 + distance ÷ distance_range), distance_range given for a 400-wide map, scaled up for wider maps (never down).",
+  "distance_range": 30,
+  "_choice": "The higher score wins logic_chance of the time; otherwise a coin flip between holding and the best move. A holding squad thinks again after rethink_ticks.",
+  "logic_chance": 0.8,
+  "rethink_ticks": 240
+ }
 }

@@ -125,6 +125,19 @@ func setup_army(wide_roster_count := 0) -> void:
 			squads.append(s)
 	for i in int(data.cards["start"]):
 		draw_card(null)
+	_starting_kit()
+
+
+## The starting kit (user's playtest notes, 2026-11-10; rules.json "starting_kit"):
+## a few random items that need no tech, plus supplies.
+func _starting_kit() -> void:
+	var kit: Dictionary = data.rules["starting_kit"]
+	var r := rng.get_stream("army_setup")
+	var basic: Array = data.items["items"].keys().filter(func(id): return not data.items["items"][id].has("requires"))
+	for i in int(kit["items"]):
+		army.add_item(basic[r.randi() % basic.size()])
+	for id in kit["supplies"]:
+		army.supplies[id] = int(army.supplies.get(id, 0)) + int(kit["supplies"][id])
 
 
 ## Debug only (the debug panel's Wide roster button): replaces every player
@@ -1168,12 +1181,14 @@ func _run_enemy_ai() -> void:
 			_revive_at_enemy_base(s)
 		elif not s.marching_home and _fallen(s) > 0 and _fallen(s) >= s.units.size() * float(data.ai["go_home_fallen_share"]):
 			s.marching_home = true
+			s.goal = -1
 			order_move(s, PackedInt32Array([map.enemy_base]))
 		if s.is_moving() or s.marching_home:
 			continue
 		var target := EnemyAI.target_hex(self, s)
-		if target >= 0 and target != s.hex:
-			order_move(s, PackedInt32Array([target]))
+		if target >= 0 and target != s.hex and not order_move(s, PackedInt32Array([target])):
+			s.unreachable[target] = true  # no route (water, say): pick something else next time
+			s.goal = -1
 
 
 func _fallen(s: Squad) -> int:
@@ -1190,46 +1205,30 @@ func _revive_at_enemy_base(s: Squad) -> void:
 	s.marching_home = false
 
 
-## Places the enemy's squads by role: the leader on the Enemy Base, the base guard and
-## raider next to it, garrisons and wildcards on separate enemy-held buildings
-## (towns and towers until liberation arrives). A wildcard rolls Attack or Defend
-## once here (§17); the leader, base guard and garrisons just hold their post.
+## How many squads the enemy fields (user's playtest notes, 2026-11-10): half as many
+## as the map has towns, at least a few, so it scales with the map.
+func enemy_squad_count() -> int:
+	var towns := map.buildings.filter(func(b): return b["type"] == "town").size()
+	return maxi(int(data.enemy["min_squads"]), roundi(towns * float(data.enemy["squads_per_town"])))
+
+
+## Places every enemy squad on the Enemy Base (§17, changed 2026-11-10): the Warlord
+## and the base guard hold it; field squads march out from there to take buildings,
+## the way the player's squads set out from the Player Base.
 func place_enemies() -> void:
 	var e: Dictionary = data.enemy
 	var r := rng.get_stream("enemy")
-	var sites := []
-	for b in map.buildings:
-		if b["type"] in e["enemy_buildings"]:
-			sites.append(b["hex"])
-	for i in range(sites.size() - 1, 0, -1):  # seeded shuffle
-		var j := r.randi_range(0, i)
-		var t = sites[i]
-		sites[i] = sites[j]
-		sites[j] = t
 	var builds: Array = e["builds"]
+	var left := enemy_squad_count()
 	for entry in e["roles"]:
-		var count := int(entry["count"])
+		var count := left if str(entry["count"]) == "rest" else mini(left, int(entry["count"]))
+		left -= count
 		for k in count:
-			var at := -1
-			match entry["at"]:
-				"enemy_base":
-					at = map.enemy_base
-				"near_enemy_base":
-					at = _free_near(map.enemy_base)
-				_:
-					while not sites.is_empty() and at < 0:
-						var h: int = sites.pop_front()
-						if _squad_on(h) == null:
-							at = h
-			if at < 0:
-				at = _free_near(map.enemy_base)
 			var title: String = e["names"][entry["role"]]
-			var s := add_squad("%s %d" % [title, k + 1] if count > 1 else title, at, builds[r.randi() % builds.size()], "enemy")
+			var s := add_squad("%s %d" % [title, k + 1] if count > 1 else title, map.enemy_base, builds[r.randi() % builds.size()], "enemy")
 			s.balance_rows(data)
 			s.role = entry["role"]
-			s.post = at
-			if s.role == "wildcard":
-				s.ai_mode = "attack" if r.randf() < float(data.ai["wildcard_attack_chance"]) else "defend"
+			s.post = map.enemy_base
 
 
 ## Gives an idle roamer a new order from NeutralAI.target_hex, if it needs one.
@@ -1262,24 +1261,6 @@ func place_neutrals() -> void:
 		s.balance_rows(data)
 		s.morale = int(data.rules["starting_morale"])
 		squads.append(s)
-
-
-## The nearest hex to `center` (not center itself) that a ground squad can stand on and no squad holds.
-func _free_near(center: int) -> int:
-	var seen_hexes := {center: true}
-	var frontier := [center]
-	while not frontier.is_empty():
-		var next := []
-		for h in frontier:
-			for n in map.neighbor_indices(h):
-				if seen_hexes.has(n):
-					continue
-				seen_hexes[n] = true
-				if Movement.hex_multiplier(map, data, n) < INF and _squad_on(n) == null:
-					return n
-				next.append(n)
-		frontier = next
-	return center
 
 
 func _squad_on(i: int) -> Squad:

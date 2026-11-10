@@ -5,6 +5,8 @@
  "bridge_color": "#8a5a2b",
  "road_color": "#b89463",
  "building_counts": {"town": 16, "tower": 10, "temple": 4, "nomads": 2},
+ "_reference_land": "Building, hidden-site and lair counts above are for this many land hexes (about the default 400x225 continent); each map scales them by its own land count.",
+ "reference_land": 50500,
  "density_scale": {"none": 0, "low": 0.5, "medium": 1, "high": 1.5},
  "hidden_site_counts": {"none": 0, "low": 4, "medium": 8, "high": 14},
  "lair_counts": {"none": 0, "low": 6, "medium": 12, "high": 20},

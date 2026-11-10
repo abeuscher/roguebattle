@@ -84,11 +84,19 @@ Where the project stands, for picking up in a new session or on another machine.
   - The result replaces the field: Won/Lost/Retreated/Draw once at the top (`GameState.battle_result`), then two columns with HP lost and units lost. Neutral fights end with "<squad> wins/loses. The <neutrals> are beaten back / are victorious and return to the <terrain>." (`neutral_line`).
   - Edit Units lets you rearrange a squad that's out in the field (`can_rearrange`); adding or removing units still needs the base. Deploy Squad is greyed out at the cap or with nothing waiting (`deploy_menu_blocker`). New option: pause when the window loses focus (on by default).
   - 295 tests passing.
+- **Last work (session 036), M4 session 12, Even start:**
+  - Every building but the two bases starts neutral; taking a neutral one is a full liberation.
+  - Building, hidden-site and lair counts scale with the map's land (`mapgen.json` `reference_land`).
+  - The enemy has round(towns ÷ 2) squads (at least 3), all on the Enemy Base: Warlord and Base Guard hold it; "field" squads take buildings and score holding against moving on (`EnemyAI`, `ai.json` "field"), with an 80/20 logic/coin-flip split.
+  - Player: squad cap default 6; starting kit of 6 no-tech items, 5 Revival Draughts, 20 Herbs (`rules.json` "starting_kit").
+  - Space in the battle view no longer toggles twice.
+  - Headless: with the player idle, the enemy takes most of the 26 towns and towers within a day or so. Tunable if it feels too fast.
+  - 296 tests passing.
 
 ## Next up
 
-- **M4 sessions 12 and 13 are planned in `ROADMAP.md` (playtest round 5):** session 12, "Even start", is next and changes how the game plays: every building starts neutral, building counts scale with land, the enemy (half as many squads as towns) starts at its base and decides between holding and moving on by a score with an 80/20 random element, and the player starts with a squad cap of 6 and a kit of items. Session 13 is battle-view polish, enemy squads turning home mid-route, and town names.
-- **M4 milestone check: the first real playtest**, after sessions 12 and 13.
+- **M4 session 13 (playtest round 5, smaller notes)** is planned in `ROADMAP.md`: Play/Pause icons, a see-through area under the field while playing, an enemy squad down to its leader going home (investigate why it didn't), and town names.
+- **M4 milestone check: the first real playtest**, after session 13.
 - **Unit portraits:** the user's first 8 large unit images are committed in `data/unit_art/` (not used in the game yet). Building them into the unit detail view is a future task in `ROADMAP.md`, waiting on more of the set.
 - **Card art experiment (session 034, on top of 033):** every card is drawn as a picture card (`ui/card_face.gd`) using a simple SVG line drawing per animal in `data/card_art/`. Waiting on the user's verdict and their own concept.
 - Then the post-M4 discussions in `ROADMAP.md`: campaign and progression first (the user's top item), then unit iconography and the other parked notes.
@@ -99,7 +107,7 @@ Where the project stands, for picking up in a new session or on another machine.
 
 ## How the user works
 
-- **One git branch per session,** named `session-NNN` (next: `session-036`), cut from `main`.
+- **One git branch per session,** named `session-NNN` (next: `session-037`), cut from `main`.
 - **Commit locally only:**
   - Never push or merge; the user merges and pushes, then says "continue".
   - Commit messages end with a `Co-Authored-By:` line naming whatever Claude model is doing the session (the harness's own attribution instructions say exactly what to write).

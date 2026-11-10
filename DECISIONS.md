@@ -459,3 +459,22 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **Pause on focus loss:** a new option, on by default: the battle pauses if one is playing, otherwise the map. Nothing un-pauses on return, so the player resumes when ready.
 - **Formation in the field:** `GameState.can_rearrange(unit, target)`. A unit can move within its own squad anywhere; moving between squads or the pool needs both ends editable (at base), as before. Items still change only at base. The squad menu's Edit squad button is now always on.
 - **Deploy Squad button:** greyed out, with a tooltip saying why, when the squad cap is reached or no squad waits at base (`deploy_menu_blocker()`); D does nothing then. Greyed out rather than hidden, so the toolbar doesn't shift.
+## Session 036 (2026-11-10): even start (M4 session 12)
+
+- **The user's design change** (SPEC §6.5, §17, §18 updated): every building but the bases starts neutral, the enemy starts entirely at its base and expands, and the player gets a squad cap of 6 and a starting kit.
+- **Neutral buildings:** towns and towers are now `"owner": "neutral"` in `buildings.json`. `_capture` already treated any building not held by the capturing side the same way, so taking a neutral town is a full liberation with no code change. Shops already opened in anything not enemy-held.
+- **Counts scale with land:** `MapPlaces._area` is now land hexes ÷ `mapgen.json` `reference_land` (50,500, the average land of the default 400×225 continent over five seeds), instead of total hexes ÷ 90,000. It scales every count that went through `_count`: towns, towers, temples, nomads, hidden sites and lairs. The default map is unchanged on average. An islands map (about 36,000 land hexes) now gets about 70% of the buildings, where before it got as many as a continent.
+- **Enemy count:** `enemy_squad_count()` = round(towns × 0.5), at least 3 (`enemy.json`). Roles: leader 1, base guard 1, field "rest". All start on the Enemy Base (same-side squads may share a hex). The old garrison, raider and wildcard roles and the wildcard attack/defend roll are gone. `_free_near` lost its only caller and was removed.
+- **Field AI** (`EnemyAI`, weights in `ai.json` "field"):
+  - Standing on a town or tower the enemy doesn't hold: stay, since capture needs the squad still.
+  - Otherwise, once its think time is up, it compares `hold_score` with the best `best_move`. The higher wins at `logic_chance` 0.8; otherwise a coin flip picks hold or move.
+  - Holding sets `think_at` to now + 240 ticks (4 game hours). Without that, the 20% roll would happen every tick and the squad would always end up moving.
+  - Value = type (town 3, tower 2) × (1 + how central it is between the bases) × 2 if the player holds it. "Central" = 1 − |d_enemy − d_player| ÷ (d_enemy + d_player).
+  - Hold = value × (0.3 + min(1, player Threat within 6 hexes ÷ own Threat)), 0 if another enemy squad holds it too. The 0.3 base means an unthreatened town isn't worth sitting in, so squads keep expanding until the player turns up.
+  - Move = value ÷ (1 + distance ÷ 30 hexes), with 30 scaled up on maps wider than 400 (not down, so small maps don't make every target look far).
+  - Targets another field squad is heading for (`Squad.goal`) or standing on are skipped, so squads spread out. A target with no route is remembered in `Squad.unreachable` and skipped after that.
+  - The go-home-at-half-losses rule still comes first.
+- **Headless check** (default map, the player idle): 8 enemy squads, 6 in the field. By the end of day 1 the enemy held 12 and 22 of 26 towns and towers on two seeds, and all 26 by day 1.5 on one; it lost a couple of squads to neutrals on the way. That's fast if the player doesn't contest it; the main knobs are `hold_base` and `distance_range` in `ai.json` and capture time in `rules.json`.
+- **Starting kit:** `rules.json` "starting_kit": 6 random items with no `requires` (tech), 5 `revive`, 20 `herb`, drawn from the army setup stream. The squad cap default is 6 in `configurator.json`.
+- **Space-bar bug:** the battle view's Play/Pause button took keyboard focus, so Space both pressed the button and ran the Space shortcut, and the two cancelled out. The button now never takes focus.
+- **Encoding slip fixed:** session 035's PowerShell edit of `tests/test_contact.gd` had garbled its "§" and "–" characters; restored.

@@ -174,6 +174,9 @@ Every map has a seed. The same settings plus the same seed always rebuild the sa
 2. Minimum spacing between buildings is about 3 hexes.
 3. Every sizable region of a terrain gets at least one building or lair.
 4. The density setting scales the totals. Hidden sites have their own count.
+5. Totals also scale with the map's land (changed 2026-11-10): the base counts are for the default map's land, and a map with more or less land gets proportionally more or fewer buildings, hidden sites and lairs.
+
+**Who holds what at the start (changed 2026-11-10).** Every building except the two bases starts neutral. Both sides set out from their base to take buildings; a neutral town or tower taken by the player counts as a full liberation (bonus gold, reputation, alignment, a card), the same as one taken back from the enemy.
 
 **Liberation and capture.** A squad with at least one ground unit that stays in a building for 60 ticks (placeholder) captures it. Sapper lines capture twice as fast. Only ground units can capture.
 
@@ -267,7 +270,7 @@ Each squad has a front row and a back row. A unit uses its Front attack and coun
 
 - At the start, only the Opinion Leader's squad is on the map.
 - Other squads deploy from the Player Base and can return there.
-- A squad cap limits how many squads are on the map at once. It defaults to 5 and can be set in the configurator.
+- A squad cap limits how many squads are on the map at once. It defaults to 6 (one per starting squad; changed 2026-11-10) and can be set in the configurator.
 
 ### 8.5 Visibility
 
@@ -578,14 +581,20 @@ All values are placeholders.
 
 ## 17. Enemy
 
+Changed 2026-11-10 (the user's "even start"): the enemy fields half as many squads as the map has towns (at least 3), and every one starts on the Enemy Base.
+
 | Squads | Role | Behavior |
 | --- | --- | --- |
-| 4 | Garrison | Each holds one enemy-owned building and fights anything within a short radius |
 | 1 | Leader | Holds the Enemy Base |
-| 1 | Base guard | Defends the Enemy Base |
-| 1 | Raider | Attacks the weakest player-held building, or the Player Base if none |
-| 3 | Wildcard | Each starts at a random enemy building and rolls Attack (acts as a raider) or Defend (reinforces a threatened enemy building) |
+| 1 | Base guard | Holds the Enemy Base with the leader |
+| The rest | Field | March out to take towns and towers, then weigh holding against moving on |
 
+- **Field squads' choice.** On a town or tower the enemy doesn't hold, a field squad stays until it's taken. Otherwise it scores holding where it is against moving to each neutral or player-held town or tower that no other enemy squad is after:
+  - A building's value: towns above towers, more toward the middle of the map between the two bases, double if the player holds it.
+  - Holding: the value, raised by player strength nearby, and nothing if another enemy squad already holds it.
+  - Moving: the target's value, lowered with distance.
+  - It makes the higher-scoring choice 80% of the time and flips a coin between holding and the best move the other 20%. A squad that holds thinks again a few hours later.
+- **Going home.** A squad that has lost half its units or more goes home to the Enemy Base, the only place enemy units revive.
 - **Make-up.** Enemy squads have 4 units and no healers.
 - **Scaling.** Strength comes from the threat rating and the map's difficulty band.
 - **Weights.** AI weights come from data (§12.3).
@@ -598,7 +607,9 @@ All values are placeholders.
 - **Starting state:**
   - One squad is the Opinion Leader's, and only it starts on the map, at the Player Base.
   - 3 random cards, 3 tech points, 500 gold.
-- **Enemy:** 10 squads with the roles in §17.
+  - A starting kit (2026-11-10): 6 random items that need no tech, 5 Revival Draughts and 20 Herbs.
+  - The squad cap defaults to 6, one per starting squad (still set in the configurator).
+- **Enemy:** half as many squads as towns, all at the Enemy Base, with the roles in §17.
 - **Neutrals and hidden sites** per configurator settings.
 - **Default size:** Small.
 

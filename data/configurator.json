@@ -32,6 +32,6 @@
  {"key": "victory_timer_days", "group": "Victory", "label": "Timer, days", "target": "game", "options": [3, 5, 7, 10, 14], "default": 7},
  {"key": "defeat_leader", "group": "Defeat", "label": "Opinion Leader dies", "target": "game", "options": [false, true], "default": true},
  {"key": "defeat_base", "group": "Defeat", "label": "Player Base is captured", "target": "game", "options": [false, true], "default": true},
- {"key": "squad_cap", "group": "Army", "label": "Squads on the map at once", "target": "game", "range": [1, 10, 1], "default": 5},
+ {"key": "squad_cap", "group": "Army", "label": "Squads on the map at once", "target": "game", "range": [1, 10, 1], "default": 6},
  {"key": "fairness", "group": "Army", "label": "Fairer dice apply to", "target": "game", "options": ["both", "player"], "labels": ["Both sides", "Player only"], "default": "both"}
 ]
