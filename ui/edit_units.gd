@@ -217,7 +217,7 @@ func _card(cell: int) -> Control:
 		var units := s.row(r)
 		units.sort_custom(func(a: Unit, b: Unit): return a.col < b.col)
 		for u in units:
-			row.add_child(_chip(u, "compact", not locked, cell, "", -1))
+			row.add_child(_chip(u, "compact", true, cell, "", -1))  # drops are checked per drop: items go anywhere, units in or out only at base
 		col.add_child(row)
 	col.add_child(_quiet(UiStyle.label("%s  ·  speed %d  ·  slots %s / %d" % [s.travel_name(), s.speed_tier,
 			_num(Squad.slots_filled(data, s.units)), s.capacity(data)], 13, Color(0.7, 0.73, 0.78))))
