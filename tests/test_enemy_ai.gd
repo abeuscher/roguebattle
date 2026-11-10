@@ -175,3 +175,44 @@ func test_lighter_losses_stay_down_away_from_base() -> void:
 		st.step()
 	check(not s.marching_home and s.hex == s.post, "one of four down: it holds its post")
 	check(not s.units[0].is_alive(), "and no one revives it away from the base")
+
+
+## User's decision 2026-11-10 (the Warlord was unbeatable): on the Enemy Base fallen
+## units come back one at a time, leader first, and living units don't heal there.
+func test_revival_at_the_enemy_base_is_slow() -> void:
+	var st := _state()
+	var s := _enemy_squad(st, st.map.width - 2, 4, "leader")
+	var every := int(d.enemy["base_revive_ticks"])
+	s.leader = s.units[0]
+	s.units[0].hp = 0
+	s.units[1].hp = 0
+	s.units[2].hp = 5
+	st.step()
+	check_eq(s.living().size(), 1, "nobody comes back at once")
+	for i in every:
+		st.step()
+	check(s.units[0].is_alive() and not s.units[1].is_alive(), "after %d ticks one comes back, the leader first" % every)
+	check_eq(s.units[0].hp, s.units[0].max_hp(d), "at full HP")
+	for i in every:
+		st.step()
+	check(s.units[1].is_alive(), "then the next")
+	check_eq(s.units[2].hp, 5, "a living unit isn't healed on the base")
+	st._rest()
+	check_eq(s.units[2].hp, 5, "not even by the daily rest")
+
+
+func test_a_squad_home_to_revive_waits_for_everyone() -> void:
+	var st := _state()
+	var s := _enemy_squad(st, st.map.width - 2, 4, "field")
+	s.post = st.map.enemy_base
+	s.units[1].hp = 0
+	s.units[2].hp = 0
+	s.marching_home = true
+	var every := int(d.enemy["base_revive_ticks"])
+	for i in every + 5:
+		st.step()
+	check(s.hex == st.map.enemy_base and not s.is_moving(), "one back, one still down: it stays")
+	for i in every:
+		st.step()
+	check_eq(s.living().size(), 3, "both back")
+	check(not s.marching_home, "then it's free to go")

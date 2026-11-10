@@ -44,6 +44,7 @@ var _ended := false  # the battle has no turns left
 var _done := false  # the result is showing
 var _retreat_asked := false
 var _cards_btn: Button
+var _on_enemy_base := false  # the enemy squad stood on its base when the battle began (a push can move it off)
 var _picker: Control  # the hand, shown large; the battle holds while it's open
 var _items_btn: Button
 var _round := UiStyle.label("", 28, UiStyle.ACCENT)
@@ -59,6 +60,7 @@ func setup(game_state: GameState, b: Battle, is_replay := false, wait_for_fight 
 	battle = b
 	replay = is_replay
 	_waiting = wait_for_fight
+	_on_enemy_base = b.sides[1].hex == state.map.enemy_base
 	_view = state.data.battle["view"]
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	var shade := ColorRect.new()
@@ -657,7 +659,12 @@ func _finish() -> void:
 	buttons.add_theme_constant_override("separation", 12)
 	buttons.alignment = BoxContainer.ALIGNMENT_END
 	var chance := state.drive_off_chance(player, enemy)
-	if chance > 0.0 and not out["wiped"][1] and out["retreated"] < 0 and out["hp_lost"][1] > out["hp_lost"][0] and enemy in state.squads:
+	var can_drive: bool = chance > 0.0 and not out["wiped"][1] and out["retreated"] < 0 and out["hp_lost"][1] > out["hp_lost"][0] and enemy in state.squads
+	for hint in _hints(out, can_drive):
+		var h := UiStyle.label(hint, 16, Color(0.8, 0.82, 0.86))
+		h.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		col.add_child(h)
+	if can_drive:
 		var drive := UiStyle.button("Demand they flee (%d%%)" % roundi(chance * 100), 280)
 		drive.tooltip_text = "On success the enemy squad leaves the map for good, with no XP."
 		drive.pressed.connect(func():
@@ -671,6 +678,25 @@ func _finish() -> void:
 	buttons.add_child(go)
 	col.add_child(buttons)
 	go.grab_focus.call_deferred()
+
+
+## What the player can do next with a beaten enemy (user's decision, 2026-11-10): when
+## "Demand they flee" is on offer and what it does; that it will be once the enemy's
+## spirit breaks; and, on the Enemy Base, that its fallen come back only slowly.
+func _hints(out: Dictionary, can_drive: bool) -> Array[String]:
+	var enemy := battle.sides[1]
+	var player := battle.sides[0]
+	var out_hints: Array[String] = []
+	if replay or enemy.side == "neutral" or out["wiped"][1] or enemy not in state.squads:
+		return out_hints
+	var warlord := " It's also a way to beat the Warlord without wiping out his whole squad." if enemy.role == "leader" else ""
+	if can_drive:
+		out_hints.append("Their spirit is broken. Your leader can demand they flee: if they agree, they leave the map for good (no XP for it). The chance is your leader's charisma." + warlord)
+	elif GameState.battle_result(out) == "won" and player.leader and player.leader.is_alive():
+		out_hints.append("Their spirit holds for now. Keep beating them and it will break; then your leader can demand they flee." + warlord)
+	if _on_enemy_base and enemy.living().size() < enemy.units.size():
+		out_hints.append("On their base, the enemy's fallen come back only one at a time, one every %s, and the living don't heal. Strike again soon." 				% GameState.duration_text(int(state.data.enemy["base_revive_ticks"])))
+	return out_hints
 
 
 ## One side's column: its name (the other side is always "Enemy"), HP lost, units lost.

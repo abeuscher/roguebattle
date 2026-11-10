@@ -596,6 +596,7 @@ Changed 2026-11-10 (the user's "even start"): the enemy fields half as many squa
   - Moving: the target's value, lowered with distance.
   - It makes the higher-scoring choice 80% of the time and flips a coin between holding and the best move the other 20%. A squad that holds thinks again a few hours later.
 - **Going home.** A squad that has lost half its units or more goes home to the Enemy Base, the only place enemy units revive.
+- **Revival at the Enemy Base is slow** (changed 2026-11-10, so the player can wear the leader down and then beat it): a squad standing there brings back one fallen unit, leader first, at full HP every 2 game hours (in data), and stays until all are back if it came home to revive. Living units don't heal there at all.
 - **Make-up.** Enemy squads have 4 units and no healers.
 - **Scaling.** Strength comes from the threat rating and the map's difficulty band.
 - **Weights.** AI weights come from data (§12.3).

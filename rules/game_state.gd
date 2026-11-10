@@ -1187,12 +1187,14 @@ func _run_enemy_ai() -> void:
 			continue
 		if s.hex == map.enemy_base and not s.is_moving():
 			_revive_at_enemy_base(s)
-		elif s.marching_home and not s.is_moving():  # stopped on the way (no route left): set off again
-			order_move(s, PackedInt32Array([map.enemy_base]))
-		elif not s.marching_home and _fallen(s) > 0 and _fallen(s) >= s.units.size() * float(data.ai["go_home_fallen_share"]):
-			s.marching_home = true
-			s.goal = -1
-			order_move(s, PackedInt32Array([map.enemy_base]))
+		else:
+			s.revive_at = -1  # the revival clock only runs while the squad stands on its base
+			if s.marching_home and not s.is_moving():  # stopped on the way (no route left): set off again
+				order_move(s, PackedInt32Array([map.enemy_base]))
+			elif not s.marching_home and _fallen(s) > 0 and _fallen(s) >= s.units.size() * float(data.ai["go_home_fallen_share"]):
+				s.marching_home = true
+				s.goal = -1
+				order_move(s, PackedInt32Array([map.enemy_base]))
 		if s.is_moving() or s.marching_home:
 			continue
 		var target := EnemyAI.target_hex(self, s)
@@ -1206,13 +1208,27 @@ func _fallen(s: Squad) -> int:
 
 
 ## The Enemy Base is the only place enemy units come back (user's playtest notes,
-## 2026-11-09): a squad standing there has its fallen revived at full HP, and any
-## march home ends. EnemyAI then sends it back to its post or its target.
+## 2026-11-09), and slowly (2026-11-10, so the player can wear the Warlord down): a squad
+## standing there brings back one fallen unit, leader first, at full HP every
+## `base_revive_ticks`. A squad that marched home stays until all are back; then EnemyAI
+## sends it to its post or its target. Living units don't heal there at all.
 func _revive_at_enemy_base(s: Squad) -> void:
-	for u in s.units:
-		if not u.is_alive():
-			u.hp = u.max_hp(data)
-	s.marching_home = false
+	var fallen := s.units.filter(func(u: Unit): return not u.is_alive())
+	if fallen.is_empty():
+		s.revive_at = -1
+		s.marching_home = false
+		return
+	if s.revive_at < 0:
+		s.revive_at = clock.tick + int(data.enemy["base_revive_ticks"])
+		return
+	if clock.tick < s.revive_at:
+		return
+	var u: Unit = s.leader if s.leader in fallen else fallen[0]
+	u.hp = u.max_hp(data)
+	log.add(clock.tick, "map", "%s's %s is back on its feet at the Enemy Base." % [s.name, u.name], s.id)
+	s.revive_at = clock.tick + int(data.enemy["base_revive_ticks"]) if fallen.size() > 1 else -1
+	if fallen.size() == 1:
+		s.marching_home = false
 
 
 ## How many squads the enemy fields (user's playtest notes, 2026-11-10): half as many

@@ -104,7 +104,7 @@ Where the project stands, for picking up in a new session or on another machine.
   - The mouse wheel never zooms the map while it's over a popup or the HUD.
   - The Cards panel matches the battle card picker's layout.
   - 299 tests passing.
-- **Last work (session 040), user's requests:** front-row units take 20% less damage (`battle.json` `front_row_damage_cut`; sim: front-row survival 73% → 85%, loser HP loss at the §12.4 floor of 35%); clicking outside a window closes it wherever that's safe; all 23 cards listed in `RULES.md`. 300 tests passing.
+- **Last work (session 040), user's requests:** front-row units take 20% less damage (`battle.json` `front_row_damage_cut`; sim: front-row survival 73% → 85%, loser HP loss at the §12.4 floor of 35%); clicking outside a window closes it wherever that's safe; all 23 cards listed in `RULES.md`. Then the final fight: revival at the Enemy Base is slow (one fallen unit per 2 h, `enemy.json` `base_revive_ticks`) and the base doesn't heal (sim: one pass of six squads beats the Warlord in 10 of 20 games, was 2); the battle results explain Demand they flee. 302 tests passing.
 
 ## Next up
 

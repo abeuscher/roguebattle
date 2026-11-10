@@ -32,7 +32,12 @@ func setup(state: GameState, b: Dictionary) -> void:
 	col.add_child(UiStyle.label(OWNERS[b["owner"]], 17, UiStyle.ACCENT))
 	var lines := []
 	if info.has("own_base"):
-		lines.append("Squads of its side defend +%d%% and heal %d%% a day here." % [_pct(info["own_base"]["defense"]), _pct(info["own_base"]["rest"])])
+		if float(info["own_base"]["rest"]) > 0.0:
+			lines.append("Squads of its side defend +%d%% and heal %d%% a day here." % [_pct(info["own_base"]["defense"]), _pct(info["own_base"]["rest"])])
+		else:
+			lines.append("Squads of its side defend +%d%% here, but don't heal." % _pct(info["own_base"]["defense"]))
+		if b["type"] == "enemy_base":
+			lines.append("Fallen enemy units come back here one at a time, one every %s." % GameState.duration_text(int(state.data.enemy["base_revive_ticks"])))
 		if b["type"] == "player_base":
 			lines.append("Deploy squads, heal and revive in Edit Units.")
 	elif info.has("defense"):

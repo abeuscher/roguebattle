@@ -12,6 +12,7 @@ var ai_mode := ""  # a field squad's last choice, "hold" or "move" (shown by the
 var post := -1  # an enemy squad's placed hex, to return to after reviving at the Enemy Base
 var goal := -1  # the building a field squad is heading for, so others pick something else
 var think_at := 0  # tick from which a holding field squad weighs its choice again
+var revive_at := -1  # enemy squad on the Enemy Base: tick its next fallen unit comes back
 var unreachable := {}  # hexes a field squad found no route to, left out of its choices
 var lair_hex := -1  # a roamer's home lair, to patrol around (§6.7); -1 for non-neutrals
 var fire_ready := 0  # tick from which the squad may make a ranged map attack again (§11.2)

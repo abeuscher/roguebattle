@@ -17,5 +17,7 @@
   [["Mage", "back"], ["Fighter", "front"], ["Fighter", "front"], ["Apprentice", "back"]],
   [["Lancer", "front"], ["Squire", "front"], ["Squire", "front"], ["Bowman", "back"]]
  ],
- "contact_cooldown_ticks": 30
+ "contact_cooldown_ticks": 30,
+ "base_revive_ticks": 120,
+ "_base_revive_ticks": "An enemy squad standing on the Enemy Base brings back one fallen unit (leader first, at full HP) every this many ticks (2 game hours). Living units don't heal there (enemy_base rest 0 in buildings.json)."
 }
