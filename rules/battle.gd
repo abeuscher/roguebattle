@@ -955,8 +955,11 @@ func finish() -> Dictionary:
 	for side in 2:
 		var s := sides[side]
 		for u in s.units:
-			if u.col >= 100:
-				u.col = s.next_col(u.row)  # a Grave pact unit takes a free position again
+			if u.col >= 100:  # a Grave pact unit takes the first free position again
+				var c := 0
+				while s.at(u.row, c):
+					c += 1
+				u.col = c
 		out["wiped"].append(s.living().is_empty())
 		out["leader_dead"].append(s.leader != null and not s.leader.is_alive())
 		for e in _effects(side):

@@ -413,6 +413,7 @@ func test_special_auras() -> void:
 	check(g.events.any(func(e): return e["type"] == "raise" and e["unit"] == f), "grave pact: the first fallen rises as a Skeleton")
 	g.finish()
 	check(g.sides[0].units.all(func(u: Unit): return u.name != "Skeleton"), "and leaves after the battle")
+	check_eq(f.col, 0, "the fallen unit gets its position back after the battle")
 	var spirit := _unit("Spiritaur")  # Remount: mounted units heal 10% after battle
 	var squire := _unit("Squire")
 	squire.hp -= 10
