@@ -105,6 +105,7 @@ Where the project stands, for picking up in a new session or on another machine.
   - The Cards panel matches the battle card picker's layout.
   - 299 tests passing.
 - **Last work (session 040), user's requests:** front-row units take 20% less damage (`battle.json` `front_row_damage_cut`; sim: front-row survival 73% → 85%, loser HP loss at the §12.4 floor of 35%); clicking outside a window closes it wherever that's safe; all 23 cards listed in `RULES.md`. 300 tests passing.
+- **Last work (session 041), unit icons (data and art only):** every class has an icon in `data/unit_icons/`, built by `python tools/unit_icons.py` from four new sheet columns (Icon base / hand / head / crest; see `DECISIONS.md`). `UnitIcons.texture()` / `UnitIcons.on_card()` load them at any size; nothing in the UI uses them yet (next: squad cards, map tokens, unit detail). 304 tests passing.
 
 ## Next up
 
