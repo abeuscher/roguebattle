@@ -18,6 +18,7 @@ var _water: PackedByteArray  # per terrain id
 var _g: PackedFloat32Array  # pathfinding scratch
 var _parent: PackedInt32Array
 var _closed: PackedByteArray
+var _net: PackedByteArray  # road hexes on a network that links a visible building (not a lone river bridge)
 
 
 static func place_all(m: MapData, game_data: GameData, settings: Dictionary, map_rng: RandomNumberGenerator) -> void:
@@ -411,6 +412,7 @@ func _hidden_sites() -> void:
 		return
 	var kinds: Array = data.buildings["hidden_site"]["kinds"]
 	var ok := _road_ok()
+	_mark_networks()
 	for j in n:
 		var i := _pick(cand)
 		if i < 0:
@@ -420,7 +422,24 @@ func _hidden_sites() -> void:
 			site["road"] = _road_to_nearest_road(i, ok)
 
 
-## Lays a road from `start` back to the closest existing road, if one is within reach.
+## Marks `_net`: every road hex on a network that reaches a visible building, so a new
+## branch joins a real road and not a lone river bridge or another dead end.
+func _mark_networks() -> void:
+	var comp: PackedInt32Array = map.components(map.road)[0]
+	var real := {}
+	for b in map.buildings:
+		if b["type"] in VISIBLE and map.road[b["hex"]]:
+			real[comp[b["hex"]]] = true
+	_net.resize(map.size())
+	for i in map.size():
+		_net[i] = 1 if comp[i] >= 0 and real.has(comp[i]) else 0
+	for b in map.buildings:  # a lone town with no road yet is a fine place to end a branch too
+		if b["type"] in VISIBLE:
+			_net[b["hex"]] = 1
+
+
+## Lays a road from `start` back to the closest road on a real network (`_net`), if one
+## is within reach; the new branch joins that network.
 func _road_to_nearest_road(start: int, ok: PackedByteArray) -> bool:
 	var parent := {start: -1}
 	var frontier := PackedInt32Array([start])
@@ -432,13 +451,15 @@ func _road_to_nearest_road(start: int, ok: PackedByteArray) -> bool:
 				if n < 0 or parent.has(n) or not ok[n]:
 					continue
 				parent[n] = i
-				if map.road[n]:
+				if _net[n]:
 					var path := PackedInt32Array([n])
 					var c := i
 					while c >= 0:
 						path.append(c)
 						c = parent[c]
 					map.lay_road(path)
+					for h in path:
+						_net[h] = 1
 					return true
 				next.append(n)
 		frontier = next
@@ -536,6 +557,7 @@ func _cover_regions() -> void:
 				members[r] = PackedInt32Array()
 			members[r].append(i)
 	var ok := _road_ok()
+	_mark_networks()
 	for r in members:
 		var i := _pick(members[r])
 		if i < 0:

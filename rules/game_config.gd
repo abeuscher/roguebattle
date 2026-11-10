@@ -5,7 +5,7 @@ extends RefCounted
 ## (victory, defeat, squad cap, fairness) feed the game. Settings and seed
 ## pack into a short share code.
 
-const CODE_VERSION := 2  # bumped when "size" (small/medium/large) became "width"/"height" (§6.1)
+const CODE_VERSION := 3  # 2: "size" became "width"/"height" (§6.1); 3: Land % to 100 and the No Ocean preset
 const ALPHABET := "0123456789ABCDEFGHJKMNPQRSTVWXYZ"  # 32 symbols, no I, L, O or U
 
 var data: GameData
@@ -61,6 +61,8 @@ func set_value(key: String, value: Variant) -> void:
 	values[key] = value
 	if key == "preset":
 		apply_preset()
+	elif key == "land_pct":  # within what the map type allows
+		values[key] = _nearest(field(key), MapGen.resolve_settings(data, map_overrides())["land_pct"])
 
 
 ## Map fields take the generator's defaults overlaid with the chosen preset's values.

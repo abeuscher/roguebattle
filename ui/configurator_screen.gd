@@ -251,8 +251,8 @@ func _build_side() -> Control:
 
 func _changed(key: String, value: Variant) -> void:
 	config.set_value(key, value)
-	if key == "preset":
-		_refresh_controls()  # the map type resets land, islands and terrain
+	if key in ["preset", "land_pct"]:
+		_refresh_controls()  # the map type resets land, islands and terrain; it also caps Land %
 	elif key in ["width", "height"]:
 		_refresh_controls()  # the other one's "· Small/Medium/Large" hint may now match or not
 	_code.text = config.to_code()

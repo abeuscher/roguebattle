@@ -57,15 +57,22 @@
   "river_crossing_spacing": 18,
   "frozen_lakes": 0,
   "lava_flows": 0,
-  "lava_flow_length": 30
+  "lava_flow_length": 30,
+  "land_range": [25, 100],
+  "extra_crossings": 2,
+  "crossing_max_len": 24,
+  "crossing_min_hexes": 80,
+  "reef_radius": 4,
+  "reef_threshold": 0.45,
+  "_crossings": "Fords through deep water (user's playtest notes, 2026-11-10): every landmass still gets the cheapest route to the main one, and every landmass of at least crossing_min_hexes gets up to extra_crossings more to its nearest other landmass within crossing_max_len hexes (400-wide map, scaled with width), each from a coast well away from its other crossings. Each ford widens into irregular shallows like a reef or sandbar: hexes within 1 always, out to reef_radius where a noise field beats reef_threshold (rising with distance). land_range: the Land % a preset allows (water presets keep their water)."
  },
  "presets": {
   "continent": {"land_pct": 55, "island_count": 3, "rivers": 2},
-  "islands": {"shape": "islands", "land_pct": 40, "centers": [2, 4], "edge_falloff": 0.4,
+  "islands": {"shape": "islands", "land_pct": 40, "land_range": [25, 70], "centers": [2, 4], "edge_falloff": 0.4,
    "noise_frequency": 4.0, "min_island_hexes": 150, "rivers": 1},
-  "archipelago": {"shape": "scatter", "land_pct": 30, "edge_falloff": 0.5, "noise_frequency": 10.0, "strait_cut": 0.72,
+  "archipelago": {"shape": "scatter", "land_pct": 30, "land_range": [25, 60], "edge_falloff": 0.5, "noise_frequency": 10.0, "strait_cut": 0.72,
    "min_island_hexes": 6, "shelf_width": 4, "terrain_amounts": {"lava": "none", "cliff": "none"}},
-  "floating_isles": {"shape": "islands", "sea": "air_gap", "land_pct": 45, "centers": [3, 5],
+  "floating_isles": {"shape": "islands", "sea": "air_gap", "land_pct": 45, "land_range": [25, 70], "centers": [3, 5],
    "edge_falloff": 0.4, "noise_frequency": 4.0, "min_island_hexes": 150, "shelf_width": 0},
   "highlands": {"land_pct": 60, "terrain_amounts": {"mountain": "high", "cliff": "medium"},
    "terrain_scale": {"mountain": 2}},
@@ -75,6 +82,7 @@
   "tundra": {"land_pct": 58, "terrain_amounts": {"snow": "high", "desert": "none", "lava": "none", "forest": "low"},
    "terrain_scale": {"snow": 3}, "frozen_lakes": 0.15},
   "volcanic": {"land_pct": 55, "terrain_amounts": {"lava": "medium", "mountain": "high", "snow": "low", "desert": "none"},
-   "lava_flows": 8}
+   "lava_flows": 8},
+  "no_ocean": {"land_pct": 100, "land_range": [100, 100], "island_count": 0}
  }
 }

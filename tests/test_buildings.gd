@@ -98,16 +98,38 @@ func test_bases_reachable_on_foot() -> void:
 		check(comp[m.player_base] >= 0 and comp[m.player_base] == comp[m.enemy_base], "%s: bases reachable on foot" % preset)
 
 
+## Roads never cross open sea, lava or cliffs, so each stretch of road-able ground has
+## its own network (a town on an offshore island has its own): visible buildings that
+## share one are all on one road network; a building alone on its stretch needs none.
+## Over several seeds (seed 1 alone once hid stray networks).
 func test_roads_connect_visible_buildings() -> void:
+	var water := MapGen.terrain_flags(_data, "water")
 	for preset in SINGLE_LANDMASS:
-		var m := _map(preset)
-		var comp: PackedInt32Array = m.components(m.road)[0]
-		var networks := {}
-		for b in m.buildings:
-			if b["type"] in MapPlaces.VISIBLE:
-				check(m.road[b["hex"]] != 0, "%s: %s has no road" % [preset, b["type"]])
-				networks[comp[b["hex"]]] = true
-		check_eq(networks.size(), 1, "%s: road networks linking visible buildings" % preset)
+		for seed in [1, 2, 3]:
+			var m := _map(preset, seed)
+			var river := {}
+			for path in m.rivers:
+				for i in path:
+					river[i] = true
+			var ground := PackedByteArray()
+			ground.resize(m.size())
+			for i in m.size():
+				var cost = _data.terrains[m.terrain[i]].get("road_cost")
+				ground[i] = 1 if m.road[i] or river.has(i) or (cost != null and float(cost) >= 0.0 and not water[m.terrain[i]]) else 0
+			var region: PackedInt32Array = m.components(ground)[0]
+			var comp: PackedInt32Array = m.components(m.road)[0]
+			var on := {}  # stretch of ground -> its visible buildings
+			for b in m.buildings:
+				if b["type"] in MapPlaces.VISIBLE:
+					on[region[b["hex"]]] = on.get(region[b["hex"]], []) + [b]
+			for r in on:
+				if on[r].size() < 2:
+					continue
+				var networks := {}
+				for b in on[r]:
+					check(m.road[b["hex"]] != 0, "%s %d: %s has no road" % [preset, seed, b["type"]])
+					networks[comp[b["hex"]]] = true
+				check_eq(networks.size(), 1, "%s %d: road networks on one stretch of ground" % [preset, seed])
 
 
 func test_roads_stay_off_sea_lava_and_cliffs() -> void:

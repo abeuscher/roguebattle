@@ -15,6 +15,8 @@ var _ridge: PackedFloat32Array
 var _flow: PackedFloat32Array  # low ground that rivers and lava follow
 var _edge: PackedFloat32Array  # squared distance from the map center: 0 there, 1 at the edge midpoints
 var _water: PackedByteArray  # per terrain id
+var _wander: FastNoiseLite  # where reef paths prefer to wind (sampled only near crossings)
+var _fords: Array[PackedInt32Array] = []  # deep sea turned shallow to link landmasses, widened into reefs
 
 
 static func generate(game_data: GameData, game_seed: int, overrides: Dictionary = {}) -> MapData:
@@ -31,6 +33,8 @@ static func generate(game_data: GameData, game_seed: int, overrides: Dictionary 
 	g._rivers()
 	g._lava_flows()
 	g._ensure_reachable()
+	g._extra_crossings()
+	g._reefs()
 	MapPlaces.place_all(g.map, game_data, g.settings, g.rng)
 	return g.map
 
@@ -47,6 +51,8 @@ static func resolve_settings(game_data: GameData, overrides: Dictionary) -> Dict
 				s[k].merge(layer[k].duplicate(true), true)
 			else:
 				s[k] = layer[k]
+	var land: Array = s["land_range"]  # water presets keep their water; No Ocean is all land
+	s["land_pct"] = clampi(int(s["land_pct"]), int(land[0]), int(land[1]))
 	return s
 
 
@@ -467,6 +473,7 @@ func _ensure_reachable() -> void:
 		var i: int = best[c]
 		var bridged := false  # was the previous step a bridge?
 		var prev := -1
+		var ford := PackedInt32Array()
 		while i >= 0 and comp[i] != main:
 			var bridge := false
 			if not passable[i]:
@@ -474,6 +481,8 @@ func _ensure_reachable() -> void:
 				if crossing == "bridge":
 					bridge = true
 				else:
+					if map.terrain[i] == _id("deep"):
+						ford.append(i)
 					map.terrain[i] = _id(crossing)
 				passable[i] = 1
 			if prev >= 0 and (bridge or bridged):
@@ -483,3 +492,219 @@ func _ensure_reachable() -> void:
 			i = parent[i]
 		if bridged and i >= 0:
 			map.link_road(prev, i)
+		if not ford.is_empty():
+			_fords.append(ford)
+
+
+
+# --- Crossings and reefs (user's playtest notes, 2026-11-10) ----------------
+
+## More than one way onto an island: from each sizable landmass other than the main one,
+## up to `extra_crossings` more fords to the nearest other land within reach, each
+## starting from a stretch of coast well away from the landmass's other fords.
+func _extra_crossings() -> void:
+	var extra := int(settings["extra_crossings"])
+	if extra <= 0 or settings["sea"] != "deep":
+		return
+	var reach := int(float(settings["crossing_max_len"]) * maxf(1.0, map.width / 400.0))
+	var deep := _id("deep")
+	var shallow := _id("shallow")
+	var river := _river_hexes()
+	var land := PackedByteArray()
+	land.resize(map.size())
+	for i in map.size():
+		land[i] = 0 if _is_water(map.terrain[i]) else 1
+	var found: Array = map.components(land)
+	var comp: PackedInt32Array = found[0]
+	var sizes: PackedInt32Array = found[1]
+	var main := 0
+	for c in sizes.size():
+		if sizes[c] > sizes[main]:
+			main = c
+	var coast := {}  # landmass -> its coast hexes
+	for i in map.size():
+		var c := comp[i]
+		if c < 0 or c == main or sizes[c] < maxi(int(settings["min_island_hexes"]), int(settings["crossing_min_hexes"])):
+			continue
+		for k in 6:
+			var n := map.neighbors[i * 6 + k]
+			if n >= 0 and land[n] == 0:
+				if not coast.has(c):
+					coast[c] = PackedInt32Array()
+				coast[c].append(i)
+				break
+	for c in coast:
+		var anchors: Array = []  # hexes where a ford already leaves this landmass
+		for ford in _fords:
+			for f in [ford[0], ford[ford.size() - 1]]:
+				for k in 6:
+					var n := map.neighbors[f * 6 + k]
+					if n >= 0 and comp[n] == c:
+						anchors.append(map.hex_at(f))
+		var shore: PackedInt32Array = coast[c]
+		for e in extra:
+			var order := []  # coast hexes, farthest from every ford first
+			for i in shore:
+				var h := map.hex_at(i)
+				var gap := 1 << 30
+				for a in anchors:
+					gap = mini(gap, Hex.distance(h, a))
+				order.append([gap, i])
+			order.sort_custom(func(x, y): return x[0] > y[0])
+			var made := false
+			for k in mini(8, order.size()):
+				if int(order[k][0]) < reach / 2:
+					break  # the rest of the coast is close to a ford already
+				var path := _water_path(int(order[k][1]), c, comp, reach, river)
+				if path.is_empty():
+					continue
+				var ford := PackedInt32Array()
+				for i in path:
+					if map.terrain[i] == deep:
+						map.terrain[i] = shallow
+						ford.append(i)
+				if not ford.is_empty():
+					_fords.append(ford)
+				anchors.append(map.hex_at(int(order[k][1])))
+				made = true
+				break
+			if not made:
+				break
+
+
+## The shortest way through open water from a coast hex of landmass `c` to land of
+## another landmass, at most `reach` hexes; the water hexes on it, or none.
+func _water_path(start: int, c: int, comp: PackedInt32Array, reach: int, river: Dictionary) -> PackedInt32Array:
+	var parent := {start: -1}
+	var frontier := PackedInt32Array([start])
+	for step in reach:
+		var next := PackedInt32Array()
+		for i in frontier:
+			for k in 6:
+				var n := map.neighbors[i * 6 + k]
+				if n < 0 or parent.has(n) or river.has(n):
+					continue
+				parent[n] = i
+				if comp[n] >= 0 and comp[n] != c:
+					var out := PackedInt32Array()
+					var cur: int = i
+					while cur != start:
+						out.append(cur)
+						cur = parent[cur]
+					return out
+				if comp[n] < 0 and map.terrain[n] in [_id("deep"), _id("shallow")]:
+					next.append(n)
+		frontier = next
+	return PackedInt32Array()
+
+
+## Each ford through deep sea becomes a reef or sandbar: it winds through the water
+## between the same two ends (`_meander`), then widens into irregular shallows: every
+## hex next to it, out to `reef_radius` where a noise field beats a threshold that rises
+## with distance, and now and then a wider bulge. Rivers keep their banks.
+func _reefs() -> void:
+	if _fords.is_empty():
+		return
+	var deep := _id("deep")
+	var shallow := _id("shallow")
+	var noise := _noise("reefs", 60.0)
+	var river := _river_hexes()
+	var radius := int(settings["reef_radius"])
+	var threshold := float(settings["reef_threshold"])
+	for f in _fords.size():
+		for i in _fords[f]:
+			map.terrain[i] = deep
+		_fords[f] = _meander(_fords[f], river)
+		for i in _fords[f]:
+			map.terrain[i] = shallow
+	for ford in _fords:
+		for p in ford:
+			var reach := radius + (2 if rng.randf() < 0.12 else 0)  # a bulge
+			var seen := {p: 0}
+			var ring := PackedInt32Array([p])
+			for d in range(1, reach + 1):
+				var next := PackedInt32Array()
+				for i in ring:
+					for k in 6:
+						var n := map.neighbors[i * 6 + k]
+						if n < 0 or seen.has(n):
+							continue
+						seen[n] = d
+						next.append(n)
+						if map.terrain[n] == deep and not river.has(n) and (d == 1 or _at(noise, n) > threshold + 0.07 * (d - 2)):
+							map.terrain[n] = shallow
+				ring = next
+
+
+## A winding way through the sea between a ford's two end hexes: the cheapest path
+## where deep water costs more where a noise field is high, shallows cost little, and
+## land and rivers are out. Kept within a box around the two ends. The ends stay put,
+## so the crossing still joins what it joined.
+func _meander(ford: PackedInt32Array, river: Dictionary) -> PackedInt32Array:
+	var a := ford[0]
+	var b := ford[ford.size() - 1]
+	if a == b:
+		return ford
+	if _wander == null:
+		_wander = _noise("wander", 70.0)
+	var ha := Hex.to_offset(map.hex_at(a))
+	var hb := Hex.to_offset(map.hex_at(b))
+	var margin := 6 + ford.size() / 3
+	var lo := Vector2i(mini(ha.x, hb.x) - margin, mini(ha.y, hb.y) - margin)
+	var hi := Vector2i(maxi(ha.x, hb.x) + margin, maxi(ha.y, hb.y) + margin)
+	var deep := _id("deep")
+	var shallow := _id("shallow")
+	var cost := {a: 0}
+	var parent := {a: -1}
+	var buckets := {0: [a]}
+	var c := 0
+	var top := 0
+	while c <= top:
+		if not buckets.has(c):
+			c += 1
+			continue
+		var bucket: Array = buckets[c]
+		buckets.erase(c)
+		for i in bucket:
+			if int(cost[i]) != c:
+				continue
+			if i == b:
+				var out := PackedInt32Array()
+				var cur: int = b
+				while cur != -1:
+					out.append(cur)
+					cur = parent[cur]
+				return out
+			for k in 6:
+				var n := map.neighbors[i * 6 + k]
+				if n < 0 or river.has(n):
+					continue
+				var t := map.terrain[n]
+				if t != deep and t != shallow:
+					continue
+				var o := Hex.to_offset(map.hex_at(n))
+				if o.x < lo.x or o.y < lo.y or o.x > hi.x or o.y > hi.y:
+					continue
+				var nc := c + (1 if t == shallow else 2 + int(pow(_at(_wander, n), 2.0) * 24.0))
+				if not cost.has(n) or nc < int(cost[n]):
+					cost[n] = nc
+					parent[n] = i
+					if not buckets.has(nc):
+						buckets[nc] = []
+					buckets[nc].append(n)
+					top = maxi(top, nc)
+		c += 1
+	return ford
+
+
+## A noise sample at one hex, roughly 0..1 (for fields only needed in a few places).
+func _at(n: FastNoiseLite, i: int) -> float:
+	return n.get_noise_2d(_px[i], _py[i]) * 0.5 + 0.5
+
+
+func _river_hexes() -> Dictionary:
+	var out := {}
+	for path in map.rivers:
+		for i in path:
+			out[i] = true
+	return out

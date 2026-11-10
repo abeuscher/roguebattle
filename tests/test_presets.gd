@@ -130,3 +130,38 @@ func test_deep_forest_and_tundra() -> void:
 func test_volcanic() -> void:
 	var m := _map("volcanic")
 	check(_count(m, "lava") > _count(_map("continent"), "lava") * 2, "volcanic: much more lava than continent")
+
+
+## Playtest round 7: Land % goes to 100, water presets keep their water, and No Ocean
+## is all land.
+func test_no_ocean_and_land_caps() -> void:
+	var m := _map("no_ocean")
+	var water := MapGen.terrain_flags(_data, "water")
+	var wet := 0
+	for i in m.size():
+		wet += water[m.terrain[i]]
+	check_eq(wet, 0, "No Ocean has no water")
+	check(m.buildings.any(func(b): return b["type"] == "enemy_base"), "and a full set of buildings")
+	check_eq(int(MapGen.resolve_settings(_data, {"preset": "continent", "land_pct": 100})["land_pct"]), 100, "continent takes 100%")
+	check_eq(int(MapGen.resolve_settings(_data, {"preset": "islands", "land_pct": 100})["land_pct"]), 70, "islands keep their sea")
+	var c := GameConfig.create(_data, 1)
+	c.set_value("preset", "archipelago")
+	c.set_value("land_pct", 100.0)
+	check_eq(int(c.values["land_pct"]), 60, "the configurator caps Land % for the map type")
+
+
+## Playtest round 7: islands get reef-like crossings, wider than one hex, and more of
+## them; every landmass stays reachable.
+func test_reef_crossings() -> void:
+	var shallow: int = _data.terrain_ids["shallow"]
+	var count := func(o: Dictionary) -> int:
+		var m := MapGen.generate(_data, 7, o)
+		var n := 0
+		for i in m.size():
+			n += int(m.terrain[i] == shallow)
+		return n
+	var plain: int = count.call({"preset": "islands", "extra_crossings": 0, "reef_radius": 0})
+	var reefs: int = count.call({"preset": "islands", "extra_crossings": 0})
+	var more: int = count.call({"preset": "islands"})
+	check(reefs > plain, "fords widen into reefs (%d > %d shallow hexes)" % [reefs, plain])
+	check(more > reefs, "extra crossings add more (%d > %d)" % [more, reefs])
