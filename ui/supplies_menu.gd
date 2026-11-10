@@ -1,19 +1,22 @@
 class_name SuppliesMenu
 extends Control
 ## Use item (squad menu), anywhere on the map: a Herb for a hurt unit, a Revival
-## Draught for a fallen one. Cure potions are for battle and don't show here.
+## Draught for a fallen one. Cure potions are for battle and don't show here. Also
+## opened from the encounter popup, before a battle starts (`battle` set).
 ## A modal: 50% dark overlay.
 
 signal closed
 
 var state: GameState
 var squad: Squad
+var battle: Battle  # the battle about to start, when opened from the encounter popup
 var _list := VBoxContainer.new()
 
 
-func setup(game_state: GameState, s: Squad) -> void:
+func setup(game_state: GameState, s: Squad, before: Battle = null) -> void:
 	state = game_state
 	squad = s
+	battle = before
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	var shade := ColorRect.new()
 	shade.color = Color(0, 0, 0, 0.5)
@@ -59,7 +62,10 @@ func _refresh() -> void:
 			var b := UiStyle.button("Use %s" % item["name"], 150)
 			b.disabled = have <= 0
 			b.pressed.connect(func():
-				state.use_supply(u, id)
+				if battle:
+					state.use_supply_before_battle(battle, u, id)
+				else:
+					state.use_supply(u, id)
 				_refresh())
 			row.add_child(b)
 			_list.add_child(row)

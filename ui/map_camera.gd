@@ -65,6 +65,9 @@ func visible_rect() -> Rect2:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
+		var wheel := mb.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]
+		if wheel and get_viewport().gui_get_hovered_control() != null:
+			return  # over a popup or the HUD: the wheel is theirs (scrolling), never a map zoom too
 		if mb.pressed and mb.button_index == MOUSE_BUTTON_WHEEL_UP:
 			zoom_at(mb.position, 1.25)
 		elif mb.pressed and mb.button_index == MOUSE_BUTTON_WHEEL_DOWN:

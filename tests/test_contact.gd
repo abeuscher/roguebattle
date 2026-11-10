@@ -273,3 +273,23 @@ func test_battle_log_lines() -> void:
 	check(attack["text"].contains("(%s)" % attack["unit"].unit_class), "names carry the class: " + attack["text"])
 	var logged: Dictionary = st.log.filtered("battle").filter(func(e): return e["text"] == b.log_line(attack))[0]
 	check(logged["hidden"].has("hit_chance") and logged["hidden"].has("roll"), "hit chance and roll are kept as hidden values")
+
+
+## Use item in the encounter popup (user's playtest notes, 2026-11-10): a unit revived
+## or healed after the battle is set up, but before it starts, fights and counts.
+func test_supplies_used_before_the_battle_count() -> void:
+	var st := _state()
+	var ours := _ours(st, 10)
+	var theirs := _theirs(st, 11)
+	var fallen := ours.units[2]
+	fallen.hp = 0
+	ours.units[1].hp = 5
+	st.army.supplies = {"revive": 1, "herb": 1}
+	var b := st.start_battle(ours, theirs, theirs)
+	check(fallen not in b.fought[0], "set up with the unit fallen")
+	check(st.use_supply_before_battle(b, fallen, "revive"), "revived from the popup")
+	check(st.use_supply_before_battle(b, ours.units[1], "herb"), "healed from the popup")
+	check(fallen in b.fought[0], "the revived unit is in the battle")
+	check_eq(b.hp_lost_share(0), 0.0, "starting HP counts the revival and the herb")
+	b.run()
+	check(b.events.any(func(e): return e["type"] == "attack" and e["unit"] == fallen) or not fallen.is_alive(), "and it acts in the battle")

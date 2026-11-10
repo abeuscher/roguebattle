@@ -98,11 +98,17 @@ Where the project stands, for picking up in a new session or on another machine.
   - Enemy (and player) squads marching home now set off again if a fight on the way pushes them back; that's why a leader-alone enemy squad stayed out.
   - Towns are named from `data/town_names.json` parts, seeded with the map; shown in the building popup, liberation popup and log.
   - 298 tests passing.
+- **Last work (session 039), M4 session 14, Playtest round 6 small notes:**
+  - Cards and cure potions take effect at once in battle, before any more attacks (also before Fight).
+  - Use item in the encounter popup: herbs and revivals before the fight; a revived unit fights (`Battle.refresh_side`).
+  - The mouse wheel never zooms the map while it's over a popup or the HUD.
+  - The Cards panel matches the battle card picker's layout.
+  - 299 tests passing.
 
 ## Next up
 
 - **M4 session 13 done (session 038):** round Play/Pause icons, the see-through area under the field while playing, the enemy go-home fix (a push on the way home left squads stranded), and town names. See `DECISIONS.md` session 038.
-- **M4 session 14 (playtest round 6, small notes)** is planned in `ROADMAP.md`: the cards window laid out like the battle picker, no map zoom under popups, cards (and cure potions) taking effect at once in battle, and Use item in the encounter popup.
+- **M4 session 14 done (session 039):** the cards window laid out like the battle picker, no map zoom under popups, cards and cure potions taking effect at once in battle, and Use item in the encounter popup. See `DECISIONS.md` session 039.
 - **M4 milestone check: the first real playtest**, after session 14.
 - **Unit portraits:** the user's first 8 large unit images are committed in `data/unit_art/` (not used in the game yet). Building them into the unit detail view is a future task in `ROADMAP.md`, waiting on more of the set.
 - **Card art experiment (session 034, on top of 033):** every card is drawn as a picture card (`ui/card_face.gd`) using a simple SVG line drawing per animal in `data/card_art/`. Waiting on the user's verdict and their own concept.
@@ -114,7 +120,7 @@ Where the project stands, for picking up in a new session or on another machine.
 
 ## How the user works
 
-- **One git branch per session,** named `session-NNN` (next: `session-039`), cut from `main`.
+- **One git branch per session,** named `session-NNN` (next: `session-040`), cut from `main`.
 - **Commit locally only:**
   - Never push or merge; the user merges and pushes, then says "continue".
   - Commit messages end with a `Co-Authored-By:` line naming whatever Claude model is doing the session (the harness's own attribution instructions say exactly what to write).

@@ -43,11 +43,9 @@ var _paused := false
 var _ended := false  # the battle has no turns left
 var _done := false  # the result is showing
 var _retreat_asked := false
-var _card_asked := ""  # a card to play before the next action
 var _cards_btn: Button
 var _picker: Control  # the hand, shown large; the battle holds while it's open
 var _items_btn: Button
-var _item_asked := []  # [potion id, unit]: a cure potion to use before the next action
 var _round := UiStyle.label("", 28, UiStyle.ACCENT)
 var _ticker := RichTextLabel.new()
 var _controls := HBoxContainer.new()
@@ -298,7 +296,7 @@ func _update_cards() -> void:
 	for id in _battle_cards():
 		n += _battle_cards()[id]
 	_cards_btn.text = "Cards (%d)" % n
-	_cards_btn.disabled = n == 0 or _card_asked != ""
+	_cards_btn.disabled = n == 0
 	_cards_btn.tooltip_text = "No battle cards in hand." if n == 0 else "Play a card before the next action."
 
 
@@ -340,8 +338,9 @@ func _choose_card() -> void:
 func _card_tile(id: String, count: int) -> Control:
 	var play := UiStyle.button("Play", 188, true)
 	play.pressed.connect(func():
-		_card_asked = id
-		_close_picker())
+		_close_picker()
+		_now(func(): return state.play_battle_card(battle, id))
+		_update_cards())
 	return CardFace.make(state.data, id, count, play)
 
 
@@ -356,7 +355,7 @@ func _close_picker() -> void:
 func _update_items() -> void:
 	var uses := state.battle_supply_uses(battle)
 	_items_btn.text = "Items (%d)" % uses.size()
-	_items_btn.disabled = replay or uses.is_empty() or not _item_asked.is_empty()
+	_items_btn.disabled = replay or uses.is_empty()
 	_items_btn.tooltip_text = "Cure potions for a status one of your units has." if not uses.is_empty() \
 			else "No cure potion fits a status your units have."
 
@@ -370,11 +369,35 @@ func _choose_item() -> void:
 		menu.add_item("%s on %s (%s)  ·  you have %d" % [item["name"], uses[i][1].name, item["cures"],
 				int(state.army.supplies.get(uses[i][0], 0))], i)
 	menu.id_pressed.connect(func(i: int):
-		_item_asked = uses[i]
+		_now(func(): return state.use_battle_supply(battle, uses[i][0], uses[i][1]))
 		_update_items())
 	menu.popup_hide.connect(menu.queue_free)
 	add_child(menu)
 	menu.popup(Rect2i(Vector2i(get_viewport().get_mouse_position()) - Vector2i(0, 40 * uses.size() + 20), Vector2i.ZERO))
+
+
+## Plays a card or a cure potion at once (user's playtest notes, 2026-11-10): `act`
+## changes the battle and records its events; they move ahead of whatever of the current
+## action is still to be shown, and show now, so the card comes before any more attacks.
+func _now(act: Callable) -> void:
+	var from := battle.events.size()
+	if not act.call():
+		return
+	var fresh := battle.events.slice(from)
+	battle.events.resize(from)
+	for k in fresh.size():
+		battle.events.insert(_shown + k, fresh[k])
+	for k in fresh.size():
+		_wait = maxf(_wait, _play(battle.events[_shown], true))
+		_shown += 1
+
+
+## Once every event so far has shown, each card's HP matches its unit's: an action's
+## events computed before a card was played can otherwise leave the shown HP off.
+func _sync_hp() -> void:
+	for u in _cards:
+		if is_instance_valid(_cards[u]) and _cards[u].hp != u.hp:
+			_cards[u].hp = u.hp
 
 
 ## Fight pressed: the battle starts playing.
@@ -402,6 +425,8 @@ func _process(delta: float) -> void:
 	_wait -= delta * float(_view["speeds"][_speed])
 	if _wait > 0.0:
 		return
+	if _shown == battle.events.size():
+		_sync_hp()
 	if _shown < battle.events.size():
 		_wait = _play(battle.events[_shown], true)
 		_shown += 1
@@ -409,14 +434,6 @@ func _process(delta: float) -> void:
 			_update_items()
 	elif _ended or battle.is_over():
 		_finish()
-	elif _card_asked != "":
-		state.play_battle_card(battle, _card_asked)
-		_card_asked = ""
-		_update_cards()
-	elif not _item_asked.is_empty():
-		state.use_battle_supply(battle, _item_asked[0], _item_asked[1])
-		_item_asked = []
-		_update_items()
 	elif _retreat_asked:
 		_retreat_asked = false
 		battle.retreat(0)

@@ -1564,6 +1564,16 @@ func start_battle(player: Squad, enemy: Squad, defender: Squad) -> Battle:
 	return b
 
 
+## Uses a herb or revival on a unit of the squad about to fight (the encounter popup,
+## user's playtest notes 2026-11-10); the battle hasn't started, so it takes the change in.
+func use_supply_before_battle(b: Battle, u: Unit, id: String) -> bool:
+	if not use_supply(u, id):
+		return false
+	b.refresh_side(0)
+	b.odds = Threat.label(data, b.sides[0], b.sides[1])
+	return true
+
+
 ## Ends a battle and applies its outcome on the map (§11.3, §11.6): a wiped-out player
 ## squad returns to base (anyone else leaves the map), a squad that lost its leader
 ## marches home (a neutral has none to march to, so it just fights on), a retreating

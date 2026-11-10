@@ -554,8 +554,18 @@ func _open_encounter() -> void:
 	var b := state.pending
 	_encounter = EncounterPopup.new()
 	_ui.add_child(_encounter)
-	_encounter.setup(b)
+	_encounter.setup(b, state.army.supplies)
 	_fly_to_meeting(b.sides[0], b.sides[1], _encounter)
+	_encounter.use_item.connect(func():  # herbs and revivals before the fight
+		var screen := SuppliesMenu.new()
+		_ui.add_child(screen)
+		screen.setup(state, b.sides[0], b)
+		_open_shop(screen)
+		_encounter.hide()  # its focused Go to fight would take Enter meant for the menu
+		screen.closed.connect(func():
+			if _encounter:
+				_encounter.refresh()
+				_encounter.show()))
 	_encounter.go.connect(func():
 		_encounter.queue_free()
 		_encounter = null

@@ -6,9 +6,14 @@ extends Control
 ## two squads stay in view at its center.
 
 signal go
+signal use_item
+
+var _odds: Label
+var _battle: Battle
 
 
-func setup(b: Battle) -> void:
+## `supplies`: the army's herbs and revivals, for Use item (user's playtest notes, 2026-11-10).
+func setup(b: Battle, state_supplies: Dictionary) -> void:
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	var shade := ColorRect.new()
 	shade.color = Color(0, 0, 0, 0.2)
@@ -29,8 +34,28 @@ func setup(b: Battle) -> void:
 	var ours := b.sides[0]
 	var who := ours.leader.name.get_slice(" ", 0) if ours.leader else ours.name
 	col.add_child(UiStyle.label("%s's party has encountered the enemy" % who, 24))
-	col.add_child(UiStyle.label("%s  ·  they look %s" % [b.sides[1].name, b.odds.to_lower()], 17, Color(0.8, 0.82, 0.86)))
+	_battle = b
+	_odds = UiStyle.label("", 17, Color(0.8, 0.82, 0.86))
+	col.add_child(_odds)
+	refresh()
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	col.add_child(row)
 	var button := UiStyle.button("Go to fight", 240, true)
 	button.pressed.connect(func(): go.emit())
-	col.add_child(button)
+	row.add_child(button)
+	var herbs := 0
+	for id in state_supplies:
+		herbs += int(state_supplies[id])
+	var items := UiStyle.button("Use item", 160)
+	items.disabled = herbs == 0
+	items.tooltip_text = "Heal or revive units of this squad before the fight." if herbs > 0 else "No supplies: buy herbs at a shop."
+	items.focus_mode = FOCUS_NONE
+	items.pressed.connect(func(): use_item.emit())
+	row.add_child(items)
 	button.grab_focus.call_deferred()
+
+
+## How the enemy looks, again after Use item changed the squad.
+func refresh() -> void:
+	_odds.text = "%s  ·  they look %s" % [_battle.sides[1].name, _battle.odds.to_lower()]

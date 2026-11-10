@@ -70,6 +70,17 @@ func _init(game_data: GameData, player: Squad, enemy: Squad, terrain_key: String
 			_join(u)
 
 
+## Before the first action: takes in herbs and revivals used since the battle was set
+## up (the encounter popup's Use item), so revived units fight and starting HP is current.
+func refresh_side(side: int) -> void:
+	fought[side] = sides[side].living()
+	_start_hp[side] = 0
+	for u in fought[side]:
+		_start_hp[side] += u.hp
+		if not _attacks.has(u):
+			_join(u)
+
+
 func _join(u: Unit) -> void:
 	_attacks[u] = attack_count(u) if not ranged_only or fires_at_range(u) else 0
 	_misses[u] = 0
