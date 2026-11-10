@@ -96,7 +96,8 @@ Where the project stands, for picking up in a new session or on another machine.
 ## Next up
 
 - **M4 session 13 (playtest round 5, smaller notes)** is planned in `ROADMAP.md`: Play/Pause icons, a see-through area under the field while playing, an enemy squad down to its leader going home (investigate why it didn't), and town names.
-- **M4 milestone check: the first real playtest**, after session 13.
+- **M4 session 14 (playtest round 6, small notes)** is planned in `ROADMAP.md`: the cards window laid out like the battle picker, no map zoom under popups, cards (and cure potions) taking effect at once in battle, and Use item in the encounter popup.
+- **M4 milestone check: the first real playtest**, after session 14.
 - **Unit portraits:** the user's first 8 large unit images are committed in `data/unit_art/` (not used in the game yet). Building them into the unit detail view is a future task in `ROADMAP.md`, waiting on more of the set.
 - **Card art experiment (session 034, on top of 033):** every card is drawn as a picture card (`ui/card_face.gd`) using a simple SVG line drawing per animal in `data/card_art/`. Waiting on the user's verdict and their own concept.
 - Then the post-M4 discussions in `ROADMAP.md`: campaign and progression first (the user's top item), then unit iconography and the other parked notes.
