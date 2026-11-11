@@ -108,6 +108,8 @@ func start(game_data: GameData, game_log: GameLog, config: GameConfig, map: MapD
 	camera.fit.call_deferred()  # again once the camera is live, so the minimap frame is right
 	_update_help()
 	state.clock.paused = true  # a new map starts paused, with a prompt (user's notes, 2026-11-10)
+	if state.single_map():  # build the squads from the pool first (user's design, 2026-11-10)
+		_open_edit.call_deferred()
 	print("Battlemap ready in %d ms" % (Time.get_ticks_msec() - started))
 
 

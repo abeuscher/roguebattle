@@ -31,6 +31,7 @@ var entering_base := false  # leaves the map when it reaches the Player Base (§
 var capture_ticks := 0.0  # time spent so far liberating the building it stands in (§6.5)
 var tech: Array = []  # the army's tech nodes (the player's squads share GameState.tech)
 var bond_battles := {}  # "id:id" (lowest instance id first) -> battles two units have fought together, toward a bond (§12.2)
+var base_slots := 0  # slots before growth; 0 = rules.json slot_growth.base (single map mode sets 6)
 var bonded_pairs: Array = []  # [Unit, Unit] once bonded; a +5% combat bonus while both live (Battle.gd)
 
 
@@ -164,7 +165,7 @@ static func slots_filled(data: GameData, members: Array[Unit]) -> float:
 
 
 func capacity(data: GameData) -> int:
-	return int(data.rules["slot_growth"]["base"]) + (leader.extra_slots if leader else 0)
+	return (base_slots if base_slots > 0 else int(data.rules["slot_growth"]["base"])) + (leader.extra_slots if leader else 0)
 
 
 func can_add(data: GameData, u: Unit) -> bool:

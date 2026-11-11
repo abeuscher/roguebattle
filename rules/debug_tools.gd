@@ -160,6 +160,7 @@ static func copy_squad(s: Squad) -> Squad:
 	c.side = s.side
 	c.role = s.role
 	c.morale = s.morale
+	c.base_slots = s.base_slots
 	c.tech = s.tech.duplicate()
 	c.travel_type = s.travel_type
 	c.sky = s.sky

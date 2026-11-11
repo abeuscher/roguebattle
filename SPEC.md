@@ -244,7 +244,7 @@ Each squad has a front row and a back row. A unit uses its Front attack and coun
 
 ### 8.2 Slots and growth
 
-- **Base.** Every squad starts with 5 slots. Small = 1, Large = 2, Tiny = 0.5; any two Tiny units can share a slot.
+- **Base.** Every squad starts with 5 slots (6 in single map mode, §18). Small = 1, Large = 2, Tiny = 0.5; any two Tiny units can share a slot.
 - **Growth.** The leader earns +1 slot at level 5, 10, 15 and 20, but only if their charisma is at least 5 × their level at that moment:
 
 | Slots | Leader level | Charisma needed |
@@ -607,6 +607,7 @@ Changed 2026-11-10 (the user's "even start"): the enemy fields half as many squa
 ## 18. Map 1 setup
 
 - **6 player squads,** each a stage 3 leader plus four stage 2 units, rolled from Serf lines only.
+- **Single map mode** (user's design, 2026-11-10; a configurator Game mode beside this campaign start, which stays the three-map plan). The Opinion Leader starts alone in squad 1 on the map; the other 29 units start in the recruit pool: 3 more stage 3 leaders (4 terrains between the 4), 13 stage 2 units (at least 4 front-line and 4 healer or support), 3 stage 1 Large race-line units (an exception to the race-line rule below) and 10 Serfs. Squads have 6 base slots. A squad needs a leader to deploy, so leaders set how many squads take the field. The squads-on-the-map default follows map size (6/8/10). An XP rate setting (default 150%, 100–300%) multiplies battle XP in this mode only. Numbers in `rules.json` "single_map".
 - **Terrain coverage.** Across the 6, each Serf-reachable terrain (Plains, Forest, Swamp, Mountain, Desert) is at least one squad's travel type.
 - **Soft rule.** Each squad has at least one front-line unit and one healer or support unit. Everything else is random.
 - **Starting state:**

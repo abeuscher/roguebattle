@@ -11,7 +11,8 @@ var pathfinder: Pathfinder
 var squads: Array[Squad] = []  # every squad on the map
 var army: Army  # the player's squads, on the map or at base, the recruit pool and items
 var names: NameBook
-var settings: Dictionary  # victory, defeat, squad cap, fairness (from the configurator)
+var settings: Dictionary  # mode, XP rate, victory, defeat, squad cap, fairness (from the configurator)
+var opinion_leader: Unit  # the army's main leader (§2); null in tests that build squads by hand (then squad 1's leader)
 var gold: int
 var reputation: int
 var pending: Battle  # a battle waiting to be fought; the map holds until it's resolved
@@ -119,6 +120,9 @@ func add_squad(squad_name: String, at_hex: int, members: Array, side := "player"
 ## --wide-roster) that swaps in Map1Setup.build_wide_roster() for playtesting
 ## unit variety; it isn't part of the real game.
 func setup_army(wide_roster_count := 0) -> void:
+	if single_map() and wide_roster_count <= 0:
+		_setup_single_map()
+		return
 	var built := Map1Setup.build_wide_roster(data, rng.get_stream("army_setup"), wide_roster_count) if wide_roster_count > 0 \
 			else Map1Setup.build(data, rng.get_stream("army_setup"))
 	for i in built.size():
@@ -127,6 +131,46 @@ func setup_army(wide_roster_count := 0) -> void:
 		army.cells[i] = s
 		if i == 0:
 			squads.append(s)
+			opinion_leader = s.leader
+	for i in int(data.cards["start"]):
+		draw_card(null)
+	_starting_kit()
+
+
+## Whether this is single map mode (user's design, 2026-11-10; configurator Game mode).
+## Settings without a mode (most tests) are the campaign start.
+func single_map() -> bool:
+	return settings.get("mode", "campaign") == "single"
+
+
+## XP multiplier: the configurator's XP rate in single map mode, 1 otherwise.
+func xp_rate() -> float:
+	return float(settings.get("xp_rate", 100)) / 100.0 if single_map() else 1.0
+
+
+## Battle XP for one unit, after the mode's XP rate.
+func battle_xp(own: Squad, enemy: Squad, u: Unit) -> int:
+	return roundi(Progression.battle_xp(data, own, enemy, u) * xp_rate())
+
+
+## Single map mode's start: the Opinion Leader alone in squad 1 at the Player Base, on
+## the map; the rest of the army in the recruit pool, for the player to build squads of
+## 6 slots from on the opening Edit Units screen. A squad needs a leader to deploy, so
+## the leaders decide how many squads take the field.
+func _setup_single_map() -> void:
+	var cfg: Dictionary = data.rules["single_map"]
+	army.base_slots = int(cfg["base_slots"])
+	var built := Map1Setup.build_single(data, rng.get_stream("army_setup"))
+	var s := _form(1, "", map.player_base, [[built["leader"], "front"]], "player")
+	army.cells[0] = s
+	squads.append(s)
+	opinion_leader = s.leader
+	for c in built["pool"]:
+		var u := Unit.roll(data, c, rng.get_stream("recruit"), names)
+		army.pool.append(u)
+		log.add(clock.tick, "progression", "%s the %s joins the recruit pool." % [u.name, u.unit_class], -1,
+				{"stats": u.stats, "alignment": u.alignment, "charisma": u.charisma, "growth": u.growth,
+				"talent": u.talent, "luck": u.luck})
 	for i in int(data.cards["start"]):
 		draw_card(null)
 	_starting_kit()
@@ -161,6 +205,7 @@ func reroll_wide_roster(count: int) -> void:
 		army.cells[i] = s
 		if i == 0:
 			squads.append(s)
+			opinion_leader = s.leader
 
 
 # --- Buildings (SPEC §6.5) ---------------------------------------------------------------
@@ -298,7 +343,7 @@ func _check_game_over() -> void:
 		return
 	if settings.get("defeat_leader", false):
 		var ol := opinion_leader_squad()
-		if ol == null or ol.leader == null or not ol.leader.is_alive():
+		if (opinion_leader and not opinion_leader.is_alive()) or (opinion_leader == null and (ol == null or ol.leader == null or not ol.leader.is_alive())):
 			_end_game("defeat", "The Opinion Leader has died.")
 			return
 	if settings.get("defeat_base", false):
@@ -609,9 +654,10 @@ func foresight() -> bool:
 	return player_squads().any(func(s: Squad): return s.leader and s.leader.is_alive() and s.leader.info(data)["leader_aura"] == "Foresight")
 
 
-## The squad the Opinion Leader leads: the first squad of the army (§18).
+## The Opinion Leader's squad (§18): wherever that unit is (null while it waits in the
+## recruit pool), or squad 1 when no Opinion Leader was rolled (tests).
 func opinion_leader_squad() -> Squad:
-	return army.cells[0]
+	return army.squad_of(opinion_leader) if opinion_leader else army.cells[0]
 
 
 ## Plays a map card (Rooster, Fox): time jumps ahead to its hour, with the noon ledger,
@@ -1142,6 +1188,7 @@ func _form(number: int, squad_name: String, at_hex: int, members: Array, side: S
 	s.side = side
 	if side == "player":
 		s.tech = tech
+		s.base_slots = army.base_slots
 	for m in members:
 		var u := Unit.roll(data, m[0], rng.get_stream("recruit"), names)
 		if s.add(data, u, m[1]):
@@ -1777,7 +1824,7 @@ func _award_xp(b: Battle, out: Dictionary) -> void:
 	for u in s.living():
 		if u not in army.units():
 			continue
-		var full := roundi(Progression.battle_xp(data, s, b.sides[1], u) * retreat)
+		var full := roundi(battle_xp(s, b.sides[1], u) * retreat)
 		var amount := roundi(full * (1.0 - share))
 		redirected = maxi(redirected, full - amount)
 		out["xp"][u] = amount
@@ -1888,7 +1935,7 @@ func drive_off(s: Squad, enemy: Squad, out := {}) -> bool:
 		var share := float(data.battle["drive_off"]["xp_share"])
 		for u in s.living():
 			if u in army.units():
-				out["xp"][u] = roundi(Progression.battle_xp(data, s, enemy, u) * share)
+				out["xp"][u] = roundi(battle_xp(s, enemy, u) * share)
 				_give_xp(s, u, out["xp"][u], out)
 		if not out["xp"].is_empty():
 			log.add(clock.tick, "progression", "%s earns %s XP for driving off %s." % [s.name,

@@ -159,3 +159,91 @@ func test_generated_squads_have_balanced_rows() -> void:
 			for which in ["front", "back"]:
 				for i in s.row(which).size():
 					check(s.at(which, i) != null, "%s %s positions run 0..n-1 (seed %d)" % [s.name, which, seed_])
+
+
+# --- Single map mode (user's design, 2026-11-10) -------------------------------------
+
+func _single(seed_: int) -> GameState:
+	var m := MapData.new(10, 5)
+	for i in m.size():
+		m.terrain[i] = d.terrain_ids["plains"]
+	m.seed = seed_
+	m.settings = {"preset": "continent", "size": "small"}
+	m.player_base = m.index_of(Hex.from_offset(Vector2i(1, 2)))
+	m.enemy_base = m.index_of(Hex.from_offset(Vector2i(8, 2)))
+	var st := GameState.new(d, m, GameLog.new(), {"mode": "single", "xp_rate": 150})
+	st.setup_army()
+	return st
+
+
+func test_single_map_starts_with_the_opinion_leader_alone_and_a_pool() -> void:
+	var cfg: Dictionary = d.rules["single_map"]["pool"]
+	for seed_ in range(SEEDS):
+		var st := _single(seed_)
+		check_eq(st.army.squads().size(), 1, "one squad in the army (seed %d)" % seed_)
+		var s := st.opinion_leader_squad()
+		check(s != null and s.units.size() == 1 and s.leader == st.opinion_leader, "the Opinion Leader alone in it (seed %d)" % seed_)
+		check(s in st.player_squads() and s.hex == st.map.player_base, "on the map at the Player Base (seed %d)" % seed_)
+		check_eq(s.capacity(d), 6, "6 slots (seed %d)" % seed_)
+		check_eq(st.army.pool.size() + 1, 30, "30 units in all (seed %d)" % seed_)
+		var count := func(f: Callable) -> int: return st.army.pool.filter(f).size()
+		var leaders: Array = st.army.pool.filter(func(u: Unit): return u.info(d)["can_lead"]).map(func(u: Unit): return u.unit_class)
+		check_eq(leaders.size() + 1, int(cfg["leaders"]), "4 leaders (seed %d)" % seed_)
+		var terrains := {st.opinion_leader.info(d)["terrain"]: true}
+		for c in leaders:
+			terrains[d.units[c]["terrain"]] = true
+		check_eq(terrains.size(), int(cfg["leaders"]), "on 4 different terrains (seed %d)" % seed_)
+		check_eq(count.call(func(u: Unit): return int(u.info(d)["stage"]) == 2), int(cfg["stage2"]), "13 stage 2 units (seed %d)" % seed_)
+		check_eq(count.call(func(u: Unit): return u.unit_class == "Serf"), int(cfg["serfs"]), "10 Serfs (seed %d)" % seed_)
+		var large: Array = st.army.pool.filter(func(u: Unit): return u.info(d)["size"] == "Large").map(func(u: Unit): return u.unit_class)
+		check_eq(large.size(), int(cfg["large"]), "3 Large units (seed %d)" % seed_)
+		for c in large:
+			check(int(d.units[c]["stage"]) == 1 and d.units[c]["terrain"] != "Water" and large.count(c) == 1, "%s: stage 1, not a sea creature, no repeats (seed %d)" % [c, seed_])
+		check(count.call(func(u: Unit): return int(u.info(d)["stage"]) == 2 and _is_front_line(u.unit_class)) >= int(cfg["front_min"]), "enough front-line units (seed %d)" % seed_)
+		check(count.call(func(u: Unit): return int(u.info(d)["stage"]) == 2 and _is_healer_or_support(u.unit_class)) >= int(cfg["healer_min"]), "enough healers or support (seed %d)" % seed_)
+
+
+func test_single_map_squads_hold_six_and_need_a_leader_to_deploy() -> void:
+	var st := _single(3)
+	var serfs := st.army.pool.filter(func(u: Unit): return u.unit_class == "Serf")
+	for i in 5:
+		check(st.army.move(serfs[i], 0), "Serf %d joins squad 1" % (i + 1))
+	check(not st.army.move(serfs[5], 0), "a seventh unit doesn't fit")
+	check(st.army.move(serfs[5], 1), "a Serf alone forms a new squad")
+	check_eq(st.army.cells[1].capacity(d), 6, "it has 6 slots too")
+	check_eq(st.deploy_blocker(st.army.cells[1]), "It needs a leader.", "but it can't deploy without a leader")
+	var leader: Unit = st.army.pool.filter(func(u: Unit): return u.info(d)["can_lead"])[0]
+	check(st.army.move(leader, 1), "a leader joins it")
+	check_eq(st.army.cells[1].leader, leader, "and leads it")
+	check_eq(st.deploy_blocker(st.army.cells[1]), "", "now it can deploy")
+
+
+func test_the_opinion_leader_is_followed_wherever_they_go() -> void:
+	var st := _single(4)
+	st.settings["defeat_leader"] = true
+	var ol := st.opinion_leader
+	var leader: Unit = st.army.pool.filter(func(u: Unit): return u.info(d)["can_lead"])[0]
+	check(st.army.move(leader, 2), "another leader forms squad 3")
+	check(st.army.move(ol, 2), "the Opinion Leader moves into squad 3")
+	check_eq(st.opinion_leader_squad(), st.army.cells[2], "their squad is now squad 3")
+	st._check_game_over()
+	check_eq(st.game_over, "", "squad 1 emptying doesn't lose the map")
+	check(st.army.move(ol, -1), "into the pool")
+	check(st.opinion_leader_squad() == null, "no squad while waiting in the pool")
+	st._check_game_over()
+	check_eq(st.game_over, "", "still not lost")
+	ol.hp = 0
+	st._check_game_over()
+	check_eq(st.game_over, "defeat", "only the Opinion Leader's death loses the map")
+
+
+func test_xp_rate_scales_battle_xp_in_single_map_mode_only() -> void:
+	var st := _single(5)
+	var s := st.opinion_leader_squad()
+	var foe := st.add_squad("Them", st.map.enemy_base, [[st.opinion_leader.unit_class, "front"]], "enemy")
+	var base := Progression.battle_xp(d, s, foe, st.opinion_leader)
+	check_eq(st.battle_xp(s, foe, st.opinion_leader), roundi(base * 1.5), "1.5x at 150%")
+	st.settings["xp_rate"] = 300
+	check_eq(st.battle_xp(s, foe, st.opinion_leader), base * 3, "3x at 300%")
+	st.settings["mode"] = "campaign"
+	check_eq(st.battle_xp(s, foe, st.opinion_leader), base, "the campaign start ignores it")

@@ -8,7 +8,7 @@ extends Control
 signal back
 signal next(map: MapData)  # the previewed map, or null if it doesn't match the settings yet
 
-const OPEN_SECTIONS := ["Size", "Land shape", "Terrain"]  # the rest start collapsed
+const OPEN_SECTIONS := ["Game mode", "Size", "Land shape", "Terrain"]  # the rest start collapsed
 const SLIDER_COLOR := Color(0.78, 0.8, 0.85)
 
 var data: GameData
@@ -253,8 +253,8 @@ func _changed(key: String, value: Variant) -> void:
 	config.set_value(key, value)
 	if key in ["preset", "land_pct"]:
 		_refresh_controls()  # the map type resets land, islands and terrain; it also caps Land %
-	elif key in ["width", "height"]:
-		_refresh_controls()  # the other one's "· Small/Medium/Large" hint may now match or not
+	elif key in ["width", "height", "mode"]:
+		_refresh_controls()  # the other one's "· Small/Medium/Large" hint may now match or not; the squad cap follows size and mode
 	_code.text = config.to_code()
 	if config.field(key)["target"] == "map":
 		_dirty = true

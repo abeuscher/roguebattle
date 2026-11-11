@@ -5,7 +5,7 @@ extends RefCounted
 ## (victory, defeat, squad cap, fairness) feed the game. Settings and seed
 ## pack into a short share code.
 
-const CODE_VERSION := 3  # 2: "size" became "width"/"height" (§6.1); 3: Land % to 100 and the No Ocean preset
+const CODE_VERSION := 4  # 2: "size" became "width"/"height" (§6.1); 3: Land % to 100 and the No Ocean preset; 4: game mode and XP rate
 const ALPHABET := "0123456789ABCDEFGHJKMNPQRSTVWXYZ"  # 32 symbols, no I, L, O or U
 
 var data: GameData
@@ -24,6 +24,7 @@ static func create(game_data: GameData, game_seed := 0) -> GameConfig:
 	c.values["width"] = game_data.mapgen["defaults"]["width"]
 	c.values["height"] = game_data.mapgen["defaults"]["height"]
 	c.apply_preset()
+	c.fit_squad_cap()
 	return c
 
 
@@ -63,6 +64,25 @@ func set_value(key: String, value: Variant) -> void:
 		apply_preset()
 	elif key == "land_pct":  # within what the map type allows
 		values[key] = _nearest(field(key), MapGen.resolve_settings(data, map_overrides())["land_pct"])
+	if key in ["mode", "width", "height"]:
+		fit_squad_cap()
+
+
+## The squads-on-the-map default follows the map: in single map mode, rules.json
+## single_map.squad_cap_by_size for the named size nearest in area; otherwise the
+## field's own default. The player can still move it afterwards.
+func fit_squad_cap() -> void:
+	var f := field("squad_cap")
+	if values.get("mode", "campaign") != "single":
+		values["squad_cap"] = f["default"]
+		return
+	var area := int(values["width"]) * int(values["height"])
+	var best := ""
+	for n in data.mapgen["sizes"]:
+		var dims: Array = data.mapgen["sizes"][n]
+		if best == "" or absi(int(dims[0]) * int(dims[1]) - area) < absi(int(data.mapgen["sizes"][best][0]) * int(data.mapgen["sizes"][best][1]) - area):
+			best = n
+	values["squad_cap"] = _nearest(f, data.rules["single_map"]["squad_cap_by_size"][best])
 
 
 ## Map fields take the generator's defaults overlaid with the chosen preset's values.

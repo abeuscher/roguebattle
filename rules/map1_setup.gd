@@ -31,6 +31,52 @@ static func build(data: GameData, rng: RandomNumberGenerator) -> Array:
 	return squads
 
 
+## Single map mode's start (user's design, 2026-11-10; rules.json "single_map"):
+## {"leader": the Opinion Leader's class, "pool": every other class, for the recruit
+## pool}. Leaders cover distinct terrains; the stage 2 units meet the soft rule across
+## the pool as a whole (enough front-line and healer or support units for every leader).
+static func build_single(data: GameData, rng: RandomNumberGenerator) -> Dictionary:
+	var cfg: Dictionary = data.rules["single_map"]["pool"]
+	var by_terrain := _leaders_by_terrain(data)
+	var terrains := TERRAINS.duplicate()
+	_shuffle(terrains, rng)
+	var leaders := []
+	for t in terrains.slice(0, int(cfg["leaders"])):
+		var options: Array = by_terrain[t]
+		leaders.append(options[rng.randi() % options.size()])
+	var stage2 := _stage2_classes(data)
+	var front_stage2 := stage2.filter(func(c): return _is_front_line(data, c))
+	var healer_stage2 := stage2.filter(func(c): return _is_healer_or_support(data, c))
+	var picks := []
+	for i in int(cfg["front_min"]):
+		picks.append(front_stage2[rng.randi() % front_stage2.size()])
+	for i in int(cfg["healer_min"]):
+		picks.append(healer_stage2[rng.randi() % healer_stage2.size()])
+	while picks.size() < int(cfg["stage2"]):
+		picks.append(stage2[rng.randi() % stage2.size()])
+	var large := large_stage1_classes(data)
+	_shuffle(large, rng)
+	var pool: Array = leaders.slice(1) + picks + large.slice(0, int(cfg["large"]))
+	for i in int(cfg["serfs"]):
+		pool.append(data.lines[_serf_line_ids(data)[0]][0][0])
+	return {"leader": leaders[0], "pool": pool}
+
+
+## Distinct stage 1 Large classes from the race lines, leaving out those native to
+## single_map.pool.large_skip_terrains (a sea creature would only slow a land squad).
+static func large_stage1_classes(data: GameData) -> Array:
+	var skip: Array = data.rules["single_map"]["pool"]["large_skip_terrains"]
+	var out := []
+	for lid in data.lines:
+		if String(lid).is_valid_int():
+			continue
+		for c in data.lines[lid][0]:
+			var u: Dictionary = data.units[c]
+			if u["size"] == "Large" and int(u["stage"]) == 1 and u["terrain"] not in skip and c not in out:
+				out.append(c)
+	return out
+
+
 ## A leader and four stage 2 units: the soft rule's minimum forced, the rest random.
 static func _build_squad(data: GameData, leader_class: String, stage2: Array, front_stage2: Array,
 		healer_stage2: Array, rng: RandomNumberGenerator) -> Array:

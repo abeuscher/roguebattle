@@ -12,6 +12,7 @@ var items: Array[Dictionary] = []  # every item owned, one entry each ({uid, id}
 var _next_item := 1
 var supplies := {}  # consumable id -> count (§15.1)
 var tech: Array = []  # the army's tech nodes, shared with its squads
+var base_slots := 0  # a new squad's slots before growth; 0 = the rules.json default (single map mode: 6)
 
 
 func _init(game_data: GameData) -> void:
@@ -44,6 +45,7 @@ func move(u: Unit, cell: int, to_row := "front", to_col := -1) -> bool:
 	if cell >= 0 and to == null:
 		to = Squad.new(cell + 1, "Squad %d" % (cell + 1), -1)
 		to.tech = tech
+		to.base_slots = base_slots
 	if to == null and from == null:
 		return true
 	var other: Unit = to.at(to_row, to_col) if to and to_col >= 0 else null

@@ -10,9 +10,10 @@ This describes how the game actually plays right now, not the full design (that'
 
 - **Title → Start → Configurator → Game summary → the map.** The configurator sets every map-generation option (size, land shape, terrain amounts, building density, road coverage, neutral density, victory/defeat toggles, squad cap, a fairness toggle), with a seed you can randomize and a live minimap preview. Settings plus seed can be copied as a short share code and reproduce the exact same map.
 - **Map size:** width and height in hexes, each its own slider (400×225 — Small — by default). Landing exactly on Small, Medium (800×450) or Large (1200×675) shows that name next to the numbers; any other combination just shows the numbers. A much smaller custom map generates and plays through in a fraction of the time, handy for a quick playtest.
-- **Map 1's setup** (the only map that exists so far) always gives you 6 starting squads, the Opinion Leader on the map, 3 random cards, 3 tech points, 500 gold and a starting kit of items and supplies — see "Your starting army" below.
+- **Game mode** (the configurator's first setting): **Single map** (the default) or **Campaign start**. They differ only in how your army starts — see "Your starting army" below. Single map mode also has an **XP rate** (150% by default, 100–300%) that multiplies every unit's battle XP, so units advance further within one map; the campaign start ignores it.
+- **Map 1's setup** in the campaign start gives you 6 starting squads, the Opinion Leader on the map, 3 random cards, 3 tech points, 500 gold and a starting kit of items and supplies — see "Your starting army" below.
 - **Building counts follow the map's land:** the default map gets 16 towns, 10 towers, 4 temples and 2 nomad camps (times the density setting); a map with more land gets proportionally more, one with less gets fewer. Hidden sites and lairs scale the same way. An islands map has less land, so fewer buildings than a continent of the same size.
-- The game opens on the battlemap with your one deployed squad standing on the Player Base.
+- The game opens on the battlemap with your one deployed squad standing on the Player Base. In single map mode Edit Units opens over it straight away, so you build your squads first.
 
 ## The map
 
@@ -31,7 +32,7 @@ This describes how the game actually plays right now, not the full design (that'
 
 - Each squad has a **front row** and a **back row**; a unit's class decides whether it fights (and is attacked) from the front or back. Front-row units take 20% less damage from every attack, since they take the brunt.
 - **Every squad the game generates starts with its rows evened out**: yours, the enemy's and the neutrals'. 5 units split 3:2 or 2:3, 4 units 2:2, never 4:1. The units moved are the ones that fight about as well from either row. You can still rearrange your own however you like in Edit Units, even while a squad is out in the field. Adding units to a squad or taking them out only works at the Player Base.
-- **Slots:** every squad starts with 5. A Small unit costs 1 slot, Large costs 2, and two Tiny units can share a single slot. A leader earns +1 slot at level 5/10/15/20, but only if their charisma is at least 5 × their level at that moment (a Herald or Standard-Bearer in the squad helps toward this).
+- **Slots:** every squad starts with 5 (6 in single map mode). A Small unit costs 1 slot, Large costs 2, and two Tiny units can share a single slot. A leader earns +1 slot at level 5/10/15/20, but only if their charisma is at least 5 × their level at that moment (a Herald or Standard-Bearer in the squad helps toward this).
 - **Travel type:** a squad's one native terrain, decided by a weighted vote of its living units' home terrain (Small 1, the leader and Large units 2, Tiny ½; ties go to the leader). Moving through that terrain costs the squad its base speed; other terrain costs more (see difficulty above). A squad that's entirely flyers moves as Sky (flies over everything but air gaps); a squad that's entirely water natives or amphibians can cross deep water.
 - **Speed tier** is set by the squad's slowest living unit and decides how fast it crosses a hex; losing units to death slows the squad further, proportional to the slots lost.
 - **Deployment:** at the start, only the Opinion Leader's squad is on the map. Other squads deploy from the Player Base (via Edit Units or the Deploy Squad button, which is greyed out when the squad cap is reached or no squad is waiting at base), costing one day of their upkeep in gold, and appear on the Player Base; you lay their route as you deploy them. A squad cap (default 6, set in the configurator) limits how many of your squads can be on the map at once. A squad returns to base by marching there and going in on arrival, or instantly if it's already standing on the Player Base.
@@ -131,6 +132,16 @@ This describes how the game actually plays right now, not the full design (that'
 
 ## Your starting army (Map 1 setup)
 
+**Single map mode:**
+- **30 units, and you build the squads.** The Opinion Leader (a stage-3 leader) starts alone in squad 1, on the map at the Player Base. The other 29 wait in the recruit pool: 3 more stage-3 leaders, 13 stage-2 units, 3 stage-1 Large units and 10 Serfs. All from the Serf lines except the Large units, which come from the race lines (Drakeling, Wolf, Bison and the like; never a sea creature) — weak for their 2 slots at first, strong once promoted.
+- The 4 leaders are native to 4 different terrains. The stage-2 units include at least 4 front-line units and 4 healers or support units, so every leader can have one of each.
+- **Squads hold 6 slots** (instead of 5), growing from there as usual.
+- **Leaders decide how many squads you field.** You can put any units in a squad, but a squad needs a unit that can lead (stage 3 or 4) before it can deploy. So you start with 4 squads, and get more as units promote to stage 3 or as leaders join, up to the 16 the army holds.
+- **The Opinion Leader can move to any squad** or wait in the pool. Only their death loses the map (when that defeat is on), not squad 1 breaking up.
+- **Squads on the map** default to the map's size: 6 on Small, 8 on Medium, 10 on Large (the nearest size for a custom map). You can still change it in the configurator.
+- Cards, tech points, gold, items and supplies as below.
+
+**Campaign start:**
 - **6 squads**, each a stage-3 leader plus four stage-2 units, rolled only from the basic "Serf" promotion lines (never the rarer race lines).
 - Between the 6 leaders, every terrain a Serf line can reach (Plains, Forest, Swamp, Mountain, Desert) is covered by at least one squad's leader. Each squad also always has at least one front-line unit and one healer-or-support unit; everything else about the roll is random.
 - One of the 6, chosen at random, is the Opinion Leader's squad — the only one that starts deployed, standing on the Player Base. The other 5 wait in your Edit Units roster.
