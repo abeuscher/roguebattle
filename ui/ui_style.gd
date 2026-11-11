@@ -82,6 +82,16 @@ static func _outlined(fill: Color, edge: Color) -> StyleBoxFlat:
 
 ## A small white icon drawn in code: "copy", "apply", "open", "closed", "play", "pause", "clock", "calendar",
 ## or an alignment: "holy" (a sun), "neutral" (a half-filled circle), "evil" (a horned head).
+## An icon from ui/icons/<name>.svg (Lucide, an open icon set, ISC licence; swap the
+## files to change the look), drawn `px` pixels square in `color`.
+static func svg(name: String, px := ICON_SIZE, color := Color.WHITE) -> Texture2D:
+	var text := FileAccess.get_file_as_string("res://ui/icons/%s.svg" % name)
+	var img := Image.new()
+	if text == "" or img.load_svg_from_string(text.replace("currentColor", "#" + color.to_html(false)), px / 24.0) != OK:
+		return null
+	return ImageTexture.create_from_image(img)
+
+
 static func icon(kind: String, n := ICON_SIZE) -> ImageTexture:
 	var img := Image.create(n, n, false, Image.FORMAT_RGBA8)
 	for y in n:

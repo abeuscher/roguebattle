@@ -14,7 +14,7 @@ const NIGHT := Color(0.45, 0.5, 0.78)  # map tint at night
 const ENEMY := Color("#c8402f")
 const CLICK_SLOP := 6.0  # a press and release closer than this is a click, not a drag
 const STACK_SPREAD := 16.0  # world units between flags of squads standing on the same hex
-const START_PROMPT := "Press Play to begin  (Space, or pick a speed at the top)"
+const START_PROMPT := "Press Play to begin  (Space, or pick a speed under the minimap)"
 const TEST_TRAVEL := ["plains", "forest", "mountain", "swamp", "snow", "desert", "shallow", "deep", "sky", ""]
 
 var data: GameData

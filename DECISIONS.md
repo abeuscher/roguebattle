@@ -635,3 +635,13 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **"Esc and new orders cancel following":** Esc closes the Follow offer without ordering anything (Esc while laying a route already backs out). Any new order (Move, Return to base, Follow someone else) goes through `order_move`, which clears `follow`.
 - **The squad menu** says "Following <name>." before its usual moving or waiting line.
 - **A fight doesn't end following:** after the contact cooldown the follower closes in again, which is what following means. A new order stops it.
+
+## Session 052 (2026-11-11): HUD layout (M4 session 24)
+
+- **Icons from Lucide** (lucide-static 0.460.0, ISC; licence in `ui/icons/LICENSE.txt`): users (Edit Units), flag (Deploy), layers (Cards), flask (Tech), coins, frown, smile, chevrons. Plain SVG files in `ui/icons/`, loaded at runtime by `UiStyle.svg(name, px, color)` (it swaps `currentColor` for the tint), so changing the set means replacing files, nothing else. The older code-drawn icons (calendar, clock, play, pause, alignment) stay for now.
+- **The top bar is gone.** Gold and reputation are a small see-through panel at the top right; the banner moves up to 16 px from the top.
+- **Gold:** a coin, then the amount and "+income / −upkeep a day", all in gold-yellow (the roadmap's "daily earnings" read as the same income and upkeep line the top bar had).
+- **Reputation meter:** a 0–100 bar (green fill) between a sad face and a happy face; the number only in its tooltip.
+- **Clock panel** under the minimap, at its width: calendar icon, "Day N · hh:mm · Day/Night" in day or night tint, the "Paused" note while a menu holds the game, and the speed picker. The minimap sits just above it. The start prompt now says the speed is under the minimap.
+- **Squad drawer** at the middle left: a `Panel` (not a container) that clips its contents, so its width alone is the slide (84 px shut, 280 open, 0.2 s). A chevron toggles it. Shut, each row reads its number with the leader's token icon; open, "N   Name (Class)". The text swaps at the start of opening and at the end of shutting so nothing half-clipped shows. Rows find the squad as before. The drawer remembers open or shut for the rest of the map.
+- **Toolbar:** 32 px tall (was 44), 14 px text, 25 px corners (pill-shaped at that height), see-through fills, a 16 px icon left of each label; widths fit their labels.

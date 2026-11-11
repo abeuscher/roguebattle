@@ -80,7 +80,7 @@ All menus that open over the map are modals with a 50% dark overlay. Opening any
 ### 5.2 Camera and HUD
 
 - **Zoom.** Only the battlemap zooms. It needs a wide zoom range for large maps, and the minimap handles long-range navigation.
-- **HUD:** minimap, clock with day and night, game speed, pause state, gold, reputation, and the squad number list.
+- **HUD:** minimap, clock with day and night, game speed, pause state, gold, reputation, and the squad number list. Layout (playtest round 7, 2026-11-10): gold and a reputation meter top right; the squads in a drawer at the middle left (number and leader icon, names when open); the clock and speed under the minimap at the bottom right; the toolbar at the bottom centre.
 
 ### 5.3 Controls
 
