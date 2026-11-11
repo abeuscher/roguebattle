@@ -32,6 +32,8 @@ func setup(game_data: GameData, option_values: Dictionary) -> void:
 	col.add_child(UiStyle.label("Options", 26))
 	for id in data.options["options"]:
 		var o: Dictionary = data.options["options"][id]
+		if o.get("remembered", false):
+			continue
 		var c := CheckBox.new()
 		c.text = o["label"]
 		c.tooltip_text = o.get("tip", "")

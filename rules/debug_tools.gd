@@ -79,6 +79,8 @@ static func set_level(state: GameState, s: Squad, level: int) -> void:
 		while u.level < level:
 			Progression.level_up(state.data, u, r)
 		u.xp = 0
+		if u.is_alive():
+			u.hp = u.max_hp(state.data)  # at full health for the new level
 	state.log.add(state.clock.tick, "system", "Debug: %s raised to level %d." % [s.name, level], s.id)
 
 

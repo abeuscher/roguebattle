@@ -342,8 +342,14 @@ func test_drive_off() -> void:
 	theirs.morale = 5
 	check_eq(st.drive_off_chance(ours, theirs), 0.4, "charisma % below 10")
 	ours.leader.charisma = 100
-	check(st.drive_off(ours, theirs), "a sure demand works")
+	st.army.cells[0] = ours  # army.units() sees only the roster
+	var xp_before := ours.leader.xp
+	var level_before := ours.leader.level
+	var gained := {}
+	check(st.drive_off(ours, theirs, gained), "a sure demand works")
 	check(theirs not in st.squads, "the squad leaves the map")
+	check(int(gained["xp"].get(ours.leader, 0)) > 0, "driving them off earns XP")
+	check(ours.leader.xp != xp_before or ours.leader.level > level_before, "the XP is given")
 
 
 # --- Threat ----------------------------------------------------------------------------

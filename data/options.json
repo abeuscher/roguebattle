@@ -1,10 +1,16 @@
 {
- "_note": "Player options (the Options screen), saved per player in user://options.json. Each is an on/off switch with its default; more kinds of option can come later.",
+ "_note": "Player options (the Options screen), saved per player in user://options.json. Each is an on/off switch with its default, except \"remembered\" ones: values the game keeps for the player (not shown on the Options screen).",
  "options": {
   "battle_wait_for_fight": {
    "label": "Show both squads before a battle and wait for Fight",
    "tip": "Off: a battle starts playing as soon as it opens.",
    "default": true
+  },
+  "battle_speed": {
+   "label": "Battle speed",
+   "tip": "Not on the Options screen: the speed last chosen in a battle (an index into battle.json view speeds), kept for the next battles.",
+   "default": 0,
+   "remembered": true
   },
   "pause_on_focus_loss": {
    "label": "Pause when the game window loses focus",

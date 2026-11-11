@@ -602,6 +602,7 @@ func _fly_to_meeting(a: Squad, b: Squad, popup: Control) -> void:
 func _open_battle() -> void:
 	_announced = false
 	_battle = BattleView.new()
+	_battle.options = options
 	_ui.add_child(_battle)
 	_battle.setup(state, state.pending, false, bool(options.get("battle_wait_for_fight", true)))
 	_battle.finished.connect(_close_battle)
@@ -658,6 +659,7 @@ func _open_debug_panel() -> void:
 		var b := DebugTools.replay(state)
 		_close_debug_panel()
 		_battle = BattleView.new()
+		_battle.options = options
 		_ui.add_child(_battle)
 		_battle.setup(state, b, true)
 		_battle.finished.connect(_close_battle))

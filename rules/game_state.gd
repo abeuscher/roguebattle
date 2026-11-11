@@ -301,6 +301,10 @@ func _check_game_over() -> void:
 		if not pb.is_empty() and pb["owner"] != "player":
 			_end_game("defeat", "The Player Base has been captured.")
 			return
+	var eb := building_at(map.enemy_base)  # taking the Enemy Base always wins (user's notes, 2026-11-10)
+	if not eb.is_empty() and eb["owner"] == "player":
+		_end_game("victory", "You took the Enemy Base.")
+		return
 	if settings.get("victory_leader", false) and not squads.any(func(s: Squad): return s.side == "enemy" and s.role == "leader"):
 		_end_game("victory", "The enemy leader is defeated.")
 		return
@@ -1846,14 +1850,27 @@ func drive_off_chance(s: Squad, enemy: Squad) -> float:
 	return c / 2.0 if enemy.morale >= int(d["halved_from"]) else c
 
 
-## Demands that a beaten enemy flee. On success it leaves the map for good.
-func drive_off(s: Squad, enemy: Squad) -> bool:
+## Demands that a beaten enemy flee. On success it leaves the map for good, and the
+## player's squad earns XP as if it had beaten them: each living unit gets the battle's
+## XP again, times drive_off xp_share (user's answer, 2026-11-10). `out` collects
+## {"xp": {unit: amount}, "level_ups": [lines]}.
+func drive_off(s: Squad, enemy: Squad, out := {}) -> bool:
 	var ok := rng.get_stream("battle").randf() < drive_off_chance(s, enemy)
+	out["xp"] = {}
+	out["level_ups"] = []
+	log.add(clock.tick, "battle", "%s %s." % [enemy.name, "flees the map" if ok else "refuses to flee"], s.id)
 	if ok:
 		squads.erase(enemy)
 		if enemy.side == "enemy":
 			enemy_squads_defeated += 1
-	log.add(clock.tick, "battle", "%s %s." % [enemy.name, "flees the map" if ok else "refuses to flee"], s.id)
+		var share := float(data.battle["drive_off"]["xp_share"])
+		for u in s.living():
+			if u in army.units():
+				out["xp"][u] = roundi(Progression.battle_xp(data, s, enemy, u) * share)
+				_give_xp(s, u, out["xp"][u], out)
+		if not out["xp"].is_empty():
+			log.add(clock.tick, "progression", "%s earns %s XP for driving off %s." % [s.name,
+					"/".join(PackedStringArray(out["xp"].values().map(func(x): return str(x)))), enemy.name], s.id)
 	return ok
 
 

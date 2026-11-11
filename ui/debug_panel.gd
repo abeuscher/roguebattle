@@ -116,18 +116,21 @@ func _units_tab() -> Control:
 	for c in names:
 		cls.add_item(c)
 	var count := _spin(1, 9, 5)
+	var spawn_level := _spin(1, 50, 1)
 	var side := OptionButton.new()
 	for s in ["player", "enemy", "neutral"]:
 		side.add_item(s.capitalize())
-	tab.add_child(_line([cls, count, side, _button("Spawn at cursor", func():
+	tab.add_child(_line([cls, UiStyle.label("Units", 16), count, UiStyle.label("Level", 16), spawn_level, side, _button("Spawn at cursor", func():
 		if cursor < 0:
 			_status.text = "Open the panel with the mouse over a hex."
 			return
 		var s := DebugTools.spawn(state, names[cls.selected], int(count.value), ["player", "enemy", "neutral"][side.selected], cursor)
-		_done("Spawned %s." % s.name if s else "No free army cell for another squad.")
+		if s and int(spawn_level.value) > 1:
+			DebugTools.set_level(state, s, int(spawn_level.value))
+		_done("Spawned %s%s." % [s.name, " at level %d" % int(spawn_level.value) if int(spawn_level.value) > 1 else ""] if s else "No free army cell for another squad.")
 		_fill_squads())]))
 	var level := _spin(1, 50, 5)
-	tab.add_child(_line([UiStyle.label("Level", 16), level, _button("Set level", func():
+	tab.add_child(_line([UiStyle.label("Picked squad: level", 16), level, _button("Set level", func():
 		_on_squad(func(s: Squad): DebugTools.set_level(state, s, int(level.value))))]))
 	var stat := OptionButton.new()
 	for s in Unit.STATS:
@@ -298,6 +301,7 @@ func _spin(lo: int, hi: int, value: int) -> SpinBox:
 	s.min_value = lo
 	s.max_value = hi
 	s.value = value
+	s.update_on_text_changed = true  # a typed number counts without pressing Enter
 	s.custom_minimum_size.x = 110
 	return s
 

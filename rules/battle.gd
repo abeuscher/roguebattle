@@ -27,7 +27,7 @@ var ranged_only := false  # a ranged map attack: only Ranged and Magic units act
 var odds := "Even"  # how the enemy looked to the player at the start (a threat label), for §9.5–9.6
 var card_damage := 0  # enemy HP lost to cards, for the XP share (§9.4)
 var tech := [[], []]  # per side: tech node ids bought (§14); only the player has any
-var _card_buffs: Array = []  # {side, stat, mult, left}: stat boosts from cards, ending on the leader's turns
+var _card_buffs: Array = []  # {side, stat, mult}: stat boosts from cards, for the rest of the battle
 var rng: RandomNumberGenerator
 var events: Array[Dictionary] = []
 var retreated := -1  # the side that got away
@@ -111,9 +111,6 @@ func step() -> bool:
 				return false
 			_record({"type": "round", "round": round, "text": "Round %d" % round})
 			_start_round()
-			for side in 2:  # a leaderless side's card boosts run out by rounds instead
-				if not (sides[side].leader and sides[side].leader.is_alive()):
-					_tick_card_buffs(side)
 			# The round's opening is a step of its own, so nothing of the round is decided
 			# while its banner shows: a card played then lands before the first attack.
 			return not is_over()
@@ -324,8 +321,6 @@ func _act(u: Unit) -> void:
 	_attacks[u] -= 1
 	var side := side_of(u)
 	_end_buffs_from(u)
-	if u == sides[side].leader:
-		_tick_card_buffs(side)
 	_tick_statuses(u)
 	if not u.is_alive():
 		return
@@ -605,7 +600,7 @@ func _n(u: Unit) -> String:
 ## An event as a log line: rounds as headers, actions tagged with the acting squad.
 func log_line(e: Dictionary) -> String:
 	if e["type"] == "round":
-		return "-- Round %d --" % e["round"]
+		return "Begin Round %d" % e["round"]
 	return "[%s] %s" % [sides[e["side"]].name, e["text"]] if e["side"] >= 0 else e["text"]
 
 
@@ -671,7 +666,7 @@ func play_card(id: String, side := 0) -> bool:
 	_record({"type": "card", "side": side, "card": id, "text": "Plays %s: %s" % [c["name"], c["text"]]})
 	match c["effect"]:
 		"buff":
-			_card_buffs.append({"side": side, "stat": c["stat"], "mult": float(c["mult"]), "left": 2})
+			_card_buffs.append({"side": side, "stat": c["stat"], "mult": float(c["mult"])})
 		"overheal":
 			for u in own.living():
 				_card_heal(u, roundi(u.max_hp(data) * float(c["share"])), true)
@@ -745,15 +740,6 @@ func _card_hit(c: Dictionary, t: Unit, side: int) -> void:
 		_grave_pact(t)
 	elif c.has("status"):
 		add_status(t, c["status"])
-
-
-## A card boost ends at the start of the side's leader's second turn after it was played.
-func _tick_card_buffs(side: int) -> void:
-	for b in _card_buffs.duplicate():
-		if b["side"] == side:
-			b["left"] -= 1
-			if b["left"] <= 0:
-				_card_buffs.erase(b)
 
 
 # --- Statuses (§11.7) ---------------------------------------------------------------

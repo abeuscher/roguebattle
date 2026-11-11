@@ -264,7 +264,7 @@ func test_battle_log_lines() -> void:
 	st.pending = b
 	st.resolve_pending()
 	var lines := st.log.filtered("battle").map(func(e): return e["text"])
-	check("-- Round 1 --" in lines, "rounds are marked")
+	check("Begin Round 1" in lines, "rounds are marked")
 	for e in acts:
 		var line := b.log_line(e)
 		check(line in lines, "every action is logged: " + line)

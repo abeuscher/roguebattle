@@ -47,7 +47,7 @@ func setup(b: Battle, state_supplies: Dictionary) -> void:
 	var herbs := 0
 	for id in state_supplies:
 		herbs += int(state_supplies[id])
-	var items := UiStyle.button("Use item", 160)
+	var items := UiStyle.button("Use item(s)", 160)
 	items.disabled = herbs == 0
 	items.tooltip_text = "Heal or revive units of this squad before the fight." if herbs > 0 else "No supplies: buy herbs at a shop."
 	items.focus_mode = FOCUS_NONE

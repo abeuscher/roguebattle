@@ -198,3 +198,14 @@ func test_defeat_is_checked_before_victory_on_the_same_tick() -> void:
 	st.squads.erase(enemy_leader)
 	st._check_game_over()
 	check_eq(st.game_over, "defeat", "both conditions are met at once: defeat wins the tie")
+
+
+func test_taking_the_enemy_base_wins_whatever_the_settings() -> void:
+	var st := _state({"victory_leader": false})
+	_opinion_leader(st, 5)
+	st.add_squad("Warlord", _at(st.map, 20, 3), [["Knight", "front"]], "enemy").role = "leader"
+	st._check_game_over()
+	check_eq(st.game_over, "", "nothing yet")
+	st.building_at(st.map.enemy_base)["owner"] = "player"
+	st._check_game_over()
+	check_eq(st.game_over, "victory", "the Enemy Base taken is a victory")

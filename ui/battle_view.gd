@@ -39,6 +39,9 @@ var _cards := {}  # Unit -> Card
 var _shown := 0  # events played so far
 var _wait := 0.0
 var _speed := 0
+var _conceal := false  # enemy HP numbers and attacks hidden (no Scout-line unit in your squad)
+var _HP_LEFT := RegEx.create_from_string(r": \d+/\d+ HP left\.")
+var options := {}  # the player's options (set by the battlemap before setup): battle_speed is read and kept
 var _paused := false
 var _ended := false  # the battle has no turns left
 var _done := false  # the result is showing
@@ -62,6 +65,9 @@ func setup(game_state: GameState, b: Battle, is_replay := false, wait_for_fight 
 	_waiting = wait_for_fight
 	_on_enemy_base = b.sides[1].hex == state.map.enemy_base
 	_view = state.data.battle["view"]
+	_speed = clampi(int(options.get("battle_speed", 0)), 0, _view["speeds"].size() - 1)
+	var spotters: Array = state.data.battle["sees_enemy_details"]
+	_conceal = not b.sides[0].units.any(func(u: Unit): return u.is_alive() and u.unit_class in spotters)
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	var shade := ColorRect.new()
 	shade.color = Color(0, 0, 0, 0.5)
@@ -234,6 +240,9 @@ func _build_controls() -> void:
 	_speed_btn = UiStyle.button("", 130)
 	_speed_btn.pressed.connect(func():
 		_speed = (_speed + 1) % _view["speeds"].size()
+		if options.has("battle_speed"):  # a preference: the next battles start at it too
+			options["battle_speed"] = _speed
+			PlayerOptions.save_values(options)
 		_update_speed())
 	_controls.add_child(_speed_btn)
 	_update_speed()
@@ -531,6 +540,8 @@ func _play(e: Dictionary, animate: bool) -> float:
 
 func _log(e: Dictionary) -> void:
 	var line := battle.log_line(e)
+	if _conceal and e.has("target") and battle.side_of(e["target"]) == 1:
+		line = _HP_LEFT.sub(line, ".")  # "...: 12/40 HP left." keeps the blow, not the enemy's HP
 	if state.log.show_hidden and not e.get("hidden", {}).is_empty():
 		line += "  " + JSON.stringify(e["hidden"])
 	_action.text = line
@@ -552,6 +563,7 @@ func _add_card(u: Unit, side: int) -> void:
 	c.title = u.unit_class
 	c.subtitle = "" if u.name == u.unit_class else u.name
 	c.attack = "%s ×%d" % [kind, battle.attack_count(u)]
+	c.concealed = side == 1 and _conceal
 	c.size = CARD
 	_field.add_child(c)
 	_cards[u] = c
@@ -665,11 +677,19 @@ func _finish() -> void:
 		col.add_child(h)
 	if can_drive:
 		var drive := UiStyle.button("Demand they flee (%d%%)" % roundi(chance * 100), 280)
-		drive.tooltip_text = "On success the enemy squad leaves the map for good, with no XP."
+		drive.tooltip_text = "On success the enemy squad leaves the map for good, and your squad earns XP as if it had beaten them."
 		drive.pressed.connect(func():
 			drive.disabled = true
 			note.visible = true
-			note.text = "The enemy flees the map." if state.drive_off(player, enemy) else "The enemy refuses to flee.")
+			var gained := {}
+			if not state.drive_off(player, enemy, gained):
+				note.text = "The enemy refuses to flee."
+				return
+			var amounts: Array = gained["xp"].values()
+			note.text = "The enemy flees the map." + ("" if amounts.is_empty() else "  XP: +%d each." % amounts.max() if amounts.min() == amounts.max()
+					else "  XP: +%d to +%d." % [amounts.min(), amounts.max()])
+			for up in gained["level_ups"]:
+				note.text += "\n" + up)
 		buttons.add_child(drive)
 	col.add_child(note)
 	var go := UiStyle.button("Continue", 200, true)
@@ -737,6 +757,7 @@ class Card extends Control:
 	var title := ""
 	var subtitle := ""
 	var attack := ""
+	var concealed := false  # an enemy without a Scout to see it: the HP bar only, no numbers or attack
 	var home := Vector2.ZERO
 	var max_hp := 1
 	var hp := 0:
@@ -768,7 +789,7 @@ class Card extends Control:
 		if leader:
 			draw_string(font, Vector2(size.x - 62, 22), "Leader", HORIZONTAL_ALIGNMENT_RIGHT, 52, 12, Color(1, 0.88, 0.5))
 		draw_string(font, Vector2(16, 42), subtitle, HORIZONTAL_ALIGNMENT_LEFT, size.x - 24, 13, ink.darkened(0.3))
-		var line3 := ", ".join(statuses) if not statuses.is_empty() else attack
+		var line3 := ", ".join(statuses) if not statuses.is_empty() else ("" if concealed else attack)
 		draw_string(font, Vector2(16, 60), line3, HORIZONTAL_ALIGNMENT_LEFT, size.x - 24, 13,
 				Color("#d7a6ff") if not statuses.is_empty() else ink.darkened(0.2))
 		var bar := Rect2(16, 70, size.x - 32, 14)
@@ -776,6 +797,7 @@ class Card extends Control:
 		var share := minf(1.0, float(hp) / max_hp)
 		var fill := Color("#5fbf5a") if share > 0.5 else (Color("#e0b03a") if share > 0.25 else Color("#d9533f"))
 		draw_rect(Rect2(bar.position, Vector2(bar.size.x * share, bar.size.y)), fill)
-		draw_string(font, Vector2(16, 98), "Fallen" if dead else "%d / %d HP" % [hp, max_hp], HORIZONTAL_ALIGNMENT_LEFT, -1, 13, ink)
+		if dead or not concealed:
+			draw_string(font, Vector2(16, 98), "Fallen" if dead else "%d / %d HP" % [hp, max_hp], HORIZONTAL_ALIGNMENT_LEFT, -1, 13, ink)
 		if _flash.a > 0.0:
 			draw_rect(r, _flash)

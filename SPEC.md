@@ -454,7 +454,7 @@ Every status clears at the end of the battle. Units native to an element's terra
 
 **Buff units:** Herald and Standard-Bearer raise PDEF; Quartermaster and Provisioner raise AGI; Sprite, Faerie and Faerie Queen raise MDEF.
 
-**Buff duration:** a unit's buff lasts until that unit's next turn. A card's buff lasts until the squad leader's second turn after the card is played.
+**Buff duration:** a unit's buff lasts until that unit's next turn. A card's buff lasts for the rest of the battle (both rounds; changed at the user's request, 2026-11-10).
 
 ## 12. Fairness and hidden mechanics
 

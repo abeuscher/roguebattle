@@ -32,17 +32,18 @@ func _battle(a: Array, b: Array) -> Battle:
 	return Battle.new(d, _squad(a), _squad(b), "forest", true, rng)
 
 
-func test_stat_boost_lasts_until_the_leaders_second_turn() -> void:
+func test_stat_boost_lasts_the_whole_battle() -> void:
 	var knight := _unit("Knight")
 	var fighter := _unit("Fighter")
 	var b := _battle([knight, fighter], [_unit("Soldier")])
 	var base := b.stat(fighter, "STR")
 	check(b.play_card("panther"), "play Panther")
 	check(is_equal_approx(b.stat(fighter, "STR"), base * 1.3), "+30% STR")
-	b._act(knight)
-	check(is_equal_approx(b.stat(fighter, "STR"), base * 1.3), "still on after the leader's first turn")
-	b._act(knight)
-	check(is_equal_approx(b.stat(fighter, "STR"), base), "gone on the leader's second turn")
+	for i in 3:
+		b._act(knight)
+	b.round = 2
+	b._start_round()
+	check(is_equal_approx(b.stat(fighter, "STR"), base * 1.3), "still on after the leader's turns and into round 2")
 
 
 func test_heals() -> void:
