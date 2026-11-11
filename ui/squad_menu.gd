@@ -58,11 +58,12 @@ func setup(state: GameState, s: Squad) -> void:
 	align.size_flags_vertical = SIZE_SHRINK_CENTER
 	align.tooltip_text = "Alignment: %s (%d)" % [band.capitalize(), roundi(s.alignment())]
 	head.add_child(align)
-	var where := "Moving: %d hexes to go, about %s." % [s.path.size(), GameState.duration_text(state.route_ticks(s, s.path))] if s.is_moving() \
-			else "Waiting at %s." % state.map.hex_at(s.hex)
-	if s.follow:
-		where = "Following %s. %s" % [s.follow.name, where]
-	col.add_child(UiStyle.label(where, 15, Color(0.75, 0.78, 0.84)))
+	var status := TextureRect.new()  # moving, in a building or in the open (playtest round 7)
+	status.texture = Hud.status_icon(state.squad_status(s), 26)
+	status.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+	status.size_flags_vertical = SIZE_SHRINK_CENTER
+	status.tooltip_text = state.status_text(s)
+	head.add_child(status)
 	var cols := s.capacity(data)
 	for u in s.units:
 		cols = maxi(cols, u.col + 1)

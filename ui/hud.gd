@@ -16,7 +16,7 @@ const GOLD := Color("#f2c94c")
 const DAY := Color("#f6e7a8")
 const NIGHT := Color("#a9b8e8")
 const GLASS := Color(0.07, 0.09, 0.11, 0.8)  # the panels' see-through dark
-const DRAWER_SHUT := 84.0  # the drawer's width, collapsed: number and leader icon
+const DRAWER_SHUT := 104.0  # the drawer's width, collapsed: number and leader icon
 const DRAWER_OPEN := 280.0  # expanded: the squad's name too
 const DRAWER_TIME := 0.2  # seconds to slide
 const TOOL_HEIGHT := 32.0  # toolbar buttons, about half the old size
@@ -122,18 +122,7 @@ func _toggle_drawer() -> void:
 	_drawer_open = not _drawer_open
 	_drawer_toggle.icon = UiStyle.svg("chevron-left" if _drawer_open else "chevron-right", 20)
 	var to := DRAWER_OPEN if _drawer_open else DRAWER_SHUT
-	if _drawer_open:
-		_name_rows()
-	var slide := create_tween()
-	slide.tween_property(_drawer, "size:x", to, DRAWER_TIME).set_trans(Tween.TRANS_CUBIC)
-	if not _drawer_open:
-		slide.finished.connect(_name_rows)
-
-
-## Shut, a row says only its number; open, its name too.
-func _name_rows() -> void:
-	for b in _drawer_rows.get_children():
-		b.text = b.get_meta("names")[int(_drawer_open)]
+	create_tween().tween_property(_drawer, "size:x", to, DRAWER_TIME).set_trans(Tween.TRANS_CUBIC)
 
 
 ## Bottom right, under the minimap and as wide: date, time and time of day, then the speed.
@@ -215,27 +204,45 @@ func _icon_rect(tex: Texture2D) -> TextureRect:
 	return r
 
 
-## One drawer row per squad: its number and leader icon, and its name (seen when open).
-## A click centers the map on it.
+## One drawer row per squad: leader icon, number and status icon (moving, in a building,
+## standing in the open), then the name (seen when open). A click centers the map on it.
 func set_squads(squads: Array[Squad]) -> void:
 	for child in _drawer_rows.get_children():
 		_drawer_rows.remove_child(child)
 		child.queue_free()
 	for s in squads:
 		var b := Button.new()
-		b.set_meta("names", ["%d" % s.id, "%d   %s" % [s.id, s.name]])  # shut, open
-		b.text = b.get_meta("names")[int(_drawer_open)]
-		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		b.icon = UnitIcons.on_token(s.leader.unit_class, 28, SquadToken.PLAYER) if s.leader else null
+		b.set_meta("squad", s)
 		b.tooltip_text = "%d %s" % [s.id, s.name]
 		b.focus_mode = FOCUS_NONE
-		b.clip_text = true
+		b.clip_contents = true
 		b.custom_minimum_size = Vector2(DRAWER_OPEN - 12, 36)
-		b.add_theme_font_size_override("font_size", 15)
-		b.add_theme_constant_override("h_separation", 8)
 		b.pressed.connect(func(): squad_pressed.emit(s.id))
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		row.mouse_filter = MOUSE_FILTER_IGNORE
+		row.name = "Row"
+		row.position = Vector2(6, 4)
+		b.add_child(row)
+		row.add_child(_icon_rect(UnitIcons.on_token(s.leader.unit_class, 28, SquadToken.PLAYER) if s.leader else null))
+		var number := UiStyle.label(str(s.id), 15)
+		number.custom_minimum_size.x = 16
+		number.mouse_filter = MOUSE_FILTER_IGNORE
+		row.add_child(number)
+		var status := _icon_rect(null)
+		status.name = "Status"
+		row.add_child(status)
+		var name_label := UiStyle.label(s.name, 15)
+		name_label.mouse_filter = MOUSE_FILTER_IGNORE
+		row.add_child(name_label)
 		_drawer_rows.add_child(b)
 	place.call_deferred()
+
+
+## The status icons, by GameState.squad_status: footprints (moving), a house (in any
+## building), crossed-out footprints (standing in the open).
+static func status_icon(status: String, px := 20) -> Texture2D:
+	return UiStyle.svg({"moving": "footprints", "building": "house", "still": "footprints-off"}[status], px, Color(0.85, 0.88, 0.92))
 
 
 ## A message near the top; with `seconds`, it disappears after that long.
@@ -275,6 +282,14 @@ func refresh(state: GameState) -> void:
 	_speed.text = "Paused"
 	_speed.add_theme_color_override("font_color", Color("#ffe08a"))
 	_gold.text = "%d   +%d / −%d a day" % [state.gold, state.income(), state.army_upkeep()]
+	for b in _drawer_rows.get_children():
+		var s: Squad = b.get_meta("squad")
+		var st := state.squad_status(s)
+		var icon: TextureRect = b.get_node("Row/Status")
+		if icon.get_meta("status", "") != st:
+			icon.set_meta("status", st)
+			icon.texture = status_icon(st)
+			b.tooltip_text = "%d %s: %s" % [s.id, s.name, state.status_text(s)]
 	_reputation.value = state.reputation
 	_reputation.tooltip_text = "Reputation %d of 100" % state.reputation
 	_cards_button.text = "Cards (C): %d" % state.cards.size()

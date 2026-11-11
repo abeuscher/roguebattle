@@ -46,6 +46,7 @@ var _ledger: LedgerPopup
 var _awaiting_start := true  # a new map waits, paused, for the player to start time
 var _shop: Control  # the shop screen or the supplies menu
 var _cursor_flag: SquadToken  # while laying a route, the squad's flag replaces the mouse pointer
+var _dest_flag: SquadToken  # a selected moving squad's flag, at its destination (playtest round 7)
 var _tokens := {}  # squad id -> SquadToken
 var _selected: Squad  # the squad whose menu or move order is open (the game is held meanwhile)
 var _planning := false  # laying rally points for _selected
@@ -249,6 +250,24 @@ func _update_tokens() -> void:
 		token.position = at
 		token.selected = s == _selected
 		token.visible = state.is_visible(s)
+	_update_dest_flag()
+
+
+## Flags mean destinations: the selected squad, if it's moving, shows its flag where it's
+## headed; squads at rest show none.
+func _update_dest_flag() -> void:
+	var show := _selected != null and _selected.side == "player" and _selected.is_moving() and not _planning
+	if show and _dest_flag == null:
+		_dest_flag = SquadToken.new()
+		_dest_flag.as_flag = true
+		view.add_object(_dest_flag)
+	if _dest_flag:
+		_dest_flag.visible = show
+		if show:
+			if _dest_flag.squad != _selected:
+				_dest_flag.squad = _selected
+				_dest_flag.queue_redraw()
+			_dest_flag.position = MapView.hex_center(state.map, _selected.path[_selected.path.size() - 1])
 
 
 func _update_paths() -> void:
@@ -523,6 +542,7 @@ func _update_cursor() -> void:
 	var want := _planning and _can_open()  # any popup over the map brings the pointer back
 	if want and _cursor_flag == null:
 		_cursor_flag = SquadToken.new()
+		_cursor_flag.as_flag = true
 		_cursor_flag.squad = _selected
 		_ui.add_child(_cursor_flag)
 		Input.mouse_mode = Input.MOUSE_MODE_HIDDEN

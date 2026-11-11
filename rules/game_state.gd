@@ -1393,6 +1393,27 @@ func _head_for(s: Squad, to: int) -> void:
 	s.rally = PackedInt32Array([to]) if not route.is_empty() else PackedInt32Array()
 
 
+## A squad's status for the HUD (playtest round 7): "moving", "building" (standing in
+## any building: town, tower, temple, base, a found site) or "still" (standing in the open).
+func squad_status(s: Squad) -> String:
+	if s.is_moving():
+		return "moving"
+	return "building" if not building_at(s.hex).is_empty() else "still"
+
+
+## The status in words, for a tooltip.
+func status_text(s: Squad) -> String:
+	var text: String
+	match squad_status(s):
+		"moving":
+			text = "Moving: %d hexes to go, about %s." % [s.path.size(), duration_text(route_ticks(s, s.path))]
+		"building":
+			text = "In %s." % where(s.hex)
+		_:
+			text = "Standing in the open at %s." % map.hex_at(s.hex)
+	return ("Following %s. " % s.follow.name if s.follow else "") + text
+
+
 func player_squads() -> Array[Squad]:
 	var out: Array[Squad] = []
 	for s in squads:
