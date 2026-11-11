@@ -22,6 +22,7 @@ const KIND_COLORS := {"Melee": Color("#8a4a3a"), "Ranged": Color("#4f7a3a"), "Ma
 const KEY := [["Melee", "Melee"], ["Ranged", "Ranged"], ["Magic", "Magic"], ["Heal", "Heal / buff"],
 		["Debuff", "Debuff"], ["Ward", "Ward"], ["Breath", "Breath"]]
 const SORTS := [["leader", "Leader"], ["class", "Class"], ["level", "Level"], ["name", "Name"]]
+const INSET := 40  # px between the window and the screen's edges, on every side
 const SUPPORT := ["Heal", "Buff", "Debuff", "Ward", "Ranged", "Magic", "Dispel"]
 
 var state: GameState
@@ -59,14 +60,17 @@ func setup(game_state: GameState, cell := -1) -> void:
 	shade.color = Color(0, 0, 0, 0.5)
 	shade.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	add_child(shade)
-	var center := CenterContainer.new()
-	center.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
-	add_child(center)
-	UiStyle.close_on_click(shade, center, _leave)
+	# The window keeps a fixed inset from the screen's edges, whatever it shows, so the
+	# army and squad views are the same size (user's notes, 2026-11-11).
+	var frame := MarginContainer.new()
+	frame.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	for side in ["left", "right", "top", "bottom"]:
+		frame.add_theme_constant_override("margin_" + side, INSET)
+	add_child(frame)
+	UiStyle.close_on_click(shade, frame, _leave)
 	var panel := PanelContainer.new()
 	panel.add_theme_stylebox_override("panel", UiStyle.box(UiStyle.PANEL, 16))
-	panel.custom_minimum_size = Vector2(1840, 1000)
-	center.add_child(panel)
+	frame.add_child(panel)
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 12)
 	panel.add_child(col)
@@ -249,7 +253,8 @@ func _card(cell: int) -> Control:
 	style.set_border_width_all(2)
 	style.border_color = UiStyle.OUTLINE if s else Color(0.2, 0.22, 0.26)
 	card.add_theme_stylebox_override("panel", style)
-	card.custom_minimum_size = Vector2(368, 206)
+	card.custom_minimum_size = Vector2(280, 206)
+	card.size_flags_horizontal = SIZE_EXPAND_FILL  # the 4 columns share the width
 	card.set_drag_forwarding(Callable(), _can_drop.bind(cell, "", -1), _drop.bind(cell, "", -1))
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 4)
@@ -258,6 +263,7 @@ func _card(cell: int) -> Control:
 	if s == null:
 		col.add_child(_quiet(UiStyle.label("#%d" % (cell + 1), 18, Color(0.45, 0.47, 0.52))))
 		var l := _quiet(UiStyle.label("Empty: drop a unit that can lead here to form a squad.", 14, Color(0.45, 0.47, 0.52)))
+		l.autowrap_mode = TextServer.AUTOWRAP_WORD
 		col.add_child(l)
 		return card
 	card.mouse_default_cursor_shape = CURSOR_POINTING_HAND
