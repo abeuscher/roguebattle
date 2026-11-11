@@ -50,7 +50,10 @@ var _firing := false  # choosing a ranged-attack target for _selected
 var _shown_sites := {}  # building index -> true once its icon is revealed
 var _points := PackedInt32Array()
 var _planned := PackedInt32Array()  # route through _points
+var _chooser: PopupMenu  # the pick-one menu when several things share the clicked spot
+var _holding := false  # this map holds the clock (see _hold_clock)
 var _press_at := Vector2.ZERO
+var _pressed := false  # the map itself saw the left press (not a popup that closed on it)
 var _info := ""
 
 
@@ -63,20 +66,24 @@ func start(game_data: GameData, game_log: GameLog, config: GameConfig, map: MapD
 		add_child(node)
 	_ui.add_child(hud)
 	camera.view_changed.connect(_on_view_changed)
-	hud.minimap.jump.connect(camera.center_on)
-	hud.squad_pressed.connect(_center_on_squad)
+	hud.minimap.jump.connect(func(at: Vector2):
+		if _can_open():  # not while the camera flies to a fight
+			camera.center_on(at))
+	hud.squad_pressed.connect(func(id: int):
+		if _can_open():
+			_center_on_squad(id))
 	hud.speed_chosen.connect(_on_speed_chosen)
 	hud.edit_pressed.connect(func():
-		if _can_open() and _selected == null:
+		if _free():
 			_open_edit())
 	hud.deploy_pressed.connect(func():
-		if _can_open() and _selected == null and state.deploy_menu_blocker() == "":
+		if _free() and state.deploy_menu_blocker() == "":
 			_open_deploy_menu())
 	hud.cards_pressed.connect(func():
-		if _can_open() and _selected == null:
+		if _free():
 			_open_cards(false))
 	hud.tech_pressed.connect(func():
-		if _can_open() and _selected == null:
+		if _free():
 			_open_tech())
 	get_viewport().size_changed.connect(camera.fit)
 	var started := Time.get_ticks_msec()
@@ -114,22 +121,25 @@ func _wide_roster_count() -> int:
 func _process(delta: float) -> void:
 	if state == null:
 		return
+	_hold_clock()  # whatever input opened since last frame stops time before it moves on
 	for i in state.clock.advance(delta):
 		state.step()
 		if state.pending or not state.pending_recruit.is_empty() or state.game_over != "":
 			break
-	if state.pending and _battle == null and _encounter == null and _recruit_popup == null:
+	# What the world brings up opens only on the free map, one at a time; until then it waits.
+	if state.pending and _free():
 		if _announced or state.pending.ranged_only:
 			_open_battle()
 		else:
 			_open_encounter()
-	if not state.pending_recruit.is_empty() and _recruit_popup == null:
+	if not state.pending_recruit.is_empty() and _free():
 		_open_recruit_popup()
 	_pump_liberations()
-	if not state.card_offer.is_empty() and _can_open() and _selected == null:
+	if not state.card_offer.is_empty() and _free():
 		_open_cards(true)
-	if state.game_over != "" and _end_screen == null and _can_open():
+	if state.game_over != "" and _free():
 		_open_end_screen()
+	_hold_clock()
 	if not state.notices.is_empty():
 		hud.show_banner("  ·  ".join(state.notices), 4.0)
 		state.notices.clear()
@@ -140,7 +150,7 @@ func _process(delta: float) -> void:
 		_sync_tokens()
 		hud.set_squads(state.player_squads())
 	_update_cursor()
-	var under := state.building_at(_hex_at(get_global_mouse_position())) if _planning and _confirm == null else {}
+	var under := state.building_at(_hex_at(get_global_mouse_position())) if _planning and _can_open() else {}
 	view.hover_building(state.map.buildings.find(under) if not under.is_empty() else -1)
 	night.color = Color.WHITE.lerp(NIGHT, darkness(state.clock.minute_of_day()))
 	_update_tokens()
@@ -309,11 +319,17 @@ func _choose(found: Array[Squad], building: Dictionary) -> void:
 	if not building.is_empty():
 		menu.add_item(building.get("name", state.data.buildings[building["type"]]["name"]), found.size())
 	menu.id_pressed.connect(func(i: int):
+		_chooser = null
+		if not _free():
+			return
 		if i < found.size():
 			_pick(found[i])
 		else:
 			_open_building(building))
-	menu.popup_hide.connect(menu.queue_free)
+	menu.popup_hide.connect(func():
+		_chooser = null
+		menu.queue_free())
+	_chooser = menu
 	_ui.add_child(menu)
 	menu.popup(Rect2i(Vector2i(get_viewport().get_mouse_position()), Vector2i.ZERO))
 
@@ -327,8 +343,6 @@ func _hex_at(world: Vector2) -> int:
 
 ## Selecting a squad pauses the game and opens its menu.
 func _select(s: Squad) -> void:
-	if _selected == null:
-		state.clock.hold()
 	_selected = s
 	_planning = false
 	_open_menu()
@@ -379,8 +393,6 @@ func _end_selection() -> void:
 	if _deploying and _selected not in state.squads:
 		_selected.hex = -1  # back at base after all
 	_deploying = false
-	if _selected != null:
-		state.clock.release()
 	_selected = null
 	_planning = false
 	_firing = false
@@ -418,9 +430,7 @@ func _show_enemy(s: Squad) -> void:
 		_enemy_popup.setup(state, s)
 		_enemy_popup.closed.connect(func():
 			_enemy_popup.queue_free()
-			_enemy_popup = null
-			state.clock.release())
-		state.clock.hold()
+			_enemy_popup = null)
 		return
 	var own := state.player_squads()
 	var label := Threat.label(state.data, own[0], s).to_lower() if not own.is_empty() else ""
@@ -463,7 +473,7 @@ func _show_plan() -> void:
 
 ## While laying a route, the mouse pointer is the squad's flag, its pole on the hex under it.
 func _update_cursor() -> void:
-	var want := _planning and _confirm == null and _menu == null
+	var want := _planning and _can_open()  # any popup over the map brings the pointer back
 	if want and _cursor_flag == null:
 		_cursor_flag = SquadToken.new()
 		_cursor_flag.squad = _selected
@@ -481,9 +491,7 @@ func _open_shop(screen: Control) -> void:
 	_shop = screen
 	screen.connect("closed", func():
 		_shop.queue_free()
-		_shop = null
-		state.clock.release())
-	state.clock.hold()
+		_shop = null)
 
 
 func _open_tech() -> void:
@@ -506,9 +514,7 @@ func _open_building(b: Dictionary) -> void:
 	_building_popup.setup(state, b)
 	_building_popup.closed.connect(func():
 		_building_popup.queue_free()
-		_building_popup = null
-		state.clock.release())
-	state.clock.hold()
+		_building_popup = null)
 
 
 # --- Deploying (SPEC §8.4) -----------------------------------------------------------
@@ -521,19 +527,15 @@ func _open_deploy_menu() -> void:
 		_close_deploy_menu()
 		_start_deploy(s))
 	_deploy_menu.closed.connect(_close_deploy_menu)
-	state.clock.hold()
 
 
 func _close_deploy_menu() -> void:
 	_deploy_menu.queue_free()
 	_deploy_menu = null
-	state.clock.release()
 
 
 ## A squad from base: lay its route from where it will appear, with the move tool.
 func _start_deploy(s: Squad) -> void:
-	if _selected == null:
-		state.clock.hold()
 	_selected = s
 	_deploying = true
 	s.hex = state.deploy_hex()
@@ -583,9 +585,7 @@ func _open_encounter() -> void:
 	_encounter.go.connect(func():
 		_encounter.queue_free()
 		_encounter = null
-		state.clock.release()
 		_open_battle())
-	state.clock.hold()
 
 
 ## Glides the camera to two squads that just met (zooming in, never out), with the
@@ -605,13 +605,11 @@ func _open_battle() -> void:
 	_ui.add_child(_battle)
 	_battle.setup(state, state.pending, false, bool(options.get("battle_wait_for_fight", true)))
 	_battle.finished.connect(_close_battle)
-	state.clock.hold()
 
 
 func _close_battle(text: String) -> void:
 	_battle.queue_free()
 	_battle = null
-	state.clock.release()
 	hud.show_banner(text, 5.0)
 	_sync_tokens()
 
@@ -624,7 +622,6 @@ func _open_edit(cell := -1) -> void:
 	_edit.deploy.connect(func(s: Squad):
 		_close_edit()
 		_start_deploy(s))
-	state.clock.hold()
 
 
 func _close_edit() -> void:
@@ -633,7 +630,6 @@ func _close_edit() -> void:
 	state.after_edit()
 	_sync_tokens()
 	hud.set_squads(state.player_squads())
-	state.clock.release()
 
 
 func _open_log() -> void:
@@ -641,13 +637,11 @@ func _open_log() -> void:
 	_ui.add_child(_log_panel)
 	_log_panel.show_log(log)
 	_log_panel.closed.connect(_close_log)
-	state.clock.hold()
 
 
 func _close_log() -> void:
 	_log_panel.queue_free()
 	_log_panel = null
-	state.clock.release()
 
 
 func _open_debug_panel() -> void:
@@ -666,8 +660,7 @@ func _open_debug_panel() -> void:
 		_battle = BattleView.new()
 		_ui.add_child(_battle)
 		_battle.setup(state, b, true)
-		_battle.finished.connect(_close_battle)
-		state.clock.hold())
+		_battle.finished.connect(_close_battle))
 	_debug_panel.wide_roster.connect(func():
 		for s in state.player_squads():  # the reroll renumbers from 1, which could collide with these ids
 			if _tokens.has(s.id):
@@ -676,13 +669,11 @@ func _open_debug_panel() -> void:
 		state.reroll_wide_roster(int(data.rules["army_size"]))
 		_sync_tokens()
 		hud.set_squads(state.player_squads()))
-	state.clock.hold()
 
 
 func _close_debug_panel() -> void:
 	_debug_panel.queue_free()
 	_debug_panel = null
-	state.clock.release()
 
 
 ## A neutral squad in reach (§16): offers Recruit or Fight. The class shows, not the count.
@@ -700,20 +691,18 @@ func _open_recruit_popup() -> void:
 		_announced = true  # the recruit popup already announced this fight
 		state.resolve_recruit(false)
 		_close_recruit_popup())
-	state.clock.hold()
 
 
 func _close_recruit_popup() -> void:
 	_recruit_popup.queue_free()
 	_recruit_popup = null
-	state.clock.release()
 	if state.pending and _battle == null:
 		_open_battle()
 
 
 ## Shows the next unshown liberation (§6.5), if any.
 func _pump_liberations() -> void:
-	if not state.liberations.is_empty() and _can_open():
+	if not state.liberations.is_empty() and _free():
 		_open_liberation_popup(state.liberations.pop_front())
 
 
@@ -723,13 +712,11 @@ func _open_liberation_popup(entry: Dictionary) -> void:
 	_ui.add_child(_liberation_popup)
 	_liberation_popup.setup(state, entry["building"], entry["card"])
 	_liberation_popup.closed.connect(_close_liberation_popup)
-	state.clock.hold()
 
 
 func _close_liberation_popup() -> void:
 	_liberation_popup.queue_free()
 	_liberation_popup = null
-	state.clock.release()
 
 
 ## The map has ended (§6.8): the player's only way out is to the title screen.
@@ -738,7 +725,6 @@ func _open_end_screen() -> void:
 	_ui.add_child(_end_screen)
 	_end_screen.setup(state)
 	_end_screen.to_title.connect(func(): to_title.emit())
-	state.clock.hold()
 
 
 func _open_main_menu() -> void:
@@ -756,13 +742,11 @@ func _open_main_menu() -> void:
 		_main_menu.note("Settings saved. The configurator will start from them."))
 	_main_menu.to_title.connect(func(): to_title.emit())
 	_main_menu.quit.connect(func(): quit_game.emit())
-	state.clock.hold()
 
 
 func _close_main_menu() -> void:
 	_main_menu.queue_free()
 	_main_menu = null
-	state.clock.release()
 
 
 # --- Input ------------------------------------------------------------------------
@@ -786,20 +770,42 @@ func _on_speed_chosen(index: int) -> void:
 		state.set_speed_index(index)
 
 
-## No menu or dialog is open.
+## No menu, popup or dialog is open (a squad order may be under way: its menu, or laying
+## a route or picking a target, which take map clicks).
 func _can_open() -> bool:
 	return not (_log_panel or _debug_panel or _menu or _main_menu or _battle or _encounter or _edit or _deploy_menu or _confirm or _building_popup or _enemy_popup \
-			or _shop or _recruit_popup or _liberation_popup or _end_screen)
+			or _shop or _recruit_popup or _liberation_popup or _end_screen or _chooser)
+
+
+## One thing at a time (DECISIONS, session 044): the bare map with nothing open and no
+## squad order under way. Only then does time run, and only then may anything new open,
+## whether the player asked for it or the world brought it (a fight, a liberation, a card).
+func _free() -> bool:
+	return _can_open() and _selected == null
+
+
+## Time stops whenever anything but the bare map has the player's attention. Worked out
+## from what's open, each frame, rather than paired hold and release calls that can drift.
+func _hold_clock() -> void:
+	if _free() == _holding:
+		_holding = not _holding
+		if _holding:
+			state.clock.hold()
+		else:
+			state.clock.release()
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not _can_open():
+	if state == null or not _can_open():
+		_pressed = false
 		return
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
 		if mb.button_index == MOUSE_BUTTON_LEFT and mb.pressed:
 			_press_at = mb.position
-		elif mb.button_index == MOUSE_BUTTON_LEFT and mb.position.distance_to(_press_at) < CLICK_SLOP:
+			_pressed = true
+		elif mb.button_index == MOUSE_BUTTON_LEFT and _pressed and mb.position.distance_to(_press_at) < CLICK_SLOP:
+			_pressed = false
 			var world := get_canvas_transform().affine_inverse() * mb.position
 			if _planning:
 				_plan_click(_hex_at(world))
