@@ -179,7 +179,7 @@ func _draw_panel() -> void:
 
 ## Once the battle starts, Play/Pause is an icon on a small round button.
 func _round_play_button() -> void:
-	if _play_btn.text == "":
+	if _play_btn.custom_minimum_size.x == PLAY_SIZE:  # already round (with no Fight step first it never had text)
 		return
 	_play_btn.text = ""
 	_play_btn.custom_minimum_size = Vector2(PLAY_SIZE, PLAY_SIZE)
