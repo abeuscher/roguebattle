@@ -160,7 +160,7 @@ func battle_xp(own: Squad, enemy: Squad, u: Unit) -> int:
 func _setup_single_map() -> void:
 	var cfg: Dictionary = data.rules["single_map"]
 	army.base_slots = int(cfg["base_slots"])
-	var built := Map1Setup.build_single(data, rng.get_stream("army_setup"), squad_cap() + int(cfg["pool"]["leaders_over_cap"]))
+	var built := Map1Setup.build_single(data, rng.get_stream("army_setup"), squad_cap())
 	var s := _form(1, "", map.player_base, [[built["leader"], "front"]], "player")
 	army.cells[0] = s
 	squads.append(s)

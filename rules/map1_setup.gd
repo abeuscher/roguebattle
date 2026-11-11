@@ -33,11 +33,11 @@ static func build(data: GameData, rng: RandomNumberGenerator) -> Array:
 
 ## Single map mode's start (user's design, 2026-11-10; rules.json "single_map"):
 ## {"leader": the Opinion Leader's class, "pool": every other class, for the recruit
-## pool}. `leader_count` leaders (the squad cap + 1, user's notes 2026-11-11) cover every
-## terrain before any repeats; stage 2 units fill the rest of the total after the Large
-## units and Serfs, meeting the soft rule across the pool as a whole.
-static func build_single(data: GameData, rng: RandomNumberGenerator, leader_count: int) -> Dictionary:
-	var cfg: Dictionary = data.rules["single_map"]["pool"]
+## pool}, sized by pool_counts() for this squad cap. Leaders cover every terrain before
+## any repeats; the stage 2 units meet the soft rule across the pool as a whole.
+static func build_single(data: GameData, rng: RandomNumberGenerator, squad_cap: int) -> Dictionary:
+	var n := pool_counts(data, squad_cap)
+	var leader_count: int = n["leaders"]
 	var by_terrain := _leaders_by_terrain(data)
 	var all_leaders: Array = by_terrain.values().reduce(func(a, b): return a + b, [])
 	var terrains := TERRAINS.duplicate()
@@ -46,23 +46,37 @@ static func build_single(data: GameData, rng: RandomNumberGenerator, leader_coun
 	for i in leader_count:
 		var options: Array = by_terrain[terrains[i]] if i < terrains.size() else all_leaders
 		leaders.append(options[rng.randi() % options.size()])
-	var stage2_count := maxi(0, int(cfg["total"]) - leader_count - int(cfg["large"]) - int(cfg["serfs"]))
+	var stage2_count: int = n["stage2"]
 	var stage2 := _stage2_classes(data)
 	var front_stage2 := stage2.filter(func(c): return _is_front_line(data, c))
 	var healer_stage2 := stage2.filter(func(c): return _is_healer_or_support(data, c))
 	var picks := []
-	for i in mini(int(cfg["front_min"]), stage2_count / 2):
+	for i in mini(n["front_min"], stage2_count / 2):
 		picks.append(front_stage2[rng.randi() % front_stage2.size()])
-	for i in mini(int(cfg["healer_min"]), stage2_count / 2):
+	for i in mini(n["healer_min"], stage2_count / 2):
 		picks.append(healer_stage2[rng.randi() % healer_stage2.size()])
 	while picks.size() < stage2_count:
 		picks.append(stage2[rng.randi() % stage2.size()])
 	var large := large_stage1_classes(data)
 	_shuffle(large, rng)
-	var pool: Array = leaders.slice(1) + picks + large.slice(0, int(cfg["large"]))
-	for i in int(cfg["serfs"]):
+	var pool: Array = leaders.slice(1) + picks + large.slice(0, n["large"])
+	for i in n["serfs"]:
 		pool.append(data.lines[_serf_line_ids(data)[0]][0][0])
 	return {"leader": leaders[0], "pool": pool}
+
+
+## How many of each single map mode starts with (rules.json single_map.pool), every
+## count times its scale: leaders (the Opinion Leader among them) one more than the squad
+## cap (user's notes, 2026-11-11), Large units, Serfs, and stage 2 units for the rest of
+## the total, with front-line and healer minimums.
+static func pool_counts(data: GameData, squad_cap: int) -> Dictionary:
+	var cfg: Dictionary = data.rules["single_map"]["pool"]
+	var k := float(cfg["scale"])
+	var n := {"total": roundi(float(cfg["total"]) * k), "leaders": roundi((squad_cap + int(cfg["leaders_over_cap"])) * k),
+			"large": roundi(float(cfg["large"]) * k), "serfs": roundi(float(cfg["serfs"]) * k),
+			"front_min": roundi(float(cfg["front_min"]) * k), "healer_min": roundi(float(cfg["healer_min"]) * k)}
+	n["stage2"] = maxi(0, n["total"] - n["leaders"] - n["large"] - n["serfs"])
+	return n
 
 
 ## Distinct stage 1 Large classes from the race lines, leaving out those native to

@@ -181,14 +181,18 @@ func test_single_map_starts_with_the_opinion_leader_alone_and_a_pool() -> void:
 	for seed_ in range(SEEDS):
 		var cap: int = [6, 8, 10][seed_ % 3]
 		var st := _single(seed_, cap)
-		var n_leaders := cap + int(cfg["leaders_over_cap"])
-		var n_stage2 := int(cfg["total"]) - n_leaders - int(cfg["large"]) - int(cfg["serfs"])
+		var n := Map1Setup.pool_counts(d, cap)
+		var k := float(cfg["scale"])
+		check_eq(int(n["leaders"]), roundi((cap + 1) * k), "leaders: the squad cap + 1, scaled (seed %d)" % seed_)
+		check_eq(int(n["total"]), roundi(30 * k), "30 units, scaled (seed %d)" % seed_)
+		var n_leaders: int = n["leaders"]
+		var n_stage2: int = n["stage2"]
 		check_eq(st.army.squads().size(), 1, "one squad in the army (seed %d)" % seed_)
 		var s := st.opinion_leader_squad()
 		check(s != null and s.units.size() == 1 and s.leader == st.opinion_leader, "the Opinion Leader alone in it (seed %d)" % seed_)
 		check(s in st.player_squads() and s.hex == st.map.player_base, "on the map at the Player Base (seed %d)" % seed_)
 		check_eq(s.capacity(d), 6, "6 slots (seed %d)" % seed_)
-		check_eq(st.army.pool.size() + 1, int(cfg["total"]), "30 units in all (seed %d)" % seed_)
+		check_eq(st.army.pool.size() + 1, int(n["total"]), "every unit counted (seed %d)" % seed_)
 		var count := func(f: Callable) -> int: return st.army.pool.filter(f).size()
 		var leaders: Array = st.army.pool.filter(func(u: Unit): return u.info(d)["can_lead"]).map(func(u: Unit): return u.unit_class)
 		check_eq(leaders.size() + 1, n_leaders, "one more leader than the squad cap of %d (seed %d)" % [cap, seed_])
@@ -197,13 +201,13 @@ func test_single_map_starts_with_the_opinion_leader_alone_and_a_pool() -> void:
 			terrains[d.units[c]["terrain"]] = true
 		check_eq(terrains.size(), mini(n_leaders, Map1Setup.TERRAINS.size()), "every terrain covered (seed %d)" % seed_)
 		check_eq(count.call(func(u: Unit): return int(u.info(d)["stage"]) == 2), n_stage2, "stage 2 units fill the rest of the 30 (seed %d)" % seed_)
-		check_eq(count.call(func(u: Unit): return u.unit_class == "Serf"), int(cfg["serfs"]), "10 Serfs (seed %d)" % seed_)
+		check_eq(count.call(func(u: Unit): return u.unit_class == "Serf"), int(n["serfs"]), "the Serfs (seed %d)" % seed_)
 		var large: Array = st.army.pool.filter(func(u: Unit): return u.info(d)["size"] == "Large").map(func(u: Unit): return u.unit_class)
-		check_eq(large.size(), int(cfg["large"]), "3 Large units (seed %d)" % seed_)
+		check_eq(large.size(), int(n["large"]), "the Large units (seed %d)" % seed_)
 		for c in large:
 			check(int(d.units[c]["stage"]) == 1 and d.units[c]["terrain"] != "Water" and large.count(c) == 1, "%s: stage 1, not a sea creature, no repeats (seed %d)" % [c, seed_])
-		check(count.call(func(u: Unit): return int(u.info(d)["stage"]) == 2 and _is_front_line(u.unit_class)) >= mini(int(cfg["front_min"]), n_stage2 / 2), "enough front-line units (seed %d)" % seed_)
-		check(count.call(func(u: Unit): return int(u.info(d)["stage"]) == 2 and _is_healer_or_support(u.unit_class)) >= mini(int(cfg["healer_min"]), n_stage2 / 2), "enough healers or support (seed %d)" % seed_)
+		check(count.call(func(u: Unit): return int(u.info(d)["stage"]) == 2 and _is_front_line(u.unit_class)) >= mini(int(n["front_min"]), n_stage2 / 2), "enough front-line units (seed %d)" % seed_)
+		check(count.call(func(u: Unit): return int(u.info(d)["stage"]) == 2 and _is_healer_or_support(u.unit_class)) >= mini(int(n["healer_min"]), n_stage2 / 2), "enough healers or support (seed %d)" % seed_)
 
 
 func test_single_map_squads_hold_six_and_start_with_a_leader() -> void:
