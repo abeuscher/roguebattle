@@ -320,6 +320,30 @@ func _pick(s: Squad) -> void:
 		_show_enemy(s)
 
 
+## While laying a move, a click on a visible enemy squad offers to follow it
+## (playtest round 8) or just to lay a rally point there. Esc closes the offer.
+func _offer_follow(foe: Squad, hex: int) -> void:
+	var menu := PopupMenu.new()
+	menu.add_theme_font_size_override("font_size", 18)
+	menu.add_item("Follow %s" % foe.name, 0)
+	menu.add_item("Move here", 1)
+	menu.id_pressed.connect(func(i: int):
+		_chooser = null
+		if i == 0:
+			var s := _selected
+			state.order_follow(s, foe)
+			_end_selection()
+			hud.show_banner("%s follows %s." % [s.name, foe.name], 3.0)
+		else:
+			_plan_click(hex))
+	menu.popup_hide.connect(func():
+		_chooser = null
+		menu.queue_free())
+	_chooser = menu
+	_ui.add_child(menu)
+	menu.popup(Rect2i(Vector2i(get_viewport().get_mouse_position()), Vector2i.ZERO))
+
+
 ## Several flags (or flags over a building) under one click: a small menu at the pointer
 ## to choose between them.
 func _choose(found: Array[Squad], building: Dictionary) -> void:
@@ -874,7 +898,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			_pressed = false
 			var world := get_canvas_transform().affine_inverse() * mb.position
 			if _planning:
-				_plan_click(_hex_at(world))
+				var foes := _squads_at(world).filter(func(o: Squad): return o.side == "enemy")
+				if not foes.is_empty() and not _deploying:
+					_offer_follow(foes[0], _hex_at(world))
+				else:
+					_plan_click(_hex_at(world))
 			elif _firing:
 				_fire_click(world)
 			else:

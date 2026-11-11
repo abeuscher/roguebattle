@@ -60,6 +60,8 @@ func setup(state: GameState, s: Squad) -> void:
 	head.add_child(align)
 	var where := "Moving: %d hexes to go, about %s." % [s.path.size(), GameState.duration_text(state.route_ticks(s, s.path))] if s.is_moving() \
 			else "Waiting at %s." % state.map.hex_at(s.hex)
+	if s.follow:
+		where = "Following %s. %s" % [s.follow.name, where]
 	col.add_child(UiStyle.label(where, 15, Color(0.75, 0.78, 0.84)))
 	var cols := s.capacity(data)
 	for u in s.units:

@@ -84,6 +84,7 @@ func step() -> void:
 	if not debug_freeze_ai:
 		_run_enemy_ai()
 		_run_neutral_ai()
+	_update_followers()
 	for s in squads.duplicate():
 		if debug_freeze_ai and s.side != "player":
 			continue
@@ -1337,6 +1338,7 @@ func order_move(s: Squad, points: PackedInt32Array) -> bool:
 	if route.is_empty() and not points.is_empty():
 		return false
 	s.entering_base = false
+	s.follow = null  # any new order ends following
 	s.path = route
 	s.rally = points.duplicate()
 	s.progress = 0.0
@@ -1345,6 +1347,50 @@ func order_move(s: Squad, points: PackedInt32Array) -> bool:
 			points.size(), "" if points.size() == 1 else "s", route.size(), duration_text(route_ticks(s, route))],
 			s.id, {"path": Array(route)})
 	return true
+
+
+## Follows a visible enemy squad (playtest round 8): heads for its hex now, and
+## `_update_followers` re-routes as it moves. Contact fights as usual.
+func order_follow(s: Squad, target: Squad) -> bool:
+	if not order_move(s, PackedInt32Array([target.hex])):
+		return false
+	s.follow = target
+	s.follow_hex = target.hex
+	log.add(clock.tick, "map", "%s follows %s." % [s.name, target.name], s.id)
+	return true
+
+
+## Each tick: a follower re-routes when its target moves. If the target goes out of
+## sight, it heads for where it was last seen and stops there; if the target is gone
+## (wiped out, or off the map), following just ends.
+func _update_followers() -> void:
+	for s in player_squads():
+		var t := s.follow
+		if t == null:
+			continue
+		if t not in squads or t.living().is_empty():
+			s.follow = null
+			continue
+		if not seen(t.hex):
+			s.follow = null
+			_head_for(s, s.follow_hex)
+			notices.append("%s lost sight of %s and heads for where it was last seen." % [s.name, t.name])
+			log.add(clock.tick, "map", "%s lost sight of %s; heading for %s." % [s.name, t.name, map.hex_at(s.follow_hex)], s.id)
+		elif t.hex != s.follow_hex:
+			s.follow_hex = t.hex
+			_head_for(s, t.hex)
+
+
+## Points a squad at one hex without a new order (following keeps going): keeps its
+## progress into the next hex when the new route starts the same way.
+func _head_for(s: Squad, to: int) -> void:
+	var route := plan(s, PackedInt32Array([to]))
+	if route.is_empty() and to != s.hex:
+		return
+	if route.is_empty() or s.path.is_empty() or s.path[0] != route[0]:
+		s.progress = 0.0
+	s.path = route
+	s.rally = PackedInt32Array([to]) if not route.is_empty() else PackedInt32Array()
 
 
 func player_squads() -> Array[Squad]:
