@@ -114,9 +114,10 @@ Where the project stands, for picking up in a new session or on another machine.
 - **M4 session 14 done (session 039):** the cards window laid out like the battle picker, no map zoom under popups, cards and cure potions taking effect at once in battle, and Use item in the encounter popup. See `DECISIONS.md` session 039.
 - **M4 session 15 done (session 043):** cards land before a round's first attack (a round opens in its own step); clicking a fought enemy squad shows its makeup; items swap on any squad anywhere; neutrals 25% rarer; "X has stopped at …" banner and log line. See `DECISIONS.md` session 043.
 - **M4 session 16 done (session 044):** Land % to 100 (water presets capped), a No Ocean preset, reef-like winding shallows and extra crossings to islands, and a road fix (branches no longer end on lone river bridges). See `DECISIONS.md` session 044.
-- **M4 sessions 17–20 next**, from the plan below.
+- **Battlemap gating fix (on session 044):** time runs and new screens open only on the free map; fights no longer cut into a move being laid. See `DECISIONS.md`, "One thing at a time".
+- **M4 sessions 17–23 next.** 17–19 are playtest round 8 (2026-11-10): battle and rules (cards last the battle, XP for a drive-off, hidden enemy numbers, battle speed kept, Enemy Base capture wins); map notices and popups (start paused, enemy-capture banners, Go to city and fireworks on liberation, a daily ledger with do-not-show-again); follow an enemy squad. Then 20–23: HUD layout, squad status and tokens, debug panel (plus the unit spawner rework), save game.
 - **M4 sessions 15–20 planned (playtest round 7, 2026-11-10)** in `ROADMAP.md`: battle and rules fixes (cards truly at once, enemy makeup after a fight, items equippable anywhere, fewer neutrals, arrival log line); map generation (100% land, reef-like shallows around islands); HUD layout (clock under the minimap, gold coin, reputation meter, squad drawer, smaller rounded toolbar with icons); squad status icons and flag-free tokens with destination flags; debug panel overhaul; save game (3 slots, prompt to save on quit). The user's answers are in the ROADMAP rows.
-- **M4 milestone check: the first real playtest**, after session 20.
+- **M4 milestone check: the first real playtest**, after session 23.
 - **Unit portraits:** the user's first 8 large unit images are committed in `data/unit_art/` (not used in the game yet). Building them into the unit detail view is a future task in `ROADMAP.md`, waiting on more of the set.
 - **Card art experiment (session 034, on top of 033):** every card is drawn as a picture card (`ui/card_face.gd`) using a simple SVG line drawing per animal in `data/card_art/`. Waiting on the user's verdict and their own concept.
 - Then the post-M4 discussions in `ROADMAP.md`: campaign and progression first (the user's top item), then unit iconography and the other parked notes.
@@ -126,7 +127,7 @@ Where the project stands, for picking up in a new session or on another machine.
 
 ## How the user works
 
-- **One git branch per session,** named `session-NNN` (next: `session-045`), cut from `main`.
+- **One git branch per session,** named `session-NNN` (next: `session-046`), cut from `main`.
 - **Commit locally only:**
   - Never push or merge; the user merges and pushes, then says "continue".
   - Commit messages end with a `Co-Authored-By:` line naming whatever Claude model is doing the session (the harness's own attribution instructions say exactly what to write).
