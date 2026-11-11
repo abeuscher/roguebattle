@@ -11,5 +11,13 @@
  "nomads": {"name": "Nomads", "terrains": ["plains", "forest", "snow", "desert", "swamp", "frozen_lake"], "shop_chance": 1.0,
   "owner": "neutral", "aligned": "holy", "defense": [0.10, 0.15], "rest": [0.10, 0.15], "move_hexes": [4, 6], "hide_chance": 0.2},
  "hidden_site": {"name": "Hidden site", "terrains": ["plains", "forest", "snow", "desert", "mountain", "swamp", "frozen_lake"],
-  "kinds": ["treasure", "card", "secret_temple", "rare_recruit", "lair"]}
+  "kinds": ["treasure", "card", "secret_temple", "rare_recruit", "lair"],
+  "_kind_info": "Session 050 (user's design, 2026-11-11): a site shows its kind once seen; a squad stepping onto it claims it. Treasure, card and rare recruit are claimed once and leave the map. A secret temple is a temple from the start (GameState turns its type to temple). A lair is guarded by a neutral squad that holds its ground; once the guard is gone (recruited, or after any fight, as with neutrals elsewhere) any squad there gets defense and rest. Treasure: gold in [min, max] and an item (needing no tech) at item_chance. Rare recruit: one stage 1 race-line unit (none native to skip_terrains) at the median level of your squads.",
+  "kind_info": {
+   "treasure": {"name": "Treasure", "about": "Step a squad onto it to take what's there: gold, and maybe an item.", "gold": [100, 250], "item_chance": 0.5},
+   "card": {"name": "Card cache", "about": "Step a squad onto it to draw a card.", "cards": 1},
+   "secret_temple": {"name": "Secret temple", "about": "A temple: squads inside heal slowly for free; pay to heal or revive in Temple services."},
+   "rare_recruit": {"name": "Rare recruit", "about": "Someone waits here who would join you: step a squad onto it and they go to the recruit pool.", "skip_terrains": ["Water"]},
+   "lair": {"name": "Lair", "about": "A neutral band guards it. Once the guard is gone, any squad here defends +%d%% and heals %d%% a day.", "defense": 0.1, "rest": 0.1}
+  }}
 }

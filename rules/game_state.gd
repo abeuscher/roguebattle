@@ -63,6 +63,8 @@ func _init(game_data: GameData, game_map: MapData, game_log: GameLog, game_setti
 	tech_points = int(data.tech["start_points"])
 	for i in map.buildings.size():
 		var b: Dictionary = map.buildings[i]
+		if b["hidden"] and b["kind"] == "secret_temple":  # a temple in every way, once found
+			b["type"] = "temple"
 		b["owner"] = data.buildings[b["type"]].get("owner", "neutral")
 		b["away"] = false  # nomads that moved out of sight until the next half day
 		_building_at[b["hex"]] = i
@@ -90,6 +92,7 @@ func step() -> void:
 			return_to_base(s)
 	_capture()
 	_reveal_sites()
+	_claim_sites()
 	_check_contact()
 	_check_game_over()
 
@@ -219,7 +222,7 @@ func building_at(i: int) -> Dictionary:
 	if not _building_at.has(i):
 		return {}
 	var b: Dictionary = map.buildings[_building_at[i]]
-	if b["away"] or (b["hidden"] and not revealed.has(_building_at[i])):
+	if b["away"] or b.get("claimed", false) or (b["hidden"] and not revealed.has(_building_at[i])):
 		return {}
 	return b
 
@@ -231,6 +234,9 @@ func building_effect(b: Dictionary, s: Squad) -> Array:
 	var info: Dictionary = data.buildings[b["type"]]
 	if info.has("own_base"):
 		return [float(info["own_base"]["defense"]), float(info["own_base"]["rest"])] if b["owner"] == s.side else [0.0, 0.0]
+	if b["type"] == "hidden_site":  # a lair shelters once its guard is gone
+		var lair: Dictionary = info["kind_info"]["lair"]
+		return [float(lair["defense"]), float(lair["rest"])] if b["kind"] == "lair" and guard_of(b) == null else [0.0, 0.0]
 	if not info.has("defense"):
 		return [0.0, 0.0]
 	var k := 1 if info.get("aligned", "") == s.alignment_band(data) else 0
@@ -617,7 +623,7 @@ func hint(b: Dictionary) -> String:
 	var best := -1
 	for i in map.buildings.size():
 		var o: Dictionary = map.buildings[i]
-		if o["type"] == "hidden_site" and not revealed.has(i):
+		if o["hidden"] and not revealed.has(i):
 			var d := Hex.distance(at, map.hex_at(o["hex"]))
 			if d <= int(data.rules["capture"]["hint_range"]) and (best < 0 or d < Hex.distance(at, map.hex_at(map.buildings[best]["hex"]))):
 				best = i
@@ -1444,7 +1450,7 @@ func place_enemies() -> void:
 ## Gives an idle roamer a new order from NeutralAI.target_hex, if it needs one.
 func _run_neutral_ai() -> void:
 	for s in squads:
-		if s.side != "neutral" or s.is_moving() or s.living().is_empty():
+		if s.side != "neutral" or s.role == "guard" or s.is_moving() or s.living().is_empty():
 			continue
 		var target := NeutralAI.target_hex(self, s)
 		if target >= 0 and target != s.hex:
@@ -1471,6 +1477,37 @@ func place_neutrals() -> void:
 		s.balance_rows(data)
 		s.morale = int(data.rules["starting_morale"])
 		squads.append(s)
+	for b in map.buildings:
+		if b["hidden"] and b["kind"] == "lair":
+			_place_guard(b, r)
+
+
+## A lair site's guard (session 050): a race-line band native to the site's terrain,
+## as strong as a lair at that distance would be, that holds its ground. None if no
+## line is native there; the lair then shelters from the start.
+func _place_guard(b: Dictionary, r: RandomNumberGenerator) -> void:
+	var key: String = data.terrains[map.terrain[b["hex"]]]["key"]
+	var homes := []
+	for home in data.mapgen["lair_terrains"]:
+		if key in data.mapgen["lair_terrains"][home]:
+			homes.append(home)
+	if homes.is_empty():
+		return
+	var span := maxf(1.0, Hex.distance(map.hex_at(map.player_base), map.hex_at(map.enemy_base)))
+	var danger := clampf(Hex.distance(map.hex_at(b["hex"]), map.hex_at(map.player_base)) / span, 0.0, 1.0)
+	var units := NeutralSquads.roll(data, homes[r.randi() % homes.size()], danger, r, names)
+	if units.is_empty():
+		return
+	var s := Squad.new(1 + squads.filter(func(o: Squad): return o.side == "neutral").size() + 200, units[0].unit_class, b["hex"])
+	s.side = "neutral"
+	s.role = "guard"
+	s.lair_hex = b["hex"]
+	for u in units:
+		s.add(data, u, "front")
+	s.balance_rows(data)
+	s.morale = int(data.rules["starting_morale"])
+	squads.append(s)
+	log.add(clock.tick, "progression", "%s guard the lair at %s." % [s.name, map.hex_at(b["hex"])], s.id)
 
 
 func _squad_on(i: int) -> Squad:
@@ -1679,17 +1716,68 @@ func _reveal_sites() -> void:
 		var b: Dictionary = map.buildings[i]
 		if (b["hidden"] or b["type"] == "lair") and not revealed.has(i) and seen(b["hex"]):
 			revealed[i] = true
-			log.add(clock.tick, "map", "A hidden site comes into view at %s." % map.hex_at(b["hex"]))
-			if b["hidden"]:  # found (§13); lairs aren't hidden sites
-				draw_card(_spotter(b["hex"]))
+			log.add(clock.tick, "map", "A hidden site comes into view at %s: %s." % [map.hex_at(b["hex"]), site_name(b).to_lower()])
 
 
-## The first of your squads that can see the hex.
-func _spotter(target_hex: int) -> Squad:
-	for s in player_squads():
-		if Hex.distance(map.hex_at(s.hex), map.hex_at(target_hex)) <= sight(s, target_hex):
+## A hidden site's kind as the player calls it ("Treasure", "Secret temple").
+func site_name(b: Dictionary) -> String:
+	return data.buildings["hidden_site"]["kind_info"][b["kind"]]["name"] if b.get("hidden", false) else data.buildings[b["type"]]["name"]
+
+
+## The neutral squad guarding a lair site, or null once it's gone.
+func guard_of(b: Dictionary) -> Squad:
+	for s in squads:
+		if s.side == "neutral" and s.role == "guard" and s.lair_hex == b["hex"] and not s.living().is_empty():
 			return s
 	return null
+
+
+## A squad of yours standing on a treasure, card cache or rare recruit claims it
+## (session 050): the reward, a banner and a log line; the site then leaves the map.
+func _claim_sites() -> void:
+	for s in player_squads():
+		var b := building_at(s.hex)
+		if b.is_empty() or not b["hidden"] or b["kind"] not in ["treasure", "card", "rare_recruit"] or s.living().is_empty():
+			continue
+		b["claimed"] = true
+		var info: Dictionary = data.buildings["hidden_site"]["kind_info"][b["kind"]]
+		var r := rng.get_stream("loot")
+		var news := ""
+		match b["kind"]:
+			"treasure":
+				var amount := r.randi_range(int(info["gold"][0]), int(info["gold"][1]))
+				_pay(amount, "Treasure found")
+				news = "%s finds treasure: %d gold" % [s.name, amount]
+				if r.randf() < float(info["item_chance"]):
+					var basic: Array = data.items["items"].keys().filter(func(id): return not data.items["items"][id].has("requires"))
+					var item := army.add_item(basic[r.randi() % basic.size()])
+					news += " and %s" % data.items["items"][item["id"]]["name"]
+			"card":
+				news = "%s finds a card cache" % s.name
+				for k in int(info["cards"]):
+					draw_card(s)
+			"rare_recruit":
+				var u := Unit.roll(data, _rare_class(r, info["skip_terrains"]), r, names)
+				for l in median_level("player") - 1:
+					Progression.level_up(data, u, r)
+				u.recruited = true
+				u.loyalty = int(data.rules["starting_loyalty"])
+				army.pool.append(u)
+				news = "%s the %s joins you and waits in the recruit pool" % [u.name, u.unit_class]
+		notices.append(news + ".")
+		log.add(clock.tick, "map", news + ".", s.id, {"site": str(map.hex_at(b["hex"]))})
+
+
+## A random stage 1 race-line class (the sheet's R, N, L, T lines), none native to `skip`.
+func _rare_class(r: RandomNumberGenerator, skip: Array) -> String:
+	var options := []
+	for lid in data.lines:
+		if String(lid).is_valid_int():
+			continue
+		for c in data.lines[lid][0]:
+			if int(data.units[c]["stage"]) == 1 and data.units[c]["terrain"] not in skip and c not in options:
+				options.append(c)
+	return options[r.randi() % options.size()]
 
 
 # --- Ranged map attacks (SPEC §11.2) ----------------------------------------------------

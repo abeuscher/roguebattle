@@ -28,13 +28,16 @@ func setup(state: GameState, b: Dictionary) -> void:
 	col.add_theme_constant_override("separation", 10)
 	col.custom_minimum_size.x = 560
 	panel.add_child(col)
-	col.add_child(UiStyle.label("%s  ·  %s" % [b["name"], info["name"]] if b.has("name") else info["name"], 26))
-	col.add_child(UiStyle.label(OWNERS[b["owner"]], 17, UiStyle.ACCENT))
+	col.add_child(UiStyle.label("%s  ·  %s" % [b["name"], info["name"]] if b.has("name") else state.site_name(b), 26))
 	var lines: Array
-	if b["owner"] != "player" and not state.seen(b["hex"]):  # out of sight: only its name, owner and shop (playtest notes, 2026-11-11)
-		lines = ["Shop: yes" if b.get("shop", false) else "Shop: no", "Out of your squads' sight."]
+	if b["type"] == "hidden_site":  # nobody owns a site: just what it is and what it does
+		lines = [_site_about(state, b)]
 	else:
-		lines = _details(state, b, info)
+		col.add_child(UiStyle.label(OWNERS[b["owner"]], 17, UiStyle.ACCENT))
+		if b["owner"] != "player" and not state.seen(b["hex"]):  # out of sight: only its name, owner and shop (playtest notes, 2026-11-11)
+			lines = ["Shop: yes" if b.get("shop", false) else "Shop: no", "Out of your squads' sight."]
+		else:
+			lines = _details(state, b, info)
 	for t in lines:
 		var l := UiStyle.label(t, 16, Color(0.85, 0.87, 0.9))
 		l.autowrap_mode = TextServer.AUTOWRAP_WORD
@@ -87,6 +90,15 @@ func _details(state: GameState, b: Dictionary, info: Dictionary) -> Array:
 		lines.append(("Local news: " + h) if b["owner"] == "player" and h != "" else
 				("Liberate it to hear the local news." if b["owner"] != "player" else "No news of anything hidden nearby."))
 	return lines
+
+
+## A hidden site's line: what claiming it gives, or for a lair whether it's still guarded.
+func _site_about(state: GameState, b: Dictionary) -> String:
+	var k: Dictionary = state.data.buildings["hidden_site"]["kind_info"][b["kind"]]
+	if b["kind"] != "lair":
+		return k["about"]
+	var text: String = k["about"] % [_pct(k["defense"]), _pct(k["rest"])]
+	return text + (" The guard is gone." if state.guard_of(b) == null else " Its guard is still here.")
 
 
 static func _pct(v: Variant) -> int:

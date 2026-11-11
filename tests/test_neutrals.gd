@@ -67,8 +67,10 @@ func test_place_neutrals_fills_every_lair() -> void:
 	var m := MapGen.generate(d, 11, {"size": "small"})
 	var st := GameState.new(d, m, GameLog.new())
 	st.place_neutrals()
-	var roamers := st.squads.filter(func(s: Squad): return s.side == "neutral")
+	var roamers := st.squads.filter(func(s: Squad): return s.side == "neutral" and s.role != "guard")  # lair-site guards come on top (session 050)
 	check_eq(roamers.size(), m.lairs.size(), "one roamer squad per lair (every lair terrain has a native line)")
+	var guards := st.squads.filter(func(s: Squad): return s.role == "guard")
+	check_eq(guards.size(), m.buildings.filter(func(b): return b["hidden"] and b["kind"] == "lair").size(), "a guard per lair site")
 	for s in roamers:
 		check_eq(s.role, "roamer", "")
 		check(s.lair_hex >= 0, "knows its lair")

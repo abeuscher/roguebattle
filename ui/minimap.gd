@@ -18,7 +18,7 @@ var _scale := 1.0  # screen pixels per minimap image pixel
 func set_map(map: MapData, data: GameData) -> void:
 	var img := MinimapImage.build(map, data)
 	for b in map.buildings:  # visible buildings as small dots
-		if DOT_COLORS.has(b["type"]):
+		if DOT_COLORS.has(b["type"]) and not b["hidden"]:  # a secret temple stays secret
 			var o := Hex.to_offset(map.hex_at(b["hex"]))
 			var r := 3 if b["type"].ends_with("base") else 1
 			img.fill_rect(Rect2i(o.x * 2 + (o.y & 1) - r + 1, o.y * 2 - r + 1, r * 2, r * 2), DOT_COLORS[b["type"]])

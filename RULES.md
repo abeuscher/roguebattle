@@ -21,7 +21,7 @@ This describes how the game actually plays right now, not the full design (that'
 - **Terrain and difficulty for a squad not native to it:** Plains 1, Forest/Desert/Snow 2, Mountain/Swamp 3, Shallow water 3, Deep water/Lava/Cliffs/Air gaps impassable to ground squads. A squad's own travel-type terrain always counts as difficulty 1 for it, whatever the listed difficulty is. Every landmass is guaranteed reachable on foot from the rest of the map (a shallow ford, a mountain pass, a bridge, or similar), even if slow.
 - **Map presets** (Continent, Islands, Archipelago, Floating Isles, Highlands, River Valley, Deep Forest, Tundra, Volcanic, No Ocean) change the terrain mix and favor different squad types; Continent is the default and most balanced. No Ocean is all land. Land % goes up to 100, except that Islands and Floating Isles stop at 70 and Archipelago at 60 so they keep their sea.
 - **Getting to islands on foot:** every island is joined to the mainland by shallows you can wade, shaped like reefs or sandbars, wider than one hex and winding; a sizable island gets up to two more such crossings to its nearest neighbours. Roads never cross open sea, so an island's buildings have their own road network.
-- **Buildings:** Player Base and Enemy Base (spawn points), towns and towers (liberate by standing a living ground unit in one for 60 ticks — twice as fast with a Sapper-line unit), temples (pay to heal/revive; free slow healing for anyone), nomad camps (a town that relocates every half day and always has a shop), and hidden sites (treasure, a card, a rare recruit or a lair — hidden until a squad's sight reaches them).
+- **Buildings:** Player Base and Enemy Base (spawn points), towns and towers (liberate by standing a living ground unit in one for 60 ticks — twice as fast with a Sapper-line unit), temples (pay to heal/revive; free slow healing for anyone), nomad camps (a town that relocates every half day and always has a shop), and hidden sites (see below).
 - **Roads** connect the visible buildings and bases; a non-flying squad moves at ×0.75 time on them.
 - **Day and night:** day 06:00–18:00, night 18:00–06:00. Holy units fight +15% by day and −15% at night; evil units the reverse; neutral units are unaffected.
 - **Game speed:** five tiers (×0.25, ×0.5, ×1, ×2, ×4), PgUp/PgDn to change, Space to pause. A day at normal speed takes 5 real minutes. Opening any menu or a battle pauses the clock too. A new map starts paused, with "Press Play to begin" in the message banner until you first start time.
@@ -73,6 +73,14 @@ This describes how the game actually plays right now, not the full design (that'
 ## Buildings and the economy
 
 - **Towns have names** (Ashford, Old Rookmere), the same for the same map seed. They show in the building's popup, the liberation message and the log. Other buildings go by their type.
+- **Hidden sites** stay off the map until one of your squads' sight reaches them; then they show what they are. Seeing one gives nothing: a squad has to step onto it.
+  - **Treasure** (a chest): 100–250 gold, and half the time an item that needs no tech.
+  - **Card cache** (a card): a card (a Seer or Oracle leader lets you choose, as usual).
+  - **Rare recruit** (a tent with a banner): a stage 1 unit from a race line (never a sea creature), at the median level of your squads, joins the recruit pool. It counts as a recruit for loyalty.
+  - These three are used up: the site leaves the map once claimed.
+  - **Secret temple** (a small mossy temple): a temple in every way once found (free slow healing, Temple services). It never shows on the minimap.
+  - **Lair** (a cave): a neutral band native to the ground there guards it and never leaves it, as strong as a roaming band at that distance would be. Meeting it offers Recruit or Fight as with any neutral band, and after that it's gone either way. From then on any squad standing there defends +10% and heals 10% a day.
+  - A town with local news points you at the nearest unseen site of any kind.
 - **Clicking a building** anywhere on its picture opens its window. A building you don't hold that none of your squads can see shows only its name, who holds it (no one or the enemy) and whether it has a shop; the rest (defense, liberation progress, local news) shows once a squad is in sight or you hold it.
 - **Liberation message:** names the place, lists any conscripts who joined (single map mode) and shows any card drawn, with a Close button. When it closes, a small fireworks show bursts over the place, so you can tell which it was in a cluster. "Do not show this window again" (or Options) turns the message off: a banner names the place instead and the fireworks still play. It always opens when there's a card to choose.
 - **Enemy captures:** a banner says when the enemy captures a neutral town or tower ("The enemy has captured Ashford.") and when it retakes one of yours ("The enemy has retaken …").
@@ -95,7 +103,7 @@ This describes how the game actually plays right now, not the full design (that'
 
 ## Cards
 
-- You start with 3 random cards, and draw one more per building liberated or hidden site found (a Seer-led squad chooses from 2 options, an Oracle from 3; a Foresight leader previews what's coming). No limit on cards held or played.
+- You start with 3 random cards, and draw one more per building liberated or card cache claimed (a Seer-led squad chooses from 2 options, an Oracle from 3; a Foresight leader previews what's coming). No limit on cards held or played.
 - Most cards are played during a battle (stat boosts, heals, attacks on the whole enemy squad, debuffs, extra turns); Rooster and Fox are played from the map and jump the clock to the next noon or midnight.
 - Every card shows as a picture card: a line drawing of its animal at the top, its name, and what it does at the bottom (in the Cards panel, the battle card picker and the liberation popup). The Cards panel (C) looks like the battle picker: your hand large in the middle of the screen, with Play under Rooster and Fox.
 - XP that comes specifically from card damage is redirected to the Opinion Leader's squad instead of whichever squad is fighting (unless that's the same squad).

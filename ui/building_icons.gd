@@ -10,7 +10,7 @@ const TOPS := {"town": Vector2(0, -15), "tower": Vector2(0, -16), "temple": Vect
 
 static func build(s: float) -> Dictionary:
 	var out := {}
-	for type in ["player_base", "enemy_base", "town", "tower", "temple", "nomads", "hidden_site", "lair"]:
+	for type in ["player_base", "enemy_base", "town", "tower", "temple", "nomads", "hidden_site", "lair", "treasure", "card", "rare_recruit", "secret_temple"]:
 		var img := draw(type, s)
 		img.generate_mipmaps()
 		out[type] = ImageTexture.create_from_image(img)
@@ -67,6 +67,30 @@ static func draw(type: String, s: float) -> Image:
 		"hidden_site":
 			poly.call([Vector2(0, -12), Vector2(10, 0), Vector2(0, 12), Vector2(-10, 0)], Color(outline, 0.6))
 			poly.call([Vector2(0, -10), Vector2(8, 0), Vector2(0, 10), Vector2(-8, 0)], Color("#f2c94c", 0.6))
+		"treasure":  # a chest
+			box.call(-12, -4, 12, 11, outline)
+			box.call(-11, -3, 11, 10, Color("#8a5a2b"))
+			poly.call(TerrainTiles.ellipse(Vector2(0, -4), 12, 6), outline)
+			poly.call(TerrainTiles.ellipse(Vector2(0, -4), 11, 5), Color("#a86d34"))
+			box.call(-11, -1, 11, 1, Color("#f2c94c"))
+			box.call(-2, -2, 2, 4, Color("#f2c94c"))
+		"card":  # a standing card
+			poly.call([Vector2(-9, -13), Vector2(9, -13), Vector2(9, 12), Vector2(-9, 12)], outline)
+			poly.call([Vector2(-8, -12), Vector2(8, -12), Vector2(8, 11), Vector2(-8, 11)], Color("#f4ead2"))
+			poly.call([Vector2(0, -7), Vector2(5, 0), Vector2(0, 7), Vector2(-5, 0)], Color("#6d3a8c"))
+		"rare_recruit":  # a tent with a banner
+			poly.call([Vector2(-13, 12), Vector2(0, -6), Vector2(13, 12)], outline)
+			poly.call([Vector2(-11, 11), Vector2(0, -4), Vector2(11, 11)], Color("#4f7a5a"))
+			box.call(-1, -16, 1, -4, outline)
+			poly.call([Vector2(1, -16), Vector2(10, -13), Vector2(1, -10)], Color("#d65a4a"))
+		"secret_temple":  # a small mossy temple
+			box.call(-11, 8, 11, 13, outline)
+			box.call(-10, 9, 10, 12, Color("#a7b59a"))
+			for x in [-8, -1.5, 5]:
+				box.call(x, -2, x + 3, 9, Color("#a7b59a"))
+			poly.call([Vector2(-12, -2), Vector2(0, -12), Vector2(12, -2)], outline)
+			poly.call([Vector2(-10, -3), Vector2(0, -10.5), Vector2(10, -3)], Color("#a7b59a"))
+			poly.call(TerrainTiles.ellipse(Vector2(0, -15), 3, 3), Color("#8fd0ff"))
 		"lair":
 			poly.call(TerrainTiles.ellipse(Vector2(0, 4), 14, 10), outline)
 			poly.call(TerrainTiles.ellipse(Vector2(0, 4), 12.5, 8.5), Color("#7a6f63"))

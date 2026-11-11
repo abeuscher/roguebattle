@@ -225,10 +225,10 @@ func _build_objects(map: MapData) -> void:
 	var icons: Array = []
 	for b in map.buildings:
 		occupied[b["hex"]] = true
-		icons.append([b["hex"], b["type"]])
+		icons.append([b["hex"], ("lair" if b["kind"] == "lair" else b["kind"]) if b["hidden"] else b["type"], b["hidden"]])  # a hidden site shows its kind
 	for l in map.lairs:
 		occupied[l["hex"]] = true
-		icons.append([l["hex"], "lair"])
+		icons.append([l["hex"], "lair", true])
 	var forest: int = _data.terrain_ids["forest"]
 	var mountain: int = _data.terrain_ids["mountain"]
 	for top in range(0, map.height, STRIP_ROWS):
@@ -272,7 +272,7 @@ func _build_objects(map: MapData) -> void:
 		icon.texture = _icons[entry[1]]
 		icon.offset = Vector2(0, -ground)
 		icon.position = Hex.to_pixel(map.hex_at(entry[0]), HEX_SIZE)
-		if entry[1] in ["hidden_site", "lair"]:
+		if entry[2]:
 			icon.visible = show_secrets
 			_secret_at[entry[0]] = icon
 		_object_layer.add_child(icon)
@@ -324,6 +324,13 @@ func building_icon_at(world: Vector2) -> int:
 			best_d = d
 			best = i
 	return best
+
+
+## Takes a claimed hidden site's icon off the map for good.
+func remove_site(hex: int) -> void:
+	if _secret_at.has(hex):
+		_secret_at[hex].visible = false
+		_secret_at.erase(hex)
 
 
 ## Shows a hidden site or lair icon once a squad has seen it.
