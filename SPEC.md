@@ -557,10 +557,10 @@ All values are placeholders.
 
 | Flow | Rule |
 | --- | --- |
-| Starting gold | 500 |
+| Starting gold | 2 days' upkeep of a full field army (the squad cap of full squads) on this map, at least 500 (round 10, 2026-11-11) |
 | Town and tower income | 50 gold per day each, at noon |
 | Liberation bonus | 100 × (0.5 + reputation/100), once per liberation |
-| Upkeep | Per unit per day at noon: stage 1 = 5, stage 2 = 10, stage 3 = 20, stage 4 = 35. Large ×2, Tiny ×0.5 |
+| Upkeep | Per unit per day at noon, for squads on the map only; units in the recruit pool and squads at base cost nothing. Stage 1 = 5, stage 2 = 10, stage 3 = 20, stage 4 = 35. Large ×2, Tiny ×0.5. Then × the map's towns and towers ÷ a reference count (a Small map's, 28), so cost follows what the map can pay: holding half a map's towns and towers covers a full field army at stage 2 with room to spare (round 10, 2026-11-11). Deploying a squad costs one day of its upkeep |
 | End-of-map bonus | Scaled by reputation, like the liberation bonus |
 | Going broke | At zero gold, the player can pull a squad back to base for gold equal to its total value. Tune so this gives room to recover rather than prolonging a loss |
 | Services | Cure one status 10, heal a unit to full 20, revive 50 × stage |
