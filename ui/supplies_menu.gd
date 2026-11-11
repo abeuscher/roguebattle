@@ -33,12 +33,9 @@ func setup(game_state: GameState, s: Squad, before: Battle = null) -> void:
 	col.add_theme_constant_override("separation", 10)
 	col.custom_minimum_size.x = 520
 	panel.add_child(col)
-	col.add_child(UiStyle.label("Use item  ·  %s" % s.name, 24))
+	col.add_child(UiStyle.title_row(UiStyle.label("Use item  ·  %s" % s.name, 24), func(): closed.emit()))
 	_list.add_theme_constant_override("separation", 8)
 	col.add_child(_list)
-	var close := UiStyle.button("Close (Esc)", 180)
-	close.pressed.connect(func(): closed.emit())
-	col.add_child(close)
 	_refresh()
 
 

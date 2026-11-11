@@ -18,7 +18,7 @@ const DAY := Color("#f6e7a8")
 const NIGHT := Color("#a9b8e8")
 const GLASS := Color(0.07, 0.09, 0.11, 0.8)  # the panels' see-through dark
 const DRAWER_SHUT := 104.0  # the drawer's width, collapsed: number and leader icon
-const DRAWER_OPEN := 280.0  # expanded: the squad's name too
+const DRAWER_OPEN := 340.0  # expanded: markers and the squad's name too
 const DRAWER_TIME := 0.2  # seconds to slide
 const TOOL_HEIGHT := 32.0  # toolbar buttons, about half the old size
 
@@ -210,7 +210,8 @@ func _icon_rect(tex: Texture2D) -> TextureRect:
 
 
 ## One drawer row per squad: leader icon, number and status icon (moving, in a building,
-## standing in the open), then the name (seen when open). A click centers the map on it.
+## standing in the open), then travel type, speed and alignment and the name (seen when
+## open). A click centers the map on it.
 func set_squads(squads: Array[Squad]) -> void:
 	for child in _drawer_rows.get_children():
 		_drawer_rows.remove_child(child)
@@ -239,6 +240,13 @@ func set_squads(squads: Array[Squad]) -> void:
 		var status := _icon_rect(null)
 		status.name = "Status"
 		row.add_child(status)
+		var gap := Control.new()  # round 10: nothing past the status icon peeks out of the shut drawer
+		gap.custom_minimum_size.x = DRAWER_SHUT - 92.0  # 92: the status icon's right edge (6 + 6 + 28 + 8 + 16 + 8 + 20)
+		gap.mouse_filter = MOUSE_FILTER_IGNORE
+		row.add_child(gap)
+		var marks := Control.new()  # travel, speed, alignment (playtest round 9), seen when open; filled by refresh
+		marks.name = "Markers"
+		row.add_child(marks)
 		var name_label := UiStyle.label(s.name, 15)
 		name_label.mouse_filter = MOUSE_FILTER_IGNORE
 		row.add_child(name_label)
@@ -335,6 +343,16 @@ func refresh(state: GameState) -> void:
 		if lead.get_meta("face", "-") != face:
 			lead.set_meta("face", face)
 			lead.texture = UiStyle.svg("skull", 24, Color(0.92, 0.9, 0.86)) if face == "skull" 					else (UnitIcons.on_token(face, 28, SquadToken.PLAYER) if face != "" else null)
+		var marks: Control = b.get_node("Row/Markers")
+		var key := "%s|%d|%s" % [s.travel_name(), s.speed_tier, s.alignment_band(state.data)]
+		if marks.get_meta("key", "") != key:
+			var fresh := SquadMenu.markers(state.data, s, 16)
+			fresh.set_meta("key", key)
+			for m in [fresh] + fresh.get_children():
+				m.mouse_filter = MOUSE_FILTER_IGNORE
+			marks.replace_by(fresh)
+			marks.queue_free()
+			fresh.name = "Markers"
 		var icon: TextureRect = b.get_node("Row/Status")
 		if icon.get_meta("status", "") != st:
 			icon.set_meta("status", st)

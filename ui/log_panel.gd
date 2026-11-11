@@ -52,10 +52,7 @@ func _ready() -> void:
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = SIZE_EXPAND_FILL
 	top.add_child(spacer)
-	var close := Button.new()
-	close.text = "Close (L)"
-	close.pressed.connect(func(): closed.emit())
-	top.add_child(close)
+	top.add_child(UiStyle.close_x(func(): closed.emit(), "Close (L)"))
 	_text.size_flags_vertical = SIZE_EXPAND_FILL
 	_text.scroll_following = true
 	_text.selection_enabled = true

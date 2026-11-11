@@ -677,3 +677,17 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **Skull:** Lucide skull, drawn in the token's ring instead of the leader icon, and in the drawer row's leader slot (re-checked every refresh, keyed on skull or leader class).
 - **Dollar sign:** white `$` with a dark outline on the roof of a town with a shop, drawn by `BuildingMarker` (towns only, as the note asked; nomad camps always have shops and have no roof).
   - 348 tests passing.
+
+## Session 056 (2026-11-11): dialogs and squad views (M4 session 28)
+
+- **Close is an X** everywhere: `UiStyle.close_x` (Lucide x, flat, tooltip names the key) and `UiStyle.title_row` (title filling the width, then the X). Replaced the Close buttons of the squad menu, building, deploy, enemy, ledger, options, shop, Use item, tech, log, cards, unit detail and the battle's card picker. Edit Units keeps its "Done (U)" (it's the screen's way forward, not a Close); the town-lost window keeps Continue; screens (configurator, summary) keep Back. Windows that need an answer (a card offer) show no X.
+- **Squad menu:** one row of 60 × 56 icon buttons (Lucide pencil, flask-conical, store, footprints, flag, crosshair, house); the tooltip is the action's name, then what it does or why it's greyed out. The squad's slots stay above it.
+- **Markers:** `SquadMenu.markers(data, squad, px)` builds the terrain hex, speed tier and alignment icon with tooltips; used in the squad menu header (26 px), the drawer (16 px, revealed when open, rebuilt when travel, speed or alignment band changes), Edit Units squad cards (18 px, bottom left) and the squad detail bar (24 px, replacing the words for travel, speed and alignment). Not on map tokens, as the roadmap said.
+- **Encounter Edit Squad:** opens Edit Units on that squad over the hidden encounter dialog; on close, `Battle.refresh_side(0)` now also recomputes each unit's attacks (row-dependent) and the leader's aura, and the odds are re-read. In the field Edit Units only allows rearranging, so who fights can't change.
+- **Begin Battle** replaces "Go to fight" (round 10).
+- **Deploy button** (round 10): on Edit Units' squad cards, Deploy / Return moved from the header to a footer row at the bottom right (markers and slots on its left); "On the map" / "At base" stays top right. The open squad's detail bar is unchanged apart from the markers.
+- **Paging units** (round 10): arrow buttons (64 × 120, Lucide chevrons) at the left and right edges of the unit detail, shown when its squad has 2+ units; Left / Right keys too. Order is front row by column, then back row; wraps round. Units in the recruit pool don't page.
+- **Battle view springs open** (round 10 experiment): `Battlemap._spring_open` scales the whole battle view (its shade too) from 0 to 1 over 0.45 s with a back-out ease (slight overshoot), pivoting on the two squads' midpoint on screen. Every battle the player watches opens this way.
+- **Liberation popup:** left column the drawn card (or the offer) at its own width, View all cards at card width under it; right column "Conscripts" (only with conscripts) with class icon, name, class and level, at least a card's width.
+- **Drawer shut width** (from round 10's session 29 list, done here since the markers went in the same row): a gap after the status icon keeps the markers (and names) clear of the shut drawer's edge; the shut width stays 104.
+  - 349 tests passing.

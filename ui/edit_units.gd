@@ -239,9 +239,6 @@ func _card(cell: int) -> Control:
 	head.add_child(spacer)
 	var where := "In the field" if locked else ("On the map" if s in state.squads else "At base")
 	head.add_child(_quiet(UiStyle.label(where, 13, Color("#e0a050") if locked else Color(0.6, 0.65, 0.7))))
-	var go := _base_button(s, true)
-	if go:
-		head.add_child(go)
 	col.add_child(head)
 	var lead := "Led by %s" % s.leader.name if s.leader else "No leader: add a unit that can lead"
 	col.add_child(_quiet(UiStyle.label(lead, 13, Color(0.7, 0.73, 0.78) if s.leader else Color("#ff8a70"))))
@@ -257,8 +254,22 @@ func _card(cell: int) -> Control:
 		for u in units:
 			row.add_child(_chip(u, "compact", true, cell, "", -1))  # drops are checked per drop: items go anywhere, units in or out only at base
 		col.add_child(row)
-	col.add_child(_quiet(UiStyle.label("%s  ·  speed %d  ·  slots %s / %d" % [s.travel_name(), s.speed_tier,
-			_num(Squad.slots_filled(data, s.units)), s.capacity(data)], 13, Color(0.7, 0.73, 0.78))))
+	var fill := Control.new()
+	fill.size_flags_vertical = SIZE_EXPAND_FILL
+	fill.mouse_filter = MOUSE_FILTER_IGNORE
+	col.add_child(fill)
+	# Round 10: Deploy (or Return) at the bottom right; where the squad is stays top right.
+	var foot := HBoxContainer.new()
+	foot.add_theme_constant_override("separation", 10)
+	col.add_child(foot)
+	foot.add_child(SquadMenu.markers(data, s, 18))
+	var slots := _quiet(UiStyle.label("slots %s / %d" % [_num(Squad.slots_filled(data, s.units)), s.capacity(data)], 13, Color(0.7, 0.73, 0.78)))
+	slots.size_flags_horizontal = SIZE_EXPAND_FILL
+	slots.size_flags_vertical = SIZE_SHRINK_CENTER
+	foot.add_child(slots)
+	var go := _base_button(s, true)
+	if go:
+		foot.add_child(go)
 	return card
 
 
@@ -269,13 +280,13 @@ func _detail() -> Control:
 	var locked := not state.can_edit(s)
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 8)
-	var facts := "%s  ·  speed %d  ·  slots %s / %d  ·  %s (%d)" % [s.travel_name(), s.speed_tier, _num(Squad.slots_filled(data, s.units)), s.capacity(data),
-			s.alignment_band(data).capitalize(), roundi(s.alignment())]
+	var facts := "slots %s / %d" % [_num(Squad.slots_filled(data, s.units)), s.capacity(data)]
 	if locked:
 		facts += "  ·  In the field: rearrange it here; add or remove units back at the Player Base"
 	var bar := HBoxContainer.new()
 	bar.add_theme_constant_override("separation", 12)
 	box.add_child(bar)
+	bar.add_child(SquadMenu.markers(data, s, 24))
 	bar.add_child(UiStyle.label(facts, 16, Color("#e0a050") if locked else Color(0.75, 0.78, 0.82)))
 	var go := _base_button(s, false)
 	if go:
@@ -344,6 +355,19 @@ func _show_unit() -> void:
 	var center := CenterContainer.new()
 	center.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	_modal.add_child(center)
+	if sq and sq.units.size() > 1:  # round 10: page through the squad from the screen's edges
+		for step in [-1, 1]:
+			var pager := UiStyle.button("", 64)
+			pager.icon = UiStyle.svg("chevron-left" if step < 0 else "chevron-right", 40)
+			pager.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			pager.custom_minimum_size = Vector2(64, 120)
+			pager.focus_mode = FOCUS_NONE
+			pager.tooltip_text = "Previous unit (Left)" if step < 0 else "Next unit (Right)"
+			pager.set_anchors_preset(PRESET_CENTER_LEFT if step < 0 else PRESET_CENTER_RIGHT)
+			pager.position = Vector2(24 if step < 0 else -88, -60)
+			pager.name = "Previous" if step < 0 else "Next"
+			pager.pressed.connect(_page_unit.bind(step))
+			_modal.add_child(pager)
 	var panel := PanelContainer.new()
 	var style := UiStyle.box(UiStyle.PANEL, 24)
 	style.set_border_width_all(2)
@@ -365,9 +389,7 @@ func _show_unit() -> void:
 	var sub := UiStyle.label("%s  ·  %s" % [u.unit_class, where], 18, Color(0.75, 0.78, 0.82))
 	sub.size_flags_horizontal = SIZE_EXPAND_FILL
 	head.add_child(sub)
-	var close := UiStyle.button("Close (Esc)", 190, true)
-	close.pressed.connect(_close_unit)
-	head.add_child(close)
+	head.add_child(UiStyle.close_x(_close_unit))
 	var tabs := HBoxContainer.new()
 	tabs.add_theme_constant_override("separation", 6)
 	col.add_child(tabs)
@@ -383,6 +405,26 @@ func _show_unit() -> void:
 	body.size_flags_vertical = SIZE_EXPAND_FILL
 	col.add_child(body)
 	col.add_child(UiStyle.label(_status.text, 16, UiStyle.ACCENT))
+
+
+## The squad's units in reading order: front row left to right, then the back row.
+func _reading_order(sq: Squad) -> Array[Unit]:
+	var order: Array[Unit] = sq.row("front")
+	order.sort_custom(func(a: Unit, b: Unit): return a.col < b.col)
+	var back: Array[Unit] = sq.row("back")
+	back.sort_custom(func(a: Unit, b: Unit): return a.col < b.col)
+	order.append_array(back)
+	return order
+
+
+## Shows the previous (step -1) or next (+1) unit of the open unit's squad, wrapping round.
+func _page_unit(step: int) -> void:
+	var sq := army.squad_of(_unit) if _unit else null
+	if sq == null or sq.units.size() < 2:
+		return
+	var order := _reading_order(sq)
+	_unit = order[posmod(order.find(_unit) + step, order.size())]
+	_refresh()
 
 
 func _close_unit() -> void:
@@ -823,6 +865,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	var key := (event as InputEventKey).keycode
 	if key == KEY_ESCAPE and _unit:
 		_close_unit()
+	elif key in [KEY_LEFT, KEY_RIGHT] and _unit:
+		_page_unit(-1 if key == KEY_LEFT else 1)
 	elif key == KEY_U or (key == KEY_ESCAPE and _squad == null):
 		closed.emit()
 	elif key == KEY_ESCAPE:

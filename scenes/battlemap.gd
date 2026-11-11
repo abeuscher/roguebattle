@@ -15,6 +15,7 @@ const ENEMY := Color("#c8402f")
 const CLICK_SLOP := 6.0  # a press and release closer than this is a click, not a drag
 const ZOOMED_OUT_REACH := 1.25  # zoomed out, a token's click area is this much wider than the token
 const PEEK_MSEC := 3000  # how long View destination shows the flag
+const SPRING_SECONDS := 0.45  # the battle view springing open from the fight's place (round 10)
 const STACK_SPREAD := 16.0  # world units between flags of squads standing on the same hex
 const START_PROMPT := "Press Play to begin  (Space, or pick a speed under the minimap)"
 const TEST_TRAVEL := ["plains", "forest", "mountain", "swamp", "snow", "desert", "shallow", "deep", "sky", ""]
@@ -671,8 +672,17 @@ func _open_encounter() -> void:
 		_ui.add_child(screen)
 		screen.setup(state, b.sides[0], b)
 		_open_shop(screen)
-		_encounter.hide()  # its focused Go to fight would take Enter meant for the menu
+		_encounter.hide()  # its focused Begin Battle would take Enter meant for the menu
 		screen.closed.connect(func():
+			if _encounter:
+				_encounter.refresh()
+				_encounter.show()))
+	_encounter.edit.connect(func():  # rearrange before the fight (playtest round 9)
+		_encounter.hide()
+		_open_edit(b.sides[0].id - 1)
+		_edit.closed.connect(func():
+			b.refresh_side(0)
+			b.odds = Threat.label(data, b.sides[0], b.sides[1])
 			if _encounter:
 				_encounter.refresh()
 				_encounter.show()))
@@ -700,6 +710,16 @@ func _open_battle() -> void:
 	_ui.add_child(_battle)
 	_battle.setup(state, state.pending, false, bool(options.get("battle_wait_for_fight", true)))
 	_battle.finished.connect(_close_battle)
+	_spring_open(_battle, state.pending.sides[0], state.pending.sides[1])
+
+
+## Round 10 experiment: the battle view grows from a point at the fight's place on the
+## map to full size, overshooting a little, so you see where the battle is.
+func _spring_open(view: Control, a: Squad, b: Squad) -> void:
+	var at := [a, b].map(func(s: Squad): return _tokens[s.id].position if _tokens.has(s.id) else MapView.hex_center(state.map, s.hex))
+	view.pivot_offset = get_viewport().get_canvas_transform() * ((at[0] + at[1]) / 2.0)
+	view.scale = Vector2(0.001, 0.001)
+	create_tween().tween_property(view, "scale", Vector2.ONE, SPRING_SECONDS).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 func _close_battle(text: String) -> void:

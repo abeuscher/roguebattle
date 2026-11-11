@@ -41,6 +41,30 @@ static func dont_show_again(options: Dictionary, id: String, text := "Do not sho
 	return c
 
 
+## The X at a modal's top right that closes it (playtest round 9: replaces the Close
+## buttons at the bottom). `tip` names the key that also closes it.
+static func close_x(action: Callable, tip := "Close (Esc)") -> Button:
+	var x := Button.new()
+	x.icon = svg("x", 24)
+	x.flat = true
+	x.tooltip_text = tip
+	x.focus_mode = Control.FOCUS_NONE
+	x.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	x.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	x.pressed.connect(action)
+	return x
+
+
+## A modal's title line: `title` filling the width, then the X that closes it.
+static func title_row(title: Control, action: Callable, tip := "Close (Esc)") -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(title)
+	row.add_child(close_x(action, tip))
+	return row
+
+
 static func label(text: String, font_size := 16, color := Color.WHITE) -> Label:
 	var l := Label.new()
 	l.text = text

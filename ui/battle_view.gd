@@ -352,7 +352,7 @@ func _choose_card() -> void:
 	center.add_child(col)
 	var title := UiStyle.label("Play a card  ·  the battle waits", 26)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	col.add_child(title)
+	col.add_child(UiStyle.title_row(title, _close_picker))
 	var row := HFlowContainer.new()
 	row.add_theme_constant_override("h_separation", 16)
 	row.add_theme_constant_override("v_separation", 16)
@@ -361,11 +361,7 @@ func _choose_card() -> void:
 	col.add_child(row)
 	for id in _battle_cards():
 		row.add_child(_card_tile(id, int(_battle_cards()[id])))
-	var close := UiStyle.button("Close (Esc)", 200)
-	close.pressed.connect(_close_picker)
 	_no_focus.call_deferred(_picker)
-	close.size_flags_horizontal = SIZE_SHRINK_CENTER
-	col.add_child(close)
 
 
 ## One card face (CardFace) with a Play button.

@@ -35,7 +35,7 @@ func setup(game_state: GameState, is_offer := false) -> void:
 	col.alignment = BoxContainer.ALIGNMENT_CENTER
 	center.add_child(col)
 	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	col.add_child(_title)
+	col.add_child(_title if offer else UiStyle.title_row(_title, func(): closed.emit()))
 	_note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(_note)
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -45,11 +45,6 @@ func setup(game_state: GameState, is_offer := false) -> void:
 	_list.alignment = FlowContainer.ALIGNMENT_CENTER
 	_list.size_flags_horizontal = SIZE_EXPAND_FILL
 	_scroll.add_child(_list)
-	if not offer:
-		var close := UiStyle.button("Close (Esc)", 200)
-		close.pressed.connect(func(): closed.emit())
-		close.size_flags_horizontal = SIZE_SHRINK_CENTER
-		col.add_child(close)
 	_refresh()
 
 

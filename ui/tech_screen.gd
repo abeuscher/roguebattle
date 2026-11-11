@@ -37,9 +37,7 @@ func setup(game_state: GameState) -> void:
 	head.add_child(UiStyle.label("Tech", 26))
 	_points.size_flags_horizontal = SIZE_EXPAND_FILL
 	head.add_child(_points)
-	var close := UiStyle.button("Close (Esc)", 180, true)
-	close.pressed.connect(func(): closed.emit())
-	head.add_child(close)
+	head.add_child(UiStyle.close_x(func(): closed.emit()))
 	_body.add_theme_constant_override("separation", 30)
 	col.add_child(_body)
 	col.add_child(_status)

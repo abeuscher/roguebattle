@@ -29,7 +29,7 @@ func setup(game_data: GameData, option_values: Dictionary) -> void:
 	col.add_theme_constant_override("separation", 12)
 	col.custom_minimum_size.x = 560
 	panel.add_child(col)
-	col.add_child(UiStyle.label("Options", 26))
+	col.add_child(UiStyle.title_row(UiStyle.label("Options", 26), func(): closed.emit()))
 	for id in data.options["options"]:
 		var o: Dictionary = data.options["options"][id]
 		if o.get("remembered", false):
@@ -45,10 +45,6 @@ func setup(game_data: GameData, option_values: Dictionary) -> void:
 		col.add_child(c)
 		if o.has("tip"):
 			col.add_child(UiStyle.label(o["tip"], 14, Color(0.65, 0.68, 0.72)))
-	var close := UiStyle.button("Close (Esc)", 200)
-	close.pressed.connect(func(): closed.emit())
-	col.add_child(close)
-	close.grab_focus.call_deferred()
 
 
 func _unhandled_key_input(event: InputEvent) -> void:

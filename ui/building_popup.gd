@@ -28,7 +28,7 @@ func setup(state: GameState, b: Dictionary) -> void:
 	col.add_theme_constant_override("separation", 10)
 	col.custom_minimum_size.x = 560
 	panel.add_child(col)
-	col.add_child(UiStyle.label("%s  ·  %s" % [b["name"], info["name"]] if b.has("name") else state.site_name(b), 26))
+	col.add_child(UiStyle.title_row(UiStyle.label("%s  ·  %s" % [b["name"], info["name"]] if b.has("name") else state.site_name(b), 26), func(): closed.emit()))
 	var lines: Array
 	if b["type"] == "hidden_site":  # nobody owns a site: just what it is and what it does
 		lines = [_site_about(state, b)]
@@ -42,9 +42,6 @@ func setup(state: GameState, b: Dictionary) -> void:
 		var l := UiStyle.label(t, 16, Color(0.85, 0.87, 0.9))
 		l.autowrap_mode = TextServer.AUTOWRAP_WORD
 		col.add_child(l)
-	var close := UiStyle.button("Close (Esc)", 180)
-	close.pressed.connect(func(): closed.emit())
-	col.add_child(close)
 
 
 ## Everything about a building in sight or held: defense and rest, liberating, shop,

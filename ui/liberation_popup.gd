@@ -28,48 +28,72 @@ func setup(game_state: GameState, building: Dictionary, drawn_card: String, opti
 	panel.add_theme_stylebox_override("panel", UiStyle.box(UiStyle.PANEL, 22))
 	center.add_child(panel)
 	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 10)
+	col.add_theme_constant_override("separation", 14)
 	col.custom_minimum_size.x = 420
 	panel.add_child(col)
 	var what: String = building.get("name", state.data.buildings[building["type"]]["name"])
-	col.add_child(UiStyle.label("%s liberated!" % what, 24))
-	if not recruits.is_empty():  # single map mode's conscription
-		col.add_child(UiStyle.label("Conscripts join the recruit pool at the Player Base:", 16, Color(0.7, 0.72, 0.76)))
-		for u in recruits:
-			col.add_child(UiStyle.label("  %s, %s, level %d" % [u.name, u.unit_class, u.level], 16))
+	var title := UiStyle.label("%s liberated!" % what, 24)
+	col.add_child(title if _offering else UiStyle.title_row(title, func(): closed.emit()))
+	# Round 9 layout: the card and View all cards on the left, the conscripts in an
+	# equal-width column on the right.
+	var body := HBoxContainer.new()
+	body.add_theme_constant_override("separation", 28)
+	col.add_child(body)
+	var left := VBoxContainer.new()
+	left.add_theme_constant_override("separation", 10)
+	left.size_flags_horizontal = SIZE_EXPAND_FILL
+	body.add_child(left)
 	if drawn_card != "":
-		col.add_child(UiStyle.label("You draw:", 16, Color(0.7, 0.72, 0.76)))
+		left.add_child(UiStyle.label("You draw:", 16, Color(0.7, 0.72, 0.76)))
 		var face := CardFace.make(state.data, drawn_card)
-		face.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-		col.add_child(face)
+		face.size_flags_horizontal = SIZE_SHRINK_BEGIN
+		left.add_child(face)
 	elif _offering:
-		col.add_child(UiStyle.label("Choose a card:", 16, Color(0.7, 0.72, 0.76)))
+		left.add_child(UiStyle.label("Choose a card:", 16, Color(0.7, 0.72, 0.76)))
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 12)
-		row.alignment = BoxContainer.ALIGNMENT_CENTER
-		col.add_child(row)
+		left.add_child(row)
 		for id in state.card_offer:
 			var take := UiStyle.button("Take", 150, true)
 			take.pressed.connect(func():
 				state.choose_card(id)
 				closed.emit())
 			row.add_child(CardFace.make(state.data, id, 1, take))
-	_hand(col)
+	_hand(left)
+	if not recruits.is_empty():  # single map mode's conscription
+		var right := VBoxContainer.new()
+		right.add_theme_constant_override("separation", 10)
+		right.size_flags_horizontal = SIZE_EXPAND_FILL
+		right.custom_minimum_size.x = CardFace.SIZE.x
+		body.add_child(right)
+		right.add_child(UiStyle.label("Conscripts", 18, UiStyle.ACCENT))
+		right.add_child(UiStyle.label("They join the recruit pool at the Player Base.", 14, Color(0.7, 0.72, 0.76)))
+		for u in recruits:
+			right.add_child(_conscript(u))
 	if not _offering:
 		col.add_child(UiStyle.dont_show_again(options, "show_liberations"))
-	var buttons := HBoxContainer.new()
-	buttons.add_theme_constant_override("separation", 12)
-	buttons.alignment = BoxContainer.ALIGNMENT_CENTER
-	col.add_child(buttons)
-	if not _offering:
-		var close := UiStyle.button("Close (Esc)", 180)
-		close.pressed.connect(func(): closed.emit())
-		buttons.add_child(close)
+
+
+## One conscript: class icon, then name over class and level.
+func _conscript(u: Unit) -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	var pic := TextureRect.new()
+	pic.texture = UnitIcons.texture(u.unit_class, 44)
+	pic.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+	row.add_child(pic)
+	var text := VBoxContainer.new()
+	text.add_theme_constant_override("separation", 0)
+	text.add_child(UiStyle.label(u.name, 16))
+	text.add_child(UiStyle.label("%s, level %d" % [u.unit_class, u.level], 14, Color(0.75, 0.78, 0.82)))
+	row.add_child(text)
+	return row
 
 
 ## A "View all cards" toggle that lists the current hand inside this dialog.
 func _hand(col: VBoxContainer) -> void:
-	var toggle := UiStyle.button("View all cards (%d)" % state.cards.size(), 280)
+	var toggle := UiStyle.button("View all cards (%d)" % state.cards.size(), CardFace.SIZE.x)
+	toggle.size_flags_horizontal = SIZE_SHRINK_BEGIN
 	toggle.disabled = state.cards.is_empty()
 	col.add_child(toggle)
 	var list := VBoxContainer.new()

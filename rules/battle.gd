@@ -71,14 +71,19 @@ func _init(game_data: GameData, player: Squad, enemy: Squad, terrain_key: String
 
 
 ## Before the first action: takes in herbs and revivals used since the battle was set
-## up (the encounter popup's Use item), so revived units fight and starting HP is current.
+## up (the encounter popup's Use item), so revived units fight and starting HP is current,
+## and formation changes (its Edit Squad, round 9): rows set each unit's attacks, and the
+## leader its aura.
 func refresh_side(side: int) -> void:
 	fought[side] = sides[side].living()
+	_auras[side] = _aura_effects(sides[side].leader)
 	_start_hp[side] = 0
 	for u in fought[side]:
+		_side[u] = side
 		_start_hp[side] += u.hp
 		if not _attacks.has(u):
 			_join(u)
+		_attacks[u] = attack_count(u) if not ranged_only or fires_at_range(u) else 0
 
 
 func _join(u: Unit) -> void:

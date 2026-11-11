@@ -41,11 +41,9 @@ func setup(game_state: GameState, s: Squad, b: Dictionary) -> void:
 	title.size_flags_horizontal = SIZE_EXPAND_FILL
 	head.add_child(title)
 	head.add_child(_gold)
+	head.add_child(UiStyle.close_x(func(): closed.emit()))
 	_list.add_theme_constant_override("separation", 8)
 	col.add_child(_list)
-	var close := UiStyle.button("Close (Esc)", 180)
-	close.pressed.connect(func(): closed.emit())
-	col.add_child(close)
 	_refresh()
 
 

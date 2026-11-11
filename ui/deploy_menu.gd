@@ -25,7 +25,7 @@ func setup(state: GameState) -> void:
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 10)
 	panel.add_child(col)
-	col.add_child(UiStyle.label("Deploy Squad", 26))
+	col.add_child(UiStyle.title_row(UiStyle.label("Deploy Squad", 26), func(): closed.emit(), "Close (Esc or D)"))
 	col.add_child(UiStyle.label("Gold %d  ·  On the map %d / %d" % [state.gold, state.player_squads().size(), state.squad_cap()],
 			16, UiStyle.ACCENT))
 	var waiting := state.army.squads().filter(func(s: Squad): return s not in state.squads)
@@ -42,9 +42,6 @@ func setup(state: GameState) -> void:
 		col.add_child(b)
 		if why != "":
 			col.add_child(UiStyle.label("    " + why, 14, Color("#e0a050")))
-	var close := UiStyle.button("Close (Esc)", 180)
-	close.pressed.connect(func(): closed.emit())
-	col.add_child(close)
 
 
 func _unhandled_key_input(event: InputEvent) -> void:

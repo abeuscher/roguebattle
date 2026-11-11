@@ -25,7 +25,7 @@ func setup(state: GameState, s: Squad) -> void:
 	col.add_theme_constant_override("separation", 10)
 	col.custom_minimum_size.x = 480
 	panel.add_child(col)
-	col.add_child(UiStyle.label("%s  ·  %s" % [s.name, s.role.replace("_", " ").capitalize()], 26))
+	col.add_child(UiStyle.title_row(UiStyle.label("%s  ·  %s" % [s.name, s.role.replace("_", " ").capitalize()], 26), func(): closed.emit()))
 	var ago := state.clock.tick - int(seen["tick"])
 	col.add_child(UiStyle.label("As your squad saw it at your last fight, %s ago." % GameState.duration_text(ago) if ago > 0
 			else "As your squad saw it at your last fight.", 15, Color(0.75, 0.78, 0.84)))
@@ -42,9 +42,6 @@ func setup(state: GameState, s: Squad) -> void:
 			row.add_child(_unit(u))
 		if not any:
 			row.add_child(UiStyle.label("Empty", 15, Color(0.6, 0.62, 0.66)))
-	var close := UiStyle.button("Close (Esc)", 180)
-	close.pressed.connect(func(): closed.emit())
-	col.add_child(close)
 
 
 ## One unit: icon, then class and level (and a star for the leader); greyed if it fell.

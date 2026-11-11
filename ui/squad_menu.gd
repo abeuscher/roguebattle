@@ -41,30 +41,14 @@ func setup(state: GameState, s: Squad) -> void:
 	var title := UiStyle.label("%d · %s" % [s.id, s.name], 26)
 	title.size_flags_horizontal = SIZE_EXPAND_FILL
 	head.add_child(title)
-	var terrain := TextureRect.new()
-	terrain.texture = _terrain_hex(data, s)
-	terrain.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
-	terrain.size_flags_vertical = SIZE_SHRINK_CENTER
-	terrain.tooltip_text = "Travel type: %s" % s.travel_name()
-	head.add_child(terrain)
-	var speed := UiStyle.label(str(s.speed_tier), 22)
-	speed.mouse_filter = MOUSE_FILTER_STOP
-	speed.tooltip_text = "Speed tier %d" % s.speed_tier
-	head.add_child(speed)
-	var band := s.alignment_band(data)
-	var align := TextureRect.new()
-	align.texture = UiStyle.icon(band, 26)
-	align.modulate = ALIGN_COLORS[band]
-	align.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
-	align.size_flags_vertical = SIZE_SHRINK_CENTER
-	align.tooltip_text = "Alignment: %s (%d)" % [band.capitalize(), roundi(s.alignment())]
-	head.add_child(align)
+	head.add_child(markers(data, s, 26))
 	var status := TextureRect.new()  # moving, in a building or in the open (playtest round 7)
 	status.texture = Hud.status_icon(state.squad_status(s), 26)
 	status.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
 	status.size_flags_vertical = SIZE_SHRINK_CENTER
 	status.tooltip_text = state.status_text(s)
 	head.add_child(status)
+	head.add_child(UiStyle.close_x(func(): closed.emit()))
 	var cols := s.capacity(data)
 	for u in s.units:
 		cols = maxi(cols, u.col + 1)
@@ -87,24 +71,24 @@ func setup(state: GameState, s: Squad) -> void:
 				chip.tooltip_text = "%s (%s), level %d. HP %d/%d." % [u.name, u.unit_class, u.level, u.hp, u.max_hp(data)]
 				slot.add_child(chip)
 			row.add_child(slot)
-	var gap := Control.new()
-	gap.custom_minimum_size.y = 40  # with the separation, about 50px between the squad and its actions
-	col.add_child(gap)
+	# Round 9: one row of icon buttons with tooltips instead of a column of words.
+	var actions := HBoxContainer.new()
+	actions.add_theme_constant_override("separation", 10)
+	actions.alignment = BoxContainer.ALIGNMENT_CENTER
+	col.add_child(_spacer(8))
+	col.add_child(actions)
 	var at_base := s.hex == state.map.player_base
-	_button(col, "Edit squad", true, "Open the squad in Edit Units." if state.can_edit(s) else "Open the squad in Edit Units: in the field you can rearrange it but not add or remove units.") \
-			.pressed.connect(func(): edit.emit())
+	_button(actions, "pencil", "Edit squad", true, "Open the squad in Edit Units." if state.can_edit(s) else "Open the squad in Edit Units: in the field you can rearrange it but not add or remove units.") 			.pressed.connect(func(): edit.emit())
 	var herbs := 0
 	for id in state.army.supplies:
 		herbs += int(state.army.supplies[id])
-	_button(col, "Use item", herbs > 0, "Give a herb to a hurt unit." if herbs > 0 else "No supplies: buy herbs at a shop.") \
-			.pressed.connect(func(): use_item.emit())
+	_button(actions, "flask-conical", "Use item", herbs > 0, "Give a herb to a hurt unit." if herbs > 0 else "No supplies: buy herbs at a shop.") 			.pressed.connect(func(): use_item.emit())
 	var place := state.shop_at(s)
 	var shop_name := "Temple services" if place.get("type", "") == "temple" else "Shop"
-	_button(col, shop_name, not place.is_empty(), "Buy here." if not place.is_empty() else "Stand still in a building with a shop (not enemy-held) or a temple.") \
-			.pressed.connect(func(): shop.emit())
-	_button(col, "Move", true, "Click hexes to lay rally points.").pressed.connect(func(): move.emit())
+	_button(actions, "store", shop_name, not place.is_empty(), "Buy here." if not place.is_empty() else "Stand still in a building with a shop (not enemy-held) or a temple.") 			.pressed.connect(func(): shop.emit())
+	_button(actions, "footprints", "Move", true, "Click hexes to lay rally points.").pressed.connect(func(): move.emit())
 	if s.is_moving():
-		_button(col, "View destination", true, "Show where %s is headed." % s.name).pressed.connect(func(): view_destination.emit())
+		_button(actions, "flag", "View destination", true, "Show where %s is headed." % s.name).pressed.connect(func(): view_destination.emit())
 	var targets := state.fire_targets(s)
 	var why := ""
 	if not state.can_fire(s):
@@ -113,16 +97,39 @@ func setup(state: GameState, s: Squad) -> void:
 		why = "Reloading: ready in %s." % GameState.duration_text(s.fire_ready - state.clock.tick)
 	elif targets.is_empty():
 		why = "No visible enemy within %d hexes." % state.fire_range(s)
-	_button(col, "Ranged attack", targets.size() > 0, why if why != "" else "Click an enemy squad within %d hexes." % state.fire_range(s)) \
-			.pressed.connect(func(): fire.emit())
-	_button(col, "Return to base", true, "Go into the Player Base." if at_base else "March to the Player Base and go in on arrival.") \
-			.pressed.connect(func(): return_to_base.emit())
-	_button(col, "Close (Esc)", true, "").pressed.connect(func(): closed.emit())
+	_button(actions, "crosshair", "Ranged attack", targets.size() > 0, why if why != "" else "Click an enemy squad within %d hexes." % state.fire_range(s)) 			.pressed.connect(func(): fire.emit())
+	_button(actions, "house", "Return to base", true, "Go into the Player Base." if at_base else "March to the Player Base and go in on arrival.") 			.pressed.connect(func(): return_to_base.emit())
+
+
+## The squad's travel terrain, speed tier and alignment, with tooltips: in the squad menu
+## header and everywhere else a squad is shown (playtest round 9). `px` is the icon size.
+static func markers(data: GameData, s: Squad, px := 26) -> HBoxContainer:
+	var box := HBoxContainer.new()
+	box.add_theme_constant_override("separation", maxi(4, px / 3))
+	box.size_flags_vertical = SIZE_SHRINK_CENTER
+	var terrain := TextureRect.new()
+	terrain.texture = _terrain_hex(data, s, px * 0.58)
+	terrain.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+	terrain.size_flags_vertical = SIZE_SHRINK_CENTER
+	terrain.tooltip_text = "Travel type: %s" % s.travel_name()
+	box.add_child(terrain)
+	var speed := UiStyle.label(str(s.speed_tier), roundi(px * 0.85))
+	speed.mouse_filter = MOUSE_FILTER_STOP
+	speed.tooltip_text = "Speed tier %d" % s.speed_tier
+	box.add_child(speed)
+	var band := s.alignment_band(data)
+	var align := TextureRect.new()
+	align.texture = UiStyle.icon(band, px)
+	align.modulate = ALIGN_COLORS[band]
+	align.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+	align.size_flags_vertical = SIZE_SHRINK_CENTER
+	align.tooltip_text = "Alignment: %s (%d)" % [band.capitalize(), roundi(s.alignment())]
+	box.add_child(align)
+	return box
 
 
 ## A small hex of the squad's travel terrain (sky blue for flyers, grey for none).
-static func _terrain_hex(data: GameData, s: Squad) -> Texture2D:
-	var size := 15.0
+static func _terrain_hex(data: GameData, s: Squad, size := 15.0) -> Texture2D:
 	if s.travel_type != "" and not s.sky:
 		var t: Dictionary = data.terrains[data.terrain_ids[s.travel_type]]
 		return ImageTexture.create_from_image(TerrainTiles.draw_tile(t["key"], Color(t["color"]), size))
@@ -133,14 +140,27 @@ static func _terrain_hex(data: GameData, s: Squad) -> Texture2D:
 	return ImageTexture.create_from_image(img)
 
 
-func _button(parent: Control, text: String, enabled: bool, tip: String) -> Button:
-	var b := Button.new()
-	b.text = text
+## A square icon button; the tooltip names the action, then says what it does or why
+## it can't be used now.
+func _button(parent: Control, icon_name: String, text: String, enabled: bool, tip: String) -> Button:
+	var b := UiStyle.button("", 60)
+	b.custom_minimum_size = Vector2(60, 56)
+	b.icon = UiStyle.svg(icon_name, 28)
+	b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	b.add_theme_color_override("icon_disabled_color", Color(1, 1, 1, 0.28))
 	b.disabled = not enabled
-	b.tooltip_text = tip
-	b.custom_minimum_size = Vector2(0, 40)
+	b.tooltip_text = "%s
+%s" % [text, tip] if tip != "" else text
+	b.focus_mode = FOCUS_NONE
+	b.name = text.to_pascal_case()
 	parent.add_child(b)
 	return b
+
+
+static func _spacer(px: int) -> Control:
+	var c := Control.new()
+	c.custom_minimum_size.y = px
+	return c
 
 
 func _unhandled_key_input(event: InputEvent) -> void:

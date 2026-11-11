@@ -387,3 +387,17 @@ static func _formula_data() -> GameData:
 	var data := GameData.load_dir()
 	data.battle["front_row_damage_cut"] = 0.0
 	return data
+
+
+## The encounter dialog's Edit Squad (playtest round 9): a formation changed after the
+## battle was set up, before it starts, sets the attacks it fights with.
+func test_a_formation_change_before_the_fight_counts() -> void:
+	var st := _state()
+	var ours := st.add_squad("Ours", st.map.index_of(Hex.from_offset(Vector2i(5, 2))), [["Knight", "front"], ["Fighter", "front"]])
+	var theirs := st.add_squad("Theirs", st.map.index_of(Hex.from_offset(Vector2i(6, 2))), [["Knight", "front"]])
+	var b := st.start_battle(ours, theirs, theirs)
+	var fighter := ours.units[1]
+	check_eq(b._attacks[fighter], 2, "a Fighter in front attacks twice")
+	fighter.row = "back"
+	b.refresh_side(0)
+	check_eq(b._attacks[fighter], 1, "moved to the back before the fight: once")

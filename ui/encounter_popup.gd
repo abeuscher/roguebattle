@@ -1,12 +1,14 @@
 class_name EncounterPopup
 extends Control
 ## Shown when one of your squads runs into a hostile one (SPEC §11.1): the map is
-## paused and the camera has flown to the fight; Go to fight opens the battle view.
+## paused and the camera has flown to the fight; Begin Battle opens the battle view, and
+## Edit Squad opens the squad in Edit Units first (playtest round 9).
 ## A modal, with a light shade and the panel in the lower part of the screen so the
 ## two squads stay in view at its center.
 
 signal go
 signal use_item
+signal edit
 
 var _odds: Label
 var _battle: Battle
@@ -41,7 +43,7 @@ func setup(b: Battle, state_supplies: Dictionary) -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 12)
 	col.add_child(row)
-	var button := UiStyle.button("Go to fight", 240, true)
+	var button := UiStyle.button("Begin Battle", 240, true)
 	button.pressed.connect(func(): go.emit())
 	row.add_child(button)
 	var herbs := 0
@@ -53,6 +55,11 @@ func setup(b: Battle, state_supplies: Dictionary) -> void:
 	items.focus_mode = FOCUS_NONE
 	items.pressed.connect(func(): use_item.emit())
 	row.add_child(items)
+	var squad := UiStyle.button("Edit Squad", 160)
+	squad.tooltip_text = "Change the formation before the fight."
+	squad.focus_mode = FOCUS_NONE
+	squad.pressed.connect(func(): edit.emit())
+	row.add_child(squad)
 	button.grab_focus.call_deferred()
 
 

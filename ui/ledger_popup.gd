@@ -27,7 +27,7 @@ func setup(entry: Dictionary, options: Dictionary) -> void:
 	col.add_theme_constant_override("separation", 10)
 	col.custom_minimum_size.x = 460
 	panel.add_child(col)
-	col.add_child(UiStyle.label("Day %d  ·  Noon ledger" % int(entry["day"]), 24))
+	col.add_child(UiStyle.title_row(UiStyle.label("Day %d  ·  Noon ledger" % int(entry["day"]), 24), func(): closed.emit()))
 	col.add_child(UiStyle.label("Gold in and out since the last noon.", 15, Color(0.75, 0.78, 0.84)))
 	var grid := GridContainer.new()
 	grid.columns = 2
@@ -58,9 +58,6 @@ func setup(entry: Dictionary, options: Dictionary) -> void:
 	if int(entry["unpaid"]) > 0:
 		col.add_child(UiStyle.label("%d upkeep went unpaid: not enough gold." % int(entry["unpaid"]), 15, LOSS))
 	col.add_child(UiStyle.dont_show_again(options, "show_daily_ledger"))
-	var close := UiStyle.button("Close (Esc)", 200)
-	close.pressed.connect(func(): closed.emit())
-	col.add_child(close)
 
 
 func _amount(n: int, font_size: int) -> Label:
