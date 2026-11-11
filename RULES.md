@@ -135,10 +135,10 @@ This describes how the game actually plays right now, not the full design (that'
 ## Your starting army (Map 1 setup)
 
 **Single map mode:**
-- **30 units, and you build the squads.** The Opinion Leader (a stage-3 leader) starts alone in squad 1, on the map at the Player Base. The other 29 wait in the recruit pool: 3 more stage-3 leaders, 13 stage-2 units, 3 stage-1 Large units and 10 Serfs. All from the Serf lines except the Large units, which come from the race lines (Drakeling, Wolf, Bison and the like; never a sea creature) — weak for their 2 slots at first, strong once promoted.
-- The 4 leaders are native to 4 different terrains. The stage-2 units include at least 4 front-line units and 4 healers or support units, so every leader can have one of each.
+- **30 units, and you build the squads.** The Opinion Leader (a stage-3 leader) starts alone in squad 1, on the map at the Player Base. The other 29 wait in the recruit pool: more stage-3 leaders (enough for one more than the "Squads on the map" cap, counting the Opinion Leader: 7 on Small, 9 on Medium, 11 on Large), 3 stage-1 Large units, 10 Serfs, and stage-2 units for the rest (10 on Small, 8 on Medium, 6 on Large). All from the Serf lines except the Large units, which come from the race lines (Drakeling, Wolf, Bison and the like; never a sea creature) — weak for their 2 slots at first, strong once promoted.
+- Between them the leaders cover all 5 Serf-line terrains (Plains, Forest, Swamp, Mountain, Desert) before any repeats. The stage-2 units include at least 4 front-line units and 4 healers or support units (3 and 3 on a Large map, where there are only 6).
 - **Squads hold 6 slots** (instead of 5), growing from there as usual.
-- **Leaders decide how many squads you field.** Every squad needs a unit that can lead (stage 3 or 4; see "A squad always has a leader" above). So you start with 4 squads, and get more as units promote to stage 3 or as leaders join, up to the 16 the army holds.
+- **Leaders decide how many squads you field.** Every squad needs a unit that can lead (stage 3 or 4; see "A squad always has a leader" above). You start with enough leaders to fill the map cap with one to spare; more come as units promote to stage 3 or leaders join, up to the 16 squads the army holds.
 - **The Opinion Leader can move to any squad** or wait in the pool. Only their death loses the map (when that defeat is on), not squad 1 breaking up.
 - **Squads on the map** default to the map's size: 6 on Small, 8 on Medium, 10 on Large (the nearest size for a custom map). You can still change it in the configurator.
 - Cards, tech points, gold, items and supplies as below.

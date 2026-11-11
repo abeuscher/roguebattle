@@ -163,7 +163,7 @@ func test_generated_squads_have_balanced_rows() -> void:
 
 # --- Single map mode (user's design, 2026-11-10) -------------------------------------
 
-func _single(seed_: int) -> GameState:
+func _single(seed_: int, cap := 6) -> GameState:
 	var m := MapData.new(10, 5)
 	for i in m.size():
 		m.terrain[i] = d.terrain_ids["plains"]
@@ -171,7 +171,7 @@ func _single(seed_: int) -> GameState:
 	m.settings = {"preset": "continent", "size": "small"}
 	m.player_base = m.index_of(Hex.from_offset(Vector2i(1, 2)))
 	m.enemy_base = m.index_of(Hex.from_offset(Vector2i(8, 2)))
-	var st := GameState.new(d, m, GameLog.new(), {"mode": "single", "xp_rate": 150})
+	var st := GameState.new(d, m, GameLog.new(), {"mode": "single", "xp_rate": 150, "squad_cap": cap})
 	st.setup_army()
 	return st
 
@@ -179,28 +179,31 @@ func _single(seed_: int) -> GameState:
 func test_single_map_starts_with_the_opinion_leader_alone_and_a_pool() -> void:
 	var cfg: Dictionary = d.rules["single_map"]["pool"]
 	for seed_ in range(SEEDS):
-		var st := _single(seed_)
+		var cap: int = [6, 8, 10][seed_ % 3]
+		var st := _single(seed_, cap)
+		var n_leaders := cap + int(cfg["leaders_over_cap"])
+		var n_stage2 := int(cfg["total"]) - n_leaders - int(cfg["large"]) - int(cfg["serfs"])
 		check_eq(st.army.squads().size(), 1, "one squad in the army (seed %d)" % seed_)
 		var s := st.opinion_leader_squad()
 		check(s != null and s.units.size() == 1 and s.leader == st.opinion_leader, "the Opinion Leader alone in it (seed %d)" % seed_)
 		check(s in st.player_squads() and s.hex == st.map.player_base, "on the map at the Player Base (seed %d)" % seed_)
 		check_eq(s.capacity(d), 6, "6 slots (seed %d)" % seed_)
-		check_eq(st.army.pool.size() + 1, 30, "30 units in all (seed %d)" % seed_)
+		check_eq(st.army.pool.size() + 1, int(cfg["total"]), "30 units in all (seed %d)" % seed_)
 		var count := func(f: Callable) -> int: return st.army.pool.filter(f).size()
 		var leaders: Array = st.army.pool.filter(func(u: Unit): return u.info(d)["can_lead"]).map(func(u: Unit): return u.unit_class)
-		check_eq(leaders.size() + 1, int(cfg["leaders"]), "4 leaders (seed %d)" % seed_)
+		check_eq(leaders.size() + 1, n_leaders, "one more leader than the squad cap of %d (seed %d)" % [cap, seed_])
 		var terrains := {st.opinion_leader.info(d)["terrain"]: true}
 		for c in leaders:
 			terrains[d.units[c]["terrain"]] = true
-		check_eq(terrains.size(), int(cfg["leaders"]), "on 4 different terrains (seed %d)" % seed_)
-		check_eq(count.call(func(u: Unit): return int(u.info(d)["stage"]) == 2), int(cfg["stage2"]), "13 stage 2 units (seed %d)" % seed_)
+		check_eq(terrains.size(), mini(n_leaders, Map1Setup.TERRAINS.size()), "every terrain covered (seed %d)" % seed_)
+		check_eq(count.call(func(u: Unit): return int(u.info(d)["stage"]) == 2), n_stage2, "stage 2 units fill the rest of the 30 (seed %d)" % seed_)
 		check_eq(count.call(func(u: Unit): return u.unit_class == "Serf"), int(cfg["serfs"]), "10 Serfs (seed %d)" % seed_)
 		var large: Array = st.army.pool.filter(func(u: Unit): return u.info(d)["size"] == "Large").map(func(u: Unit): return u.unit_class)
 		check_eq(large.size(), int(cfg["large"]), "3 Large units (seed %d)" % seed_)
 		for c in large:
 			check(int(d.units[c]["stage"]) == 1 and d.units[c]["terrain"] != "Water" and large.count(c) == 1, "%s: stage 1, not a sea creature, no repeats (seed %d)" % [c, seed_])
-		check(count.call(func(u: Unit): return int(u.info(d)["stage"]) == 2 and _is_front_line(u.unit_class)) >= int(cfg["front_min"]), "enough front-line units (seed %d)" % seed_)
-		check(count.call(func(u: Unit): return int(u.info(d)["stage"]) == 2 and _is_healer_or_support(u.unit_class)) >= int(cfg["healer_min"]), "enough healers or support (seed %d)" % seed_)
+		check(count.call(func(u: Unit): return int(u.info(d)["stage"]) == 2 and _is_front_line(u.unit_class)) >= mini(int(cfg["front_min"]), n_stage2 / 2), "enough front-line units (seed %d)" % seed_)
+		check(count.call(func(u: Unit): return int(u.info(d)["stage"]) == 2 and _is_healer_or_support(u.unit_class)) >= mini(int(cfg["healer_min"]), n_stage2 / 2), "enough healers or support (seed %d)" % seed_)
 
 
 func test_single_map_squads_hold_six_and_start_with_a_leader() -> void:

@@ -33,26 +33,29 @@ static func build(data: GameData, rng: RandomNumberGenerator) -> Array:
 
 ## Single map mode's start (user's design, 2026-11-10; rules.json "single_map"):
 ## {"leader": the Opinion Leader's class, "pool": every other class, for the recruit
-## pool}. Leaders cover distinct terrains; the stage 2 units meet the soft rule across
-## the pool as a whole (enough front-line and healer or support units for every leader).
-static func build_single(data: GameData, rng: RandomNumberGenerator) -> Dictionary:
+## pool}. `leader_count` leaders (the squad cap + 1, user's notes 2026-11-11) cover every
+## terrain before any repeats; stage 2 units fill the rest of the total after the Large
+## units and Serfs, meeting the soft rule across the pool as a whole.
+static func build_single(data: GameData, rng: RandomNumberGenerator, leader_count: int) -> Dictionary:
 	var cfg: Dictionary = data.rules["single_map"]["pool"]
 	var by_terrain := _leaders_by_terrain(data)
+	var all_leaders: Array = by_terrain.values().reduce(func(a, b): return a + b, [])
 	var terrains := TERRAINS.duplicate()
 	_shuffle(terrains, rng)
 	var leaders := []
-	for t in terrains.slice(0, int(cfg["leaders"])):
-		var options: Array = by_terrain[t]
+	for i in leader_count:
+		var options: Array = by_terrain[terrains[i]] if i < terrains.size() else all_leaders
 		leaders.append(options[rng.randi() % options.size()])
+	var stage2_count := maxi(0, int(cfg["total"]) - leader_count - int(cfg["large"]) - int(cfg["serfs"]))
 	var stage2 := _stage2_classes(data)
 	var front_stage2 := stage2.filter(func(c): return _is_front_line(data, c))
 	var healer_stage2 := stage2.filter(func(c): return _is_healer_or_support(data, c))
 	var picks := []
-	for i in int(cfg["front_min"]):
+	for i in mini(int(cfg["front_min"]), stage2_count / 2):
 		picks.append(front_stage2[rng.randi() % front_stage2.size()])
-	for i in int(cfg["healer_min"]):
+	for i in mini(int(cfg["healer_min"]), stage2_count / 2):
 		picks.append(healer_stage2[rng.randi() % healer_stage2.size()])
-	while picks.size() < int(cfg["stage2"]):
+	while picks.size() < stage2_count:
 		picks.append(stage2[rng.randi() % stage2.size()])
 	var large := large_stage1_classes(data)
 	_shuffle(large, rng)
