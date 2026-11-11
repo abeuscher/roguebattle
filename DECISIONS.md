@@ -591,3 +591,10 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **Squad cap follows size only when size or mode changes** (`GameConfig.fit_squad_cap`), from the named size nearest in area; the player can still move it afterwards. Campaign start goes back to the field default of 6.
 - **XP rate** is a game setting in percent (100–300, step 25, default 150), applied in `GameState.battle_xp` to battle and drive-off XP; card XP redirected to the Opinion Leader's squad comes from the same numbers.
 - **Edit Units opens at the start** in single map mode (the game otherwise opens on the map); the start prompt shows once it closes.
+
+## Session 048 (2026-11-10): Edit Units, building squads from the pool (M4 session 20)
+
+- **A squad always has a leader, in both modes** (user's notes): `Army.move` refuses any move that would leave a squad with units but no one who can lead, which covers both the user's case (a non-leader into an empty cell) and its other half (the last leader walking out on the rest, or being swapped for a non-leader). Reverses session 047's "leaderless squads can be staged". `Army.refusal` says which rule refused ("slots" or "leader") so Edit Units can say why. The deploy check for a missing leader stays as a safety net (a unit leaving for good on low loyalty can still remove one).
+- **Sorting lives in `Army.sorted_pool(by)`** (testable, display only; the pool's own order is untouched). Leader order: can lead, then stage, level, class, name. The choice is a static on EditUnits, so it holds between openings for the rest of the run but isn't saved.
+- **Pool colors by natural row:** a pool chip (and a drag preview) takes its color and attack line from `EditUnits.preferred_row`, the same rule a drop uses to pick a row. In a squad, the row it stands in, as before.
+- **Color key:** only the seven colors that differ (Dispel shares Magic's blue, Buff shares Heal's gold).

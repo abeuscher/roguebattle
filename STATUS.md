@@ -118,7 +118,8 @@ Where the project stands, for picking up in a new session or on another machine.
 - **M4 session 17 done (session 045):** card boosts last the whole battle, XP for a drive-off, enemy HP numbers and attacks hidden unless a Scout-line unit is along, battle speed kept between battles, "Begin Round N", Use item(s), taking the Enemy Base wins, the debug spawner sets a level. See `DECISIONS.md` session 045.
 - **M4 session 18 done (session 046):** new maps start paused with "Press Play to begin"; banners for enemy captures; the liberation popup has Go to city and fireworks mark the place; a noon ledger window; "Do not show this window again" on the ledger, the liberation popup and the wait for Fight. See `DECISIONS.md` session 046.
 - **M4 session 19 done (session 047):** single map mode, the start. A configurator Game mode (Single map by default, or Campaign start); single map starts the Opinion Leader alone in squad 1 with 29 units in the pool and opens Edit Units at once; squads of 6 slots; a squad needs a leader to deploy; squads on the map default to 6/8/10 by map size; XP rate 150% (100–300%). The Opinion Leader is now tracked by unit. See `DECISIONS.md` session 047.
-- **M4 sessions 20–26 next:** 20 is Edit Units for building squads from the pool (a new squad needs a leader, gray star on potential leaders, a Recruits sort menu defaulting to Leader, colors by natural row and a color key); 21 single map conscription for both sides (enemy at half rate) and individual battle tuning; 22 following an enemy squad; then HUD layout, squad status and tokens, debug panel (plus the unit spawner rework), save game.
+- **M4 session 20 done (session 048):** Edit Units for building squads: a squad always keeps a unit that can lead (refused drops say why), a gray star on recruits who can lead, a Recruits sort menu (Leader by default, Class, Level, Name), pool colors by natural row, and a color key. See `DECISIONS.md` session 048.
+- **M4 sessions 21–26 next:** 21 single map conscription for both sides (enemy at half rate) and individual battle tuning; 22 following an enemy squad; then HUD layout, squad status and tokens, debug panel (plus the unit spawner rework), save game.
 - **M4 sessions 15–20 planned (playtest round 7, 2026-11-10)** in `ROADMAP.md`: battle and rules fixes (cards truly at once, enemy makeup after a fight, items equippable anywhere, fewer neutrals, arrival log line); map generation (100% land, reef-like shallows around islands); HUD layout (clock under the minimap, gold coin, reputation meter, squad drawer, smaller rounded toolbar with icons); squad status icons and flag-free tokens with destination flags; debug panel overhaul; save game (3 slots, prompt to save on quit). The user's answers are in the ROADMAP rows.
 - **M4 milestone check: the first real playtest**, after session 26.
 - **Unit portraits:** the user's first 8 large unit images are committed in `data/unit_art/` (not used in the game yet). Building them into the unit detail view is a future task in `ROADMAP.md`, waiting on more of the set.
@@ -130,7 +131,7 @@ Where the project stands, for picking up in a new session or on another machine.
 
 ## How the user works
 
-- **One git branch per session,** named `session-NNN` (next: `session-048`), cut from `main`.
+- **One git branch per session,** named `session-NNN` (next: `session-049`), cut from `main`.
 - **Commit locally only:**
   - Never push or merge; the user merges and pushes, then says "continue".
   - Commit messages end with a `Co-Authored-By:` line naming whatever Claude model is doing the session (the harness's own attribution instructions say exactly what to write).

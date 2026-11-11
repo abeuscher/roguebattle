@@ -75,8 +75,9 @@ func test_new_squad_and_leaders() -> void:
 	check(a.move(a.pool[0], 7), "a Knight alone forms a squad")
 	var herald := _unit("Herald")
 	a.pool.append(herald)
-	check(a.move(herald, 9), "so does a unit that can't lead")
-	check_eq(a.cells[9].name, "Squad 10", "a squad without a leader goes by its number")
+	check(not a.move(herald, 9), "a unit that can't lead can't start a squad")
+	check_eq(a.refusal, "leader", "refused for want of a leader")
+	check(a.cells[9] == null and herald in a.pool, "nothing changed")
 	check(a.set_leader(s.at("front", 1)) == false, "a Fighter can't lead")
 	check(a.move(lancer, -1), "the last unit leaves")
 	check(a.cells[5] == null, "an emptied squad leaves the grid")
@@ -160,7 +161,40 @@ func test_state_army_and_editing() -> void:
 		if s != first:
 			st.squads.erase(s)
 	first.hex = m.player_base
-	for u in first.units.duplicate():
+	var order := first.units.duplicate()
+	order.sort_custom(func(x: Unit, y: Unit): return not x.info(d)["can_lead"] and y.info(d)["can_lead"])  # leaders leave last
+	for u in order:
 		st.army.move(u, -1)
 	st.after_edit()
 	check(st.player_squads().is_empty(), "a squad emptied at base leaves the map")
+
+
+func test_a_squad_always_keeps_someone_who_can_lead() -> void:
+	var a := _army([["Knight", "front"], ["Fighter", "front"], ["Bowman", "back"]], ["Fighter", "Soldier"])
+	var s: Squad = a.cells[0]
+	var knight := s.leader
+	check(not a.move(knight, -1), "the only leader can't leave a squad with others in it")
+	check_eq(a.refusal, "leader", "for want of a leader")
+	check(knight in s.units and s.leader == knight, "nothing changed")
+	var spare: Unit = a.pool.filter(func(u: Unit): return u.unit_class == "Fighter")[0]
+	check(not a.move(spare, 0, knight.row, knight.col), "nor can a Fighter swap in for the leader")
+	var soldier: Unit = a.pool.filter(func(u: Unit): return u.unit_class == "Soldier")[0]
+	check(a.move(soldier, 0, "back"), "another leader joins")
+	check(a.move(knight, -1), "now the Knight can go")
+	check_eq(s.leader, soldier, "and the Soldier leads")
+	check(a.move(knight, 3), "a leader from the pool starts a squad in an empty cell")
+	check_eq(a.refusal, "", "no refusal after a move that took")
+
+
+func test_pool_sort_orders() -> void:
+	var a := _army([["Knight", "front"]], ["Serf", "Fighter", "Soldier", "Acolyte"])
+	a.pool[1].level = 4
+	var classes := func(by: String) -> Array: return a.sorted_pool(by).map(func(u: Unit): return u.unit_class)
+	check_eq(classes.call("leader")[0], "Soldier", "leaders first")
+	check_eq(classes.call("class"), ["Acolyte", "Fighter", "Serf", "Soldier"], "by class")
+	check_eq(classes.call("level")[0], "Fighter", "highest level first")
+	var names: Array = a.sorted_pool("name").map(func(u: Unit): return u.name)
+	var expected := names.duplicate()
+	expected.sort()
+	check_eq(names, expected, "by name")
+	check_eq(a.pool.size(), 4, "sorting leaves the pool itself alone")

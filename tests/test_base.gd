@@ -35,9 +35,10 @@ func test_deploy_needs_a_living_leader() -> void:
 	check(st.deploy_blocker(s).contains("fallen"), "a fallen leader keeps the squad at base")
 	st.restore(s.leader)
 	check_eq(st.deploy_blocker(s), "", "revived, it can go")
-	for u in s.units.duplicate():
+	for u in s.units.duplicate():  # Edit Units can't leave a squad leaderless; the check stays as a safety net
 		if u.info(d)["can_lead"]:
-			st.army.move(u, -1)
+			s.units.erase(u)
+	s.leader = null
 	check(st.deploy_blocker(s).contains("leader"), "a squad without a leader can't deploy")
 
 

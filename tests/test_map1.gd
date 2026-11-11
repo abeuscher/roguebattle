@@ -203,19 +203,19 @@ func test_single_map_starts_with_the_opinion_leader_alone_and_a_pool() -> void:
 		check(count.call(func(u: Unit): return int(u.info(d)["stage"]) == 2 and _is_healer_or_support(u.unit_class)) >= int(cfg["healer_min"]), "enough healers or support (seed %d)" % seed_)
 
 
-func test_single_map_squads_hold_six_and_need_a_leader_to_deploy() -> void:
+func test_single_map_squads_hold_six_and_start_with_a_leader() -> void:
 	var st := _single(3)
 	var serfs := st.army.pool.filter(func(u: Unit): return u.unit_class == "Serf")
 	for i in 5:
 		check(st.army.move(serfs[i], 0), "Serf %d joins squad 1" % (i + 1))
 	check(not st.army.move(serfs[5], 0), "a seventh unit doesn't fit")
-	check(st.army.move(serfs[5], 1), "a Serf alone forms a new squad")
-	check_eq(st.army.cells[1].capacity(d), 6, "it has 6 slots too")
-	check_eq(st.deploy_blocker(st.army.cells[1]), "It needs a leader.", "but it can't deploy without a leader")
+	check(not st.army.move(serfs[5], 1), "a Serf can't start a squad")
 	var leader: Unit = st.army.pool.filter(func(u: Unit): return u.info(d)["can_lead"])[0]
-	check(st.army.move(leader, 1), "a leader joins it")
-	check_eq(st.army.cells[1].leader, leader, "and leads it")
-	check_eq(st.deploy_blocker(st.army.cells[1]), "", "now it can deploy")
+	check(st.army.move(leader, 1), "a leader can")
+	check_eq(st.army.cells[1].capacity(d), 6, "it has 6 slots too")
+	check(st.army.move(serfs[5], 1), "then the Serf joins it")
+	check_eq(st.army.cells[1].leader, leader, "under the leader")
+	check_eq(st.deploy_blocker(st.army.cells[1]), "", "and it can deploy")
 
 
 func test_the_opinion_leader_is_followed_wherever_they_go() -> void:

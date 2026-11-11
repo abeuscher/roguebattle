@@ -18,6 +18,10 @@ signal deploy(squad: Squad)  # lay its route on the map, then confirm the cost
 const KIND_COLORS := {"Melee": Color("#8a4a3a"), "Ranged": Color("#4f7a3a"), "Magic": Color("#3d5a9a"),
 		"Breath": Color("#8a5a2a"), "Heal": Color("#9a8a3a"), "Buff": Color("#9a8a3a"), "Debuff": Color("#6a4a8a"),
 		"Ward": Color("#3a7a8a"), "Dispel": Color("#3d5a9a")}
+## The Recruits color key (user's notes, 2026-11-10): one swatch per color in use.
+const KEY := [["Melee", "Melee"], ["Ranged", "Ranged"], ["Magic", "Magic"], ["Heal", "Heal / buff"],
+		["Debuff", "Debuff"], ["Ward", "Ward"], ["Breath", "Breath"]]
+const SORTS := [["leader", "Leader"], ["class", "Class"], ["level", "Level"], ["name", "Name"]]
 const SUPPORT := ["Heal", "Buff", "Debuff", "Ward", "Ranged", "Magic", "Dispel"]
 
 var state: GameState
@@ -33,6 +37,8 @@ var _main := VBoxContainer.new()
 var _pool := VBoxContainer.new()
 var _tab := "recruits"  # the gutter shows "recruits" or "items"
 var _tabs := {}  # tab -> Button
+var _pool_tools := VBoxContainer.new()  # the Recruits sort menu and color key, shown on that tab
+static var _sort := "leader"  # the Recruits order; kept while the game runs
 var _targets: Array = []  # [Control, Unit] that take items, dimmed while an item they can't wear is dragged
 var _status := UiStyle.label("", 16, UiStyle.ACCENT)
 var _gold := UiStyle.label("", 18, UiStyle.ACCENT)
@@ -104,6 +110,37 @@ func _gutter() -> Control:
 			_refresh())
 		tabs.add_child(b)
 		_tabs[t] = b
+	_pool_tools.add_theme_constant_override("separation", 6)
+	col.add_child(_pool_tools)
+	var sort_row := HBoxContainer.new()
+	sort_row.add_theme_constant_override("separation", 8)
+	sort_row.add_child(UiStyle.label("Sort by", 14, Color(0.65, 0.68, 0.72)))
+	var sort := OptionButton.new()
+	for i in SORTS.size():
+		sort.add_item(SORTS[i][1], i)
+		if SORTS[i][0] == _sort:
+			sort.select(i)
+	sort.add_theme_font_size_override("font_size", 14)
+	sort.size_flags_horizontal = SIZE_EXPAND_FILL
+	sort.item_selected.connect(func(i: int):
+		_sort = SORTS[i][0]
+		_refresh())
+	sort_row.add_child(sort)
+	_pool_tools.add_child(sort_row)
+	var key := HFlowContainer.new()
+	key.add_theme_constant_override("h_separation", 10)
+	key.add_theme_constant_override("v_separation", 2)
+	for k in KEY:
+		var item := HBoxContainer.new()
+		item.add_theme_constant_override("separation", 4)
+		var swatch := ColorRect.new()
+		swatch.color = KIND_COLORS[k[0]]
+		swatch.custom_minimum_size = Vector2(10, 10)
+		swatch.size_flags_vertical = SIZE_SHRINK_CENTER
+		item.add_child(swatch)
+		item.add_child(UiStyle.label(k[1], 12, Color(0.7, 0.73, 0.78)))
+		key.add_child(item)
+	_pool_tools.add_child(key)
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -145,10 +182,11 @@ func _refresh() -> void:
 	_tabs["items"].text = "Items (%d)" % army.items.size()
 	for t in _tabs:
 		_tabs[t].set_pressed_no_signal(t == _tab)
+	_pool_tools.visible = _tab == "recruits"
 	if _tab == "items":
 		_item_list()
 	else:
-		for u in army.pool:
+		for u in army.sorted_pool(_sort):
 			_pool.add_child(_chip(u, "wide", true, -1, "", -1))
 		if army.pool.is_empty():
 			_pool.add_child(UiStyle.label("Drag units here to take them out of a squad.", 14, Color(0.6, 0.62, 0.66)))
@@ -184,7 +222,7 @@ func _card(cell: int) -> Control:
 	card.add_child(col)
 	if s == null:
 		col.add_child(_quiet(UiStyle.label("#%d" % (cell + 1), 18, Color(0.45, 0.47, 0.52))))
-		var l := _quiet(UiStyle.label("Empty: drop a unit here to form a squad.", 14, Color(0.45, 0.47, 0.52)))
+		var l := _quiet(UiStyle.label("Empty: drop a unit that can lead here to form a squad.", 14, Color(0.45, 0.47, 0.52)))
 		col.add_child(l)
 		return card
 	card.mouse_default_cursor_shape = CURSOR_POINTING_HAND
@@ -739,8 +777,15 @@ func _drop(_at: Vector2, what: Variant, cell: int, r: String, c: int) -> void:
 	var u: Unit = what["unit"]
 	if r == "":
 		r = preferred_row(data, u)
+	var from := army.squad_of(u)
+	var into: Squad = army.cells[cell] if cell >= 0 else null
 	if army.move(u, cell, r, c):
 		_status.text = ""
+	elif army.refusal == "leader" and into == null and cell >= 0:
+		_status.text = "%s can't lead, so can't start a squad: put a unit that can lead (gray star) there first." % u.name
+	elif army.refusal == "leader":
+		var left: Squad = from if from and from != into else into
+		_status.text = "%s needs someone who can lead: move the others out first, or bring in another leader." % left.name
 	else:
 		var s: Squad = army.cells[cell]
 		_status.text = "%s doesn't fit: %s has %s of %d slots filled." % [u.name, s.name, _num(Squad.slots_filled(data, s.units)), s.capacity(data)]
@@ -796,6 +841,7 @@ class Chip extends Control:
 	var line := ""
 	var selected := false
 	var promotable := false  # shows a green arrow (§4: a badge on any unit ready to promote)
+	var can_lead := false  # in the pool, a unit that can lead shows a gray star (user's notes, 2026-11-10)
 
 	func setup(data: GameData, u: Unit, chip_mode: String, squad: Squad, colors: Dictionary) -> void:
 		unit = u
@@ -803,10 +849,14 @@ class Chip extends Control:
 		leader = squad != null and squad.leader == u
 		max_hp = u.max_hp(data)
 		promotable = not Progression.promotion_options(data, u).is_empty()
-		var kind := Battle.base_kind(u.info(data)["front_attack" if u.row == "front" or squad == null else "back_attack"])
-		color = colors.get(kind, Color.GRAY)
 		var c: Dictionary = u.info(data)
-		line = "Lv %d  ·  %s" % [u.level, c["front_attack"] if u.row == "front" or squad == null else c["back_attack"]]
+		can_lead = squad == null and c["can_lead"]
+		# In a squad, the attack of the row it stands in; in the pool, of the row it would be
+		# placed in (healers show as healers, not by their front-row swing).
+		var row := u.row if squad else EditUnits.preferred_row(data, u)
+		var attack: String = c["front_attack" if row == "front" else "back_attack"]
+		color = colors.get(Battle.base_kind(attack), Color.GRAY)
+		line = "Lv %d  ·  %s" % [u.level, attack]
 		custom_minimum_size = {"compact": Vector2(72, 48), "wide": Vector2(272, 58), "slot": Vector2(148, 122), "menu": Vector2(104, 70)}[mode]
 		mouse_default_cursor_shape = CURSOR_DRAG
 
@@ -860,11 +910,14 @@ class Chip extends Control:
 				_icon(Vector2(8, 6), 46, paper, dead)
 				var x := 62.0
 				var w := size.x - x - 10
-				draw_string(font, Vector2(x, 21), unit.unit_class, HORIZONTAL_ALIGNMENT_LEFT, w - (20 if leader else 0) - (20 if promotable else 0), 15, ink)
+				var starred := leader or can_lead
+				draw_string(font, Vector2(x, 21), unit.unit_class, HORIZONTAL_ALIGNMENT_LEFT, w - (20 if starred else 0) - (20 if promotable else 0), 15, ink)
 				if leader:
 					_star(Vector2(size.x - 16, 16), 8.0)
+				elif can_lead:
+					_star(Vector2(size.x - 16, 16), 8.0, true)
 				if promotable:
-					_arrow(Vector2(size.x - (36 if leader else 16), 16), 7.0)
+					_arrow(Vector2(size.x - (36 if starred else 16), 16), 7.0)
 				draw_string(font, Vector2(x, 38), unit.name, HORIZONTAL_ALIGNMENT_LEFT, w - 70, 12, ink.darkened(0.25))
 				draw_string(font, Vector2(size.x - 80, 38), "%d/%d" % [unit.hp, max_hp] if not dead else "Fallen",
 						HORIZONTAL_ALIGNMENT_RIGHT, 68, 11, ink.darkened(0.2))
@@ -892,12 +945,12 @@ class Chip extends Control:
 		points.append(points[0])
 		draw_polyline(points, Color(0.05, 0.2, 0.08), 1.0)
 
-	## The leader's mark: a gold five-pointed star.
-	func _star(at: Vector2, radius: float) -> void:
+	## The leader's mark: a gold five-pointed star; gray for a pool unit that could lead.
+	func _star(at: Vector2, radius: float, gray := false) -> void:
 		var points := PackedVector2Array()
 		for i in 10:
 			var a := -PI / 2.0 + i * PI / 5.0
 			points.append(at + Vector2(cos(a), sin(a)) * (radius if i % 2 == 0 else radius * 0.45))
-		draw_colored_polygon(points, Color(1, 0.84, 0.35))
+		draw_colored_polygon(points, Color(0.62, 0.64, 0.68) if gray else Color(1, 0.84, 0.35))
 		points.append(points[0])
-		draw_polyline(points, Color(0.25, 0.18, 0.05), 1.0)
+		draw_polyline(points, Color(0.15, 0.16, 0.18) if gray else Color(0.25, 0.18, 0.05), 1.0)

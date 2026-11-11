@@ -12,6 +12,7 @@ var items: Array[Dictionary] = []  # every item owned, one entry each ({uid, id}
 var _next_item := 1
 var supplies := {}  # consumable id -> count (§15.1)
 var tech: Array = []  # the army's tech nodes, shared with its squads
+var refusal := ""  # why the last move() was refused: "slots" or "leader" ("" after a move that took)
 var base_slots := 0  # a new squad's slots before growth; 0 = the rules.json default (single map mode: 6)
 
 
@@ -37,9 +38,12 @@ func squad_of(u: Unit) -> Squad:
 
 ## Moves u into the squad in `cell` (-1 = the pool) at a row and position (-1 = the
 ## first free one). A unit already standing there swaps into u's old place. An empty
-## cell forms a new squad. Returns false, changing nothing, if a squad would go over
-## its slots.
+## cell forms a new squad. Returns false, changing nothing (and setting `refusal`), if a
+## squad would go over its slots ("slots") or be left with units but no one who can lead
+## ("leader"): a new squad starts with a leader, and the last one can't walk out on the
+## rest (user's notes, 2026-11-10).
 func move(u: Unit, cell: int, to_row := "front", to_col := -1) -> bool:
+	refusal = ""
 	var from := squad_of(u)
 	var to: Squad = cells[cell] if cell >= 0 else null
 	if cell >= 0 and to == null:
@@ -62,6 +66,11 @@ func move(u: Unit, cell: int, to_row := "front", to_col := -1) -> bool:
 	for s in [from, to]:
 		if s and not _fits(s):
 			_restore(snap)
+			refusal = "slots"
+			return false
+		if s and not s.units.is_empty() and best_leader(s) == null:
+			_restore(snap)
+			refusal = "leader"
 			return false
 	if to and cells[cell] == null:
 		cells[cell] = to
@@ -72,6 +81,31 @@ func move(u: Unit, cell: int, to_row := "front", to_col := -1) -> bool:
 		if s and s.units.is_empty():
 			cells[s.id - 1] = null
 	return true
+
+
+## The recruit pool in a display order (user's notes, 2026-11-10): "leader" (units that
+## can lead first, then higher stage and level), "class", "level" (highest first) or
+## "name". Ties fall back to class, then name, so the order is stable.
+func sorted_pool(by: String) -> Array[Unit]:
+	var out: Array[Unit] = pool.duplicate()
+	var key := func(u: Unit) -> Array:
+		var c: Dictionary = u.info(data)
+		match by:
+			"leader":
+				return [0 if c["can_lead"] else 1, -int(c["stage"]), -u.level, u.unit_class, u.name]
+			"level":
+				return [-u.level, -int(c["stage"]), u.unit_class, u.name]
+			"name":
+				return [u.name, u.unit_class]
+		return [u.unit_class, -u.level, u.name]
+	out.sort_custom(func(a: Unit, b: Unit) -> bool:
+		var ka: Array = key.call(a)
+		var kb: Array = key.call(b)
+		for i in ka.size():
+			if ka[i] != kb[i]:
+				return ka[i] < kb[i]
+		return false)
+	return out
 
 
 ## Removes u from the army for good (its loyalty ran out, §12.2) — no sale, no gold.
