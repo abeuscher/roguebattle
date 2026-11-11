@@ -204,11 +204,11 @@ Options on the Start screen and in the in-game menu (Esc) hold your own settings
 
 ## Testing tools (debug panel)
 
-Backtick opens the debug panel. It's for testers only and isn't part of the game. Squad tools act on the squad you pick at the top, and "at the cursor" means the hex under the mouse when you opened the panel.
+Backtick opens the debug panel. It's for testers only and isn't part of the game. Each tab groups its tools in labelled sections; close it with the X, backtick or Esc. "At the cursor" means the hex under the mouse when you opened the panel.
 
-- **Map:** reveal every enemy and hidden site; teleport a squad; a fresh map from any seed with the same settings; map overlays (terrain, movement cost, roads, buildings per quadrant, lair danger), the hex grid, and your squads' sight radius.
+- **Map:** reveal every enemy and hidden site; a fresh map from any seed with the same settings; map overlays (terrain, movement cost, roads, buildings per quadrant, lair danger), the hex grid, and your squads' sight radius.
 - **Time:** jump to any hour, run the map on for N hours, or freeze the time of day while everything else keeps going.
-- **Units:** spawn a squad of any class and size for any side; set a squad's level, a stat or alignment; heal and revive all your units; remove a squad; the Wide roster button (16 varied squads).
+- **Units:** *Build a squad*: an empty squad is shown in front and back rows; pick a class and a level and Add puts a freshly rolled unit of it into the squad (any mix of classes, up to a full squad, each in its usual row; the first that can lead leads). Click a unit to select it, then Remove. Pick a side and Place at cursor puts a copy on the map; the built squad stays in the panel, even after closing, to place again, until Clear. *A squad on the map*: pick one, then set its alignment, teleport it to the cursor or remove it. *Your army*: heal and revive all your units; the Wide roster button (16 varied squads).
 - **Resources:** add gold, tech points or any card.
 - **Battle:** force every battle to a win, loss or draw; replay the last battle with the same rolls (on copies, so nothing on the map changes; cards played and tactic changes made the first time aren't replayed); show hidden numbers in the log and battle view; switch off each fairness rule.
 - **AI:** show every enemy and neutral squad's role and whether it's moving, with a line to its target; freeze enemy and neutral AI.

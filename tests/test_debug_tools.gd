@@ -29,19 +29,51 @@ func _theirs(st: GameState, col: int) -> Squad:
 	return st.add_squad("Theirs", _at(st.map, col, 4), [["Soldier", "front"], ["Fighter", "front"], ["Bowman", "back"]], "enemy")
 
 
-func test_spawn_for_every_side() -> void:
+func _draft(st: GameState) -> Squad:
+	var dr := DebugTools.draft(st)
+	check(DebugTools.add_unit(st, dr, "Fighter", 1), "a Fighter added")
+	check(DebugTools.add_unit(st, dr, "Knight", 4), "a level 4 Knight added")
+	check(DebugTools.add_unit(st, dr, "Bowman", 2), "a level 2 Bowman added")
+	return dr
+
+
+func test_a_built_squad_places_with_the_chosen_classes_and_levels() -> void:
 	var st := _state()
-	var p := DebugTools.spawn(st, "Fighter", 3, "player", _at(st.map, 5, 4))
-	var e := DebugTools.spawn(st, "Soldier", 4, "enemy", _at(st.map, 10, 4))
-	var n := DebugTools.spawn(st, "Fighter", 2, "neutral", _at(st.map, 15, 4))
-	check(p != null and p in st.squads and p in st.army.squads(), "player squad on the map and in the army")
-	check_eq(p.units.size(), 3, "three units")
-	check_eq(e.side, "enemy", "enemy side")
-	check_eq(e.role, "garrison", "an enemy holds its post")
+	var dr := _draft(st)
+	var s: Squad = DebugTools.place(st, dr, "player", _at(st.map, 5, 4))
+	check(s in st.squads and s in st.army.squads(), "on the map and in the army")
+	var got := []
+	for u in s.units:
+		got.append([u.unit_class, u.level])
+	check_eq(got, [["Fighter", 1], ["Knight", 4], ["Bowman", 2]], "exactly what was chosen")
+	check_eq(s.leader.unit_class, "Knight", "the unit that can lead leads")
+	check_eq(s.row("back")[0].unit_class, "Bowman", "each in its usual row")
+	var again: Squad = DebugTools.place(st, dr, "enemy", _at(st.map, 10, 4))
+	check(again.units[0] != s.units[0], "the draft stays and places again, as fresh copies")
+	check_eq([again.side, again.role], ["enemy", "garrison"], "an enemy holds its post")
+	var n: Squad = DebugTools.place(st, dr, "neutral", _at(st.map, 15, 4))
 	check_eq(n.role, "roamer", "a neutral roams")
-	check(e.id != n.id and e.id != p.id, "distinct ids")
-	var f := e.row("front").size()
-	check(absi(f - e.row("back").size()) <= 1, "spawned rows are balanced")
+	check(n.id != again.id and again.id != s.id, "distinct ids")
+
+
+func test_removing_a_unit_from_the_draft() -> void:
+	var st := _state()
+	var dr := _draft(st)
+	DebugTools.remove_unit(st, dr, dr.leader)
+	check_eq(dr.units.size(), 2, "two left")
+	check(dr.leader == null, "no one else can lead")
+	check(DebugTools.place(st, dr, "player", _at(st.map, 5, 4)) is String, "a squad without a leader isn't placed")
+	check(DebugTools.place(st, DebugTools.draft(st), "player", _at(st.map, 5, 4)) is String, "nor an empty one")
+
+
+func test_the_draft_holds_a_full_squad_and_no_more() -> void:
+	var st := _state()
+	var dr := DebugTools.draft(st)
+	var added := 0
+	for i in 20:
+		if DebugTools.add_unit(st, dr, "Fighter", 1):
+			added += 1
+	check_eq(added, dr.capacity(d), "as many as the slots hold")
 
 
 func test_teleport_clears_orders() -> void:
@@ -71,15 +103,11 @@ func test_heal_all_revives() -> void:
 		check_eq(u.hp, u.max_hp(d), "%s at full HP" % u.name)
 
 
-func test_set_level_stat_alignment() -> void:
+func test_set_alignment() -> void:
 	var st := _state()
 	var s := _ours(st, 3)
-	DebugTools.set_level(st, s, 6)
-	DebugTools.set_stat(st, s, "STR", 40)
 	DebugTools.set_alignment(st, s, 90)
 	for u in s.units:
-		check_eq(u.level, 6, "level 6")
-		check_eq(int(u.stats["STR"]), 40, "STR 40")
 		check_eq(u.alignment, 90, "alignment 90")
 
 

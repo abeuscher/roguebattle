@@ -4,27 +4,73 @@ extends RefCounted
 ## None of this is part of the real game.
 
 
-## A squad of `count` fresh units of `class_id` on `hex`, for any side. A player
-## squad needs a free army cell (null if none). Enemies hold their post like a
-## garrison; neutrals roam around where they were put.
-static func spawn(state: GameState, class_id: String, count: int, side: String, hex: int) -> Squad:
-	var members := []
-	for i in count:
-		members.append([class_id, data_row(state.data, class_id)])
+## The squad builder (user's design, 2026-11-11): an empty squad, off the map, that the
+## panel fills unit by unit and then places. Room for a full squad on any side.
+static func draft(state: GameState) -> Squad:
+	var s := Squad.new(0, "", -1)
+	s.base_slots = maxi(state.army.base_slots, int(state.data.rules["single_map"]["base_slots"]))
+	return s
+
+
+## A freshly rolled `class_id` at `level` joins the draft in its usual row. False if it
+## doesn't fit. The first unit that can lead becomes the leader.
+static func add_unit(state: GameState, s: Squad, class_id: String, level: int) -> bool:
+	var u := Unit.roll(state.data, class_id, state.rng.get_stream("debug"), state.names)
+	_raise(state, u, level)
+	return s.add(state.data, u, data_row(state.data, class_id))
+
+
+static func remove_unit(state: GameState, s: Squad, u: Unit) -> void:
+	s.units.erase(u)
+	if s.leader == u:
+		s.leader = null
+		for o in s.units:
+			if o.info(state.data)["can_lead"]:
+				s.leader = o
+				break
+	for which in ["front", "back"]:
+		var r := s.row(which)
+		r.sort_custom(func(a: Unit, b: Unit): return a.col < b.col)
+		for i in r.size():
+			r[i].col = i
+	s.refresh(state.data)
+
+
+## Puts a copy of the draft on `hex` for `side` (the draft stays, to place again). A
+## player squad needs a free army cell; every squad needs a unit that can lead. Returns
+## the squad, or why not as a String. Enemies hold their post like a garrison;
+## neutrals roam around where they were put.
+static func place(state: GameState, d: Squad, side: String, hex: int) -> Variant:
+	if d.units.is_empty():
+		return "Add some units first."
+	if d.leader == null:
+		return "The squad needs a unit that can lead."
 	var number := 0
 	var cell := -1
 	if side == "player":
 		cell = state.army.cells.find(null)
 		if cell < 0:
-			return null
+			return "No free army cell for another squad."
 		number = cell + 1
 	else:
 		number = (100 if side == "enemy" else 200) + 1
-		for s in state.squads:
-			if s.side == side:
-				number = maxi(number, s.id + 1)
-	var s := state._form(number, "" if side == "player" else "Debug %s %d" % [class_id, number], hex, members, side)
-	s.balance_rows(state.data)
+		for o in state.squads:
+			if o.side == side:
+				number = maxi(number, o.id + 1)
+	var s := Squad.new(number, "", hex)
+	s.side = side
+	s.base_slots = d.base_slots
+	if side == "player":
+		s.tech = state.tech
+	for u in d.units:
+		var c := u.clone()
+		s.units.append(c)
+		if u == d.leader:
+			s.leader = c
+	s.refresh(state.data)
+	if side != "player":
+		s.name = "Debug %s %d" % [s.leader.unit_class, number]
+	s.morale = int(state.data.rules["starting_morale"])
 	if side == "enemy":
 		s.role = "garrison"
 	elif side == "neutral":
@@ -33,7 +79,7 @@ static func spawn(state: GameState, class_id: String, count: int, side: String, 
 	if cell >= 0:
 		state.army.cells[cell] = s
 	state.squads.append(s)
-	state.log.add(state.clock.tick, "system", "Debug: spawned %s (%s)." % [s.name, side], s.id)
+	state.log.add(state.clock.tick, "system", "Debug: placed %s (%s)." % [s.name, side], s.id)
 	return s
 
 
@@ -72,23 +118,14 @@ static func heal_all(state: GameState) -> void:
 	state.log.add(state.clock.tick, "system", "Debug: every player unit healed and revived.")
 
 
-## Levels every unit in the squad up to `level` (never down), with the usual growth rolls.
-static func set_level(state: GameState, s: Squad, level: int) -> void:
+## Levels a unit up to `level` (never down), with the usual growth rolls, at full health.
+static func _raise(state: GameState, u: Unit, level: int) -> void:
 	var r := state.rng.get_stream("debug")
-	for u in s.units:
-		while u.level < level:
-			Progression.level_up(state.data, u, r)
-		u.xp = 0
-		if u.is_alive():
-			u.hp = u.max_hp(state.data)  # at full health for the new level
-	state.log.add(state.clock.tick, "system", "Debug: %s raised to level %d." % [s.name, level], s.id)
-
-
-static func set_stat(state: GameState, s: Squad, stat: String, value: int) -> void:
-	for u in s.units:
-		u.stats[stat] = value
-		u.hp = mini(u.hp, u.max_hp(state.data))
-	state.log.add(state.clock.tick, "system", "Debug: %s's %s set to %d." % [s.name, stat, value], s.id)
+	while u.level < level:
+		Progression.level_up(state.data, u, r)
+	u.xp = 0
+	if u.is_alive():
+		u.hp = u.max_hp(state.data)
 
 
 static func set_alignment(state: GameState, s: Squad, value: int) -> void:

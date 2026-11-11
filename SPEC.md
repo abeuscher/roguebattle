@@ -640,9 +640,9 @@ Changed 2026-11-10 (the user's "even start"): the enemy fields half as many squa
 
 | Area | Tools |
 | --- | --- |
-| Map | Reveal all enemies and hidden sites; teleport a squad; regenerate from a seed; overlays (hex grid, terrain, movement cost, roads, buildings per quadrant, lair danger, sight radius) |
+| Map | Reveal all enemies and hidden sites; regenerate from a seed; overlays (hex grid, terrain, movement cost, roads, buildings per quadrant, lair danger, sight radius) |
 | Time | Set time of day; skip N hours; freeze the clock |
-| Units | Spawn a unit or squad (player, enemy, neutral) at the cursor; set level, stats or alignment; heal or revive all; remove a squad |
+| Units | Build a squad unit by unit (class and level from dropdowns, remove any unit, see the squad as it grows) and place it at the cursor for the player, the enemy or neutrals; set a squad's alignment; teleport a squad; heal or revive all; remove a squad |
 | Resources | Add gold, tech points or any card |
 | Battle | Force win, loss or draw; replay the last battle with the same rolls; show hidden numbers; toggle each fairness rule |
 | AI | Show each enemy squad's role and target; freeze enemy AI |

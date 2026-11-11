@@ -654,3 +654,14 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **Squad menu:** the status icon joins terrain, speed and alignment in the header (its tooltip says where and how long), replacing the "Waiting at / Moving" line; "Following" moved into that tooltip.
 - **Tokens:** the ring stands on the squad's shadow, no pole; the number tag moved to the ring's lower right. A leaderless squad is an empty numbered ring rather than a flag.
 - **Flags:** `SquadToken.as_flag` draws the squad's numbered flag on a pole. One is the move cursor (as before, now explicitly a flag); another stands at the selected squad's destination while it's moving and the menu is open (not while re-laying its route, when the planned line shows instead). No flags for squads at rest. Building owner flags are unchanged.
+
+## Session 054 (2026-11-11): debug panel overhaul and squad builder (M4 session 26)
+
+- **One fixed frame** (980 × 660) for every tab, so the panel no longer jumps in size; each tab scrolls inside it if it's taller.
+- **Sections:** each tab's tools sit in titled cards (small accent capitals), with a fixed label column on the left and controls on the right.
+- **Controls:** buttons are the game's outlined buttons (36 px tall; Place at cursor and Run in the action color); dropdowns and number boxes are dark wells with a thin outline; checkboxes use Lucide square / square-check-big icons at 22 px (unchecked boxes were invisible before); tabs are larger with an accent line on the selected one.
+- **Close is an X** at the top right (round 9 asks for this on every modal; the debug panel gets it now). Backtick and Esc still close.
+- **The squad picker moved** from the panel's top into the Units tab's "A squad on the map" section, with Teleport (was on the Map tab), alignment and Remove squad, the only tools that used it.
+- **Squad builder:** `DebugTools.draft` / `add_unit` / `remove_unit` / `place`. The draft's room is the larger of the army's slots and single map's 6. Units go to their class's usual row; the first that can lead leads, and removing the leader hands it to the next that can. Place refuses an empty squad or one with no leader, and puts copies on the map, so the same squad can be placed again; the draft is kept (a static var) between openings until Clear.
+- **Level is a dropdown,** levels 1–50 (the old number box didn't take). **Removed:** the spawner's unit-count box, picked-squad Set level and Set stat (`DebugTools.spawn`, `set_level`, `set_stat` are gone).
+  - 347 tests passing.
