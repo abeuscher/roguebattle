@@ -169,7 +169,7 @@ Land % runs 25–100 (changed 2026-11-10). Presets built on water cap it so they
 | Tower | Home to evil residents. Can have a shop. Reputation runs opposite to towns | Any land, including mountains |
 | Temple | Pay to heal or revive. Squads inside heal slowly for free, whatever their alignment | High ground or remote spots |
 | Nomads | A town on the move: 4–6 hexes every half day. Each move has a 20% chance of staying hidden until the next half day. Always has a shop | Never on water, lava or mountains. 50% more likely to spawn along a road, 25% more likely far from other buildings |
-| Hidden site | Treasure, a card, a secret temple, a rare recruit or a lair | Off-road; revealed when a squad comes within sight |
+| Hidden site | Treasure, a card, a secret temple, a rare recruit or a lair. Seen from afar, claimed by stepping onto it. Treasure, card and rare recruit are one-time and leave the map once claimed; a secret temple works as a temple; a lair is guarded by a neutral squad (Recruit or Fight, §16) and afterwards shelters squads like a town (changed 2026-11-11) | Off-road; revealed when a squad comes within sight |
 
 **Distribution rules**
 
@@ -191,6 +191,7 @@ Land % runs 25–100 (changed 2026-11-10). Presets built on water cap it so they
 | Town or tower not matching the squad's alignment, or a middle-band squad | 10% | 10% |
 | Town or tower matching the squad's alignment (town = holy, tower = evil) | 15% | 15% |
 | Own Base | 15% | 15% |
+| Lair (hidden site, once its guard is gone) | 10% | 10% |
 
 Nomad camps count as towns.
 
@@ -497,7 +498,7 @@ These apply to both sides by default. A configurator toggle makes them player-on
 ## 13. Cards
 
 - **Start:** 3 random cards.
-- **Earning:** draw 1 card per building liberated or hidden site found. Seer lines choose from 2 cards and Oracle lines from 3; the Foresight aura previews the next card.
+- **Earning:** draw 1 card per building liberated or card site claimed (§6.5). Seer lines choose from 2 cards and Oracle lines from 3; the Foresight aura previews the next card.
 - **Limits:** none on cards held or played per battle.
 - **XP:** card-caused XP goes to the Opinion Leader's squad.
 
