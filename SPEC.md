@@ -357,6 +357,7 @@ Occultist and Necromancer lines can, once per battle, fill an empty slot with a 
 | Liberates a tower | −5 | +5 | 0 |
 | Stays in a town, per day | +1 | −1 | 0 |
 | Stays in a tower, per day | −1 | +1 | 0 |
+| The enemy retakes a building of yours (round 9, 2026-11-11) | −3 | −3 | −3 |
 
 - **Effects:**
   - Recruit chance ×(0.5 + reputation/100).
@@ -392,7 +393,7 @@ Occultist and Necromancer lines can, once per battle, fill an empty slot with a 
    - Play any number of cards.
 4. **Outcomes:**
    - **Wiped out:** the squad goes to the Player Base, with every unit needing revival.
-   - **Leader dies:** the squad stays on the map but automatically marches home. Reviving the leader in time cancels the march.
+   - **Leader dies:** the squad stays on the map but automatically marches home, at half speed and shown with a skull (round 9, 2026-11-11). Reviving the leader in time cancels the march.
    - **A unit dies:** the squad slows (§8.3).
    - **Otherwise:** the side that lost the larger share of its HP is pushed back 1 hex if the battle hex matches its travel type, or 2 hexes if not.
    - If the squads are still adjacent, another battle can follow.

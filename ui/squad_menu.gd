@@ -9,6 +9,7 @@ signal return_to_base
 signal edit
 signal shop
 signal use_item
+signal view_destination
 signal closed
 
 const ALIGN_COLORS := {"holy": Color("#ffe08a"), "neutral": Color(0.8, 0.82, 0.86), "evil": Color("#e0604a")}
@@ -102,6 +103,8 @@ func setup(state: GameState, s: Squad) -> void:
 	_button(col, shop_name, not place.is_empty(), "Buy here." if not place.is_empty() else "Stand still in a building with a shop (not enemy-held) or a temple.") \
 			.pressed.connect(func(): shop.emit())
 	_button(col, "Move", true, "Click hexes to lay rally points.").pressed.connect(func(): move.emit())
+	if s.is_moving():
+		_button(col, "View destination", true, "Show where %s is headed." % s.name).pressed.connect(func(): view_destination.emit())
 	var targets := state.fire_targets(s)
 	var why := ""
 	if not state.can_fire(s):

@@ -4,7 +4,8 @@ extends Node2D
 ## the squad's number (enemies: their role's initial) on a tag; no pole or flag (playtest
 ## round 7). A squad without a leader is a numbered ring. Flyers float with a soft shadow
 ## (SPEC §5.1). With `as_flag`, it draws the squad's numbered flag instead: a moving
-## squad's destination and the pointer while laying a move.
+## squad's destination and the pointer while laying a move. A leaderless squad crawling
+## home shows a skull instead of the leader's icon (playtest round 9).
 
 const FLY_HEIGHT := 16.0
 const PLAYER := Color("#3b6fd6")
@@ -19,6 +20,13 @@ var selected := false:
 		queue_redraw()
 var color := PLAYER  # player blue; enemies are red
 var as_flag := false  # the destination flag / move cursor, not the squad itself
+var crawl := false:  # leaderless, marching home (Squad.crawling)
+	set(value):
+		if value != crawl:
+			crawl = value
+			queue_redraw()
+
+static var _skull: Texture2D
 
 
 func _ready() -> void:
@@ -40,7 +48,11 @@ func _draw() -> void:
 		draw_arc(center, RADIUS + 6, 0.0, TAU, 32, Color(1, 0.9, 0.3), 3.0)
 	var icon := UnitIcons.on_token(squad.leader.unit_class, ICON_PX, DISC) if squad.leader else null
 	draw_circle(center, RADIUS, DISC)
-	if icon:
+	if crawl:
+		if _skull == null:
+			_skull = UiStyle.svg("skull", ICON_PX, Color(0.92, 0.9, 0.86))
+		draw_texture_rect(_skull, Rect2(center - Vector2.ONE * RADIUS * 0.72, Vector2.ONE * RADIUS * 1.44), false)
+	elif icon:
 		draw_texture_rect(icon, Rect2(center - Vector2.ONE * RADIUS * 1.06, Vector2.ONE * RADIUS * 2.12), false)
 	draw_arc(center, RADIUS, 0.0, TAU, 40, color, 3.0)
 	var tag := center + Vector2(RADIUS * 0.75, RADIUS * 0.75)  # at the ring's lower right, clear of the icon's symbols

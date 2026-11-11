@@ -13,6 +13,8 @@ signal regenerate(seed: int)  # debug panel: a fresh map from this seed, same se
 const NIGHT := Color(0.45, 0.5, 0.78)  # map tint at night
 const ENEMY := Color("#c8402f")
 const CLICK_SLOP := 6.0  # a press and release closer than this is a click, not a drag
+const ZOOMED_OUT_REACH := 1.25  # zoomed out, a token's click area is this much wider than the token
+const PEEK_MSEC := 3000  # how long View destination shows the flag
 const STACK_SPREAD := 16.0  # world units between flags of squads standing on the same hex
 const START_PROMPT := "Press Play to begin  (Space, or pick a speed under the minimap)"
 const TEST_TRAVEL := ["plains", "forest", "mountain", "swamp", "snow", "desert", "shallow", "deep", "sky", ""]
@@ -30,6 +32,7 @@ var _log_panel: LogPanel
 var _debug_panel: DebugPanel
 var _recruit_popup: RecruitPopup
 var _liberation_popup: LiberationPopup
+var _lost_popup: TownLostPopup
 var _end_screen: EndScreen
 var _menu: SquadMenu
 var _main_menu: MainMenu
@@ -47,6 +50,8 @@ var _awaiting_start := true  # a new map waits, paused, for the player to start 
 var _shop: Control  # the shop screen or the supplies menu
 var _cursor_flag: SquadToken  # while laying a route, the squad's flag replaces the mouse pointer
 var _dest_flag: SquadToken  # a selected moving squad's flag, at its destination (playtest round 7)
+var _peek: Squad  # View destination: this squad's flag shows until _peek_until (msec)
+var _peek_until := 0
 var _tokens := {}  # squad id -> SquadToken
 var _selected: Squad  # the squad whose menu or move order is open (the game is held meanwhile)
 var _planning := false  # laying rally points for _selected
@@ -77,6 +82,7 @@ func start(game_data: GameData, game_log: GameLog, config: GameConfig, map: MapD
 		if _can_open():
 			_center_on_squad(id))
 	hud.speed_chosen.connect(_on_speed_chosen)
+	hud.place_pressed.connect(func(hex: int): camera.center_on(MapView.hex_center(state.map, hex)))
 	hud.edit_pressed.connect(func():
 		if _free():
 			_open_edit())
@@ -142,13 +148,15 @@ func _process(delta: float) -> void:
 	if not state.pending_recruit.is_empty() and _free():
 		_open_recruit_popup()
 	_pump_liberations()
+	_pump_losses()
 	if not state.card_offer.is_empty() and _free():
 		_open_cards(true)
 	if state.game_over != "" and _free():
 		_open_end_screen()
 	_hold_clock()
 	if not state.notices.is_empty():
-		hud.show_banner("  ·  ".join(state.notices), 4.0)
+		var news := "  ·  ".join(state.notices)
+		hud.show_banner_links(news, 4.0, _place_links(news))
 		state.notices.clear()
 	if not state.daily_ledger.is_empty() and _free():
 		if bool(options.get("show_daily_ledger", true)):
@@ -167,6 +175,15 @@ func _process(delta: float) -> void:
 	_update_tokens()
 	_update_paths()
 	hud.refresh(state)
+
+
+## Named places mentioned in a message, name -> hex, for links in the banner.
+func _place_links(text: String) -> Dictionary:
+	var out := {}
+	for b in state.map.buildings:
+		if b.has("name") and text.contains(b["name"]):
+			out[b["name"]] = b["hex"]
+	return out
 
 
 ## 0 by day, 1 at night, with an hour of dusk after 18:00 and of dawn before 06:00.
@@ -233,7 +250,7 @@ func _update_tokens() -> void:
 			view.remove_site(b["hex"])
 		elif BuildingIcons.TOPS.has(b["type"]):
 			var flag: Color = {"player": SquadToken.PLAYER, "enemy": ENEMY}.get(b["owner"], Color.TRANSPARENT)
-			view.update_building(i, b["hex"], not b["away"], flag, state.capture_progress(b))
+			view.update_building(i, b["hex"], not b["away"], flag, state.capture_progress(b), b["type"] == "town" and b.get("shop", false))
 	var stacks := {}  # hex -> squads standing there, in id order
 	for s in state.squads:
 		if not s.is_moving():
@@ -249,14 +266,16 @@ func _update_tokens() -> void:
 			at = at.lerp(MapView.hex_center(state.map, s.path[0]), t)
 		token.position = at
 		token.selected = s == _selected
+		token.crawl = s.crawling()
 		token.visible = state.is_visible(s)
 	_update_dest_flag()
 
 
 ## Flags mean destinations: the selected squad, if it's moving, shows its flag where it's
-## headed; squads at rest show none.
+## headed; squads at rest show none. After View destination, the flag stays a few seconds.
 func _update_dest_flag() -> void:
-	var show := _selected != null and _selected.side == "player" and _selected.is_moving() and not _planning
+	var who := _selected if _selected else (_peek if Time.get_ticks_msec() < _peek_until else null)
+	var show := who != null and who.side == "player" and who.is_moving() and not _planning
 	if show and _dest_flag == null:
 		_dest_flag = SquadToken.new()
 		_dest_flag.as_flag = true
@@ -264,10 +283,10 @@ func _update_dest_flag() -> void:
 	if _dest_flag:
 		_dest_flag.visible = show
 		if show:
-			if _dest_flag.squad != _selected:
-				_dest_flag.squad = _selected
+			if _dest_flag.squad != who:
+				_dest_flag.squad = who
 				_dest_flag.queue_redraw()
-			_dest_flag.position = MapView.hex_center(state.map, _selected.path[_selected.path.size() - 1])
+			_dest_flag.position = MapView.hex_center(state.map, who.path[who.path.size() - 1])
 
 
 func _update_paths() -> void:
@@ -324,8 +343,11 @@ func _squad_at(world: Vector2) -> Squad:
 ## Visible squads whose flags are under the point, nearest first.
 func _squads_at(world: Vector2) -> Array[Squad]:
 	var out: Array[Squad] = []
+	var reach := MapView.HEX_SIZE * 1.2 * _token_scale().x  # tokens grow as the map zooms out; so does their click area
+	if _token_scale().x > 1.0:
+		reach *= ZOOMED_OUT_REACH  # and a little more, so they're easy to grab (playtest round 9)
 	for s in state.squads:
-		if state.is_visible(s) and _tokens[s.id].position.distance_to(world) < MapView.HEX_SIZE * 1.2:
+		if state.is_visible(s) and _tokens[s.id].position.distance_to(world) < reach:
 			out.append(s)
 	out.sort_custom(func(a: Squad, b: Squad): return _tokens[a.id].position.distance_to(world) < _tokens[b.id].position.distance_to(world))
 	return out
@@ -421,6 +443,11 @@ func _open_menu() -> void:
 	_menu.setup(state, _selected)
 	_menu.move.connect(_start_planning)
 	_menu.fire.connect(_start_firing)
+	_menu.view_destination.connect(func():
+		_peek = _selected
+		_peek_until = Time.get_ticks_msec() + PEEK_MSEC
+		camera.center_on(MapView.hex_center(state.map, _peek.path[_peek.path.size() - 1]))
+		_end_selection())
 	_menu.return_to_base.connect(func():
 		state.send_home(_selected)
 		_end_selection()
@@ -783,6 +810,20 @@ func _pump_liberations() -> void:
 		_fireworks(entry["building"]["hex"])
 
 
+## A building of yours the enemy retook: a modal over the place (playtest round 9).
+func _pump_losses() -> void:
+	if state.losses.is_empty() or not _free():
+		return
+	var entry: Dictionary = state.losses.pop_front()
+	camera.center_on(MapView.hex_center(state.map, entry["building"]["hex"]))
+	_lost_popup = TownLostPopup.new()
+	_ui.add_child(_lost_popup)
+	_lost_popup.setup(state, entry)
+	_lost_popup.closed.connect(func():
+		_lost_popup.queue_free()
+		_lost_popup = null)
+
+
 ## A short fireworks show over a hex (a liberated building).
 func _fireworks(hex: int) -> void:
 	var f := Fireworks.new()
@@ -884,7 +925,7 @@ func _on_speed_chosen(index: int) -> void:
 ## a route or picking a target, which take map clicks).
 func _can_open() -> bool:
 	return not (_log_panel or _debug_panel or _menu or _main_menu or _battle or _encounter or _edit or _deploy_menu or _confirm or _building_popup or _enemy_popup \
-			or _shop or _recruit_popup or _liberation_popup or _end_screen or _chooser or _ledger)
+			or _shop or _recruit_popup or _liberation_popup or _end_screen or _chooser or _ledger or _lost_popup)
 
 
 ## One thing at a time (DECISIONS, session 044): the bare map with nothing open and no
@@ -919,10 +960,16 @@ func _unhandled_input(event: InputEvent) -> void:
 			var world := get_canvas_transform().affine_inverse() * mb.position
 			if _planning:
 				var foes := _squads_at(world).filter(func(o: Squad): return o.side == "enemy")
-				if not foes.is_empty() and not _deploying:
-					_offer_follow(foes[0], _hex_at(world))
+				var hex := _hex_at(world)
+				# A second click on the rally point just laid (or on the enemy standing there) commits
+				# the move; no need to ask Follow or Move here again (playtest round 9).
+				var last := _points[_points.size() - 1] if not _points.is_empty() else -2
+				if hex == last or foes.any(func(o: Squad): return o.hex == last):
+					_plan_click(last)
+				elif not foes.is_empty() and not _deploying:
+					_offer_follow(foes[0], hex)
 				else:
-					_plan_click(_hex_at(world))
+					_plan_click(hex)
 			elif _firing:
 				_fire_click(world)
 			else:

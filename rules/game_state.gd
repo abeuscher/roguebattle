@@ -20,6 +20,7 @@ var pending_recruit := {}  # {player, neutral, defender}: a Recruit-or-Fight cho
 var enemy_pool: Array[Unit] = []  # single map mode: enemy conscripts at the Enemy Base, waiting to form a Warband
 var enemy_start_squads := 0  # how many squads the enemy started with (the Warband cap scales from it)
 var _warbands := 0  # Warbands named so far, for numbering new ones
+var losses: Array[Dictionary] = []  # {building, reputation}: buildings of yours the enemy retook, for the UI to announce
 var liberations: Array[Dictionary] = []  # {building, card, recruits}, oldest first: liberations the UI hasn't shown yet
 var revealed := {}  # building index -> true for hidden sites and lairs a squad has seen
 var _contact_until := {}  # "player id:enemy id" -> tick before which the pair won't fight again
@@ -281,7 +282,12 @@ func _capture() -> void:
 			else:
 				log.add(clock.tick, "map", "%s captures %s." % [s.name, place_label(b)], s.id)
 				if s.side == "enemy" and b["type"] != "player_base":  # (the Player Base taken ends the game)
-					notices.append(("The enemy has retaken %s." if was == "player" else "The enemy has captured %s.") % where(b["hex"]))
+					if was == "player":  # a modal and a little reputation (playtest round 9)
+						var loss := -int(data.rules["standing"]["lose_reputation"])
+						change_reputation(null, loss, "the enemy retook %s" % where(b["hex"]))
+						losses.append({"building": b, "reputation": loss})
+					else:
+						notices.append("The enemy has captured %s." % where(b["hex"]))
 				change_morale(s, int(data.battle["morale"]["liberation"]), "capturing a %s" % what)
 				if s.side == "enemy":
 					_conscript("enemy", b)
@@ -1297,10 +1303,11 @@ func _form(number: int, squad_name: String, at_hex: int, members: Array, side: S
 	return s
 
 
-## Ticks to cross one hex of multiplier 1 at this speed tier, slowed by casualties (SPEC §8.3).
+## Ticks to cross one hex of multiplier 1 at this speed tier, slowed by casualties (SPEC §8.3)
+## and, for a leaderless squad crawling home, by crawl_slowdown (playtest round 9).
 func base_ticks(s: Squad) -> float:
 	return float(data.rules["hex_seconds_by_tier"][s.speed_tier - 1]) * float(data.rules["ticks_per_real_second"]) \
-			* s.casualty_multiplier(data)
+			* s.casualty_multiplier(data) * (float(data.rules["crawl_slowdown"]) if s.crawling() else 1.0)
 
 
 ## Ticks to enter hex `i`.

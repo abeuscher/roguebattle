@@ -665,3 +665,15 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **Squad builder:** `DebugTools.draft` / `add_unit` / `remove_unit` / `place`. The draft's room is the larger of the army's slots and single map's 6. Units go to their class's usual row; the first that can lead leads, and removing the leader hands it to the next that can. Place refuses an empty squad or one with no leader, and puts copies on the map, so the same squad can be placed again; the draft is kept (a static var) between openings until Clear.
 - **Level is a dropdown,** levels 1–50 (the old number box didn't take). **Removed:** the spawner's unit-count box, picked-squad Set level and Set stat (`DebugTools.spawn`, `set_level`, `set_stat` are gone).
   - 347 tests passing.
+
+## Session 055 (2026-11-11): map clicks and notices (M4 session 27)
+
+- **Click area:** `_squads_at` reaches `HEX_SIZE × 1.2 × token scale` (the token's on-screen growth when zoomed out), times `ZOOMED_OUT_REACH` 1.25 once the token is scaled up at all. Overlaps already went to the pick-a-squad menu.
+- **Second click:** while laying a move, a click on the last rally point, or on an enemy whose hex is that point, commits the move; the Follow / Move here menu only comes up otherwise. The "or the enemy on it" part covers clicking a different part of a town's tall icon.
+- **View destination:** a squad menu button, only for a moving squad. It closes the menu (the destination would sit behind it otherwise), centres the map on the destination and shows the squad's flag there for 3 s (`PEEK_MSEC`).
+- **Banner links:** the HUD banner is a row of labels with each named place (any building with a `name`, i.e. towns and nomad camps) found in the text as an underlined link; clicking centres the map. Only the world's notices get links; prompts and order banners stay plain.
+- **Losing a building:** any building of yours the enemy retakes (not just towns: the old banner covered all of them, and towers count for income too) costs `standing.lose_reputation` 3 and queues `GameState.losses`; the battlemap centres on it and shows "X is lost" with the reputation change and Continue. The banner for this case is gone; neutral captures keep their banner.
+- **Crawling home:** `Squad.crawling()` = marching home with the leader dead or missing; `base_ticks` multiplies by `crawl_slowdown` 2.0. Applies to every side (enemies that lose their leader crawl too). An enemy marching home with its leader alive (to revive) is not crawling.
+- **Skull:** Lucide skull, drawn in the token's ring instead of the leader icon, and in the drawer row's leader slot (re-checked every refresh, keyed on skull or leader class).
+- **Dollar sign:** white `$` with a dark outline on the roof of a town with a shop, drawn by `BuildingMarker` (towns only, as the note asked; nomad camps always have shops and have no roof).
+  - 348 tests passing.

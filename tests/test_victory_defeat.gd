@@ -213,6 +213,7 @@ func test_taking_the_enemy_base_wins_whatever_the_settings() -> void:
 
 func test_enemy_captures_are_announced() -> void:
 	var st := _state({"defeat_leader": false, "victory_leader": false})
+	var rep := st.reputation
 	var town := _at(st.map, 8, 3)
 	var tower := _at(st.map, 12, 3)
 	st.building_at(tower)["owner"] = "player"
@@ -221,4 +222,8 @@ func test_enemy_captures_are_announced() -> void:
 	for i in int(d.rules["capture"]["ticks"]):
 		st.step()
 	check(st.notices.any(func(n): return n.begins_with("The enemy has captured")), "a neutral town taken: %s" % [st.notices])
-	check(st.notices.any(func(n): return n.begins_with("The enemy has retaken")), "one of ours taken back: %s" % [st.notices])
+	check(not st.notices.any(func(n): return n.begins_with("The enemy has retaken")), "one of ours taken back is a modal, not a banner")
+	check_eq(st.losses.size(), 1, "it waits for the UI to announce it")
+	check_eq(st.losses[0]["building"]["hex"], tower, "the tower")
+	var loss := int(d.rules["standing"]["lose_reputation"])
+	check_eq(st.reputation, rep - loss, "and costs %d reputation" % loss)

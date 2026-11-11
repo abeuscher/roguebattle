@@ -43,6 +43,11 @@ func _init(squad_id: int, squad_name: String, at_hex: int) -> void:
 	hex = at_hex
 
 
+## Leaderless and marching home: it crawls at reduced speed and shows a skull (round 9).
+func crawling() -> bool:
+	return marching_home and (leader == null or not leader.is_alive())
+
+
 func is_moving() -> bool:
 	return not path.is_empty()
 

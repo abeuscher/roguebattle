@@ -11,6 +11,7 @@ signal deploy_pressed
 signal cards_pressed
 signal tech_pressed
 signal speed_chosen(index: int)  # -1 to pause
+signal place_pressed(hex: int)  # a place named in the banner was clicked
 
 const GOLD := Color("#f2c94c")
 const DAY := Color("#f6e7a8")
@@ -36,7 +37,9 @@ var _drawer_rows := VBoxContainer.new()
 var _drawer_toggle := Button.new()
 var _drawer_open := false
 var _help := Label.new()
-var _banner := Label.new()
+var _banner := PanelContainer.new()  # one line of labels, with place names as links
+var _banner_line := HBoxContainer.new()
+var _banner_text := ""
 var _flash_until := 0
 var _toolbar := HBoxContainer.new()
 var _cards_button: Button
@@ -53,9 +56,11 @@ func _ready() -> void:
 	_help.add_theme_stylebox_override("normal", UiStyle.box(Color(0.07, 0.09, 0.11, 0.75), 6))
 	_help.add_theme_font_size_override("font_size", 13)
 	add_child(_help)
-	_banner.add_theme_stylebox_override("normal", UiStyle.box(Color(0.12, 0.1, 0.04, 0.92), 10))
-	_banner.add_theme_font_size_override("font_size", 18)
-	_banner.add_theme_color_override("font_color", Color("#ffe08a"))
+	_banner.add_theme_stylebox_override("panel", UiStyle.box(Color(0.12, 0.1, 0.04, 0.92), 10))
+	_banner.mouse_filter = MOUSE_FILTER_IGNORE
+	_banner_line.add_theme_constant_override("separation", 0)
+	_banner_line.mouse_filter = MOUSE_FILTER_IGNORE
+	_banner.add_child(_banner_line)
 	_banner.visible = false
 	add_child(_banner)
 	_build_toolbar()
@@ -224,7 +229,9 @@ func set_squads(squads: Array[Squad]) -> void:
 		row.name = "Row"
 		row.position = Vector2(6, 4)
 		b.add_child(row)
-		row.add_child(_icon_rect(UnitIcons.on_token(s.leader.unit_class, 28, SquadToken.PLAYER) if s.leader else null))
+		var lead := _icon_rect(null)
+		lead.name = "Leader"
+		row.add_child(lead)
 		var number := UiStyle.label(str(s.id), 15)
 		number.custom_minimum_size.x = 16
 		number.mouse_filter = MOUSE_FILTER_IGNORE
@@ -247,7 +254,45 @@ static func status_icon(status: String, px := 20) -> Texture2D:
 
 ## A message near the top; with `seconds`, it disappears after that long.
 func show_banner(text: String, seconds := 0.0) -> void:
-	_banner.text = text
+	show_banner_links(text, seconds, {})
+
+
+## A banner whose place names (`links`: name -> hex) are links: clicking one sends
+## place_pressed, and the map centres on it (playtest round 9).
+func show_banner_links(text: String, seconds: float, links: Dictionary) -> void:
+	_banner_text = text
+	for c in _banner_line.get_children():
+		_banner_line.remove_child(c)
+		c.queue_free()
+	var rest := text
+	while rest != "":
+		var at := rest.length()
+		var found := ""
+		for n in links:
+			var i := rest.find(n)
+			if i >= 0 and i < at:
+				at = i
+				found = n
+		if at > 0:
+			var plain := UiStyle.label(rest.left(at), 18, UiStyle.ACCENT)
+			plain.mouse_filter = MOUSE_FILTER_IGNORE
+			_banner_line.add_child(plain)
+		if found == "":
+			break
+		var link := LinkButton.new()
+		link.text = found
+		link.underline = LinkButton.UNDERLINE_MODE_ALWAYS
+		link.add_theme_font_size_override("font_size", 18)
+		for c in ["font_color", "font_focus_color", "font_pressed_color"]:
+			link.add_theme_color_override(c, UiStyle.ACCENT)
+		link.add_theme_color_override("font_hover_color", Color.WHITE)
+		link.focus_mode = FOCUS_NONE
+		link.size_flags_vertical = SIZE_SHRINK_CENTER
+		link.tooltip_text = "Show %s on the map" % found
+		var hex: int = links[found]
+		link.pressed.connect(func(): place_pressed.emit(hex))
+		_banner_line.add_child(link)
+		rest = rest.substr(at + found.length())
 	_banner.visible = text != ""
 	_banner.reset_size()
 	_banner.position = Vector2((size.x - _banner.size.x) / 2.0, 16)
@@ -255,7 +300,7 @@ func show_banner(text: String, seconds := 0.0) -> void:
 
 
 func banner_text() -> String:
-	return _banner.text if _banner.visible else ""
+	return _banner_text if _banner.visible else ""
 
 
 func set_help(text: String) -> void:
@@ -285,6 +330,11 @@ func refresh(state: GameState) -> void:
 	for b in _drawer_rows.get_children():
 		var s: Squad = b.get_meta("squad")
 		var st := state.squad_status(s)
+		var lead: TextureRect = b.get_node("Row/Leader")
+		var face := "skull" if s.crawling() else (s.leader.unit_class if s.leader else "")  # a skull while it crawls home leaderless (playtest round 9)
+		if lead.get_meta("face", "-") != face:
+			lead.set_meta("face", face)
+			lead.texture = UiStyle.svg("skull", 24, Color(0.92, 0.9, 0.86)) if face == "skull" 					else (UnitIcons.on_token(face, 28, SquadToken.PLAYER) if face != "" else null)
 		var icon: TextureRect = b.get_node("Row/Status")
 		if icon.get_meta("status", "") != st:
 			icon.set_meta("status", st)
