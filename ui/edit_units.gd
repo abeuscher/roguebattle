@@ -42,7 +42,11 @@ static var _sort := "leader"  # the Recruits order; kept while the game runs
 var _targets: Array = []  # [Control, Unit] that take items, dimmed while an item they can't wear is dragged
 var _status := UiStyle.label("", 16, UiStyle.ACCENT)
 var _gold := UiStyle.label("", 18, UiStyle.ACCENT)
-var _back: Button
+var _done: Button  # the overview's way back to the map
+var _close: Button  # the squad view's X
+var _crumb := HBoxContainer.new()  # the squad view's title: "Edit Units > Edit Squad: …"
+var _crumb_squad := UiStyle.label("", 26)
+var _from_army := false  # the open squad was opened from the overview (its X goes back there), not from the map
 
 
 ## Opens on the army overview, or on the squad in `cell`.
@@ -58,7 +62,7 @@ func setup(game_state: GameState, cell := -1) -> void:
 	var center := CenterContainer.new()
 	center.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	add_child(center)
-	UiStyle.close_on_click(shade, center, func(): closed.emit())
+	UiStyle.close_on_click(shade, center, _leave)
 	var panel := PanelContainer.new()
 	panel.add_theme_stylebox_override("panel", UiStyle.box(UiStyle.PANEL, 16))
 	panel.custom_minimum_size = Vector2(1840, 1000)
@@ -69,15 +73,30 @@ func setup(game_state: GameState, cell := -1) -> void:
 	var top := HBoxContainer.new()
 	top.add_theme_constant_override("separation", 12)
 	col.add_child(top)
-	_back = UiStyle.button("Back to army", 190)
-	_back.pressed.connect(func(): _open(-1))
-	top.add_child(_back)
+	# The squad view's title is a breadcrumb (user's notes, 2026-11-11): "Edit Units" links
+	# to the overview, the same view whether the squad was opened from the map or here.
 	_title.size_flags_horizontal = SIZE_EXPAND_FILL
 	top.add_child(_title)
+	_crumb.add_theme_constant_override("separation", 12)
+	_crumb.size_flags_horizontal = SIZE_EXPAND_FILL
+	var link := LinkButton.new()
+	link.text = "Edit Units"
+	link.add_theme_font_size_override("font_size", 26)
+	link.add_theme_color_override("font_color", UiStyle.ACCENT)
+	link.add_theme_color_override("font_hover_color", UiStyle.ACCENT.lightened(0.3))
+	link.focus_mode = FOCUS_NONE
+	link.tooltip_text = "Go to the whole army"
+	link.pressed.connect(func(): _open(-1))
+	_crumb.add_child(link)
+	_crumb.add_child(UiStyle.label(">", 26, Color(0.6, 0.63, 0.68)))
+	_crumb.add_child(_crumb_squad)
+	top.add_child(_crumb)
 	top.add_child(_gold)
-	var close := UiStyle.button("Done (U)", 170, true)
-	close.pressed.connect(func(): closed.emit())
-	top.add_child(close)
+	_done = UiStyle.button("Done (U)", 170, true)
+	_done.pressed.connect(func(): closed.emit())
+	top.add_child(_done)
+	_close = UiStyle.close_x(_leave)
+	top.add_child(_close)
 	var body := HBoxContainer.new()
 	body.add_theme_constant_override("separation", 16)
 	body.size_flags_vertical = SIZE_EXPAND_FILL
@@ -87,7 +106,16 @@ func setup(game_state: GameState, cell := -1) -> void:
 	body.add_child(_main)
 	body.add_child(_gutter())
 	col.add_child(_status)
-	_open(cell)
+	_open(cell, false)
+
+
+## The squad view's X, Esc or a click outside: back where the squad was opened from
+## (the overview, or the map). From the overview, they close Edit Units.
+func _leave() -> void:
+	if _squad and _from_army:
+		_open(-1)
+	else:
+		closed.emit()
 
 
 ## The recruit pool on the right; dropping a unit here sends it to the pool.
@@ -151,7 +179,10 @@ func _gutter() -> Control:
 	return box
 
 
-func _open(cell: int) -> void:
+## `from_army`: opened from inside Edit Units (the squad view's X comes back to the
+## overview) rather than from the map (the X closes Edit Units).
+func _open(cell: int, from_army := true) -> void:
+	_from_army = from_army
 	_cell = cell
 	_squad = army.cells[cell] if cell >= 0 else null
 	_unit = null
@@ -171,9 +202,13 @@ func _refresh() -> void:
 		_modal.queue_free()
 		_modal = null
 	_targets.clear()
-	_back.visible = _squad != null
+	_title.visible = _squad == null
+	_crumb.visible = _squad != null
+	_done.visible = _squad == null
+	_close.visible = _squad != null
 	_gold.text = "Gold %d  ·  Upkeep %d a day  ·  On the map %d / %d" % [state.gold, state.army_upkeep(), state.player_squads().size(), state.squad_cap()]
-	_title.text = "Edit Units" if _squad == null else "Edit Units  ·  #%d %s" % [_squad.id, _squad.name]
+	if _squad:
+		_crumb_squad.text = "Edit Squad: %s" % ("%s (%s)" % [_squad.leader.name.get_slice(" ", 0), _squad.leader.unit_class] if _squad.leader else _squad.name)
 	if _squad:
 		_main.add_child(_detail())
 	else:
@@ -867,10 +902,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		_close_unit()
 	elif key in [KEY_LEFT, KEY_RIGHT] and _unit:
 		_page_unit(-1 if key == KEY_LEFT else 1)
-	elif key == KEY_U or (key == KEY_ESCAPE and _squad == null):
+	elif key == KEY_U:
 		closed.emit()
 	elif key == KEY_ESCAPE:
-		_open(-1)
+		_leave()
 	get_viewport().set_input_as_handled()
 
 
