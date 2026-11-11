@@ -73,7 +73,8 @@ This describes how the game actually plays right now, not the full design (that'
 ## Buildings and the economy
 
 - **Towns have names** (Ashford, Old Rookmere), the same for the same map seed. They show in the building's popup, the liberation message and the log. Other buildings go by their type.
-- **Liberation message:** names the place, shows any card drawn, and has Close and "Go to city" (the map glides there and zooms in, as for a fight). When it closes, a small fireworks show bursts over the place, so you can tell which it was in a cluster. "Do not show this window again" (or Options) turns the message off: a banner names the place instead and the fireworks still play. It always opens when there's a card to choose.
+- **Clicking a building** anywhere on its picture opens its window. A building you don't hold that none of your squads can see shows only its name, who holds it (no one or the enemy) and whether it has a shop; the rest (defense, liberation progress, local news) shows once a squad is in sight or you hold it.
+- **Liberation message:** names the place, lists any conscripts who joined (single map mode) and shows any card drawn, with a Close button. When it closes, a small fireworks show bursts over the place, so you can tell which it was in a cluster. "Do not show this window again" (or Options) turns the message off: a banner names the place instead and the fireworks still play. It always opens when there's a card to choose.
 - **Enemy captures:** a banner says when the enemy captures a neutral town or tower ("The enemy has captured Ashford.") and when it retakes one of yours ("The enemy has retaken …").
 - **Every building starts neutral** except the two bases: no one holds a town or tower at the start, so both sides race out to take them. You can shop in, rest in and use any building the enemy doesn't hold; you only earn income from the ones you hold.
 - **Liberating** a town or tower, neutral or enemy-held (stand a living ground unit there for 60 ticks, twice as fast with a Sapper) flips its owner, gives reputation and alignment swings, +5 charisma to a matching-alignment leader, a gold bonus, a card, and a tech point. A popup names what you took, focuses the camera on it, and shows the card you drew (or lets you pick one, if a Seer or Oracle offers a choice) right there.
@@ -141,6 +142,9 @@ This describes how the game actually plays right now, not the full design (that'
 - **Leaders decide how many squads you field.** Every squad needs a unit that can lead (stage 3 or 4; see "A squad always has a leader" above). You start with leaders to spare for the map cap (twice what's needed, while the pool is doubled); more come as units promote to stage 3 or leaders join, up to the 16 squads the army holds.
 - **The Opinion Leader can move to any squad** or wait in the pool. Only their death loses the map (when that defeat is on), not squad 1 breaking up.
 - **Squads on the map** default to the map's size: 6 on Small, 8 on Medium, 10 on Large (the nearest size for a custom map). You can still change it in the configurator.
+- **Conscription:** the first time you liberate a town (or nomad camp; not a tower), 1–3 fighters (Serf-line stage 2, at the median level of your squads) and a Serf join the recruit pool at the Player Base. If no one in the pool can lead, one of the fighters is a leader. Each town pays you once, however often it changes hands. The liberation message lists who joined.
+- **The enemy grows too, at half your rate:** the first time it takes a town, 1–2 fighters (no Serf) join a pool at the Enemy Base, at its squads' median level. Once that pool holds 5 with a leader among them, they form a new Warband that marches out. The enemy never fields more than 1.5× the squads it started with.
+- **Enemy squads are bigger:** each has 5–6 units (its usual 4 plus 1–2 stage 2 units) and 6 slots, to match your squads of 6.
 - Cards, tech points, gold, items and supplies as below.
 
 **Campaign start:**
@@ -152,7 +156,7 @@ This describes how the game actually plays right now, not the full design (that'
 
 ## The enemy
 
-The enemy fields half as many squads as the map has towns (at least 3; 8 on the default map). Each has 4 units, 2 front and 2 back, and no healers. Every one starts on the Enemy Base, just as yours start at your base:
+The enemy fields half as many squads as the map has towns (at least 3; 8 on the default map). Each has 4 units, 2 front and 2 back, and no healers (5–6 units in single map mode, which also adds conscripted Warbands; see "Your starting army"). Every one starts on the Enemy Base, just as yours start at your base:
 
 - **The Warlord and a Base guard** stay on the Enemy Base and never go looking for a fight. They only move if pushed back from losing a fight there, or to come back after one.
 - **Field squads** (the rest) march out to take towns and towers. Standing on one the enemy doesn't hold, a field squad stays until it's taken. Then it weighs holding it against moving on to another neutral or player-held town or tower that no other enemy squad is heading for:

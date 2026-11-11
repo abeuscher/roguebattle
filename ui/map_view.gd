@@ -310,6 +310,22 @@ func hover_building(i: int) -> void:
 	_hovered = i
 
 
+## The building (index in map.buildings) whose shown icon covers a world point, the
+## nearest one if several do; -1 for none.
+func building_icon_at(world: Vector2) -> int:
+	var best := -1
+	var best_d := INF
+	for i in mini(_icon_sprites.size(), _map.buildings.size()):  # lair icons come after
+		var icon := _icon_sprites[i]
+		if not icon.visible or not icon.get_rect().has_point(icon.to_local(world)):
+			continue
+		var d := icon.global_position.distance_squared_to(world)
+		if d < best_d:
+			best_d = d
+			best = i
+	return best
+
+
 ## Shows a hidden site or lair icon once a squad has seen it.
 func reveal(hex: int) -> void:
 	_revealed[hex] = true

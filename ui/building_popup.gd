@@ -30,6 +30,24 @@ func setup(state: GameState, b: Dictionary) -> void:
 	panel.add_child(col)
 	col.add_child(UiStyle.label("%s  ·  %s" % [b["name"], info["name"]] if b.has("name") else info["name"], 26))
 	col.add_child(UiStyle.label(OWNERS[b["owner"]], 17, UiStyle.ACCENT))
+	var lines: Array
+	if b["owner"] != "player" and not state.seen(b["hex"]):  # out of sight: only its name, owner and shop (playtest notes, 2026-11-11)
+		lines = ["Shop: yes" if b.get("shop", false) else "Shop: no", "Out of your squads' sight."]
+	else:
+		lines = _details(state, b, info)
+	for t in lines:
+		var l := UiStyle.label(t, 16, Color(0.85, 0.87, 0.9))
+		l.autowrap_mode = TextServer.AUTOWRAP_WORD
+		col.add_child(l)
+	var close := UiStyle.button("Close (Esc)", 180)
+	close.pressed.connect(func(): closed.emit())
+	col.add_child(close)
+
+
+## Everything about a building in sight or held: defense and rest, liberating, shop,
+## temple services, local news.
+func _details(state: GameState, b: Dictionary, info: Dictionary) -> Array:
+	var data := state.data
 	var lines := []
 	if info.has("own_base"):
 		if float(info["own_base"]["rest"]) > 0.0:
@@ -68,13 +86,7 @@ func setup(state: GameState, b: Dictionary) -> void:
 		var h := state.hint(b)
 		lines.append(("Local news: " + h) if b["owner"] == "player" and h != "" else
 				("Liberate it to hear the local news." if b["owner"] != "player" else "No news of anything hidden nearby."))
-	for t in lines:
-		var l := UiStyle.label(t, 16, Color(0.85, 0.87, 0.9))
-		l.autowrap_mode = TextServer.AUTOWRAP_WORD
-		col.add_child(l)
-	var close := UiStyle.button("Close (Esc)", 180)
-	close.pressed.connect(func(): closed.emit())
-	col.add_child(close)
+	return lines
 
 
 static func _pct(v: Variant) -> int:

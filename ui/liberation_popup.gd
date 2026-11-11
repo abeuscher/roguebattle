@@ -5,7 +5,6 @@ extends Control
 ## instead of a separate one (§13). A modal: 50% dark overlay.
 
 signal closed
-signal go_to  # "Go to city": close, and the map glides to the place
 
 var state: GameState
 var _offering := false
@@ -13,7 +12,7 @@ var _offering := false
 
 ## `drawn_card` is the card id if one went straight into the hand, or "" if there
 ## was none or it's an offer instead (read from `game_state.card_offer`).
-func setup(game_state: GameState, building: Dictionary, drawn_card: String, options := {}) -> void:
+func setup(game_state: GameState, building: Dictionary, drawn_card: String, options := {}, recruits: Array = []) -> void:
 	state = game_state
 	_offering = drawn_card == "" and not state.card_offer.is_empty()
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
@@ -34,6 +33,10 @@ func setup(game_state: GameState, building: Dictionary, drawn_card: String, opti
 	panel.add_child(col)
 	var what: String = building.get("name", state.data.buildings[building["type"]]["name"])
 	col.add_child(UiStyle.label("%s liberated!" % what, 24))
+	if not recruits.is_empty():  # single map mode's conscription
+		col.add_child(UiStyle.label("Conscripts join the recruit pool at the Player Base:", 16, Color(0.7, 0.72, 0.76)))
+		for u in recruits:
+			col.add_child(UiStyle.label("  %s, %s, level %d" % [u.name, u.unit_class, u.level], 16))
 	if drawn_card != "":
 		col.add_child(UiStyle.label("You draw:", 16, Color(0.7, 0.72, 0.76)))
 		var face := CardFace.make(state.data, drawn_card)
@@ -62,9 +65,6 @@ func setup(game_state: GameState, building: Dictionary, drawn_card: String, opti
 		var close := UiStyle.button("Close (Esc)", 180)
 		close.pressed.connect(func(): closed.emit())
 		buttons.add_child(close)
-		var go := UiStyle.button("Go to city" if building.has("name") else "Go to it", 180, true)
-		go.pressed.connect(func(): go_to.emit())
-		buttons.add_child(go)
 
 
 ## A "View all cards" toggle that lists the current hand inside this dialog.

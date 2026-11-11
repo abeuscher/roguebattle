@@ -8,10 +8,15 @@ const MAX_BATTLES := 10  # a trial that hasn't routed anyone by then counts as a
 
 
 ## A squad rolled from a build: [[class, row], ...]; the first unit able to lead leads.
-static func roll_squad(data: GameData, build: Array, rng: RandomNumberGenerator, names: NameBook, id: int) -> Squad:
+## Every unit is levelled up to `level`. The build sets the size: slots never turn a unit away.
+static func roll_squad(data: GameData, build: Array, rng: RandomNumberGenerator, names: NameBook, id: int, level := 1) -> Squad:
 	var s := Squad.new(id, "Side %d" % id, 0)
+	s.base_slots = 2 * build.size()
 	for m in build:
-		s.add(data, Unit.roll(data, m[0], rng, names), m[1])
+		var u := Unit.roll(data, m[0], rng, names)
+		for l in level - 1:
+			Progression.level_up(data, u, rng)
+		s.add(data, u, m[1])
 	return s
 
 
@@ -19,7 +24,7 @@ static func roll_squad(data: GameData, build: Array, rng: RandomNumberGenerator,
 ## Returns win shares, the first battle's HP loss for the eventual loser and winner,
 ## and the average number of battles to rout.
 static func run(data: GameData, build_a: Array, build_b: Array, trials: int, seed: int,
-		terrain := "plains", daytime := true) -> Dictionary:
+		terrain := "plains", daytime := true, levels := [1, 1]) -> Dictionary:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed
 	var wins := [0, 0]
@@ -32,7 +37,7 @@ static func run(data: GameData, build_a: Array, build_b: Array, trials: int, see
 	var seen := {"front": 0, "back": 0}
 	for trial in trials:
 		var names := NameBook.new(data)
-		var sides := [roll_squad(data, build_a, rng, names, 1), roll_squad(data, build_b, rng, names, 2)]
+		var sides := [roll_squad(data, build_a, rng, names, 1, levels[0]), roll_squad(data, build_b, rng, names, 2, levels[1])]
 		threat_ratio += Threat.squad(data, sides[1]) / maxf(0.001, Threat.squad(data, sides[0]))
 		var first_lost := [0.0, 0.0]
 		var battles := 0

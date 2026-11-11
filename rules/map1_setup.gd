@@ -65,6 +65,31 @@ static func build_single(data: GameData, rng: RandomNumberGenerator, squad_cap: 
 	return {"leader": leaders[0], "pool": pool}
 
 
+## Conscripts for a town taken in single map mode (rules.json single_map.conscription):
+## `fighters` random Serf-line stage 2 classes, the first of them a Serf-line leader
+## instead when `need_leader`, then `serfs` Serfs.
+static func conscripts(data: GameData, rng: RandomNumberGenerator, fighters: int, serfs: int, need_leader: bool) -> Array:
+	var stage2 := _stage2_classes(data)
+	var leaders: Array = _leaders_by_terrain(data).values().reduce(func(a, b): return a + b, [])
+	var out := []
+	for i in fighters:
+		var options: Array = leaders if i == 0 and need_leader else stage2
+		out.append(options[rng.randi() % options.size()])
+	for i in serfs:
+		out.append(data.lines[_serf_line_ids(data)[0]][0][0])
+	return out
+
+
+## `n` random Serf-line stage 2 units as [class, row], to lengthen an enemy build.
+static func extra_members(data: GameData, rng: RandomNumberGenerator, n: int) -> Array:
+	var stage2 := _stage2_classes(data)
+	var out := []
+	for i in n:
+		var c: String = stage2[rng.randi() % stage2.size()]
+		out.append([c, _row(data, c)])
+	return out
+
+
 ## How many of each single map mode starts with (rules.json single_map.pool), every
 ## count times its scale: leaders (the Opinion Leader among them) one more than the squad
 ## cap (user's notes, 2026-11-11), Large units, Serfs, and stage 2 units for the rest of

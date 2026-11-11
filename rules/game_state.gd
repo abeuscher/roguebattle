@@ -17,7 +17,10 @@ var gold: int
 var reputation: int
 var pending: Battle  # a battle waiting to be fought; the map holds until it's resolved
 var pending_recruit := {}  # {player, neutral, defender}: a Recruit-or-Fight choice waiting on the player (§16)
-var liberations: Array[Dictionary] = []  # {building, card}, oldest first: liberations the UI hasn't shown yet
+var enemy_pool: Array[Unit] = []  # single map mode: enemy conscripts at the Enemy Base, waiting to form a Warband
+var enemy_start_squads := 0  # how many squads the enemy started with (the Warband cap scales from it)
+var _warbands := 0  # Warbands named so far, for numbering new ones
+var liberations: Array[Dictionary] = []  # {building, card, recruits}, oldest first: liberations the UI hasn't shown yet
 var revealed := {}  # building index -> true for hidden sites and lairs a squad has seen
 var _contact_until := {}  # "player id:enemy id" -> tick before which the pair won't fight again
 var _moved := {}  # squads that entered a new hex this tick
@@ -273,6 +276,9 @@ func _capture() -> void:
 				if s.side == "enemy" and b["type"] != "player_base":  # (the Player Base taken ends the game)
 					notices.append(("The enemy has retaken %s." if was == "player" else "The enemy has captured %s.") % where(b["hex"]))
 				change_morale(s, int(data.battle["morale"]["liberation"]), "capturing a %s" % what)
+				if s.side == "enemy":
+					_conscript("enemy", b)
+					_form_warbands()
 
 
 ## A place as the player would name it: a building by its name or type ("Ashford",
@@ -312,7 +318,89 @@ func _liberated(s: Squad, b: Dictionary) -> void:
 	var before := cards.size()
 	draw_card(s)
 	earn_tech_points(int(data.tech["points"]["liberation"]), "a liberation")
-	liberations.append({"building": b, "card": cards[-1] if cards.size() > before else ""})
+	liberations.append({"building": b, "card": cards[-1] if cards.size() > before else "", "recruits": _conscript("player", b)})
+
+
+## Conscription (single map mode, §18): the first time a side takes a town, recruits
+## join its pool: fighters at the median level of its squads (one of them a leader if
+## the pool has no one who can lead) and, for the player, a Serf. Once per side per
+## town. Returns the new units (empty outside single map mode, or for a town already paid).
+func _conscript(side: String, b: Dictionary) -> Array[Unit]:
+	var out: Array[Unit] = []
+	var c: Dictionary = data.rules["single_map"]["conscription"]
+	if not single_map() or b["type"] not in c["town_types"]:
+		return out
+	var paid: Dictionary = b.get("conscripted", {})
+	if paid.has(side):
+		return out
+	paid[side] = true
+	b["conscripted"] = paid
+	var r := rng.get_stream("conscription")
+	var rate: Dictionary = c[side]
+	var pool: Array[Unit] = army.pool if side == "player" else enemy_pool
+	var need_leader := not pool.any(func(u: Unit): return u.info(data)["can_lead"])
+	var level := median_level(side)
+	var fighters := r.randi_range(int(rate["fighters"][0]), int(rate["fighters"][1]))
+	var classes := Map1Setup.conscripts(data, r, fighters, int(rate["serfs"]), need_leader)
+	for k in classes.size():
+		var u := Unit.roll(data, classes[k], r, names)
+		if k < fighters:  # Serfs join at level 1
+			for l in level - 1:
+				Progression.level_up(data, u, r)
+		pool.append(u)
+		out.append(u)
+	if side == "player":
+		for u in out:
+			log.add(clock.tick, "progression", "%s the %s answers the call in %s and joins the recruit pool." % [u.name, u.unit_class, place_label(b)], -1,
+					{"level": u.level, "stats": u.stats, "growth": u.growth, "talent": u.talent, "luck": u.luck})
+	else:
+		log.add(clock.tick, "progression", "Recruits join the enemy at the Enemy Base.", -1, {"from": place_label(b), "count": out.size(), "level": level})
+	return out
+
+
+## The median level of a side's squads (the player's: every squad in the army, on the
+## map or at base), rounded down; 1 if it has none.
+func median_level(side: String) -> int:
+	var levels := []
+	for s in (army.squads() if side == "player" else squads.filter(func(o: Squad): return o.side == side)):
+		for u in s.units:
+			levels.append(u.level)
+	if levels.is_empty():
+		return 1
+	levels.sort()
+	return int(levels[(levels.size() - 1) / 2])
+
+
+## Single map mode: the enemy pool forms a Warband at the Enemy Base whenever it holds a
+## squad's worth with a leader among them, while the enemy has fewer squads than the
+## cap (a share of its starting count). The new Warband marches out like the others.
+func _form_warbands() -> void:
+	var c: Dictionary = data.rules["single_map"]["conscription"]
+	var cap := roundi(enemy_start_squads * float(c["enemy_squad_cap"]))
+	while enemy_pool.size() >= int(c["warband_size"]) and squads.filter(func(o: Squad): return o.side == "enemy").size() < cap:
+		var lead := -1
+		for i in enemy_pool.size():
+			if enemy_pool[i].info(data)["can_lead"]:
+				lead = i
+				break
+		if lead < 0:
+			return
+		var members: Array[Unit] = [enemy_pool[lead]]
+		enemy_pool.remove_at(lead)
+		while members.size() < int(c["warband_size"]):
+			members.append(enemy_pool.pop_front())
+		_warbands += 1
+		var s := Squad.new(1 + squads.filter(func(o: Squad): return o.side == "enemy").size() + 100, "%s %d" % [data.enemy["names"]["field"], _warbands], map.enemy_base)
+		s.side = "enemy"
+		s.base_slots = int(data.rules["single_map"]["base_slots"])
+		for u in members:
+			s.add(data, u, Map1Setup._row(data, u.unit_class))
+		s.balance_rows(data)
+		s.role = "field"
+		s.post = map.enemy_base
+		s.morale = int(data.rules["starting_morale"])
+		squads.append(s)
+		log.add(clock.tick, "map", "%s forms at the Enemy Base." % s.name, s.id, {"units": members.map(func(u: Unit): return u.unit_class)})
 
 
 ## +1 when the squad's band matches the building's (holy town, evil tower), −1 for the
@@ -1189,6 +1277,8 @@ func _form(number: int, squad_name: String, at_hex: int, members: Array, side: S
 	if side == "player":
 		s.tech = tech
 		s.base_slots = army.base_slots
+	elif side == "enemy" and single_map():  # enemy builds of 5-6 need the same 6 slots
+		s.base_slots = int(data.rules["single_map"]["base_slots"])
 	for m in members:
 		var u := Unit.roll(data, m[0], rng.get_stream("recruit"), names)
 		if s.add(data, u, m[1]):
@@ -1333,12 +1423,19 @@ func place_enemies() -> void:
 	var r := rng.get_stream("enemy")
 	var builds: Array = e["builds"]
 	var left := enemy_squad_count()
+	enemy_start_squads = left
+	var extra: Array = data.rules["single_map"]["enemy_builds"]["extra"]
 	for entry in e["roles"]:
 		var count := left if str(entry["count"]) == "rest" else mini(left, int(entry["count"]))
 		left -= count
 		for k in count:
 			var title: String = e["names"][entry["role"]]
-			var s := add_squad("%s %d" % [title, k + 1] if count > 1 else title, map.enemy_base, builds[r.randi() % builds.size()], "enemy")
+			var members: Array = builds[r.randi() % builds.size()].duplicate()
+			if single_map():  # single map mode: builds of 5-6 (rules.json single_map.enemy_builds)
+				members += Map1Setup.extra_members(data, r, r.randi_range(int(extra[0]), int(extra[1])))
+			var s := add_squad("%s %d" % [title, k + 1] if count > 1 else title, map.enemy_base, members, "enemy")
+			if entry["role"] == "field":
+				_warbands = k + 1
 			s.balance_rows(data)
 			s.role = entry["role"]
 			s.post = map.enemy_base

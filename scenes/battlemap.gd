@@ -160,7 +160,7 @@ func _process(delta: float) -> void:
 		_sync_tokens()
 		hud.set_squads(state.player_squads())
 	_update_cursor()
-	var under := state.building_at(_hex_at(get_global_mouse_position())) if _planning and _can_open() else {}
+	var under := _building_under(get_global_mouse_position()) if _planning and _can_open() else {}
 	view.hover_building(state.map.buildings.find(under) if not under.is_empty() else -1)
 	night.color = Color.WHITE.lerp(NIGHT, darkness(state.clock.minute_of_day()))
 	_update_tokens()
@@ -342,6 +342,17 @@ func _choose(found: Array[Squad], building: Dictionary) -> void:
 	_chooser = menu
 	_ui.add_child(menu)
 	menu.popup(Rect2i(Vector2i(get_viewport().get_mouse_position()), Vector2i.ZERO))
+
+
+## The building whose icon is under a world point: its own hex first, else any shown
+## icon that covers the point (icons stand about two hexes tall; playtest notes,
+## 2026-11-11). {} if none.
+func _building_under(world: Vector2) -> Dictionary:
+	var b := state.building_at(_hex_at(world))
+	if not b.is_empty():
+		return b
+	var i := view.building_icon_at(world)
+	return state.building_at(state.map.buildings[i]["hex"]) if i >= 0 else {}
 
 
 func _hex_at(world: Vector2) -> int:
@@ -721,7 +732,8 @@ func _pump_liberations() -> void:
 	if bool(options.get("show_liberations", true)) or offering:
 		_open_liberation_popup(entry)
 	else:  # the player turned the window off: a banner, and the fireworks show where
-		state.notices.append("%s liberated!" % state.where(entry["building"]["hex"]))
+		var joined: int = entry.get("recruits", []).size()
+		state.notices.append("%s liberated!%s" % [state.where(entry["building"]["hex"]), " %d conscripts join the recruit pool." % joined if joined > 0 else ""])
 		_fireworks(entry["building"]["hex"])
 
 
@@ -759,16 +771,11 @@ func _open_liberation_popup(entry: Dictionary) -> void:
 	camera.center_on(MapView.hex_center(state.map, entry["building"]["hex"]))
 	_liberation_popup = LiberationPopup.new()
 	_ui.add_child(_liberation_popup)
-	_liberation_popup.setup(state, entry["building"], entry["card"], options)
+	_liberation_popup.setup(state, entry["building"], entry["card"], options, entry.get("recruits", []))
 	var hex: int = entry["building"]["hex"]
 	_liberation_popup.closed.connect(func():
 		_close_liberation_popup()
 		_fireworks(hex))
-	_liberation_popup.go_to.connect(func():
-		_close_liberation_popup()
-		var cam: Dictionary = data.battle["encounter_camera"]
-		camera.fly_to(MapView.hex_center(state.map, hex), float(cam["map_share"]), float(cam["seconds"])).finished.connect(
-				func(): _fireworks(hex)))
 
 
 func _close_liberation_popup() -> void:
@@ -870,7 +877,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				_fire_click(world)
 			else:
 				var found := _squads_at(world)
-				var building := state.building_at(_hex_at(world))
+				var building := _building_under(world)
 				if found.size() + (0 if building.is_empty() else 1) > 1:
 					_choose(found, building)
 				elif found.size() == 1:
