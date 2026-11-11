@@ -18,6 +18,8 @@
   [["Lancer", "front"], ["Squire", "front"], ["Squire", "front"], ["Bowman", "back"]]
  ],
  "contact_cooldown_ticks": 30,
+ "victor_pause_ticks": 120,
+ "_victor_pause_ticks": "An enemy squad that beats one of yours stands still this many ticks (2 game hours) before moving on, so you can reach it for a second battle (playtest round 10).",
  "base_revive_ticks": 120,
  "_base_revive_ticks": "An enemy squad standing on the Enemy Base brings back one fallen unit (leader first, at full HP) every this many ticks (2 game hours). Living units don't heal there (enemy_base rest 0 in buildings.json)."
 }

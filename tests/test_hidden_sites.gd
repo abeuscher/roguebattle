@@ -76,6 +76,12 @@ func test_a_rare_recruit_joins_the_pool() -> void:
 	var st := _state()
 	_ours(st, 22)
 	st.step()
+	check(not st.pending_rare.is_empty(), "it asks first (round 10)")
+	check_eq(st.army.pool.size(), 0, "nobody joins before the answer")
+	var tick := st.clock.tick
+	st.step()
+	check_eq(st.clock.tick, tick, "the map waits for the answer")
+	st.resolve_rare(true)
 	check_eq(st.army.pool.size(), 1, "one recruit in the pool")
 	var u: Unit = st.army.pool[0]
 	var serf_classes := []
@@ -87,6 +93,27 @@ func test_a_rare_recruit_joins_the_pool() -> void:
 	check_eq(int(d.units[u.unit_class]["stage"]), 1, "stage 1 (%s)" % u.unit_class)
 	check(u.recruited, "counts as a recruit (loyalty)")
 	check(st.building_at(_site(st, "rare_recruit")["hex"]).is_empty(), "the site is gone")
+
+
+## Round 10: Leave keeps the site and the same unit; the squad isn't asked again until it
+## steps off and back on.
+func test_leaving_a_rare_recruit_keeps_the_site() -> void:
+	var st := _state()
+	var s := _ours(st, 22)
+	var site := _site(st, "rare_recruit")
+	st.step()
+	var u: Unit = st.pending_rare["unit"]
+	st.resolve_rare(false)
+	check_eq(st.army.pool.size(), 0, "nobody joined")
+	check(not st.building_at(site["hex"]).is_empty(), "the site is still there")
+	st.step()
+	check(st.pending_rare.is_empty(), "not asked again while it stands there")
+	s.hex = _at(st.map, 20, 4)
+	st.step()
+	s.hex = site["hex"]
+	st.step()
+	check(not st.pending_rare.is_empty(), "asked again after stepping back on")
+	check(st.pending_rare["unit"] == u, "the same unit waits")
 
 
 func test_a_secret_temple_is_a_temple() -> void:

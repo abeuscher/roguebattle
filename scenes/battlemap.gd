@@ -32,6 +32,7 @@ var _ui := CanvasLayer.new()
 var _log_panel: LogPanel
 var _debug_panel: DebugPanel
 var _recruit_popup: RecruitPopup
+var _rare_popup: RareRecruitPopup
 var _liberation_popup: LiberationPopup
 var _lost_popup: TownLostPopup
 var _end_screen: EndScreen
@@ -82,6 +83,10 @@ func start(game_data: GameData, game_log: GameLog, config: GameConfig, map: MapD
 	hud.squad_pressed.connect(func(id: int):
 		if _can_open():
 			_center_on_squad(id))
+	hud.squad_opened.connect(func(id: int):  # round 10: the same menu as clicking it on the map
+		var found := state.player_squads().filter(func(s: Squad): return s.id == id)
+		if _can_open() and not found.is_empty():
+			_select(found[0]))
 	hud.speed_chosen.connect(_on_speed_chosen)
 	hud.place_pressed.connect(func(hex: int): camera.center_on(MapView.hex_center(state.map, hex)))
 	hud.edit_pressed.connect(func():
@@ -138,7 +143,7 @@ func _process(delta: float) -> void:
 	_hold_clock()  # whatever input opened since last frame stops time before it moves on
 	for i in state.clock.advance(delta):
 		state.step()
-		if state.pending or not state.pending_recruit.is_empty() or state.game_over != "":
+		if state.pending or not state.pending_recruit.is_empty() or not state.pending_rare.is_empty() or state.game_over != "":
 			break
 	# What the world brings up opens only on the free map, one at a time; until then it waits.
 	if state.pending and _free():
@@ -148,6 +153,8 @@ func _process(delta: float) -> void:
 			_open_encounter()
 	if not state.pending_recruit.is_empty() and _free():
 		_open_recruit_popup()
+	if not state.pending_rare.is_empty() and _free():
+		_open_rare_popup()
 	_pump_liberations()
 	_pump_losses()
 	if not state.card_offer.is_empty() and _free():
@@ -362,8 +369,8 @@ func _pick(s: Squad) -> void:
 		_show_enemy(s)
 
 
-## While laying a move, a click on a visible enemy squad offers to follow it
-## (playtest round 8) or just to lay a rally point there. Esc closes the offer.
+## While laying a move, a click on a visible enemy or neutral squad on the move offers
+## to follow it (playtest rounds 8 and 10) or just to lay a rally point there. Esc closes the offer.
 func _offer_follow(foe: Squad, hex: int) -> void:
 	var menu := PopupMenu.new()
 	menu.add_theme_font_size_override("font_size", 18)
@@ -809,6 +816,19 @@ func _open_recruit_popup() -> void:
 		_close_recruit_popup())
 
 
+## A rare recruit asks to join (round 10): the map centres on the site; Recruit or Leave.
+func _open_rare_popup() -> void:
+	camera.center_on(MapView.hex_center(state.map, state.pending_rare["building"]["hex"]))
+	_rare_popup = RareRecruitPopup.new()
+	_ui.add_child(_rare_popup)
+	_rare_popup.setup(state)
+	_rare_popup.answered.connect(func(take: bool):
+		state.resolve_rare(take)
+		_rare_popup.queue_free()
+		_rare_popup = null
+		_sync_tokens())
+
+
 func _close_recruit_popup() -> void:
 	_recruit_popup.queue_free()
 	_recruit_popup = null
@@ -944,7 +964,7 @@ func _on_speed_chosen(index: int) -> void:
 ## No menu, popup or dialog is open (a squad order may be under way: its menu, or laying
 ## a route or picking a target, which take map clicks).
 func _can_open() -> bool:
-	return not (_log_panel or _debug_panel or _menu or _main_menu or _battle or _encounter or _edit or _deploy_menu or _confirm or _building_popup or _enemy_popup \
+	return not (_log_panel or _debug_panel or _menu or _main_menu or _battle or _encounter or _rare_popup or _edit or _deploy_menu or _confirm or _building_popup or _enemy_popup \
 			or _shop or _recruit_popup or _liberation_popup or _end_screen or _chooser or _ledger or _lost_popup)
 
 
@@ -979,15 +999,16 @@ func _unhandled_input(event: InputEvent) -> void:
 			_pressed = false
 			var world := get_canvas_transform().affine_inverse() * mb.position
 			if _planning:
-				var foes := _squads_at(world).filter(func(o: Squad): return o.side == "enemy")
+				var foes := _squads_at(world).filter(func(o: Squad): return o.side != "player")
+				var movers := foes.filter(func(o: Squad): return state.can_follow(o))
 				var hex := _hex_at(world)
-				# A second click on the rally point just laid (or on the enemy standing there) commits
+				# A second click on the rally point just laid (or on the squad standing there) commits
 				# the move; no need to ask Follow or Move here again (playtest round 9).
 				var last := _points[_points.size() - 1] if not _points.is_empty() else -2
 				if hex == last or foes.any(func(o: Squad): return o.hex == last):
 					_plan_click(last)
-				elif not foes.is_empty() and not _deploying:
-					_offer_follow(foes[0], hex)
+				elif not movers.is_empty() and not _deploying:  # only a squad on the move can be followed (round 10)
+					_offer_follow(movers[0], hex)
 				else:
 					_plan_click(hex)
 			elif _firing:

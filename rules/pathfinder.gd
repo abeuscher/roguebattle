@@ -20,6 +20,7 @@ var _g := PackedFloat32Array()  # hex search scratch, reset after each search
 var _parent := PackedInt32Array()
 var _closed := PackedByteArray()
 var _corridor := PackedByteArray()  # per block
+var _avoid := PackedByteArray()  # per hex: kept out of the current search
 var _block_id := PackedInt32Array()  # per hex
 var _q := PackedInt32Array()  # axial coordinates per hex, for quick distances
 var _r := PackedInt32Array()
@@ -35,6 +36,7 @@ func _init(m: MapData, d: GameData) -> void:
 	_parent.resize(map.size())
 	_parent.fill(-1)
 	_closed.resize(map.size())
+	_avoid.resize(map.size())
 	_corridor.resize(_blocks_x * _blocks_y)
 	_block_id.resize(map.size())
 	_q.resize(map.size())
@@ -46,8 +48,18 @@ func _init(m: MapData, d: GameData) -> void:
 		_block_id[i] = (i / map.width) / BLOCK * _blocks_x + (i % map.width) / BLOCK
 
 
-## Route from `from` to `to`, both included; empty if there is none.
-func find(from: int, to: int, travel_type := "", sky := false) -> PackedInt32Array:
+## Route from `from` to `to`, both included; empty if there is none. `avoid`: hexes the
+## route may not enter (another squad standing in the way).
+func find(from: int, to: int, travel_type := "", sky := false, avoid := PackedInt32Array()) -> PackedInt32Array:
+	for i in avoid:
+		_avoid[i] = 1
+	var path := _find(from, to, travel_type, sky)
+	for i in avoid:
+		_avoid[i] = 0
+	return path
+
+
+func _find(from: int, to: int, travel_type: String, sky: bool) -> PackedInt32Array:
 	var p := _profile(travel_type, sky)
 	var comp: PackedInt32Array = p["comp"]
 	if comp[from] < 0 or comp[to] < 0:
@@ -230,7 +242,7 @@ func _hex_route(p: Dictionary, from: int, to: int, guide: Array) -> PackedInt32A
 		_closed[i] = 1
 		for k in range(i * 6, i * 6 + 6):
 			var n := nb[k]
-			if n < 0 or _closed[n] or cost[n] == INF or (guided and not _corridor[_block_id[n]]):
+			if n < 0 or _closed[n] or cost[n] == INF or _avoid[n] or (guided and not _corridor[_block_id[n]]):
 				continue
 			var g := _g[i] + cost[n]
 			if g < _g[n]:

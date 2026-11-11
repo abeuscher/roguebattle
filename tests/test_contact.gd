@@ -322,3 +322,49 @@ func test_a_party_stopping_is_announced() -> void:
 	check(not ours.is_moving(), "it arrived")
 	check_eq(st.notices, ["%s has stopped at %s." % [ours.name, st.map.hex_at(ours.hex)]] as Array[String], "a notice for the HUD")
 	check(st.log.entries.any(func(e): return "has stopped at" in str(e["text"])), "and a log line")
+
+
+## Round 10: a winner whose route runs through the squad it just beat goes round it
+## while the contact cooldown runs, instead of waiting behind it.
+func test_a_winner_steps_round_the_beaten_squad() -> void:
+	var st := _state()
+	st.debug_freeze_ai = true
+	var ours := _ours(st, 10)
+	var theirs := _theirs(st, 14)
+	var goal := _at(st.map, 18, 4)
+	st.order_move(ours, PackedInt32Array([goal]))
+	for i in 200:
+		if st.pending:
+			break
+		st.step()
+	check(st.pending != null, "contact on the march")
+	for u in theirs.units:  # they lose more HP
+		u.hp = maxi(1, u.hp / 2)
+	st.end_battle(st.pending)
+	st.pending = null
+	st._contact_until[st._pair(ours, theirs)] = st.clock.tick + 30
+	theirs.hex = ours.path[0]  # still in the way after the push
+	var waiting := ours.hex
+	for i in 30:
+		st.step()
+	check(ours.hex != waiting, "it moved on instead of waiting")
+	check(theirs.hex not in ours.path, "its route goes round the beaten squad")
+	check(ours.hex == goal or ours.path[ours.path.size() - 1] == goal, "it reaches, or is still bound for, the same place")
+
+
+## Round 10: an enemy squad that beats one of yours stands still a while.
+func test_a_winning_enemy_pauses() -> void:
+	var r := _contact_on_the_march()
+	var st: GameState = r[0]
+	var theirs: Squad = r[2]
+	for u in r[1].units:  # we lose more HP
+		u.hp = maxi(1, u.hp / 2)
+	st.end_battle(st.pending)
+	st.pending = null
+	check_eq(theirs.hold_until, st.clock.tick + int(d.enemy["victor_pause_ticks"]), "it holds for victor_pause_ticks")
+	st.debug_freeze_ai = true
+	st.order_move(theirs, PackedInt32Array([_at(st.map, 25, 4)]))
+	var at := theirs.hex
+	for i in 60:
+		st.step()
+	check_eq(theirs.hex, at, "it stays put meanwhile")

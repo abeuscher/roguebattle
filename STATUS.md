@@ -127,7 +127,8 @@ Where the project stands, for picking up in a new session or on another machine.
 - **M4 session 26 done (session 054):** the debug panel overhauled (fixed frame, titled sections, legible controls, X to close) and a squad builder in the Units tab (add units by class and level, remove, place at cursor for any side). See `DECISIONS.md` session 054.
 - **M4 session 27 done (session 055):** easier-to-grab squads when zoomed out, a second click commits a move onto an enemy, View destination, place names in banners are links, a window and −3 reputation when the enemy retakes a building of yours, leaderless squads crawl home at half speed with a skull, dollar signs on shop towns. See `DECISIONS.md` session 055.
 - **M4 session 28 done (session 056):** an X closes every window; the squad menu is one row of icon buttons; travel, speed and alignment markers in the drawer and Edit Units; Edit Squad and Begin Battle in the encounter dialog (the fight uses the new formation); the battle view springs open from the fight's place; liberation popup with the card left and conscripts right; Deploy at the bottom right of Edit Units squad cards; arrows page through a squad's units; the shut drawer no longer peeks. See `DECISIONS.md` session 056.
-- **M4 sessions 29–33 next:** 29 map and orders (round 10), 30 rules (round 9, plus debt balance), 31 temple portals and training, 32 save game, 33 player tips (the mechanism and the first tip).
+- **M4 session 29 done (session 057):** double-click a drawer row for the squad menu; only squads on the move can be followed, enemy or neutral; a winner goes round the squad it beat; an enemy that beats you stands still 2 game hours; rare recruits ask Recruit or Leave. See `DECISIONS.md` session 057.
+- **M4 sessions 30–33 next:** 30 rules (round 9, plus debt balance), 31 temple portals and training, 32 save game, 33 player tips (the mechanism and the first tip).
 - **M4 sessions 15–20 planned (playtest round 7, 2026-11-10)** in `ROADMAP.md`: battle and rules fixes (cards truly at once, enemy makeup after a fight, items equippable anywhere, fewer neutrals, arrival log line); map generation (100% land, reef-like shallows around islands); HUD layout (clock under the minimap, gold coin, reputation meter, squad drawer, smaller rounded toolbar with icons); squad status icons and flag-free tokens with destination flags; debug panel overhaul; save game (3 slots, prompt to save on quit). The user's answers are in the ROADMAP rows.
 - **M4 milestone check: the first real playtest**, after session 33.
 - **Unit portraits:** the user's first 8 large unit images are committed in `data/unit_art/` (not used in the game yet). Building them into the unit detail view is a future task in `ROADMAP.md`, waiting on more of the set.
@@ -139,7 +140,7 @@ Where the project stands, for picking up in a new session or on another machine.
 
 ## How the user works
 
-- **One git branch per session,** named `session-NNN` (next: `session-057`), cut from `main`.
+- **One git branch per session,** named `session-NNN` (next: `session-058`), cut from `main`.
 - **Commit locally only:**
   - Never push or merge; the user merges and pushes, then says "continue".
   - Commit messages end with a `Co-Authored-By:` line naming whatever Claude model is doing the session (the harness's own attribution instructions say exactly what to write).

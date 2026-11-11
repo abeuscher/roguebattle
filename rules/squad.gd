@@ -16,6 +16,7 @@ var revive_at := -1  # enemy squad on the Enemy Base: tick its next fallen unit 
 var unreachable := {}  # hexes a field squad found no route to, left out of its choices
 var lair_hex := -1  # a roamer's home lair, to patrol around (§6.7); -1 for non-neutrals
 var fire_ready := 0  # tick from which the squad may make a ranged map attack again (§11.2)
+var hold_until := -1  # an enemy squad that just beat one of yours stands still until this tick (round 10)
 var hex: int
 var units: Array[Unit] = []
 var leader: Unit

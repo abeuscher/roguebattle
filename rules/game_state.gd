@@ -17,6 +17,9 @@ var gold: int
 var reputation: int
 var pending: Battle  # a battle waiting to be fought; the map holds until it's resolved
 var pending_recruit := {}  # {player, neutral, defender}: a Recruit-or-Fight choice waiting on the player (§16)
+var pending_rare := {}  # {squad, building, unit}: a rare recruit asking to join, waiting on Recruit or Leave (round 10)
+var _rare_units := {}  # rare recruit site hex -> the Unit waiting there, rolled when first met
+var _rare_declined := {}  # site hex -> id of the squad that chose Leave, not asked again while it stands there
 var enemy_pool: Array[Unit] = []  # single map mode: enemy conscripts at the Enemy Base, waiting to form a Warband
 var enemy_start_squads := 0  # how many squads the enemy started with (the Warband cap scales from it)
 var _warbands := 0  # Warbands named so far, for numbering new ones
@@ -77,7 +80,7 @@ func _init(game_data: GameData, game_map: MapData, game_log: GameLog, game_setti
 ## `pending` then holds the battle until resolve_pending(). Also stops for good
 ## once `game_over` is set (§6.8).
 func step() -> void:
-	if pending or not pending_recruit.is_empty() or game_over != "":
+	if pending or not pending_recruit.is_empty() or not pending_rare.is_empty() or game_over != "":
 		return
 	for event in clock.step():
 		_clock_event(event)
@@ -1356,9 +1359,17 @@ func order_move(s: Squad, points: PackedInt32Array) -> bool:
 	return true
 
 
-## Follows a visible enemy squad (playtest round 8): heads for its hex now, and
-## `_update_followers` re-routes as it moves. Contact fights as usual.
+## Whether a player squad may follow `target` (round 10): an enemy or neutral squad in
+## sight that is on the move. One standing still is simply moved onto or attacked.
+func can_follow(target: Squad) -> bool:
+	return target.side != "player" and target in squads and target.is_moving() and seen(target.hex)
+
+
+## Follows a visible enemy or neutral squad on the move (playtest rounds 8 and 10): heads
+## for its hex now, and `_update_followers` re-routes as it moves. Contact fights as usual.
 func order_follow(s: Squad, target: Squad) -> bool:
+	if not can_follow(target):
+		return false
 	if not order_move(s, PackedInt32Array([target.hex])):
 		return false
 	s.follow = target
@@ -1809,13 +1820,26 @@ func guard_of(b: Dictionary) -> Squad:
 ## A squad of yours standing on a treasure, card cache or rare recruit claims it
 ## (session 050): the reward, a banner and a log line; the site then leaves the map.
 func _claim_sites() -> void:
+	for hex in _rare_declined.keys():  # Leave holds only while that squad stays on the site
+		if not player_squads().any(func(o: Squad): return o.id == _rare_declined[hex] and o.hex == hex):
+			_rare_declined.erase(hex)
 	for s in player_squads():
 		var b := building_at(s.hex)
 		if b.is_empty() or not b["hidden"] or b["kind"] not in ["treasure", "card", "rare_recruit"] or s.living().is_empty():
 			continue
-		b["claimed"] = true
 		var info: Dictionary = data.buildings["hidden_site"]["kind_info"][b["kind"]]
 		var r := rng.get_stream("loot")
+		if b["kind"] == "rare_recruit":  # round 10: ask first (Recruit or Leave)
+			if _rare_declined.get(s.hex, -1) == s.id:
+				continue
+			if not _rare_units.has(s.hex):
+				var u := Unit.roll(data, _rare_class(r, info["skip_terrains"]), r, names)
+				for l in median_level("player") - 1:
+					Progression.level_up(data, u, r)
+				_rare_units[s.hex] = u
+			pending_rare = {"squad": s, "building": b, "unit": _rare_units[s.hex]}
+			return
+		b["claimed"] = true
 		var news := ""
 		match b["kind"]:
 			"treasure":
@@ -1830,16 +1854,30 @@ func _claim_sites() -> void:
 				news = "%s finds a card cache" % s.name
 				for k in int(info["cards"]):
 					draw_card(s)
-			"rare_recruit":
-				var u := Unit.roll(data, _rare_class(r, info["skip_terrains"]), r, names)
-				for l in median_level("player") - 1:
-					Progression.level_up(data, u, r)
-				u.recruited = true
-				u.loyalty = int(data.rules["starting_loyalty"])
-				army.pool.append(u)
-				news = "%s the %s joins you and waits in the recruit pool" % [u.name, u.unit_class]
 		notices.append(news + ".")
 		log.add(clock.tick, "map", news + ".", s.id, {"site": str(map.hex_at(b["hex"]))})
+
+
+## Answers a pending rare recruit (round 10). Recruit: the unit joins the recruit pool
+## and the site is used up. Leave: the site stays, with the same unit, for later; the
+## squad isn't asked again until it steps off and back on.
+func resolve_rare(take: bool) -> void:
+	var s: Squad = pending_rare["squad"]
+	var b: Dictionary = pending_rare["building"]
+	var u: Unit = pending_rare["unit"]
+	pending_rare = {}
+	if not take:
+		_rare_declined[b["hex"]] = s.id
+		log.add(clock.tick, "map", "%s leaves %s the %s waiting." % [s.name, u.name, u.unit_class], s.id)
+		return
+	b["claimed"] = true
+	_rare_units.erase(b["hex"])
+	u.recruited = true
+	u.loyalty = int(data.rules["starting_loyalty"])
+	army.pool.append(u)
+	var news := "%s the %s joins you and waits in the recruit pool." % [u.name, u.unit_class]
+	notices.append(news)
+	log.add(clock.tick, "map", news, s.id, {"site": str(map.hex_at(b["hex"]))})
 
 
 ## A random stage 1 race-line class (the sheet's R, N, L, T lines), none native to `skip`.
@@ -1973,6 +2011,9 @@ func end_battle(b: Battle) -> Dictionary:
 			s.marching_home = true  # a push cleared its route: it sets off home again
 			order_move(s, PackedInt32Array([map.player_base if s.side == "player" else map.enemy_base]))
 			s.entering_base = s.side == "player"
+	for side in 2:  # an enemy that beat your squad stands a while, so you can come back at it (round 10)
+		if b.sides[side].side == "enemy" and b.sides[1 - side].side == "player" and _won(out, side) and b.sides[side] in squads:
+			b.sides[side].hold_until = clock.tick + int(data.enemy["victor_pause_ticks"])
 	_record_intel(b)
 	_update_morale(b, out)
 	_update_bonds(b)
@@ -2162,6 +2203,34 @@ func _push(s: Squad, from: int, steps: int) -> void:
 
 
 ## Whether a squad hostile to s stands on the hex. Your squads can share hexes; hostile ones can't.
+## A squad whose next hex holds a hostile squad it has just fought (the contact
+## cooldown is running, so they won't fight again yet) goes round it and rejoins its
+## route beyond (round 10: winners used to wait behind the beaten squad, looking stopped).
+## False when there's no way round, or the squad in the way is its destination.
+func _step_around(s: Squad) -> bool:
+	var blockers := PackedInt32Array()
+	for o in squads:
+		if hostile(s, o) and clock.tick < int(_contact_until.get(_pair(s, o), -1)):
+			blockers.append(o.hex)
+	if s.path[0] not in blockers:
+		return false
+	var k := 1
+	while k < s.path.size() and _hostile_at(s.path[k], s):
+		k += 1
+	if k >= s.path.size():
+		return false
+	var leg := pathfinder.find(s.hex, s.path[k], s.travel_type, s.sky, blockers)
+	if leg.is_empty():
+		return false
+	for i in s.path.slice(0, k):  # rally points it steps round are passed
+		if not s.rally.is_empty() and s.rally[0] == i:
+			s.rally = s.rally.slice(1)
+	var rest := s.path.slice(k + 1)
+	s.path = leg.slice(1)
+	s.path.append_array(rest)
+	return true
+
+
 func _hostile_at(i: int, s: Squad) -> bool:
 	for o in squads:
 		if o.hex == i and hostile(s, o):
@@ -2208,11 +2277,11 @@ static func duration_text(ticks: float) -> String:
 
 
 func _move(s: Squad) -> void:
-	if not s.is_moving():
+	if not s.is_moving() or clock.tick < s.hold_until:
 		return
 	s.progress += 1.0
 	while s.is_moving() and s.progress >= step_ticks(s, s.path[0]):
-		if _hostile_at(s.path[0], s):  # an enemy holds it: wait at the edge
+		if _hostile_at(s.path[0], s) and not _step_around(s):  # an enemy holds it: wait at the edge
 			s.progress = step_ticks(s, s.path[0])
 			break
 		s.progress -= step_ticks(s, s.path[0])

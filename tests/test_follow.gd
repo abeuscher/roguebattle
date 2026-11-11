@@ -1,5 +1,6 @@
 extends TestCase
-## Following an enemy squad (playtest round 8, ROADMAP M4 session 23).
+## Following an enemy squad (playtest round 8, ROADMAP M4 session 23); only one on the
+## move, enemy or neutral (round 10, session 29).
 
 var d := GameData.load_dir()
 
@@ -24,6 +25,7 @@ func _at(m: MapData, col: int, row: int) -> int:
 func _pair(st: GameState, ours_col: int, theirs_col: int) -> Array:
 	var ours := st.add_squad("Ours", _at(st.map, ours_col, 4), [["Knight", "front"], ["Fighter", "front"]])
 	var theirs := st.add_squad("Theirs", _at(st.map, theirs_col, 4), [["Soldier", "front"]], "enemy")
+	st.order_move(theirs, PackedInt32Array([_at(st.map, theirs_col, 1)]))  # on the move, so it can be followed (round 10)
 	return [ours, theirs]
 
 
@@ -88,3 +90,22 @@ func test_a_vanished_target_ends_following() -> void:
 	st.squads.erase(p[1])  # wiped out
 	st.step()
 	check(ours.follow == null, "nothing left to follow")
+
+
+func test_a_squad_standing_still_cant_be_followed() -> void:
+	var st := _state()
+	var ours := st.add_squad("Ours", _at(st.map, 5, 4), [["Knight", "front"]])
+	var parked := st.add_squad("Parked", _at(st.map, 9, 4), [["Soldier", "front"]], "enemy")
+	check(not st.can_follow(parked), "standing still: no Follow")
+	check(not st.order_follow(ours, parked), "the order is refused")
+	check(ours.follow == null, "not following")
+
+
+func test_a_moving_neutral_can_be_followed() -> void:
+	var st := _state()
+	var ours := st.add_squad("Ours", _at(st.map, 5, 4), [["Knight", "front"]])
+	var wolves := st.add_squad("Wolves", _at(st.map, 9, 4), [["Soldier", "front"]], "neutral")
+	st.order_move(wolves, PackedInt32Array([_at(st.map, 9, 1)]))
+	check(st.can_follow(wolves), "a neutral on the move can be followed")
+	check(st.order_follow(ours, wolves), "the order takes")
+	check(ours.follow == wolves, "following it")

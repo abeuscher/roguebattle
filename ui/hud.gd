@@ -6,6 +6,7 @@ extends Control
 ## (Edit Units, Deploy Squad, Cards, Tech) at the bottom centre; key help at the bottom left.
 
 signal squad_pressed(id: int)
+signal squad_opened(id: int)  # a drawer row double-clicked (round 10)
 signal edit_pressed
 signal deploy_pressed
 signal cards_pressed
@@ -211,7 +212,7 @@ func _icon_rect(tex: Texture2D) -> TextureRect:
 
 ## One drawer row per squad: leader icon, number and status icon (moving, in a building,
 ## standing in the open), then travel type, speed and alignment and the name (seen when
-## open). A click centers the map on it.
+## open). A click centers the map on it; a double click opens its squad menu.
 func set_squads(squads: Array[Squad]) -> void:
 	for child in _drawer_rows.get_children():
 		_drawer_rows.remove_child(child)
@@ -224,6 +225,9 @@ func set_squads(squads: Array[Squad]) -> void:
 		b.clip_contents = true
 		b.custom_minimum_size = Vector2(DRAWER_OPEN - 12, 36)
 		b.pressed.connect(func(): squad_pressed.emit(s.id))
+		b.gui_input.connect(func(e: InputEvent):
+			if e is InputEventMouseButton and e.double_click and (e as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
+				squad_opened.emit(s.id))
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 8)
 		row.mouse_filter = MOUSE_FILTER_IGNORE
