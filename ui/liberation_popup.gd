@@ -5,6 +5,7 @@ extends Control
 ## instead of a separate one (§13). A modal: 50% dark overlay.
 
 signal closed
+signal go_to  # "Go to city": close, and the map glides to the place
 
 var state: GameState
 var _offering := false
@@ -12,7 +13,7 @@ var _offering := false
 
 ## `drawn_card` is the card id if one went straight into the hand, or "" if there
 ## was none or it's an offer instead (read from `game_state.card_offer`).
-func setup(game_state: GameState, building: Dictionary, drawn_card: String) -> void:
+func setup(game_state: GameState, building: Dictionary, drawn_card: String, options := {}) -> void:
 	state = game_state
 	_offering = drawn_card == "" and not state.card_offer.is_empty()
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
@@ -52,9 +53,18 @@ func setup(game_state: GameState, building: Dictionary, drawn_card: String) -> v
 			row.add_child(CardFace.make(state.data, id, 1, take))
 	_hand(col)
 	if not _offering:
-		var close := UiStyle.button("Close (Esc)", 280)
+		col.add_child(UiStyle.dont_show_again(options, "show_liberations"))
+	var buttons := HBoxContainer.new()
+	buttons.add_theme_constant_override("separation", 12)
+	buttons.alignment = BoxContainer.ALIGNMENT_CENTER
+	col.add_child(buttons)
+	if not _offering:
+		var close := UiStyle.button("Close (Esc)", 180)
 		close.pressed.connect(func(): closed.emit())
-		col.add_child(close)
+		buttons.add_child(close)
+		var go := UiStyle.button("Go to city" if building.has("name") else "Go to it", 180, true)
+		go.pressed.connect(func(): go_to.emit())
+		buttons.add_child(go)
 
 
 ## A "View all cards" toggle that lists the current hand inside this dialog.
@@ -76,3 +86,10 @@ func _hand(col: VBoxContainer) -> void:
 	toggle.pressed.connect(func():
 		list.visible = not list.visible
 		toggle.text = ("Hide cards (%d)" if list.visible else "View all cards (%d)") % state.cards.size())
+
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if event.is_pressed() and (event as InputEventKey).keycode == KEY_ESCAPE:
+		if not _offering:  # a card choice needs an answer
+			closed.emit()
+		get_viewport().set_input_as_handled()

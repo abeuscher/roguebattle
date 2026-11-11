@@ -150,3 +150,31 @@ func test_going_broke() -> void:
 	st.clock.tick = 12 * 60 - 1
 	st.step()
 	check_eq(st.gold, 0, "upkeep you can't pay leaves you at zero")
+
+
+func test_the_noon_ledger_lists_every_gold_change() -> void:
+	# The same day as test_a_days_ledger: two liberation bonuses, income, three squads' upkeep.
+	var st := _state()
+	for c in 2:
+		for u in _place(st, c, 8 if c == 0 else 12).units:
+			u.alignment = 50
+	while st.clock.minute_of_day() != 12 * 60:
+		st.step()
+	var day := st.daily_ledger
+	check(not day.is_empty(), "noon leaves a ledger for the UI")
+	var total := 0
+	for line in day["lines"]:
+		total += int(line[1])
+	check_eq(total, st.gold - 500, "the lines add up to the day's change in gold")
+	check_eq(day["lines"].filter(func(l): return str(l[0]).begins_with("Liberation bonus")).size(), 2, "both liberation bonuses")
+	check_eq(day["lines"].filter(func(l): return str(l[0]).begins_with("Upkeep")).size(), 3, "upkeep squad by squad")
+	check_eq(int(day["gold"]), st.gold, "gold now")
+	check(st.ledger.is_empty(), "a fresh ledger for the next day")
+
+
+func test_purchases_go_in_the_ledger() -> void:
+	var st := _state()
+	var town := st.building_at(_at(st.map, 8, 3))
+	check(st.buy_supply(town, "herb"), "buy a herb")
+	check_eq(st.ledger.back()[0], "Bought a Herb", "named")
+	check_eq(int(st.ledger.back()[1]), -st.supply_price("herb"), "its price, as a cost")

@@ -112,6 +112,10 @@ func show_banner(text: String, seconds := 0.0) -> void:
 	_flash_until = Time.get_ticks_msec() + int(seconds * 1000) if seconds > 0.0 else 0
 
 
+func banner_text() -> String:
+	return _banner.text if _banner.visible else ""
+
+
 func set_help(text: String) -> void:
 	_help.text = text
 	place()

@@ -14,6 +14,7 @@ const NIGHT := Color(0.45, 0.5, 0.78)  # map tint at night
 const ENEMY := Color("#c8402f")
 const CLICK_SLOP := 6.0  # a press and release closer than this is a click, not a drag
 const STACK_SPREAD := 16.0  # world units between flags of squads standing on the same hex
+const START_PROMPT := "Press Play to begin  (Space, or pick a speed at the top)"
 const TEST_TRAVEL := ["plains", "forest", "mountain", "swamp", "snow", "desert", "shallow", "deep", "sky", ""]
 
 var data: GameData
@@ -41,6 +42,8 @@ var _confirm: ConfirmDialog
 var _deploying := false  # _selected is a squad from base whose route is being laid
 var _building_popup: BuildingPopup
 var _enemy_popup: EnemyPopup
+var _ledger: LedgerPopup
+var _awaiting_start := true  # a new map waits, paused, for the player to start time
 var _shop: Control  # the shop screen or the supplies menu
 var _cursor_flag: SquadToken  # while laying a route, the squad's flag replaces the mouse pointer
 var _tokens := {}  # squad id -> SquadToken
@@ -104,6 +107,7 @@ func start(game_data: GameData, game_log: GameLog, config: GameConfig, map: MapD
 	camera.fit()
 	camera.fit.call_deferred()  # again once the camera is live, so the minimap frame is right
 	_update_help()
+	state.clock.paused = true  # a new map starts paused, with a prompt (user's notes, 2026-11-10)
 	print("Battlemap ready in %d ms" % (Time.get_ticks_msec() - started))
 
 
@@ -143,9 +147,13 @@ func _process(delta: float) -> void:
 	if not state.notices.is_empty():
 		hud.show_banner("  ·  ".join(state.notices), 4.0)
 		state.notices.clear()
-	if state.noon_report != "":
-		hud.show_banner(state.noon_report, 5.0)
-		state.noon_report = ""
+	if not state.daily_ledger.is_empty() and _free():
+		if bool(options.get("show_daily_ledger", true)):
+			_open_ledger(state.daily_ledger)
+		else:
+			hud.show_banner(state.noon_report, 5.0)
+		state.daily_ledger = {}
+	_prompt_start()
 	if _tokens.size() != state.squads.size():  # a squad went into the base, or left the map
 		_sync_tokens()
 		hud.set_squads(state.player_squads())
@@ -704,16 +712,61 @@ func _close_recruit_popup() -> void:
 
 ## Shows the next unshown liberation (§6.5), if any.
 func _pump_liberations() -> void:
-	if not state.liberations.is_empty() and _free():
-		_open_liberation_popup(state.liberations.pop_front())
+	if state.liberations.is_empty() or not _free():
+		return
+	var entry: Dictionary = state.liberations.pop_front()
+	var offering: bool = entry["card"] == "" and not state.card_offer.is_empty()
+	if bool(options.get("show_liberations", true)) or offering:
+		_open_liberation_popup(entry)
+	else:  # the player turned the window off: a banner, and the fireworks show where
+		state.notices.append("%s liberated!" % state.where(entry["building"]["hex"]))
+		_fireworks(entry["building"]["hex"])
+
+
+## A short fireworks show over a hex (a liberated building).
+func _fireworks(hex: int) -> void:
+	var f := Fireworks.new()
+	f.position = MapView.hex_center(state.map, hex)
+	f.scale = Vector2.ONE / camera.zoom.x  # the same size on screen at any zoom
+	view.add_object(f)
+
+
+## The day's ledger at noon (an option, on by default).
+func _open_ledger(entry: Dictionary) -> void:
+	_ledger = LedgerPopup.new()
+	_ui.add_child(_ledger)
+	_ledger.setup(entry, options)
+	_ledger.closed.connect(func():
+		_ledger.queue_free()
+		_ledger = null)
+
+
+## Until the player first starts time, the banner asks them to; then never again.
+func _prompt_start() -> void:
+	if not _awaiting_start:
+		return
+	if not state.clock.paused:
+		_awaiting_start = false
+		if hud.banner_text() == START_PROMPT:
+			hud.show_banner("")
+	elif hud.banner_text() == "":
+		hud.show_banner(START_PROMPT)
 
 
 func _open_liberation_popup(entry: Dictionary) -> void:
 	camera.center_on(MapView.hex_center(state.map, entry["building"]["hex"]))
 	_liberation_popup = LiberationPopup.new()
 	_ui.add_child(_liberation_popup)
-	_liberation_popup.setup(state, entry["building"], entry["card"])
-	_liberation_popup.closed.connect(_close_liberation_popup)
+	_liberation_popup.setup(state, entry["building"], entry["card"], options)
+	var hex: int = entry["building"]["hex"]
+	_liberation_popup.closed.connect(func():
+		_close_liberation_popup()
+		_fireworks(hex))
+	_liberation_popup.go_to.connect(func():
+		_close_liberation_popup()
+		var cam: Dictionary = data.battle["encounter_camera"]
+		camera.fly_to(MapView.hex_center(state.map, hex), float(cam["map_share"]), float(cam["seconds"])).finished.connect(
+				func(): _fireworks(hex)))
 
 
 func _close_liberation_popup() -> void:
@@ -776,7 +829,7 @@ func _on_speed_chosen(index: int) -> void:
 ## a route or picking a target, which take map clicks).
 func _can_open() -> bool:
 	return not (_log_panel or _debug_panel or _menu or _main_menu or _battle or _encounter or _edit or _deploy_menu or _confirm or _building_popup or _enemy_popup \
-			or _shop or _recruit_popup or _liberation_popup or _end_screen or _chooser)
+			or _shop or _recruit_popup or _liberation_popup or _end_screen or _chooser or _ledger)
 
 
 ## One thing at a time (DECISIONS, session 044): the bare map with nothing open and no

@@ -29,6 +29,7 @@ var battle: Battle
 var replay := false  # the debug panel's replay (§19.2): copies of the squads, nothing on the map changes
 var _waiting := false  # both squads shown; nothing happens until Fight (an option, on by default)
 var _play_btn: Button  # Fight, Pause or Play, at the field's bottom left
+var _wait_box: CheckBox  # next to Fight: stop waiting for it in later battles
 var _action := UiStyle.label("", 16)  # the latest action, on the field while the log is hidden
 var _panel: PanelContainer  # the whole battle, hidden when the result shows
 var _below := VBoxContainer.new()  # log and controls: shown only while paused or waiting
@@ -133,6 +134,12 @@ func _add_play_button() -> void:
 		else:
 			_toggle_pause())
 	_ground.add_child(_play_btn)
+	if _waiting and not replay:
+		_wait_box = UiStyle.dont_show_again(options, "battle_wait_for_fight", "Start battles at once from now on (no Fight)")
+		_wait_box.position = Vector2(14 + 150 + 18, FIELD.y - 52)
+		_wait_box.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
+		_wait_box.add_theme_constant_override("outline_size", 5)
+		_ground.add_child(_wait_box)
 	_action.position = Vector2(14 + PLAY_SIZE + 16, FIELD.y - 14 - PLAY_SIZE / 2.0 - 12)
 	_action.custom_minimum_size.x = FIELD.x - _action.position.x - 20
 	_action.clip_text = true
@@ -156,6 +163,8 @@ func _show_chrome() -> void:
 		_play_btn.tooltip_text = "Play (Space)" if _paused else "Pause (Space)"
 	_below.visible = still
 	_action.visible = not still
+	if _wait_box:
+		_wait_box.visible = _waiting
 	_panel.queue_redraw()
 
 

@@ -22,7 +22,9 @@ var _contact_until := {}  # "player id:enemy id" -> tick before which the pair w
 var _moved := {}  # squads that entered a new hex this tick
 var _building_at := {}  # hex -> index in map.buildings
 var notices: Array[String] = []  # short news for the HUD banner, oldest first (a squad of yours stopped)
-var noon_report := ""  # the last noon's ledger, for the HUD to show once
+var noon_report := ""  # the last noon's ledger in one line, for the HUD banner
+var ledger: Array = []  # [what, gold +/-] for every gold change since the last noon
+var daily_ledger := {}  # set at noon for the UI to show once: {day, lines: [[what, amount]], unpaid, gold}
 var cards: Array[String] = []  # the hand: card ids (§13)
 var next_card := ""  # the next card to be drawn, rolled ahead so Foresight can preview it
 var card_offer: Array[String] = []  # cards to choose one from (a Seer or Oracle drew), shown by the HUD
@@ -212,16 +214,19 @@ func _capture() -> void:
 		s.capture_ticks += float(c["sapper_speed"]) if sapper else 1.0
 		if s.capture_ticks >= float(c["ticks"]):
 			s.capture_ticks = 0.0
+			var was: String = b["owner"]
 			b["owner"] = s.side
 			var what: String = data.buildings[b["type"]]["name"].to_lower()
 			if s.side == "player":
 				log.add(clock.tick, "map", "%s liberates %s." % [s.name, place_label(b)], s.id)
 				var bonus := liberation_bonus()
-				gold += bonus
+				_pay(bonus, "Liberation bonus: %s" % place_label(b))
 				log.add(clock.tick, "economy", "Liberation bonus: %d gold." % bonus, s.id, {"reputation": reputation})
 				_liberated(s, b)
 			else:
 				log.add(clock.tick, "map", "%s captures %s." % [s.name, place_label(b)], s.id)
+				if s.side == "enemy" and b["type"] != "player_base":  # (the Player Base taken ends the game)
+					notices.append(("The enemy has retaken %s." if was == "player" else "The enemy has captured %s.") % where(b["hex"]))
 				change_morale(s, int(data.battle["morale"]["liberation"]), "capturing a %s" % what)
 
 
@@ -760,11 +765,28 @@ func _noon() -> void:
 	var gain := income()
 	var cost := army_upkeep()
 	restock()
-	gold += gain
+	var e: Dictionary = data.rules["economy"]
+	var held := map.buildings.filter(func(b): return b["type"] in e["income_buildings"] and b["owner"] == "player").size()
+	_pay(gain, "Income: %d town%s and tower%s held" % [held, "" if held == 1 else "s", "" if held == 1 else "s"])
 	var paid := mini(gold, cost)
-	gold -= paid
+	var left := paid  # upkeep is paid squad by squad while the gold lasts
+	for s in army.squads():
+		var due := mini(upkeep(s), left)
+		if due > 0:
+			_pay(-due, "Upkeep: %s" % s.name)
+			left -= due
+	if left > 0:
+		_pay(-left, "Upkeep: the recruit pool")
 	noon_report = "Noon: +%d income, −%d upkeep%s. Gold %d." % [gain, paid, " (%d unpaid)" % (cost - paid) if paid < cost else "", gold]
 	log.add(clock.tick, "economy", noon_report, -1, {"income": gain, "upkeep": cost, "paid": paid})
+	daily_ledger = {"day": clock.day(), "lines": ledger, "unpaid": cost - paid, "gold": gold}
+	ledger = []
+
+
+## Every change to the army's gold goes through here, so the day's ledger lists it.
+func _pay(amount: int, what: String) -> void:
+	gold += amount
+	ledger.append([what, amount])
 
 
 ## 100 × (0.5 + reputation/100), once per liberation.
@@ -795,7 +817,7 @@ func sell_squad(s: Squad) -> bool:
 			army.unequip(u, slot)
 	army.cells[army.cells.find(s)] = null
 	squads.erase(s)
-	gold += value
+	_pay(value, "%s sold" % s.name)
 	log.add(clock.tick, "economy", "%s is sold for %d gold." % [s.name, value], s.id)
 	return true
 
@@ -868,7 +890,7 @@ func buy_item(b: Dictionary, id: String, s: Squad = null) -> bool:
 	var cost := item_price(id, s)
 	if int(stock.get(id, 0)) <= 0 or gold < cost:
 		return false
-	gold -= cost
+	_pay(-cost, "Bought a %s" % data.items["items"][id]["name"])
 	stock[id] -= 1
 	army.add_item(id)
 	log.add(clock.tick, "economy", "Bought a %s for %d gold." % [data.items["items"][id]["name"], cost])
@@ -880,7 +902,7 @@ func buy_supply(b: Dictionary, id: String, s: Squad = null) -> bool:
 	var stock := shop_stock(b)
 	if int(stock.get(id, 0)) <= 0 or gold < cost:
 		return false
-	gold -= cost
+	_pay(-cost, "Bought a %s" % data.items["consumables"][id]["name"])
 	stock[id] -= 1
 	army.supplies[id] = int(army.supplies.get(id, 0)) + 1
 	log.add(clock.tick, "economy", "Bought a %s for %d gold." % [data.items["consumables"][id]["name"], cost])
@@ -896,7 +918,7 @@ func buy_serf(b: Dictionary, s: Squad = null) -> Unit:
 	var cost := serf_price(s)
 	if not sells_serfs(b) or gold < cost:
 		return null
-	gold -= cost
+	_pay(-cost, "Hired a Serf")
 	var u := Unit.roll(data, "Serf", rng.get_stream("recruit"), names)
 	army.pool.append(u)
 	log.add(clock.tick, "economy", "%s the Serf is hired for %d gold and waits in the recruit pool." % [u.name, cost])
@@ -1017,7 +1039,7 @@ func deploy(s: Squad, points := PackedInt32Array()) -> bool:
 	if deploy_blocker(s) != "":
 		return false
 	var cost := deploy_cost(s)
-	gold -= cost
+	_pay(-cost, "Deployed %s" % s.name)
 	s.hex = deploy_hex()
 	s.path.clear()
 	s.rally.clear()
@@ -1084,7 +1106,7 @@ func restore(u: Unit) -> bool:
 	if cost == 0 or cost > gold or not can_service(u):
 		return false
 	var revived := not u.is_alive()
-	gold -= cost
+	_pay(-cost, "%s %s" % ["Revived" if revived else "Healed", u.name])
 	u.hp = u.max_hp(data)
 	var s := army.squad_of(u)
 	if s:

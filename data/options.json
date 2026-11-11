@@ -12,6 +12,16 @@
    "default": 0,
    "remembered": true
   },
+  "show_daily_ledger": {
+   "label": "Show the day's ledger at noon",
+   "tip": "Once a day, when income and upkeep are settled, the game pauses and lists the day's gold in and out. Off: a short line in the banner instead.",
+   "default": true
+  },
+  "show_liberations": {
+   "label": "Show a window for each liberation",
+   "tip": "Off: a banner names the place instead (the window still opens when there's a card to choose).",
+   "default": true
+  },
   "pause_on_focus_loss": {
    "label": "Pause when the game window loses focus",
    "tip": "Switching to another window pauses the map, or the battle if one is playing.",

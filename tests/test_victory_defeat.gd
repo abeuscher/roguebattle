@@ -209,3 +209,16 @@ func test_taking_the_enemy_base_wins_whatever_the_settings() -> void:
 	st.building_at(st.map.enemy_base)["owner"] = "player"
 	st._check_game_over()
 	check_eq(st.game_over, "victory", "the Enemy Base taken is a victory")
+
+
+func test_enemy_captures_are_announced() -> void:
+	var st := _state({"defeat_leader": false, "victory_leader": false})
+	var town := _at(st.map, 8, 3)
+	var tower := _at(st.map, 12, 3)
+	st.building_at(tower)["owner"] = "player"
+	st.add_squad("Raiders", town, [["Goblin", "front"]], "enemy")
+	st.add_squad("Raiders 2", tower, [["Goblin", "front"]], "enemy")
+	for i in int(d.rules["capture"]["ticks"]):
+		st.step()
+	check(st.notices.any(func(n): return n.begins_with("The enemy has captured")), "a neutral town taken: %s" % [st.notices])
+	check(st.notices.any(func(n): return n.begins_with("The enemy has retaken")), "one of ours taken back: %s" % [st.notices])

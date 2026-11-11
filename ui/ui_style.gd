@@ -26,6 +26,21 @@ static func close_on_click(shade: Control, center: Control, action: Callable) ->
 			action.call())
 
 
+## "Do not show this window again" (user's notes, 2026-11-10): a checkbox for a window
+## that only informs. Ticking it turns the player option `id` off (and saves); the same
+## switch is on the Options screen.
+static func dont_show_again(options: Dictionary, id: String, text := "Do not show this window again") -> CheckBox:
+	var c := CheckBox.new()
+	c.text = text
+	c.add_theme_font_size_override("font_size", 15)
+	c.focus_mode = Control.FOCUS_NONE
+	c.button_pressed = not bool(options.get(id, true))
+	c.toggled.connect(func(on: bool):
+		options[id] = not on
+		PlayerOptions.save_values(options))
+	return c
+
+
 static func label(text: String, font_size := 16, color := Color.WHITE) -> Label:
 	var l := Label.new()
 	l.text = text
