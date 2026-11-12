@@ -757,9 +757,9 @@ After each real playtest the player notes: what felt good, what dragged, what co
 Added 2026-11-12 (user). The cue list is `data/audio-asset-list.csv`.
 
 - **Music** loops: the main map theme by day (bright, a fanfare feel, holding the score's main motif) and by night (the same theme, spookier instruments, same tempo so they crossfade at dawn and dusk); the Edit Units army theme (a snare march); the battle theme (fast, percussive, bass-heavy; the same theme with small instrument swaps per terrain). Also a title theme and end-of-map music.
-- **Stingers** (one-shots): victory and loss riffs after a battle; a liberation swell; a riff per building type taken (temple: pan flute; town: banjo; tower: organ); a hidden item sound. Music dips under them.
+- **Stingers** (one-shots): victory and loss riffs after a battle; a liberation swell; a riff per building type taken (temple: pan flute; town: banjo; tower: organ), by either side when the building was neutral; a "building lost" stinger, one for all types, when the enemy takes one of yours; a hidden item sound. Music dips under them.
 - **Voice** (one-shots, recorded by the user): "Fight!", "Victory!", "Defeat!", "Hidden Location!", and a line for a town, tower or temple taken.
 - **Effects:** a few, minimal: a click for buttons and the like (to be listed).
-- **Volume:** Music, Effects and Voice each have a volume and there's a mute, in Options.
+- **Audio options:** a master volume, a volume each for Music, Effects and Voice, and mute, in Options, kept between games.
 - **Making it:** music is written as General MIDI and rendered to audio files with a General MIDI soundfont; the game plays the rendered files. Which game event plays which cue lives in data.
 
