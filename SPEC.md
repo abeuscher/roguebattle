@@ -225,6 +225,7 @@ Nomad camps count as towns.
 
 - The Opinion Leader dies (on by default, toggle).
 - The Player Base is captured (assumption; see §22).
+- Death by penury (playtest round 9): 3 noons running in debt, or debt past about 2 days' upkeep of a full field army (§15.1). Always on.
 
 ## 7. Time
 
@@ -290,6 +291,7 @@ Each squad has a front row and a back row. A unit uses its Front attack and coun
 | The target is in forest | −1 |
 
 - The result is clamped to 5–10 and never shown as a number.
+- **Buildings you hold see too** (playtest round 9): each reveals enemies within a radius by type, towers furthest, temples middle, towns least (placeholders 8, 6 and 4 hexes; the Player Base 4).
 - Hidden sites reveal when they come within sight.
 
 ## 9. Units
@@ -429,7 +431,7 @@ Occultist and Necromancer lines can, once per battle, fill an empty slot with a 
 - **Retreat chance:** 50% + 20% per speed tier your squad has over the enemy, clamped 10–90%.
   - **Success:** the battle ends, your squad steps back 1 hex, and each unit loses 1 charisma.
   - **Failure:** your squad loses its next action.
-- **Driving enemies off:** at the end of a battle, if the losing enemy squad's morale is below 25, your leader can demand it flee. The chance is the leader's charisma %, halved if the enemy's morale is 10–25. On success the squad leaves the map for good, with no XP. Neutral squads use recruitment instead (§16).
+- **Driving enemies off:** at the end of a battle, if the losing enemy squad's morale is below 25, your leader can demand it flee. The chance is the leader's charisma %, halved if the enemy's morale is 10–25. On success the squad leaves the map for good, with no XP. Neutral squads use recruitment instead (§16). The demand is offered only when its chance is 25% or more; lower odds feel like zero to a player (playtest round 9).
 
 ### 11.7 Status effects
 
@@ -501,6 +503,7 @@ These apply to both sides by default. A configurator toggle makes them player-on
 - **Start:** 3 random cards.
 - **Earning:** draw 1 card per building liberated or card site claimed (§6.5). Seer lines choose from 2 cards and Oracle lines from 3; the Foresight aura previews the next card.
 - **Limits:** none on cards held or played per battle.
+- **Rarity:** each card has a draw weight (1 unless rarer); Phoenix is rare (playtest round 9).
 - **XP:** card-caused XP goes to the Opinion Leader's squad.
 
 | Group | Card | Effect |
@@ -516,6 +519,7 @@ These apply to both sides by default. A configurator toggle makes them player-on
 | Heal | Whale | All your units healed to full |
 | Heal | Narwhal | A temporary healer joins behind your squad at its average level and casts heal-all twice |
 | Heal | Walrus | Cleanses all debuffs from your squad |
+| Heal | Phoenix (rare) | Every fallen unit in your squad comes back with half its max HP |
 | Attack | Tiger | Physical attack on the whole enemy squad |
 | Attack | Crocodile | Water magic attack |
 | Attack | Rhino | Earth magic attack |
@@ -564,6 +568,7 @@ All values are placeholders.
 | End-of-map bonus | Scaled by reputation, like the liberation bonus |
 | Going broke | At zero gold, the player can pull a squad back to base for gold equal to its total value. Tune so this gives room to recover rather than prolonging a loss |
 | Services | Cure one status 10, heal a unit to full 20, revive 50 × stage |
+| Debt | Gold can go below zero at noon (playtest round 9). Nothing can be bought while in debt; the HUD and the noon ledger count the noons. 3 noons running in debt, or debt past about 2 days' upkeep of a full field army, is a defeat (§6.8). Selling a squad stays the way out |
 | Consumables | Herb (+30 HP) 15; Revival Draught (revive a fallen unit anywhere on the map) 80; one cure potion per status, used in battle (Antidote for poison, and so on) 10–20. Shops hold limited stock, refilled at noon (user's playtest notes, 2026-11-08) |
 
 ### 15.2 Items
@@ -574,6 +579,7 @@ All values are placeholders.
 - **Bows:** Bow, Longbow (§11.2). Archer classes only.
 - **Enchanted weapons:** any weapon plus an element, adding element damage (for example Sword of Fire = +2 physical, +1 fire).
 - **Jewelry:** Necklace (HP), Ring (INT), Earring (AGI), Bracelet (PDEF).
+- **Shops vary** (playtest round 9): each shop stocks a random number of item kinds and a random count of each, and about one shop per map holds one very rare item with a big buff, not restocked once sold.
 - **Kept minimal** until magic items exist. Later work leans on Nephilim's item handling with simple D&D-style rules.
 
 ## 16. Recruiting
@@ -583,6 +589,7 @@ All values are placeholders.
   - **Chance** = 0.60 × (10 − units)/9 × (1 − alignment gap/100) × (0.5 + reputation/100). The alignment gap is between the neutrals and your squad's alignment, with the leader counted twice.
   - **Success:** the units go to the recruit pool at the Player Base, and the leader gains +3 charisma.
   - **Failure:** the neutrals take their whole first round before you, then normal rules apply.
+  - **A second chance** (playtest round 9): after any battle the player wins against neutrals without wiping them out, Recruit or Let them go is offered once more. They join at the HP they have left; a refusal or Let them go sends them home. Otherwise a neutral squad still goes home after its one battle.
 - **Race lines** (the sheet's R, N, L and T lines) come only from neutrals, hidden sites and recruiter traits. They never appear in starting squads.
 
 ## 17. Enemy

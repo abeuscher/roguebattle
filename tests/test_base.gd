@@ -1,7 +1,15 @@
 extends TestCase
 ## The Player Base: deploy and return, the squad cap, healing and revival (SPEC §8.4, §6.5, §15.1).
 
-var d := GameData.load_dir()
+var d := _data()
+
+
+## Two towns on the strip, counted as the reference, make the upkeep scale 1 (round 10)
+## so costs can be worked by hand.
+func _data() -> GameData:
+	var g := GameData.load_dir()
+	g.rules["upkeep"]["reference_buildings"] = 2
+	return g
 
 
 func _state(cap := 5) -> GameState:
@@ -12,6 +20,8 @@ func _state(cap := 5) -> GameState:
 	m.settings = {"preset": "continent", "size": "small"}
 	m.player_base = m.index_of(Hex.from_offset(Vector2i(3, 3)))
 	m.enemy_base = m.index_of(Hex.from_offset(Vector2i(18, 3)))
+	for col in [12, 15]:
+		m.buildings.append({"type": "town", "hex": m.index_of(Hex.from_offset(Vector2i(col, 0))), "shop": false, "hint": false, "hidden": false, "kind": "", "road": false})
 	var st := GameState.new(d, m, GameLog.new(), {"squad_cap": cap})
 	st.setup_army()
 	return st

@@ -205,6 +205,8 @@ func test_sight_and_speed() -> void:
 
 func test_logistics() -> void:
 	var st := _state()
+	var reference = st.data.rules["upkeep"]["reference_buildings"]
+	st.data.rules["upkeep"]["reference_buildings"] = 1  # scale 1 on this one-town map, so 10% shows
 	var upkeep := st.army_upkeep()
 	st.tech.append("quartermaster")
 	check(st.army_upkeep() < upkeep, "Quartermaster: less upkeep (%d → %d)" % [upkeep, st.army_upkeep()])
@@ -223,6 +225,7 @@ func test_logistics() -> void:
 	var t := st.step_ticks(s, road)
 	st.tech.append("engineers")
 	check(is_equal_approx(st.step_ticks(s, road), t * 0.6 / 0.75), "Engineers: roads ×0.6")
+	st.data.rules["upkeep"]["reference_buildings"] = reference
 
 
 func test_terrain_nodes() -> void:

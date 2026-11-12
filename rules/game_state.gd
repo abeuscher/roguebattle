@@ -32,12 +32,13 @@ var _building_at := {}  # hex -> index in map.buildings
 var notices: Array[String] = []  # short news for the HUD banner, oldest first (a squad of yours stopped)
 var noon_report := ""  # the last noon's ledger in one line, for the HUD banner
 var ledger: Array = []  # [what, gold +/-] for every gold change since the last noon
-var daily_ledger := {}  # set at noon for the UI to show once: {day, lines: [[what, amount]], unpaid, gold}
+var daily_ledger := {}  # set at noon for the UI to show once: {day, lines: [[what, amount]], gold, debt_noons, defeat_noons}
 var cards: Array[String] = []  # the hand: card ids (§13)
 var next_card := ""  # the next card to be drawn, rolled ahead so Foresight can preview it
 var card_offer: Array[String] = []  # cards to choose one from (a Seer or Oracle drew), shown by the HUD
 var tech: Array[String] = []  # tech nodes bought (§14), shared with the army and its squads
 var tech_points := 0
+var debt_noons := 0  # noons in a row that ended in debt (§15.1, round 9): 3 is a defeat
 var game_over := ""  # "", "victory" or "defeat" (§6.8), once a condition is met
 var game_over_reason := ""  # the sentence the end screen shows
 var enemy_squads_defeated := 0  # wiped or driven off, for "defeat N enemy squads" (§6.8)
@@ -60,7 +61,7 @@ func _init(game_data: GameData, game_map: MapData, game_log: GameLog, game_setti
 	clock = GameClock.new(data.rules, int(data.rules["start_minute"]))
 	pathfinder = Pathfinder.new(map, data)
 	names = NameBook.new(data)
-	gold = int(data.rules["starting_gold"])
+	gold = starting_gold()
 	reputation = int(data.rules["starting_reputation"])
 	army = Army.new(data)
 	army.tech = tech
@@ -72,6 +73,7 @@ func _init(game_data: GameData, game_map: MapData, game_log: GameLog, game_setti
 		b["owner"] = data.buildings[b["type"]].get("owner", "neutral")
 		b["away"] = false  # nomads that moved out of sight until the next half day
 		_building_at[b["hex"]] = i
+	_place_rare_item()
 	log.add(clock.tick, "system", "New map: seed %d, %s %dx%d." % [map.seed, map.settings["preset"], map.width, map.height],
 			-1, {"settings": map.settings, "game": settings})
 
@@ -192,7 +194,7 @@ func _setup_single_map() -> void:
 func _starting_kit() -> void:
 	var kit: Dictionary = data.rules["starting_kit"]
 	var r := rng.get_stream("army_setup")
-	var basic: Array = data.items["items"].keys().filter(func(id): return not data.items["items"][id].has("requires"))
+	var basic := item_ids(false)
 	for i in int(kit["items"]):
 		army.add_item(basic[r.randi() % basic.size()])
 	for id in kit["supplies"]:
@@ -715,9 +717,18 @@ func _apply_tech() -> void:
 
 # --- Cards (SPEC §13) ---------------------------------------------------------------
 
+## A random card id, by each card's draw weight (1 unless it says otherwise; rare cards less).
 func _roll_card() -> String:
-	var ids: Array = data.cards["cards"].keys()
-	return ids[rng.get_stream("cards").randi() % ids.size()]
+	var all: Dictionary = data.cards["cards"]
+	var total := 0.0
+	for id in all:
+		total += float(all[id].get("weight", 1.0))
+	var roll := rng.get_stream("cards").randf() * total
+	for id in all:
+		roll -= float(all[id].get("weight", 1.0))
+		if roll < 0.0:
+			return id
+	return all.keys()[-1]
 
 
 ## Draws a card for a liberation or a found hidden site. A squad with a Seer (2) or an
@@ -893,24 +904,50 @@ func income() -> int:
 	return roundi(held.size() * int(e["income_per_building"]) * (1.0 + tech_value("war_chest", "income")))
 
 
-## Upkeep per day for the whole army: every unit in a squad or the recruit pool.
+## Upkeep per day for the whole army: only squads on the map pay (round 10); the
+## recruit pool and squads at base are free.
 func army_upkeep() -> int:
 	var total := 0
-	for s in army.squads():
+	for s in player_squads():
 		total += upkeep(s)
-	for u in army.pool:
-		total += _unit_upkeep(u)
 	return total
 
 
-func _unit_upkeep(u: Unit) -> int:
-	var k: Dictionary = data.rules["upkeep"]
-	var c: Dictionary = u.info(data)
-	return roundi(float(k["by_stage"][int(c["stage"]) - 1]) * float(k["size"][c["size"]]) * (1.0 + tech_value("quartermaster", "upkeep")))
+## What upkeep is multiplied by on this map (round 10): its towns and towers / a Small
+## map's count, so cost follows what the map can pay.
+func upkeep_scale() -> float:
+	var e: Dictionary = data.rules["economy"]
+	var count := map.buildings.filter(func(b): return b["type"] in e["income_buildings"]).size()
+	return count / float(data.rules["upkeep"]["reference_buildings"])
 
 
-## At noon: income comes in, then upkeep goes out. Gold never drops below zero; upkeep
-## that can't be paid is lost for now (morale and loyalty, M4).
+## A day's upkeep of a full field army on this map: the squad cap of full squads at
+## the starting gold's stage, before tech.
+func field_army_upkeep() -> int:
+	var k: Dictionary = data.rules["starting_gold"]
+	var per_unit := float(data.rules["upkeep"]["by_stage"][int(k["stage"]) - 1])
+	return roundi(squad_cap() * int(k["squad_units"]) * per_unit * upkeep_scale())
+
+
+## Two days' upkeep of a full field army on this map, at least 500 (§15.1, round 10).
+func starting_gold() -> int:
+	var k: Dictionary = data.rules["starting_gold"]
+	return maxi(int(k["min"]), int(k["days"]) * field_army_upkeep())
+
+
+## How far into debt the army can go before it breaks up (round 9): a couple of days'
+## upkeep of a full field army on this map.
+func debt_limit() -> int:
+	return maxi(1, roundi(float(data.rules["debt"]["limit_days"]) * field_army_upkeep()))
+
+
+func in_debt() -> bool:
+	return gold < 0
+
+
+## At noon: income comes in, then each squad on the map pays its upkeep, even into
+## debt (round 9). In debt nothing can be bought; 3 noons running in debt, or debt
+## past debt_limit(), is a defeat. Selling a squad is the way out.
 func _noon() -> void:
 	var gain := income()
 	var cost := army_upkeep()
@@ -918,19 +955,21 @@ func _noon() -> void:
 	var e: Dictionary = data.rules["economy"]
 	var held := map.buildings.filter(func(b): return b["type"] in e["income_buildings"] and b["owner"] == "player").size()
 	_pay(gain, "Income: %d town%s and tower%s held" % [held, "" if held == 1 else "s", "" if held == 1 else "s"])
-	var paid := mini(gold, cost)
-	var left := paid  # upkeep is paid squad by squad while the gold lasts
-	for s in army.squads():
-		var due := mini(upkeep(s), left)
-		if due > 0:
-			_pay(-due, "Upkeep: %s" % s.name)
-			left -= due
-	if left > 0:
-		_pay(-left, "Upkeep: the recruit pool")
-	noon_report = "Noon: +%d income, −%d upkeep%s. Gold %d." % [gain, paid, " (%d unpaid)" % (cost - paid) if paid < cost else "", gold]
-	log.add(clock.tick, "economy", noon_report, -1, {"income": gain, "upkeep": cost, "paid": paid})
-	daily_ledger = {"day": clock.day(), "lines": ledger, "unpaid": cost - paid, "gold": gold}
+	for s in player_squads():
+		if upkeep(s) > 0:
+			_pay(-upkeep(s), "Upkeep: %s" % s.name)
+	debt_noons = debt_noons + 1 if in_debt() else 0
+	noon_report = "Noon: +%d income, −%d upkeep. Gold %d." % [gain, cost, gold]
+	log.add(clock.tick, "economy", noon_report, -1, {"income": gain, "upkeep": cost, "debt_noons": debt_noons})
+	daily_ledger = {"day": clock.day(), "lines": ledger, "gold": gold, "debt_noons": debt_noons, "defeat_noons": int(data.rules["debt"]["defeat_noons"])}
 	ledger = []
+	var noons := int(data.rules["debt"]["defeat_noons"])
+	if debt_noons >= noons:
+		_end_game("defeat", "%d days in debt: the army can't be paid and breaks up." % noons)
+	elif -gold > debt_limit():
+		_end_game("defeat", "Debt past %d gold: the army can't be paid and breaks up." % debt_limit())
+	elif in_debt():
+		notices.append("In debt: noon %d of %d. Nothing can be bought; sell a squad in Edit Units or take towns." % [debt_noons, noons])
 
 
 ## Every change to the army's gold goes through here, so the day's ledger lists it.
@@ -984,19 +1023,23 @@ func shop_at(s: Squad) -> Dictionary:
 
 
 ## What a shop holds right now: item or consumable id -> how many are left (0 once
-## sold out). Rolled once per shop: a few random items, every map consumable, and a
-## few of the cure potions. Refilled to that at noon (restock()).
+## sold out). Rolled once per shop: a random number of random items, a random count of
+## each (round 9), every map consumable, a few of the cure potions, and the map's one
+## very rare item if this is its shop. Refilled to that at noon (restock()), except a
+## rare item once sold.
 func shop_stock(b: Dictionary) -> Dictionary:
 	if not b.get("shop", false):
 		return {}
 	if not b.has("stock"):
 		var r := rng.get_stream("shops")
 		var e: Dictionary = data.rules["economy"]
-		var ids: Array = data.items["items"].keys().filter(func(id): return data.items["items"][id].get("requires", "") in tech or not data.items["items"][id].has("requires"))
+		var ids := item_ids(true)
 		var full := {}
-		for i in int(e["shop_items"]):
+		for i in r.randi_range(int(e["shop_items"][0]), int(e["shop_items"][1])):
 			var id: String = ids[r.randi() % ids.size()]
-			full[id] = int(full.get(id, 0)) + int(e["item_stock"])
+			full[id] = int(full.get(id, 0)) + r.randi_range(int(e["item_stock"][0]), int(e["item_stock"][1]))
+		if b.has("rare_item"):
+			full[b["rare_item"]] = 1
 		var cures := []
 		for id in data.items["consumables"]:
 			var c: Dictionary = data.items["consumables"][id]
@@ -1014,6 +1057,25 @@ func shop_stock(b: Dictionary) -> Dictionary:
 		b["full_stock"] = full
 		b["stock"] = full.duplicate()
 	return b["stock"]
+
+
+## Item ids to roll from: never the very rare ones; with_tech adds those the tech you
+## own unlocks, otherwise only items that need no tech.
+func item_ids(with_tech: bool) -> Array:
+	return data.items["items"].keys().filter(func(id):
+		var it: Dictionary = data.items["items"][id]
+		return not it.get("rare", false) and (not it.has("requires") or (with_tech and it["requires"] in tech)))
+
+
+## About one shop per map holds one very rare item with a big buff (round 9): a random
+## shop gets a random rare item when the map begins.
+func _place_rare_item() -> void:
+	var r := rng.get_stream("rare_item")
+	var shops: Array = map.buildings.filter(func(b): return b.get("shop", false) and not b["hidden"])
+	var rare: Array = data.items["items"].keys().filter(func(id): return data.items["items"][id].get("rare", false))
+	if shops.is_empty() or rare.is_empty():
+		return
+	shops[r.randi() % shops.size()]["rare_item"] = rare[r.randi() % rare.size()]
 
 
 ## At noon every shop that's been opened refills to its full stock.
@@ -1042,6 +1104,8 @@ func buy_item(b: Dictionary, id: String, s: Squad = null) -> bool:
 		return false
 	_pay(-cost, "Bought a %s" % data.items["items"][id]["name"])
 	stock[id] -= 1
+	if data.items["items"][id].get("rare", false):  # one of a kind: not restocked
+		b["full_stock"].erase(id)
 	army.add_item(id)
 	log.add(clock.tick, "economy", "Bought a %s for %d gold." % [data.items["items"][id]["name"], cost])
 	return true
@@ -1138,14 +1202,15 @@ func squad_cap() -> int:
 	return 5
 
 
-## Gold per day for the squad's units (§15.1): by stage, Large ×2, Tiny ×½.
+## Upkeep per day for the squad's units (§15.1): by stage, Large ×2, Tiny ×½, then
+## × the map's upkeep_scale().
 func upkeep(s: Squad) -> int:
 	var u: Dictionary = data.rules["upkeep"]
 	var total := 0.0
 	for unit in s.units:
 		var c: Dictionary = unit.info(data)
 		total += float(u["by_stage"][int(c["stage"]) - 1]) * float(u["size"][c["size"]])
-	return roundi(total * (1.0 + tech_value("quartermaster", "upkeep")))
+	return roundi(total * upkeep_scale() * (1.0 + tech_value("quartermaster", "upkeep")))
 
 
 ## Deploying costs one day of the squad's upkeep.
@@ -1652,11 +1717,15 @@ func recruit_class() -> String:
 ## straight to a normal battle.
 ## Returns what happened, for the popup to show before any battle: {joined, chance,
 ## text}. "joined" is false for Fight as well.
+## After the player beat them ("beaten"), the choice is Recruit or Let them go: they
+## join at the HP they have left, or go home either way (round 9).
 func resolve_recruit(try_recruit: bool) -> Dictionary:
 	var enc := pending_recruit
 	pending_recruit = {}
 	var player: Squad = enc["player"]
 	var neutral: Squad = enc["neutral"]
+	if enc.get("beaten", false):
+		return _recruit_beaten(player, neutral, try_recruit)
 	if try_recruit:
 		var large: bool = neutral.units[0].info(data)["size"] == "Large"
 		var chance := recruit_chance(player, neutral.living().size(), neutral.alignment(), large)
@@ -1682,6 +1751,32 @@ func resolve_recruit(try_recruit: bool) -> Dictionary:
 		return result
 	pending = start_battle(player, neutral, enc["defender"])
 	return {"joined": false, "chance": 0.0, "text": ""}
+
+
+func _recruit_beaten(player: Squad, neutral: Squad, try_recruit: bool) -> Dictionary:
+	var result := {"joined": false, "chance": 0.0, "text": ""}
+	var home := str(data.terrains[map.terrain[neutral.hex]]["name"]).to_lower()
+	if try_recruit:
+		var large: bool = neutral.units[0].info(data)["size"] == "Large"
+		result["chance"] = recruit_chance(player, neutral.living().size(), neutral.alignment(), large)
+		if rng.get_stream("recruit").randf() < result["chance"]:
+			result["joined"] = true
+			result["text"] = "The %s join you, hurt as they are. %d %s wait in the recruit pool at the base." % [neutral.name,
+					neutral.living().size(), "unit" if neutral.living().size() == 1 else "units"]
+			for u in neutral.living():
+				u.recruited = true
+				u.loyalty = int(data.rules["starting_loyalty"])
+				army.pool.append(u)
+			if player.leader:
+				change_charisma([player.leader], 3, "recruiting the %s" % neutral.units[0].unit_class)
+			log.add(clock.tick, "map", "%s recruits the beaten %s." % [player.name, neutral.name], player.id)
+			squads.erase(neutral)
+			return result
+		result["text"] = "The %s still refuse (a %d%% chance: %s) and return to the %s." % [neutral.name,
+				roundi(result["chance"] * 100), _recruit_drag(player, neutral), home]
+	squads.erase(neutral)
+	log.add(clock.tick, "map", "The beaten %s return to the %s." % [neutral.name, home], player.id)
+	return result
 
 
 ## What held a recruit chance down most (§16's three factors): the band's size, the
@@ -1782,8 +1877,14 @@ func sight(viewer: Squad, target_hex: int) -> int:
 	return clampi(v, int(r["range"][0]), int(r["range"][1]))
 
 
-## Whether any player squad can see this hex.
+## Whether any player squad, or a building the player holds, can see this hex. Held
+## buildings see as far as their type's "sight" (round 9: towers furthest, temples
+## middle, towns least).
 func seen(target_hex: int) -> bool:
+	var at := map.hex_at(target_hex)
+	for b in map.buildings:
+		if b.get("owner", "") == "player" and Hex.distance(map.hex_at(b["hex"]), at) <= int(data.buildings[b["type"]].get("sight", 0)):
+			return true
 	for s in squads:
 		if s.side == "player" and not s.living().is_empty() \
 				and Hex.distance(map.hex_at(s.hex), map.hex_at(target_hex)) <= sight(s, target_hex):
@@ -1847,7 +1948,7 @@ func _claim_sites() -> void:
 				_pay(amount, "Treasure found")
 				news = "%s finds treasure: %d gold" % [s.name, amount]
 				if r.randf() < float(info["item_chance"]):
-					var basic: Array = data.items["items"].keys().filter(func(id): return not data.items["items"][id].has("requires"))
+					var basic := item_ids(false)
 					var item := army.add_item(basic[r.randi() % basic.size()])
 					news += " and %s" % data.items["items"][item["id"]]["name"]
 			"card":
@@ -2035,11 +2136,16 @@ func _record_intel(b: Battle) -> void:
 
 
 ## A neutral squad is met once (user's playtest notes, 2026-11-09): after any battle
-## with the player, win or lose, it goes back to its ground and leaves the map.
+## with the player, win or lose, it goes back to its ground and leaves the map. Beaten
+## and not wiped out, it first faces one more Recruit choice (round 9): pending_recruit
+## with "beaten", resolved by resolve_recruit().
 ## The player's squad is always side 0, so a neutral here is side 1.
 func _neutral_leaves(b: Battle, out: Dictionary) -> void:
 	var s := b.sides[1]
 	if s.side == "neutral" and b.sides[0].side == "player" and s in squads:
+		if not b.ranged_only and battle_result(out) == "won" and not s.living().is_empty() and b.sides[0] in squads:
+			pending_recruit = {"player": b.sides[0], "neutral": s, "defender": s, "beaten": true}
+			return
 		squads.erase(s)
 		log.add(clock.tick, "map", neutral_line(b, out), b.sides[0].id)
 
@@ -2239,12 +2345,15 @@ func _hostile_at(i: int, s: Squad) -> bool:
 
 
 ## The leader's charisma %, halved if the enemy's morale is 10–25; none at 25 or more (§11.6).
+## Below min_chance (25%) it counts as none, so the demand isn't offered (round 9: lower
+## odds feel like zero to a player).
 func drive_off_chance(s: Squad, enemy: Squad) -> float:
 	var d: Dictionary = data.battle["drive_off"]
 	if s.leader == null or not s.leader.is_alive() or enemy.morale >= int(d["morale_below"]):
 		return 0.0
 	var c := s.leader.charisma / 100.0
-	return c / 2.0 if enemy.morale >= int(d["halved_from"]) else c
+	c = c / 2.0 if enemy.morale >= int(d["halved_from"]) else c
+	return c if c >= float(d["min_chance"]) else 0.0
 
 
 ## Demands that a beaten enemy flee. On success it leaves the map for good, and the

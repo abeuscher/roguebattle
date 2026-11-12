@@ -55,8 +55,12 @@ func setup(entry: Dictionary, options: Dictionary) -> void:
 	var now := UiStyle.label(str(int(entry["gold"])), 17, UiStyle.ACCENT)
 	now.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	sums.add_child(now)
-	if int(entry["unpaid"]) > 0:
-		col.add_child(UiStyle.label("%d upkeep went unpaid: not enough gold." % int(entry["unpaid"]), 15, LOSS))
+	if int(entry["gold"]) < 0:  # in debt (round 9)
+		var debt := UiStyle.label("In debt: noon %d of %d. Nothing can be bought while in debt. Sell a squad in Edit Units (U) or take towns before the army breaks up." % [
+				int(entry["debt_noons"]), int(entry["defeat_noons"])], 15, LOSS)
+		debt.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		debt.custom_minimum_size.x = 360
+		col.add_child(debt)
 	col.add_child(UiStyle.dont_show_again(options, "show_daily_ledger"))
 
 

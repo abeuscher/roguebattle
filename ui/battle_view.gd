@@ -715,7 +715,10 @@ func _hints(out: Dictionary, can_drive: bool) -> Array[String]:
 		return out_hints
 	var warlord := " It's also a way to beat the Warlord without wiping out his whole squad." if enemy.role == "leader" else ""
 	if can_drive:
-		out_hints.append("Their spirit is broken. Your leader can demand they flee: if they agree, they leave the map for good (no XP for it). The chance is your leader's charisma." + warlord)
+		out_hints.append("Their spirit is broken. Your leader can demand they flee: if they agree, they leave the map for good, and your squad earns XP as if it had beaten them. The chance is your leader's charisma." + warlord)
+	elif GameState.battle_result(out) == "won" and player.leader and player.leader.is_alive() \
+			and enemy.morale < int(state.data.battle["drive_off"]["morale_below"]):  # broken, but too unlikely to offer (round 9)
+		out_hints.append("Their spirit is broken, but your leader lacks the charisma to make them flee (it takes a %d%% chance)." % roundi(float(state.data.battle["drive_off"]["min_chance"]) * 100))
 	elif GameState.battle_result(out) == "won" and player.leader and player.leader.is_alive():
 		out_hints.append("Their spirit holds for now. Keep beating them and it will break; then your leader can demand they flee." + warlord)
 	if _on_enemy_base and enemy.living().size() < enemy.units.size():

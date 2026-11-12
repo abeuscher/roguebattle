@@ -1,5 +1,5 @@
 {
- "_note": "Items (SPEC §15.2) and consumables (§15.1). All numbers and prices are placeholders. 'use': any, melee (a unit with a Melee attack in either row), archer (the archer tag). Consumables: 'stock' is how many a shop holds when full (refilled at noon); 'where' is map (squad menu, anywhere on the map) or battle (the battle view's Items button); a 'cures' potion removes that one status; each shop carries economy.shop_cures of the cure potions, picked once per shop.",
+ "_note": "Items (SPEC §15.2) and consumables (§15.1). All numbers and prices are placeholders. 'use': any, melee (a unit with a Melee attack in either row), archer (the archer tag). Consumables: 'stock' is how many a shop holds when full (refilled at noon); 'where' is map (squad menu, anywhere on the map) or battle (the battle view's Items button); a 'cures' potion removes that one status; each shop carries economy.shop_cures of the cure potions, picked once per shop. Items marked rare (round 9: very rare, a big buff) are never rolled for shops, kits or treasure; one random shop per map holds one, not restocked once sold.",
  "slots": ["weapon", "armor", "jewelry"],
  "consumables": {
   "herb":       {"name": "Herb", "price": 15, "heal": 30, "stock": 5, "where": "map", "text": "Heals a unit 30 HP."},
@@ -26,6 +26,10 @@
   "necklace": {"name": "Necklace", "price": 60, "slot": "jewelry", "use": "any",    "stats": {"CON": 2}},
   "ring":     {"name": "Ring", "price": 60,     "slot": "jewelry", "use": "any",    "stats": {"INT": 2}},
   "earring":  {"name": "Earring", "price": 60,  "slot": "jewelry", "use": "any",    "stats": {"AGI": 2}},
-  "bracelet": {"name": "Bracelet", "price": 60, "slot": "jewelry", "use": "any",    "stats": {"PDEF": 2}}
+  "bracelet": {"name": "Bracelet", "price": 60, "slot": "jewelry", "use": "any",    "stats": {"PDEF": 2}},
+  "sunblade":    {"name": "Sunblade",       "rare": true, "price": 400, "slot": "weapon",  "use": "melee",  "stats": {"STR": 6, "AGI": 3}},
+  "stormbow":    {"name": "Stormbow",       "rare": true, "price": 420, "slot": "weapon",  "use": "archer", "stats": {"STR": 5, "AGI": 2}, "range": 1},
+  "dragonscale": {"name": "Dragonscale",    "rare": true, "price": 450, "slot": "armor",   "use": "any",    "stats": {"PDEF": 10, "MDEF": 4}},
+  "crown":       {"name": "Crown of Ages",  "rare": true, "price": 400, "slot": "jewelry", "use": "any",    "stats": {"CON": 4, "INT": 4}}
  }
 }

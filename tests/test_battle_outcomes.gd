@@ -334,13 +334,18 @@ func test_drive_off() -> void:
 	var st := _state()
 	var ours := st.add_squad("Ours", 0, [["Knight", "front"]])
 	var theirs := st.add_squad("Theirs", 1, [["Knight", "front"]])
-	ours.leader.charisma = 40
+	ours.leader.charisma = 60
 	theirs.morale = 30
 	check_eq(st.drive_off_chance(ours, theirs), 0.0, "only below morale 25")
 	theirs.morale = 20
-	check_eq(st.drive_off_chance(ours, theirs), 0.2, "halved at morale 10-25")
+	check_eq(st.drive_off_chance(ours, theirs), 0.3, "halved at morale 10-25")
 	theirs.morale = 5
-	check_eq(st.drive_off_chance(ours, theirs), 0.4, "charisma % below 10")
+	check_eq(st.drive_off_chance(ours, theirs), 0.6, "charisma % below 10")
+	ours.leader.charisma = 40
+	theirs.morale = 20
+	check_eq(st.drive_off_chance(ours, theirs), 0.0, "a 20% chance is under 25%: not offered (round 9)")
+	theirs.morale = 5
+	check_eq(st.drive_off_chance(ours, theirs), 0.4, "40% is offered")
 	ours.leader.charisma = 100
 	st.army.cells[0] = ours  # army.units() sees only the roster
 	var xp_before := ours.leader.xp

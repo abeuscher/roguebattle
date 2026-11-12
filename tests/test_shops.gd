@@ -38,7 +38,8 @@ func test_stock_has_quantities_and_a_few_cures() -> void:
 	check_eq(_cures().filter(func(id): return stock.has(id)).size(), int(d.rules["economy"]["shop_cures"]), "a few of the cure potions")
 	for id in stock:
 		if d.items["items"].has(id):
-			check(int(stock[id]) >= int(d.rules["economy"]["item_stock"]), "%s: several in stock" % id)
+			var lo := 1 if d.items["items"][id].get("rare", false) else int(d.rules["economy"]["item_stock"][0])
+			check(int(stock[id]) >= lo and int(stock[id]) <= int(d.rules["economy"]["item_stock"][1]), "%s: in stock" % id)
 
 
 func test_sells_out_then_restocks_at_noon() -> void:

@@ -108,8 +108,11 @@ func test_fight_skips_straight_to_a_battle() -> void:
 	check(st.pending_recruit.is_empty(), "the encounter is resolved")
 	check(st.pending != null, "straight into a battle")
 	var out := st.resolve_pending()
-	check(n not in st.squads, "met once: the neutrals leave after the fight, whoever won")
 	var won := GameState.battle_result(out) == "won"
+	if won and not n.living().is_empty():  # beaten: one more chance to recruit them (round 9)
+		check(st.pending_recruit.get("beaten", false), "beaten, they can be asked once more")
+		st.resolve_recruit(false)
+	check(n not in st.squads, "met once: the neutrals leave after the fight, whoever won")
 	var text: String = out["text"]
 	check(text.begins_with(p.name + (" wins." if won else " loses.")), "party wins or loses: " + text)
 	check(text.contains("are beaten back" if won else "are victorious") and text.ends_with("return to the plains."),

@@ -803,7 +803,7 @@ func _close_debug_panel() -> void:
 func _open_recruit_popup() -> void:
 	_recruit_popup = RecruitPopup.new()
 	_ui.add_child(_recruit_popup)
-	_recruit_popup.setup(state.recruit_class())
+	_recruit_popup.setup(state.recruit_class(), state.pending_recruit.get("beaten", false))
 	_fly_to_meeting(state.pending_recruit["player"], state.pending_recruit["neutral"], _recruit_popup)
 	_recruit_popup.recruit.connect(func():
 		var result := state.resolve_recruit(true)

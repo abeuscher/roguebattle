@@ -2,7 +2,16 @@ extends TestCase
 ## Gold: noon income and upkeep, the liberation bonus, shops, Serfs, herbs, temple
 ## services and going broke (SPEC §15.1, §16).
 
-var d := GameData.load_dir()
+var d := _data()
+
+
+## This strip holds 2 towns and towers; counting 2 as the reference makes the map's
+## upkeep scale 1, so the ledger below can be worked by hand (round 10's scaling has
+## its own tests, which use the real reference).
+func _data() -> GameData:
+	var g := GameData.load_dir()
+	g.rules["upkeep"]["reference_buildings"] = 2
+	return g
 
 
 ## A plains strip with the Player Base at (2, 3), a town at (8, 3) with a shop, a tower
@@ -47,25 +56,27 @@ func _place(st: GameState, cell: int, col: int) -> Squad:
 
 
 func test_a_days_ledger() -> void:
-	# Worked by hand. Upkeep (§15.1: stage 1/2/3 = 5/10/20 a unit, all Small):
+	# Worked by hand. Upkeep (§15.1: stage 1/2/3 = 5/10/20 a unit, all Small, scale 1 here):
 	#   squad 1: Knight 20 + Fighter 10 + Fighter 10 + Bowman 10 + Acolyte 10 = 60
 	#   squad 2: Lancer 20 + Squire 10 + Squire 10 + Slinger 10 + Acolyte 10 = 60
-	#   squad 3: Archer 20 + Soldier 20 + Bowman 10 + Apprentice 10 = 60       total 180
+	#   squad 3: Archer 20 + Soldier 20 + Bowman 10 + Apprentice 10 = 60, but it stays at base: free
+	# Starting gold: 2 days × 6 squads × 6 units × 10 = 720.
 	# Squads 1 and 2 liberate the town and the tower in the morning: 2 × 100 × (0.5 + 50/100) = +200.
-	# Noon: income 2 × 50 = +100, upkeep −180.  500 + 200 + 100 − 180 = 620.
+	# Noon: income 2 × 50 = +100, upkeep −120.  720 + 200 + 100 − 120 = 900.
 	var st := _state()
-	check_eq(st.army_upkeep(), 180, "the army's upkeep")
+	check_eq(st.army_upkeep(), 60, "only squad 1 is on the map")
 	for c in 2:  # neutral squads, so liberating doesn't move reputation and the second bonus is 100 too
 		for u in _place(st, c, 8 if c == 0 else 12).units:
 			u.alignment = 50
-	check_eq(st.gold, 500, "starting gold")
+	check_eq(st.army_upkeep(), 120, "squads 1 and 2 on the map; squad 3 at base is free")
+	check_eq(st.gold, 720, "starting gold")
 	while st.clock.minute_of_day() != 12 * 60:
 		st.step()
 	check_eq(st.building_at(_at(st.map, 8, 3))["owner"], "player", "the town is ours")
 	check_eq(st.building_at(_at(st.map, 12, 3))["owner"], "player", "and the tower")
 	check_eq(st.income(), 100, "two buildings: 100 a day")
-	check_eq(st.gold, 620, "the day's ledger")
-	check(st.noon_report.contains("+100") and st.noon_report.contains("180"), st.noon_report)
+	check_eq(st.gold, 900, "the day's ledger")
+	check(st.noon_report.contains("+100") and st.noon_report.contains("120"), st.noon_report)
 
 
 func test_liberation_bonus_scales_with_reputation() -> void:
@@ -86,8 +97,8 @@ func test_shop() -> void:
 	town["owner"] = "player"
 	check_eq(st.shop_at(s), town, "a shop once it's liberated")
 	var stock := st.shop_stock(town)
-	var items: Array = stock.keys().filter(func(k): return d.items["items"].has(k))
-	check(items.size() >= 1 and items.size() <= int(d.rules["economy"]["shop_items"]), "a few items in stock")
+	var items: Array = stock.keys().filter(func(k): return d.items["items"].has(k) and not d.items["items"][k].get("rare", false))
+	check(items.size() >= 1 and items.size() <= int(d.rules["economy"]["shop_items"][1]), "a few items in stock")
 	check_eq(st.shop_stock(town), stock, "the same stock each visit")
 	var id: String = items[0]
 	var left := int(stock[id])
@@ -149,7 +160,8 @@ func test_going_broke() -> void:
 	st.gold = 0
 	st.clock.tick = 12 * 60 - 1
 	st.step()
-	check_eq(st.gold, 0, "upkeep you can't pay leaves you at zero")
+	check_eq(st.gold, -st.upkeep(st.army.cells[0]), "upkeep you can't pay puts you in debt (round 9)")
+	check_eq(st.debt_noons, 1, "the first noon in debt")
 
 
 func test_the_noon_ledger_lists_every_gold_change() -> void:
@@ -165,9 +177,9 @@ func test_the_noon_ledger_lists_every_gold_change() -> void:
 	var total := 0
 	for line in day["lines"]:
 		total += int(line[1])
-	check_eq(total, st.gold - 500, "the lines add up to the day's change in gold")
+	check_eq(total, st.gold - st.starting_gold(), "the lines add up to the day's change in gold")
 	check_eq(day["lines"].filter(func(l): return str(l[0]).begins_with("Liberation bonus")).size(), 2, "both liberation bonuses")
-	check_eq(day["lines"].filter(func(l): return str(l[0]).begins_with("Upkeep")).size(), 3, "upkeep squad by squad")
+	check_eq(day["lines"].filter(func(l): return str(l[0]).begins_with("Upkeep")).size(), 2, "upkeep squad by squad, for the two on the map")
 	check_eq(int(day["gold"]), st.gold, "gold now")
 	check(st.ledger.is_empty(), "a fresh ledger for the next day")
 

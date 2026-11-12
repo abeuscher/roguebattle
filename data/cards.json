@@ -1,5 +1,5 @@
 {
- "_note": "Cards (SPEC §13). All strengths are placeholders. where: battle or map. Stat boosts last for the rest of the battle (§11.7). Attack cards hit every enemy: damage = power - the target's PDEF (physical) or MDEF (magic), times the element multiplier, with the usual spread, at least 1.",
+ "_note": "Cards (SPEC §13). All strengths are placeholders. where: battle or map. Stat boosts last for the rest of the battle (§11.7). weight: how likely a card is drawn against the others (1 if missing; rare cards less, round 9). Attack cards hit every enemy: damage = power - the target's PDEF (physical) or MDEF (magic), times the element multiplier, with the usual spread, at least 1.",
  "start": 3,
  "choose": {"Seer": 2, "Oracle": 3},
  "cards": {
@@ -25,6 +25,7 @@
   "fox":        {"name": "Fox",        "group": "Environment", "where": "map",    "effect": "time", "minute": 0, "text": "Time jumps to midnight."},
   "chameleon":  {"name": "Chameleon",  "group": "Environment", "where": "battle", "effect": "home_terrain", "text": "This battle plays as if on your squad's home terrain."},
   "sloth":      {"name": "Sloth",      "group": "Environment", "where": "battle", "effect": "enemy_loses_turn", "text": "The enemy squad loses its next action."},
-  "unicorn":    {"name": "Unicorn",    "group": "Environment", "where": "battle", "effect": "extra_attack", "text": "Each of your units gets one extra attack this battle."}
+  "unicorn":    {"name": "Unicorn",    "group": "Environment", "where": "battle", "effect": "extra_attack", "text": "Each of your units gets one extra attack this battle."},
+  "phoenix":    {"name": "Phoenix",    "group": "Heal",        "where": "battle", "effect": "revive", "share": 0.5, "weight": 0.25, "text": "Every fallen unit in your squad rises again with half its max HP."}
  }
 }

@@ -705,6 +705,16 @@ func play_card(id: String, side := 0) -> bool:
 		"extra_attack":
 			for u in own.living():
 				_attacks[u] += 1
+		"revive":  # Phoenix (round 9): every fallen unit stands again at a share of its max HP
+			for u in own.living(false):
+				if u in _skeletons:
+					continue
+				u.hp = maxi(1, roundi(u.max_hp(data) * float(c["share"])))
+				_side[u] = side
+				if not _attacks.has(u):  # fell before the battle: it fights from here on
+					_join(u)
+				_status[u] = {}
+				_record({"type": "heal", "unit": u, "target": u, "amount": u.hp, "text": "%s rises again with %d HP." % [_n(u), u.hp]})
 	return true
 
 
