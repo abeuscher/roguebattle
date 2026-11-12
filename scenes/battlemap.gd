@@ -504,7 +504,7 @@ func _start_portal() -> void:
 		area = area.expand(_glow.spots[-1])
 	view.add_object(_glow)
 	camera.frame(area, 0.6)
-	hud.show_banner("Portal: click a glowing temple and %s steps there at once.  Esc: back" % _selected.name)
+	hud.show_banner("Portal: click a glowing temple to send %s there.  Esc: back" % _selected.name)
 
 
 func _portal_click(world: Vector2) -> void:
@@ -517,6 +517,16 @@ func _portal_click(world: Vector2) -> void:
 		return
 	var s := _selected
 	var from := state.where(s.hex)
+	_confirm = ConfirmDialog.new()  # ask first (user's notes, 2026-11-11); the glow stays up behind it
+	_ui.add_child(_confirm)
+	_confirm.setup("Send %s through the portal from %s to %s?" % [s.name, from, state.where(hex)], "Step through")
+	_confirm.confirmed.connect(func():
+		_close_confirm()
+		_step_through(s, hex, from))
+	_confirm.cancelled.connect(_close_confirm)  # back to picking a temple
+
+
+func _step_through(s: Squad, hex: int, from: String) -> void:
 	state.portal(s, hex)
 	_end_selection()
 	_sync_tokens()
