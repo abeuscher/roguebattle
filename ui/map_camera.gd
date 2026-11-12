@@ -30,15 +30,28 @@ func center_on(world_point: Vector2) -> void:
 ## of the whole map, or stays as close as it is if already closer (it never pulls
 ## back). Returns the tween, so the caller can wait for it to land.
 func fly_to(world_point: Vector2, map_share: float, seconds: float) -> Tween:
-	var from_pos := position
-	var from_zoom := zoom.x
-	var to_zoom := clampf(maxf(from_zoom, _fit_zoom / map_share), _fit_zoom * 0.5, MAX_ZOOM)
+	var to_zoom := clampf(maxf(zoom.x, _fit_zoom / map_share), _fit_zoom * 0.5, MAX_ZOOM)
 	# Keep the view on the map: near an edge, stop short of centering exactly.
 	var half := get_viewport_rect().size / to_zoom / 2.0
 	var origin := -Vector2(MapView.HEX_SIZE * Hex.SQRT3 / 2.0, MapView.HEX_SIZE)
 	for axis in 2:
 		if half[axis] * 2.0 < world[axis]:
 			world_point[axis] = clampf(world_point[axis], origin[axis] + half[axis], origin[axis] + world[axis] - half[axis])
+	return _glide(world_point, to_zoom, seconds)
+
+
+## Glides out or in until a whole world rectangle shows with a margin, zooming in no
+## closer than normal (zoom 1) so a near target doesn't fill the screen.
+func frame(rect: Rect2, seconds: float) -> Tween:
+	var screen := get_viewport_rect().size
+	var size := rect.size * 1.4 + Vector2.ONE * MapView.HEX_SIZE * 8.0
+	var to_zoom := clampf(minf(screen.x / size.x, screen.y / size.y), _fit_zoom, maxf(_fit_zoom, 1.0))
+	return _glide(rect.get_center(), to_zoom, seconds)
+
+
+func _glide(world_point: Vector2, to_zoom: float, seconds: float) -> Tween:
+	var from_pos := position
+	var from_zoom := zoom.x
 	var t := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	t.tween_method(func(k: float):
 		position = from_pos.lerp(world_point, k)

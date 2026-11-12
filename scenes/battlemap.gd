@@ -43,7 +43,6 @@ var _encounter: EncounterPopup
 var _announced := false  # the pending battle needs no encounter popup (already announced, or a recruit refused)
 var _edit: EditUnits
 var _deploy_menu: DeployMenu
-var _portal_menu: PortalMenu
 var _confirm: ConfirmDialog
 var _deploying := false  # _selected is a squad from base whose route is being laid
 var _building_popup: BuildingPopup
@@ -59,6 +58,8 @@ var _tokens := {}  # squad id -> SquadToken
 var _selected: Squad  # the squad whose menu or move order is open (the game is held meanwhile)
 var _planning := false  # laying rally points for _selected
 var _firing := false  # choosing a ranged-attack target for _selected
+var _portaling := false  # choosing a glowing temple for _selected to step to (user's notes, 2026-11-11)
+var _glow: PortalGlow
 var _shown_sites := {}  # building index -> true once its icon is revealed
 var _points := PackedInt32Array()
 var _planned := PackedInt32Array()  # route through _points
@@ -485,26 +486,48 @@ func _open_menu() -> void:
 		var cell := _selected.id - 1
 		_end_selection()
 		_open_edit(cell))
-	_menu.portal.connect(func():
-		var s := _selected
-		_end_selection()
-		_portal_menu = PortalMenu.new()
-		_ui.add_child(_portal_menu)
-		_portal_menu.setup(state, s)
-		_portal_menu.picked.connect(func(hex: int):
-			_close_portal_menu()
-			var from := state.where(s.hex)
-			if state.portal(s, hex):
-				camera.center_on(MapView.hex_center(state.map, hex))
-				hud.show_banner("%s steps through the portal from %s to %s." % [s.name, from, state.where(hex)], 4.0)
-				_sync_tokens())
-		_portal_menu.closed.connect(_close_portal_menu))
+	_menu.portal.connect(_start_portal)
 	_menu.closed.connect(_end_selection)
 
 
-func _close_portal_menu() -> void:
-	_portal_menu.queue_free()
-	_portal_menu = null
+## Portal (user's notes, 2026-11-11): back to the map, which pulls back to show the
+## squad and every temple it can step to; those glow, and a click on one goes there.
+func _start_portal() -> void:
+	_close_menu()
+	_portaling = true
+	var targets := state.portal_targets(_selected)
+	_glow = PortalGlow.new()
+	_glow.z_index = 2
+	var area := Rect2(MapView.hex_center(state.map, _selected.hex), Vector2.ZERO)
+	for hex in targets:
+		_glow.spots.append(MapView.hex_center(state.map, hex))
+		area = area.expand(_glow.spots[-1])
+	view.add_object(_glow)
+	camera.frame(area, 0.6)
+	hud.show_banner("Portal: click a glowing temple and %s steps there at once.  Esc: back" % _selected.name)
+
+
+func _portal_click(world: Vector2) -> void:
+	var hex := _hex_at(world)
+	var building := _building_under(world)
+	if not building.is_empty():
+		hex = building["hex"]
+	if hex not in state.portal_targets(_selected):
+		hud.show_banner("Click one of the glowing temples.  Esc: back")
+		return
+	var s := _selected
+	var from := state.where(s.hex)
+	state.portal(s, hex)
+	_end_selection()
+	_sync_tokens()
+	camera.fly_to(MapView.hex_center(state.map, hex), 0.15, 0.6)
+	hud.show_banner("%s steps through the portal from %s to %s." % [s.name, from, state.where(hex)], 4.0)
+
+
+func _clear_glow() -> void:
+	if _glow:
+		_glow.queue_free()
+		_glow = null
 
 
 func _close_menu() -> void:
@@ -522,6 +545,8 @@ func _end_selection() -> void:
 	_selected = null
 	_planning = false
 	_firing = false
+	_portaling = false
+	_clear_glow()
 	hud.show_banner("")
 
 
@@ -989,7 +1014,7 @@ func _on_speed_chosen(index: int) -> void:
 ## No menu, popup or dialog is open (a squad order may be under way: its menu, or laying
 ## a route or picking a target, which take map clicks).
 func _can_open() -> bool:
-	return not (_log_panel or _debug_panel or _menu or _main_menu or _battle or _encounter or _rare_popup or _edit or _deploy_menu or _portal_menu or _confirm or _building_popup or _enemy_popup \
+	return not (_log_panel or _debug_panel or _menu or _main_menu or _battle or _encounter or _rare_popup or _edit or _deploy_menu or _confirm or _building_popup or _enemy_popup \
 			or _shop or _recruit_popup or _liberation_popup or _end_screen or _chooser or _ledger or _lost_popup)
 
 
@@ -1038,6 +1063,8 @@ func _unhandled_input(event: InputEvent) -> void:
 					_plan_click(hex)
 			elif _firing:
 				_fire_click(world)
+			elif _portaling:
+				_portal_click(world)
 			else:
 				var found := _squads_at(world)
 				var building := _building_under(world)
@@ -1053,12 +1080,14 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.is_pressed()):
 		return
 	var key := (event as InputEventKey).keycode
-	if _planning or _firing:
+	if _planning or _firing or _portaling:
 		if key == KEY_ESCAPE and _deploying:
 			_end_selection()
 		elif key == KEY_ESCAPE:
 			_planning = false
 			_firing = false
+			_portaling = false
+			_clear_glow()
 			_open_menu()
 		get_viewport().set_input_as_handled()
 		return
