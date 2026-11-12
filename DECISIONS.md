@@ -761,5 +761,6 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **Shop icon:** Lucide hand-coins in the squad menu.
 - **Liberation window:** with no conscripts (and no card offer), the window loses its 420 px minimum and centres the card and View all cards, so it fits the card. A long tower name in the title can still make it wider.
 - **Saves from session 061** still load: their buildings come from the save, so their towers and temples just stay unnamed.
+- **Info button (user's request):** the key help at the map's bottom left is hidden behind a round Lucide "info" button there; clicking it shows the help above the button (icon gold while it's open). Off at the start of every game, not remembered.
   - 389 tests passing.
 

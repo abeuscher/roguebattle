@@ -3,7 +3,8 @@ extends Control
 ## The battlemap HUD (SPEC §5.2; layout from playtest round 7, ROADMAP M4 session 24):
 ## gold and the reputation meter at the top right; the squad drawer at the middle left;
 ## the minimap at the bottom right with the clock and game speed under it; the toolbar
-## (Edit Units, Deploy Squad, Cards, Tech) at the bottom centre; key help at the bottom left.
+## (Edit Units, Deploy Squad, Cards, Tech) at the bottom centre; an info button at the bottom
+## left that shows or hides the key help (hidden to start).
 
 signal squad_pressed(id: int)
 signal squad_opened(id: int)  # a drawer row double-clicked (round 10)
@@ -38,6 +39,7 @@ var _drawer_rows := VBoxContainer.new()
 var _drawer_toggle := Button.new()
 var _drawer_open := false
 var _help := Label.new()
+var _info := Button.new()  # shows or hides _help
 var _banner := PanelContainer.new()  # one line of labels, with place names as links
 var _banner_line := HBoxContainer.new()
 var _banner_text := ""
@@ -56,7 +58,20 @@ func _ready() -> void:
 	_build_clock()
 	_help.add_theme_stylebox_override("normal", UiStyle.box(Color(0.07, 0.09, 0.11, 0.75), 6))
 	_help.add_theme_font_size_override("font_size", 13)
+	_help.visible = false
 	add_child(_help)
+	_info.icon = UiStyle.svg("info", 24)
+	_info.toggle_mode = true
+	_info.focus_mode = FOCUS_NONE
+	_info.tooltip_text = "Show or hide the controls"
+	_info.add_theme_stylebox_override("normal", _glass(6))
+	_info.add_theme_stylebox_override("hover", _glass(6))
+	_info.add_theme_stylebox_override("pressed", _glass(6))
+	_info.toggled.connect(func(on: bool):
+		_help.visible = on
+		_info.icon = UiStyle.svg("info", 24, GOLD if on else Color.WHITE)
+		place())
+	add_child(_info)
 	_banner.add_theme_stylebox_override("panel", UiStyle.box(Color(0.12, 0.1, 0.04, 0.92), 10))
 	_banner.mouse_filter = MOUSE_FILTER_IGNORE
 	_banner_line.add_theme_constant_override("separation", 0)
@@ -380,8 +395,8 @@ func refresh(state: GameState) -> void:
 
 
 ## Gold top right; the drawer middle left; the minimap bottom right with the clock under
-## it; the toolbar bottom centre; the help text bottom left (above the toolbar if they'd
-## overlap). Call after the map or text changes.
+## it; the toolbar bottom centre; the info button bottom left with the help text above it
+## (above the toolbar if they'd overlap). Call after the map or text changes.
 func place() -> void:
 	_money_panel.reset_size()
 	_money_panel.position = Vector2(size.x - _money_panel.size.x - 16, 16)
@@ -394,7 +409,9 @@ func place() -> void:
 	minimap.position = Vector2(_clock_panel.position.x, _clock_panel.position.y - minimap.size.y - 6)
 	_toolbar.reset_size()
 	_toolbar.position = Vector2((size.x - _toolbar.size.x) / 2.0, size.y - _toolbar.size.y - 16)
+	_info.reset_size()
+	_info.position = Vector2(16, size.y - _info.size.y - 16)
 	_help.reset_size()
-	_help.position = Vector2(12, size.y - _help.size.y - 12)
+	_help.position = Vector2(16, _info.position.y - _help.size.y - 8)
 	if _help.position.x + _help.size.x > _toolbar.position.x:
-		_help.position.y = _toolbar.position.y - _help.size.y - 10
+		_help.position.y = minf(_help.position.y, _toolbar.position.y - _help.size.y - 10)
