@@ -135,7 +135,8 @@ Where the project stands, for picking up in a new session or on another machine.
 - **Playtest round 11 (2026-11-12) folded in:** sessions 34 (gods and temples, tower names, one card per building, no noon on day 1, shop icon, liberation window) and 35 (your name, enemy forward towns, tactics per squad). The Gods of Perinea are in `data/gods.json`.
 - **M4 session 34 done (session 063):** temples belong to the Gods of Perinea (named for them, lore in their window), magical tower names, one card per building, no noon on day 1, a hand-with-coins shop icon, and a liberation window that fits the card. See `DECISIONS.md` session 063.
 - **M4 session 35 done (session 064):** your name on the Game summary goes to the Opinion Leader; the enemy starts holding 1–2 central towns with field squads it already had; each squad keeps its last battle tactic. Between sessions: the map's key help behind an info button, and fonts (Sen for text, "Rogue Empire" in Fleur De Leah on the title). See `DECISIONS.md` sessions 063–064.
-- **Next: M5, audio** (planned 2026-11-12, `ROADMAP.md` M5, SPEC §24), starting with session 1: a MIDI draft of the day theme and a few stingers, and the MIDI-to-OGG render tool; then decide the process with the user. The M4 milestone playtest isn't a gate (the user playtests often).
+- **M5 session 1 done (session 065):** MIDI drafts and the render pipeline (FluidSynth and GeneralUser GS in git-ignored `tools/audio_bin/`); day and night map themes, town riff, hidden item sound and victory riff approved and rendered; the user's voice lines in `data/audio/voice/`. See `DECISIONS.md` session 065.
+- **Next: M5 session 2, the audio system** (audio options, events to cues, clicks). The M4 milestone playtest isn't a gate (the user playtests often).
 - **M4 sessions 15–20 planned (playtest round 7, 2026-11-10)** in `ROADMAP.md`: battle and rules fixes (cards truly at once, enemy makeup after a fight, items equippable anywhere, fewer neutrals, arrival log line); map generation (100% land, reef-like shallows around islands); HUD layout (clock under the minimap, gold coin, reputation meter, squad drawer, smaller rounded toolbar with icons); squad status icons and flag-free tokens with destination flags; debug panel overhaul; save game (3 slots, prompt to save on quit). The user's answers are in the ROADMAP rows.
 - **M4 milestone check: the first real playtest**, after session 33.
 - **Unit portraits:** the user's large unit images (21 so far) are committed in `data/unit_art/` (not used in the game yet). Building them into the unit detail view is a future task in `ROADMAP.md`, waiting on more of the set.
@@ -147,7 +148,7 @@ Where the project stands, for picking up in a new session or on another machine.
 
 ## How the user works
 
-- **One git branch per session,** named `session-NNN` (next: `session-065`), cut from `main`.
+- **One git branch per session,** named `session-NNN` (next: `session-066`), cut from `main`.
 - **Commit locally only:**
   - Never push or merge; the user merges and pushes, then says "continue".
   - Commit messages end with a `Co-Authored-By:` line naming whatever Claude model is doing the session (the harness's own attribution instructions say exactly what to write).
