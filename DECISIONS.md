@@ -761,6 +761,7 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **Shop icon:** Lucide hand-coins in the squad menu.
 - **Liberation window:** with no conscripts (and no card offer), the window loses its 420 px minimum and centres the card and View all cards, so it fits the card. A long tower name in the title can still make it wider.
 - **Saves from session 061** still load: their buildings come from the save, so their towers and temples just stay unnamed.
+- **Fonts (user's trial picks, may change):** Sen (Google Fonts, OFL) is the default font for everything, set as the project's `gui/theme/custom_font`, which also covers text drawn with `ThemeDB.fallback_font`. The title and start screens show the name **Rogue Empire** in Fleur De Leah (OFL), via `UiStyle.game_name()`. Font files and their OFL licence texts are in `ui/fonts/`. The project's own name (`config/name`, still "Landwar") is unchanged: changing it moves the user:// folder, which would lose saves and options.
 - **Info button (user's request):** the key help at the map's bottom left is hidden behind a round Lucide "info" button there; clicking it shows the help above the button (icon gold while it's open). Off at the start of every game, not remembered.
   - 389 tests passing.
 

@@ -19,8 +19,7 @@ func setup(data: GameData) -> void:
 	col.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	col.alignment = BoxContainer.ALIGNMENT_CENTER
 	add_child(col)
-	var title := UiStyle.label("LANDWAR", 120, Color("#f4ead2"))
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var title := UiStyle.game_name(180)
 	title.add_theme_constant_override("outline_size", 12)
 	title.add_theme_color_override("font_outline_color", Color(0.05, 0.05, 0.08))
 	col.add_child(title)

@@ -21,8 +21,7 @@ func setup(has_save := false) -> void:
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 14)
 	center.add_child(col)
-	var title := UiStyle.label("LANDWAR", 64, Color("#f4ead2"))
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var title := UiStyle.game_name(110)
 	col.add_child(title)
 	var go := UiStyle.button("Continue", 300, true)
 	go.pressed.connect(func(): continue_game.emit())

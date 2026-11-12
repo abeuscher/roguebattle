@@ -65,6 +65,14 @@ static func title_row(title: Control, action: Callable, tip := "Close (Esc)") ->
 	return row
 
 
+## The game's name in the title font (Fleur De Leah, trial pick 2026-11-12), centred.
+static func game_name(font_size: int) -> Label:
+	var l := label("Rogue Empire", font_size, Color("#f4ead2"))
+	l.add_theme_font_override("font", load("res://ui/fonts/FleurDeLeah-Regular.ttf"))
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	return l
+
+
 static func label(text: String, font_size := 16, color := Color.WHITE) -> Label:
 	var l := Label.new()
 	l.text = text
