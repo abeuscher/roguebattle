@@ -18,7 +18,7 @@ TRUMPET, TROMBONE, FRENCH_HORN, BRASS = 56, 57, 60, 61
 STRINGS, PIZZICATO, TIMPANI = 48, 45, 47
 GLOCKENSPIEL, TUBULAR_BELLS, BANJO, ACOUSTIC_BASS = 9, 14, 105, 32
 PIANO, SLAP_BASS, JAZZ_GUITAR, FRETLESS_BASS = 0, 36, 26, 35
-KICK, SIDE_STICK, SNARE, HAT, OPEN_HAT, CRASH = 36, 37, 38, 42, 46, 49
+KICK, SIDE_STICK, SNARE, HAT, OPEN_HAT, CRASH, WOOD_BLOCK = 36, 37, 38, 42, 46, 49, 76
 DRUMS = 9  # the drum channel
 
 NOTE = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}
@@ -324,6 +324,13 @@ def hidden_item_sound() -> tuple:
     return [glock, trumpet], 2
 
 
+def click() -> tuple:
+    """The button click (M5 session 2): one short, high wood block."""
+    drums = Track("Wood Block", DRUMS, None)
+    drums.note(0, .1, WOOD_BLOCK, 90)
+    return [drums], .25
+
+
 if __name__ == "__main__":
     tracks, beats = day_theme()
     write("map_day", 112, tracks, beats)
@@ -331,3 +338,4 @@ if __name__ == "__main__":
     write("victory_riff", 150, *victory_riff())
     write("town_riff", 130, *town_riff())
     write("hidden_item", 140, *hidden_item_sound())
+    write("click", 120, *click())

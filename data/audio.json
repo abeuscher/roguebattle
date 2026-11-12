@@ -1,0 +1,34 @@
+{
+ "_note": "Sound (SPEC §24, ROADMAP M5). cues: each sound's file (\"\" = none yet: it plays nothing), its bus, and an optional db offset. events: the game moments that play cues, each entry a cue id or {\"cue\", \"after\" seconds}. The cue list being made is data/audio-asset-list.csv; music comes from tools/midi_draft.py and tools/render_audio.py.",
+ "buses": ["Music", "Effects", "Voice"],
+ "duck": {"db": -9, "seconds": 2.0, "_note": "Music dips this much while a stinger or voice line plays, for about this long, then comes back."},
+ "cues": {
+  "map_day": {"file": "res://data/audio/music/map_day.wav", "bus": "Music"},
+  "map_night": {"file": "res://data/audio/music/map_night.wav", "bus": "Music"},
+  "victory_riff": {"file": "res://data/audio/stingers/victory_riff.wav", "bus": "Effects", "duck": true},
+  "loss_riff": {"file": "", "bus": "Effects", "duck": true},
+  "town_riff": {"file": "res://data/audio/stingers/town_riff.wav", "bus": "Effects", "duck": true},
+  "tower_riff": {"file": "", "bus": "Effects", "duck": true},
+  "temple_riff": {"file": "", "bus": "Effects", "duck": true},
+  "building_lost": {"file": "", "bus": "Effects", "duck": true},
+  "hidden_item": {"file": "res://data/audio/stingers/hidden_item.wav", "bus": "Effects", "duck": true},
+  "fight": {"file": "res://data/audio/voice/fight.wav", "bus": "Voice", "duck": true},
+  "victory": {"file": "res://data/audio/voice/victory.wav", "bus": "Voice", "duck": true},
+  "defeat": {"file": "res://data/audio/voice/defeat.wav", "bus": "Voice", "duck": true},
+  "hidden_location": {"file": "res://data/audio/voice/hidden_item.wav", "bus": "Voice", "duck": true},
+  "click": {"file": "res://data/audio/effects/click.wav", "bus": "Effects", "db": -10}
+ },
+ "events": {
+  "_note": "taken_<type>: a town, tower or temple taken by either side when it wasn't yours; building_lost: the enemy takes one of yours.",
+  "click": ["click"],
+  "battle_fight": ["fight"],
+  "battle_won": ["victory_riff", {"cue": "victory", "after": 0.5}],
+  "battle_lost": ["loss_riff", {"cue": "defeat", "after": 0.5}],
+  "site_found": ["hidden_location"],
+  "site_claimed": ["hidden_item"],
+  "taken_town": ["town_riff"],
+  "taken_tower": ["tower_riff"],
+  "taken_temple": ["temple_riff"],
+  "building_lost": ["building_lost"]
+ }
+}

@@ -28,6 +28,7 @@ var state: GameState
 var battle: Battle
 var replay := false  # the debug panel's replay (§19.2): copies of the squads, nothing on the map changes
 var _waiting := false  # both squads shown; nothing happens until Fight (an option, on by default)
+var _fight_called := false  # "Fight!" has played
 var _play_btn: Button  # Fight, Pause or Play, at the field's bottom left
 var _wait_box: CheckBox  # next to Fight: stop waiting for it in later battles
 var _action := UiStyle.label("", 16)  # the latest action, on the field while the log is hidden
@@ -453,6 +454,9 @@ func _toggle_pause() -> void:
 func _process(delta: float) -> void:
 	if battle == null or _done or _paused or _waiting or _picker:
 		return
+	if not _fight_called:  # the battle starts playing: "Fight!"
+		_fight_called = true
+		Sound.event("battle_fight")
 	_wait -= delta * float(_view["speeds"][_speed])
 	if _wait > 0.0:
 		return
@@ -637,6 +641,7 @@ func _finish() -> void:
 	var player := battle.sides[0]
 	var enemy := battle.sides[1]
 	var result := GameState.battle_result(out)
+	Sound.event("battle_" + result)  # won or lost have sounds; a retreat or a draw doesn't
 	_panel.hide()
 	var center := CenterContainer.new()
 	center.set_anchors_and_offsets_preset(PRESET_FULL_RECT)

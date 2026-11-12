@@ -1,6 +1,11 @@
 {
- "_note": "Player options (the Options screen), saved per player in user://options.json. Each is an on/off switch with its default, except \"remembered\" ones: values the game keeps for the player (not shown on the Options screen).",
+ "_note": "Player options (the Options screen), saved per player in user://options.json. Each is an on/off switch with its default (\"type\": \"volume\" ones are 0-100 sliders, the game's sound), except \"remembered\" ones: values the game keeps for the player (not shown on the Options screen).",
  "options": {
+  "master_volume": {"label": "Master volume", "type": "volume", "default": 80},
+  "music_volume": {"label": "Music", "type": "volume", "default": 70},
+  "effects_volume": {"label": "Effects", "type": "volume", "default": 80},
+  "voice_volume": {"label": "Voice", "type": "volume", "default": 100},
+  "mute": {"label": "Mute all sound", "default": false},
   "battle_wait_for_fight": {
    "label": "Show both squads before a battle and wait for Fight",
    "tip": "Off: a battle starts playing as soon as it opens.",

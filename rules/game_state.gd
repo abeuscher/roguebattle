@@ -29,6 +29,7 @@ var revealed := {}  # building index -> true for hidden sites and lairs a squad 
 var _contact_until := {}  # "player id:enemy id" -> tick before which the pair won't fight again
 var _moved := {}  # squads that entered a new hex this tick
 var _building_at := {}  # hex -> index in map.buildings
+var captures: Array[Dictionary] = []  # {type, side, was, hex}: buildings that changed hands, oldest first, for the scenes' sounds
 var notices: Array[String] = []  # short news for the HUD banner, oldest first (a squad of yours stopped)
 var noon_report := ""  # the last noon's ledger in one line, for the HUD banner
 var ledger: Array = []  # [what, gold +/-] for every gold change since the last noon
@@ -277,6 +278,8 @@ func _capture() -> void:
 			s.capture_ticks = 0.0
 			var was: String = b["owner"]
 			b["owner"] = s.side
+			if b["type"] not in ["player_base", "enemy_base"]:
+				captures.append({"type": b["type"], "side": s.side, "was": was, "hex": b["hex"]})
 			var what: String = data.buildings[b["type"]]["name"].to_lower()
 			var rewards: bool = data.buildings[b["type"]].get("liberation", true)
 			if s.side == "player" and not rewards:  # a temple: just yours (session 059)

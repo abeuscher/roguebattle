@@ -1,7 +1,7 @@
 """Render the MIDI drafts to audio the game plays (ROADMAP M5 session 1).
 
 data/audio/midi/<cue>.mid -> data/audio/music/<cue>.wav (loops) or
-data/audio/stingers/<cue>.wav (one-shots), through FluidSynth and a General MIDI
+data/audio/stingers/<cue>.wav or data/audio/effects/<cue>.wav (one-shots), through FluidSynth and a General MIDI
 SoundFont. Godot can't play MIDI, so the .mid files are the source and these WAVs are
 what ships (Godot compresses them on import).
 
@@ -34,11 +34,12 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 BIN = os.path.join(ROOT, "tools", "audio_bin")
 MIDI = os.path.join(ROOT, "data", "audio", "midi")
 LOOPS = {"map_day", "map_night", "army", "battle"}  # music cues; the rest are one-shots
+EFFECTS = {"click"}  # one-shots that go to data/audio/effects/ (the rest to stingers/)
 RATE = 44100
 PEAK = 10 ** (-1.0 / 20)  # -1 dBFS
 LOUDNESS = 10 ** (-18.5 / 20)  # target RMS (the day theme's level at its peak limit)
 TAIL_SECONDS = 4.0  # rendered past a cue's end to catch its ring-out
-TAIL_LIMIT = {"victory_riff": 0.8}  # one-shots whose ring-out is cut short: seconds kept past the cue's end
+TAIL_LIMIT = {"victory_riff": 0.8, "click": 0.08}  # one-shots whose ring-out is cut short: seconds kept past the cue's end
 
 
 def tool_paths() -> tuple:
@@ -163,7 +164,7 @@ if __name__ == "__main__":
         seconds = cue_seconds(mid)
         x = render(fs, sf, mid)
         loop = cue in LOOPS
-        out = os.path.join(ROOT, "data", "audio", "music" if loop else "stingers", cue + ".wav")
+        out = os.path.join(ROOT, "data", "audio", "music" if loop else "effects" if cue in EFFECTS else "stingers", cue + ".wav")
         y = make_loop(x, seconds) if loop else make_one_shot(x, seconds, TAIL_LIMIT.get(cue))
         save(out, y)
         if loop:

@@ -215,7 +215,17 @@ The enemy fields half as many squads as the map has towns (at least 3; 8 on the 
 
 ## Options
 
-Options on the Start screen and in the in-game menu (Esc) hold your own settings, saved between sessions. All on by default: whether a battle shows both squads and waits for Fight (a checkbox next to Fight turns it off too), whether switching to another window pauses the game (the battle, if one is playing, otherwise the map; you resume it yourself), the noon ledger, the liberation message, and player tips. The game also remembers the battle speed you last picked, and which tips you've seen.
+Options on the Start screen and in the in-game menu (Esc) hold your own settings, saved between sessions. **Sound** comes first: a master volume (80 to start), Music (70), Effects (80) and Voice (100) sliders, and Mute all sound; changes are heard at once. The switches below are all on by default: whether a battle shows both squads and waits for Fight (a checkbox next to Fight turns it off too), whether switching to another window pauses the game (the battle, if one is playing, otherwise the map; you resume it yourself), the noon ledger, the liberation message, and player tips. The game also remembers the battle speed you last picked, and which tips you've seen.
+
+## Sound
+
+Sound is coming in (ROADMAP M5). In so far:
+
+- **A click** on every button.
+- **Battles:** "Fight!" as a battle starts playing; on a win, the victory fanfare and "Victory!"; on a loss, "Defeat!". A retreat or a draw has no sound.
+- **Hidden sites:** "Hidden Location!" when one comes into view; a short glockenspiel-and-trumpet sound when you claim a treasure, card cache or rare recruit.
+- **Buildings changing hands:** taking a town plays a banjo riff, whoever takes it, as long as it wasn't yours; the enemy taking one of yours will have its own sound. (Tower and temple riffs, the loss riff and the "building lost" sound are still being made, so those moments are silent for now.)
+- **Music** dips while a fanfare, riff or voice line plays. The map music itself (day and night themes) comes next.
 
 ## Player tips
 

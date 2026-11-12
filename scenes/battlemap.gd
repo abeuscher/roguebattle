@@ -62,6 +62,8 @@ var _firing := false  # choosing a ranged-attack target for _selected
 var _portaling := false  # choosing a glowing temple for _selected to step to (user's notes, 2026-11-11)
 var _glow: PortalGlow
 var _shown_sites := {}  # building index -> true once its icon is revealed
+var _claimed_heard := {}  # building index -> true once its claim has played its sound
+var _sites_known := false  # the first pass (a new or loaded map) takes what's there without sounds
 var _points := PackedInt32Array()
 var _planned := PackedInt32Array()  # route through _points
 var _chooser: PopupMenu  # the pick-one menu when several things share the clicked spot
@@ -177,6 +179,9 @@ func _process(delta: float) -> void:
 		_open_recruit_popup()
 	if not state.pending_rare.is_empty() and _free():
 		_open_rare_popup()
+	for c in state.captures:  # buildings that changed hands: their sounds (SPEC §24)
+		Sound.event(Sound.capture_event(c))
+	state.captures.clear()
 	_pump_liberations()
 	_pump_losses()
 	if not state.card_offer.is_empty() and _free():
@@ -275,13 +280,20 @@ func _update_tokens() -> void:
 		if not _shown_sites.has(i):
 			_shown_sites[i] = true
 			view.reveal(state.map.buildings[i]["hex"])
+			if _sites_known and state.map.buildings[i]["hidden"]:
+				Sound.event("site_found")
 	for i in state.map.buildings.size():
 		var b: Dictionary = state.map.buildings[i]
 		if b.get("claimed", false):
 			view.remove_site(b["hex"])
+			if not _claimed_heard.has(i):
+				_claimed_heard[i] = true
+				if _sites_known:
+					Sound.event("site_claimed")
 		elif BuildingIcons.TOPS.has(b["type"]):
 			var flag: Color = {"player": SquadToken.PLAYER, "enemy": ENEMY}.get(b["owner"], Color.TRANSPARENT)
 			view.update_building(i, b["hex"], not b["away"], flag, state.capture_progress(b), b["type"] == "town" and b.get("shop", false))
+	_sites_known = true
 	var stacks := {}  # hex -> squads standing there, in id order
 	for s in state.squads:
 		if not s.is_moving():

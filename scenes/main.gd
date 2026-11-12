@@ -22,6 +22,7 @@ func _ready() -> void:
 	add_child(_screens)
 	config = _load_settings()
 	options = PlayerOptions.load_values(data)
+	Sound.start(self, data.audio, options)
 	show_title()
 
 
