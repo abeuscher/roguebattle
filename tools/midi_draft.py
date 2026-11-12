@@ -311,12 +311,13 @@ def town_riff() -> tuple:
 
 
 def hidden_item_sound() -> tuple:
-    """1 bar at 140: glockenspiel running up, then tubular bells ringing in sequence."""
+    """Half a bar at 140 (user, 2026-11-12: half the first draft's length, the bells'
+    three notes on trumpet): a fast glockenspiel run up, then the trumpet answers."""
     glock = Track("Glockenspiel", 0, GLOCKENSPIEL)
-    bells = Track("Tubular Bells", 1, TUBULAR_BELLS)
-    glock.line(0, [(p, .25) for p in ["D5", "F#5", "A5", "D6", "E6", "F#6", "A6"]] + [("D7", 2.25)], 96)
-    bells.line(1.75, [("A5", .5), ("F#5", .5), ("D6", 1.25)], 88)
-    return [glock, bells], 4
+    trumpet = Track("Trumpet", 1, TRUMPET)
+    glock.line(0, [(p, .125) for p in ["D5", "F#5", "A5", "D6", "E6", "F#6", "A6"]] + [("D7", 1.125)], 96)
+    trumpet.line(.875, [("A4", .25), ("F#4", .25), ("D5", .625)], 96)
+    return [glock, trumpet], 2
 
 
 if __name__ == "__main__":
