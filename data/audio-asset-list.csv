@@ -1,0 +1,19 @@
+﻿Cue,Category,Playback,Bars,BPM (guess),Length (sec),Direction,Instruments (GM),Status
+"""Victory!""",Voice,One-shot,,,,Spoken line (Al records),,To do
+"""Defeat!""",Voice,One-shot,,,,Spoken line (Al records),,To do
+"""Fight!""",Voice,One-shot,,,,Spoken line (Al records),,To do
+"""Hidden Location!""",Voice,One-shot,,,,Spoken line (Al records),,To do
+"""Town Liberated""",Voice,One-shot,,,,Spoken line (Al records),,To do
+"""Temple Liberated""",Voice,One-shot,,,,Spoken line (Al records),,To do
+"""Tower Liberated""",Voice,One-shot,,,,Spoken line (Al records),,To do
+Main map theme (day),Music,Loop,32,112,68.6,"Sunny, bright, fanfare feel. Holds the main motif reused across the score.","Trumpet, French Horn, String Ensemble, Pizzicato Strings, light snare",To do
+Main map theme (night),Music,Loop,32,112,68.6,Variant of the day theme with spookier instrumentation. Same BPM as day so the two can crossfade.,"Harpsichord, Choir Aahs, Goblins pad, Contrabass",To do
+Edit units / army theme,Music,Loop,16,120,32.0,Snare-based military bit. 120 is standard march tempo.,"Snare (drum channel), Brass Section, Piccolo",To do
+Battle theme (+ terrain variants),Music,Loop,16,160,24.0,"Percussive, bass-heavy, fast. Same theme and chords per terrain, with small instrument swaps. Terrain list TBD.","Synth Bass / Slap Bass, Taiko Drum, drum kit, Brass Section",To do
+Victory riff,Stinger,One-shot,1,120,2.0,Trumpet fanfare,"Trumpet, Timpani",To do
+Loss riff,Stinger,One-shot,1,90,2.7,"Trumpet fail noise (flatulent). Needs pitch bend; may be easier as a recorded SFX.",Muted Trumpet or Trombone,To do
+Liberation theme,Stinger,One-shot,2,80,6.0,Orchestral swell,"String Ensemble, Brass Section, Timpani",To do
+Temple riff,Stinger,One-shot,2,90,5.3,Pan flute type sound,Pan Flute,To do
+Town riff,Stinger,One-shot,2,130,3.7,Banjo / guitar boing boing,Banjo or Steel Guitar,To do
+Tower riff,Stinger,One-shot,2,76,6.3,"Organ riff, Dracula style",Church Organ,To do
+Hidden item sound,Stinger,One-shot,1,140,1.7,"Surprise music, bells ringing in sequence","Glockenspiel, Tubular Bells or Tinkle Bell",To do

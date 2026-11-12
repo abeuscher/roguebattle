@@ -26,7 +26,9 @@ Where this spec and the spreadsheet disagree, this spec wins (see §21).
 
 **In scope:** one complete map, played start to finish (map 1), with the configurator, battlemap, Edit Units, battles, buildings, economy, cards, tech, neutrals, recruiting, enemy AI, log and debug tools.
 
-**Out of scope for now:** maps 2 and 3, the between-map army turn, the campaign layer, audio, a full tutorial (player tips are in; see §19.4), difficulty settings, magic items, final art.
+**Next after map 1:** audio (§24; ROADMAP M5).
+
+**Out of scope for now:** maps 2 and 3, the between-map army turn, the campaign layer, a full tutorial (player tips are in; see §19.4), difficulty settings, magic items, final art.
 
 ## 3. Terminology
 
@@ -746,5 +748,18 @@ The player tests only at milestones. Between them, the developer checks its own 
 | M2: Battle | Squads, travel type, enemy squads on the map, contact and ranged battles, battle view, full battle log, headless sim | Skim battle logs; watch a few battles |
 | M3: Army | Edit Units, deployment, buildings, liberation, economy, shops, cards, tech, reputation, progression | Short session |
 | M4: Map 1 | Full map 1: 6 squads, enemy AI roles, neutrals and recruiting, hidden mechanics, victory and defeat, debug panel complete | First real playtest |
+| M5: Audio | Music (map day and night, army, battle by terrain, title, end of map), stingers, voice lines, a few effects, volume options | A play session with sound |
 
 After each real playtest the player notes: what felt good, what dragged, what confused, and one change.
+
+## 24. Audio
+
+Added 2026-11-12 (user). The cue list is `data/audio-asset-list.csv`.
+
+- **Music** loops: the main map theme by day (bright, a fanfare feel, holding the score's main motif) and by night (the same theme, spookier instruments, same tempo so they crossfade at dawn and dusk); the Edit Units army theme (a snare march); the battle theme (fast, percussive, bass-heavy; the same theme with small instrument swaps per terrain). Also a title theme and end-of-map music.
+- **Stingers** (one-shots): victory and loss riffs after a battle; a liberation swell; a riff per building type taken (temple: pan flute; town: banjo; tower: organ); a hidden item sound. Music dips under them.
+- **Voice** (one-shots, recorded by the user): "Fight!", "Victory!", "Defeat!", "Hidden Location!", and a line for a town, tower or temple taken.
+- **Effects:** a few, minimal: a click for buttons and the like (to be listed).
+- **Volume:** Music, Effects and Voice each have a volume and there's a mute, in Options.
+- **Making it:** music is written as General MIDI and rendered to audio files with a General MIDI soundfont; the game plays the rendered files. Which game event plays which cue lives in data.
+
