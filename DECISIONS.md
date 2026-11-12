@@ -800,3 +800,9 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **No map music yet:** the themes are wired as cues but don't play; session 3 does music (day and night crossfading, and the rest).
   - 395 tests passing.
 
+
+## Session 066 (2026-11-12): the user's tarot card art
+
+- **Art:** the user's pictures, `data/card_art/<card id>.jpg` (752×1408), replace the line drawings. Each has the card's name on its banner and a blank parchment panel below for the text. 20 of 24 so far; Narwhal, Panther, Rhino and Whale still to come.
+- **Card face:** `CardFace.make` shows the picture at 210×393 with the effect text (14 px, dark ink) written on the panel, a ×N badge in the top corner for duplicates, and the button under the card. Where the text goes is `art_text_box` in `cards.json`, as fractions of the picture. The pictures import with mipmaps so they stay smooth at a quarter of their size.
+- **Stand-ins:** a card without a picture shows the old face (line drawing, name, text), at the same size.

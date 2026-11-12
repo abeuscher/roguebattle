@@ -1,17 +1,63 @@
 class_name CardFace
-## A card drawn as a card (SPEC §13): the animal's line drawing on parchment at the
-## top, its name, then what it does at the bottom, with an optional button (or a
-## blank space of the same height) under that.
-## Drawings are data/card_art/<card id>.svg; a card without one just shows its text.
+## A card drawn as a card (SPEC §13): the card's picture (data/card_art/<card id>.jpg,
+## its name already on the banner) with what it does written on the blank parchment
+## under the name, and an optional button (or a blank space of the same height) under
+## the card. A card with no picture yet gets a stand-in: its old line drawing
+## (<card id>.svg) on parchment at the top, its name, then its text.
 
-const SIZE := Vector2(210, 360)
+const SIZE := Vector2(210, 393)  # the picture's 752x1408, scaled to 210 wide
 const ART_DIR := "res://data/card_art/"
 const PARCHMENT := Color("#efe3c6")
+const INK := Color("#1f140a")
 
 static var _art := {}  # card id -> Texture2D, or null when there's no drawing
 
 
-static func make(data: GameData, id: String, count := 1, button: Control = null) -> PanelContainer:
+static func make(data: GameData, id: String, count := 1, button: Control = null) -> Control:
+	var path := ART_DIR + id + ".jpg"
+	if not ResourceLoader.exists(path):
+		return _stand_in(data, id, count, button)
+	var c: Dictionary = data.cards["cards"][id]
+	var tile := VBoxContainer.new()
+	tile.add_theme_constant_override("separation", 6)
+	var pic := TextureRect.new()
+	pic.texture = load(path)
+	pic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	pic.stretch_mode = TextureRect.STRETCH_SCALE
+	pic.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS  # smooth at a quarter of its size
+	pic.custom_minimum_size = SIZE
+	pic.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	tile.add_child(pic)
+	var box: Array = data.cards["art_text_box"]["rect"]
+	var text := UiStyle.label(c["text"], 14, INK)
+	text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	text.set_anchors_preset(Control.PRESET_FULL_RECT)
+	text.anchor_left = box[0]
+	text.anchor_top = box[1]
+	text.anchor_right = box[2]
+	text.anchor_bottom = box[3]
+	pic.add_child(text)
+	if count > 1:
+		var badge := PanelContainer.new()
+		var look := UiStyle.box(Color("#2a2433"), 4)
+		look.border_color = UiStyle.ACCENT
+		look.set_border_width_all(2)
+		look.set_corner_radius_all(8)
+		badge.add_theme_stylebox_override("panel", look)
+		badge.add_child(UiStyle.label("×%d" % count, 18, UiStyle.ACCENT))
+		badge.position = Vector2(SIZE.x - 50, 6)
+		pic.add_child(badge)
+	if button:
+		button.custom_minimum_size.x = SIZE.x - 22
+		button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		tile.add_child(button)
+	return tile
+
+
+## The old face, for a card with no picture yet.
+static func _stand_in(data: GameData, id: String, count: int, button: Control) -> Control:
 	var c: Dictionary = data.cards["cards"][id]
 	var tile := PanelContainer.new()
 	var look := UiStyle.box(Color("#2a2433"), 10)
