@@ -271,7 +271,10 @@ func _update_tokens() -> void:
 			var stack: Array = stacks[s.hex]
 			at.x += (stack.find(s) - (stack.size() - 1) / 2.0) * STACK_SPREAD
 		else:
-			var t := clampf((s.progress + state.clock.fraction()) / state.step_ticks(s, s.path[0]), 0.0, 1.0)
+			# A squad pausing on its route (an enemy that just won) doesn't advance, so it mustn't
+			# slide ahead within the tick either: it would snap back every tick and seem to vibrate.
+			var between := 0.0 if state.clock.tick < s.hold_until else state.clock.fraction()
+			var t := clampf((s.progress + between) / state.step_ticks(s, s.path[0]), 0.0, 1.0)
 			at = at.lerp(MapView.hex_center(state.map, s.path[0]), t)
 		token.position = at
 		token.selected = s == _selected
