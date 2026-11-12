@@ -338,8 +338,12 @@ func refresh(state: GameState) -> void:
 	_speed.visible = not state.clock.paused and not state.clock.is_running()
 	_speed.text = "Paused"
 	_speed.add_theme_color_override("font_color", Color("#ffe08a"))
-	_gold.text = "%d   +%d / −%d a day%s" % [state.gold, state.income(), state.army_upkeep(),
+	var money := "%d   +%d / −%d a day%s" % [state.gold, state.income(), state.army_upkeep(),
 			"   In debt %d/%d" % [state.debt_noons, int(state.data.rules["debt"]["defeat_noons"])] if state.in_debt() else ""]
+	if _gold.text != money:  # the panel's width follows the text, so keep its right edge in place
+		_gold.text = money
+		_money_panel.reset_size()
+		_money_panel.position.x = size.x - _money_panel.size.x - 16
 	_gold.add_theme_color_override("font_color", Color("#ff6b5a") if state.in_debt() else GOLD)
 	for b in _drawer_rows.get_children():
 		var s: Squad = b.get_meta("squad")

@@ -205,6 +205,14 @@ The enemy fields half as many squads as the map has towns (at least 3; 8 on the 
 
 ---
 
+## Saving and loading
+
+- **Save game** in the Esc menu opens 3 slots, each showing its day and time, gold, squads on the map and when it was saved (or "Empty"). Saving over a slot in use asks first. There's no autosave.
+- Not during a battle or an encounter (the button is greyed out, and says why), and not once the map is over.
+- **Return to title** and **Quit** ask "Save your game before leaving?": Save first (pick a slot, then leave), Leave without saving, or Cancel.
+- **The start screen** shows **Continue** (loads the most recent save) and **Load game** (pick a slot) once any slot is in use. A loaded game opens paused, exactly as it was saved, and plays on just as it would have.
+- A save from an older version of the game, or a damaged file, is refused with a message rather than loaded.
+
 ## Options
 
 Options on the Start screen and in the in-game menu (Esc) hold your own settings, saved between sessions. All on by default: whether a battle shows both squads and waits for Fight (a checkbox next to Fight turns it off too), whether switching to another window pauses the game (the battle, if one is playing, otherwise the map; you resume it yourself), the noon ledger, and the liberation message. The game also remembers the battle speed you last picked.

@@ -2,13 +2,15 @@ class_name ConfirmDialog
 extends Control
 ## A yes/no question over the screen, e.g. "Deploy Noal (Archer) for 60 gold?".
 ## A modal: 50% dark overlay. Enter confirms, Esc cancels. With no cancel text it's a
-## plain notice with one button (either key closes it).
+## plain notice with one button (either key closes it). An alt text adds a middle
+## button (e.g. "Leave without saving").
 
 signal confirmed
 signal cancelled
+signal alt  # the optional middle button
 
 
-func setup(question: String, ok_text: String, cancel_text := "Cancel") -> void:
+func setup(question: String, ok_text: String, cancel_text := "Cancel", alt_text := "") -> void:
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	var shade := ColorRect.new()
 	shade.color = Color(0, 0, 0, 0.5)
@@ -37,6 +39,10 @@ func setup(question: String, ok_text: String, cancel_text := "Cancel") -> void:
 		var no := UiStyle.button(cancel_text, 160)
 		no.pressed.connect(func(): cancelled.emit())
 		row.add_child(no)
+	if alt_text != "":
+		var other := UiStyle.button(alt_text, 220)
+		other.pressed.connect(func(): alt.emit())
+		row.add_child(other)
 	var yes := UiStyle.button(ok_text, 180, true)
 	yes.pressed.connect(func(): confirmed.emit())
 	row.add_child(yes)

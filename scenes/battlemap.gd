@@ -23,6 +23,7 @@ const TEST_TRAVEL := ["plains", "forest", "mountain", "swamp", "snow", "desert",
 var data: GameData
 var options := {}  # the player's options (PlayerOptions), set by main
 var log: GameLog
+var config: GameConfig  # what the map was made from, kept for saving
 var state: GameState
 var view := MapView.new()
 var camera := MapCamera.new()
@@ -72,9 +73,33 @@ var _info := ""
 
 ## Starts a map from the configurator's settings. `map` is the configurator's
 ## preview, already built from the same settings; without it the map is generated here.
-func start(game_data: GameData, game_log: GameLog, config: GameConfig, map: MapData = null) -> void:
+func start(game_data: GameData, game_log: GameLog, game_config: GameConfig, map: MapData = null) -> void:
+	_setup(game_data, game_log, game_config)
+	var started := Time.get_ticks_msec()
+	if map == null:
+		map = MapGen.generate(data, config.seed, config.map_overrides())
+	state = GameState.new(data, map, log, config.game_settings())
+	state.setup_army(_wide_roster_count())
+	state.place_enemies()
+	state.place_neutrals()
+	_show_state()
+	if state.single_map():  # build the squads from the pool first (user's design, 2026-11-10)
+		_open_edit.call_deferred()
+	print("Battlemap ready in %d ms" % (Time.get_ticks_msec() - started))
+
+
+## Picks up a saved game (SaveGame.read), paused, as it was.
+func start_loaded(game_data: GameData, game_log: GameLog, game_config: GameConfig, loaded: GameState) -> void:
+	_setup(game_data, game_log, game_config)
+	state = loaded
+	_show_state()
+	hud.show_banner("Game loaded: day %d, %s." % [state.clock.day(), SaveGame.summary_of(state)["time"]], 4.0)
+
+
+func _setup(game_data: GameData, game_log: GameLog, game_config: GameConfig) -> void:
 	data = game_data
 	log = game_log
+	config = game_config
 	for node in [view, camera, night, _ui]:
 		add_child(node)
 	_ui.add_child(hud)
@@ -104,16 +129,14 @@ func start(game_data: GameData, game_log: GameLog, config: GameConfig, map: MapD
 		if _free():
 			_open_tech())
 	get_viewport().size_changed.connect(camera.fit)
-	var started := Time.get_ticks_msec()
-	if map == null:
-		map = MapGen.generate(data, config.seed, config.map_overrides())
-	_info = "Seed %d  ·  %s  ·  %dx%d  ·  share code %s" % [config.seed, map.settings["preset"].capitalize(),
+
+
+## Draws the state's map, squads and HUD; the map waits, paused, for Play.
+func _show_state() -> void:
+	var map := state.map
+	_info = "Seed %d  ·  %s  ·  %dx%d  ·  share code %s" % [map.seed, map.settings["preset"].capitalize(),
 			map.width, map.height, config.to_code()]
-	state = GameState.new(data, map, log, config.game_settings())
 	view.show_map(map, data)
-	state.setup_army(_wide_roster_count())
-	state.place_enemies()
-	state.place_neutrals()
 	_sync_tokens()
 	hud.set_squads(state.player_squads())
 	hud.minimap.set_map(map, data)
@@ -123,9 +146,6 @@ func start(game_data: GameData, game_log: GameLog, config: GameConfig, map: MapD
 	camera.fit.call_deferred()  # again once the camera is live, so the minimap frame is right
 	_update_help()
 	state.clock.paused = true  # a new map starts paused, with a prompt (user's notes, 2026-11-10)
-	if state.single_map():  # build the squads from the pool first (user's design, 2026-11-10)
-		_open_edit.call_deferred()
-	print("Battlemap ready in %d ms" % (Time.get_ticks_msec() - started))
 
 
 ## Developer override for playtesting unit variety: --wide-roster or
@@ -981,7 +1001,8 @@ func _open_end_screen() -> void:
 func _open_main_menu() -> void:
 	_main_menu = MainMenu.new()
 	_ui.add_child(_main_menu)
-	_main_menu.setup()
+	_main_menu.setup(SaveGame.blocker(state))
+	_main_menu.save_game.connect(func(): _open_slots(func(): _main_menu.note("Game saved.")))
 	_main_menu.resume.connect(_close_main_menu)
 	_main_menu.options.connect(func():
 		var o := OptionsScreen.new()
@@ -991,8 +1012,41 @@ func _open_main_menu() -> void:
 	_main_menu.save_settings.connect(func():
 		save_settings.emit()
 		_main_menu.note("Settings saved. The configurator will start from them."))
-	_main_menu.to_title.connect(func(): to_title.emit())
-	_main_menu.quit.connect(func(): quit_game.emit())
+	_main_menu.to_title.connect(func(): _leave(func(): to_title.emit()))
+	_main_menu.quit.connect(func(): _leave(func(): quit_game.emit()))
+
+
+## The save slots over the Esc menu; `then` runs once the game is saved.
+func _open_slots(then: Callable) -> void:
+	var slots := SaveSlots.new()
+	_main_menu.add_child(slots)
+	slots.setup(true)
+	slots.closed.connect(slots.queue_free)
+	slots.picked.connect(func(slot: int):
+		var why := SaveGame.write(slot, state, config)
+		if why != "":
+			slots.note(why)
+			return
+		slots.queue_free()
+		then.call())
+
+
+## Quitting or going back to the title asks whether to save first (user's answers,
+## 2026-11-10), unless there's nothing to save (the map is over, or a battle waits).
+func _leave(go: Callable) -> void:
+	if SaveGame.blocker(state) != "":
+		go.call()
+		return
+	var ask := ConfirmDialog.new()
+	_main_menu.add_child(ask)
+	ask.setup("Save your game before leaving?", "Save first", "Cancel", "Leave without saving")
+	ask.cancelled.connect(ask.queue_free)
+	ask.alt.connect(func():
+		ask.queue_free()
+		go.call())
+	ask.confirmed.connect(func():
+		ask.queue_free()
+		_open_slots(go))
 
 
 func _close_main_menu() -> void:

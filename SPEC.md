@@ -26,7 +26,7 @@ Where this spec and the spreadsheet disagree, this spec wins (see §21).
 
 **In scope:** one complete map, played start to finish (map 1), with the configurator, battlemap, Edit Units, battles, buildings, economy, cards, tech, neutrals, recruiting, enemy AI, log and debug tools.
 
-**Out of scope for now:** maps 2 and 3, the between-map army turn, the campaign layer, save/load mid-map (seed plus settings rebuilds a map), audio, tutorial, difficulty settings, magic items, final art.
+**Out of scope for now:** maps 2 and 3, the between-map army turn, the campaign layer, audio, tutorial, difficulty settings, magic items, final art.
 
 ## 3. Terminology
 
@@ -48,7 +48,7 @@ All menus that open over the map are modals with a 50% dark overlay. Opening any
 | Screen | Contents |
 | --- | --- |
 | Title | Title art. Press Space |
-| Start | Options, Start Game. Later: Start Campaign, Custom Game, Load, Save, Continue |
+| Start | Continue (the latest save), Start Game, Load game (when a save exists), Options, Quit. Later: Start Campaign, Custom Game |
 | Configurator | Every map generation setting (§6), seed with a randomize button, a live minimap preview, victory and defeat toggles, squad cap, fairness toggle |
 | Game summary | Game type, map size, seed. Confirm to start |
 | Edit Units: army overview | A 4×4 grid of up to 16 squad cards, numbered left to right, top to bottom. Each card shows the leader, unit icons, travel type, speed, slots used and capacity, and a badge on any unit ready to promote. A gutter on the right holds the unassigned recruit pool. Drag units between squads and the pool |
@@ -90,7 +90,8 @@ All menus that open over the map are modals with a 50% dark overlay. Opening any
 - **Squad numbers.** Clicking a squad's number in the HUD, or pressing 1–9, centers the map on it.
 - **Space** pauses and resumes.
 - **PgUp / PgDn** step through five game speeds: ultra slow ×0.25, slow ×0.5, normal ×1, fast ×2, ultra fast ×4.
-- **Esc** opens the main menu: save settings, options, return to title, quit.
+- **Esc** opens the main menu: save game, save settings, options, return to title, quit. Return to title and Quit ask whether to save first.
+- **Saving** (changed 2026-11-10): 3 slots, no autosave, not mid-battle or during an encounter. The map rebuilds from its seed and settings; everything else that changes in play is saved.
 - **L** opens the log. **Backtick** opens the debug panel.
 
 ## 6. Map generation

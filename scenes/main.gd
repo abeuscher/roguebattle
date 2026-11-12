@@ -1,6 +1,7 @@
 extends Node
 ## The game's screens and the flow between them (SPEC §4):
-## Title -> Start -> Configurator -> Game summary -> Battlemap.
+## Title -> Start -> Configurator -> Game summary -> Battlemap, or Start -> Continue /
+## Load game -> Battlemap.
 ## The game starts on the battlemap; Edit Units opens from its toolbar.
 
 const SETTINGS_PATH := "user://settings.json"
@@ -44,8 +45,21 @@ func show_title() -> void:
 func show_start() -> void:
 	var s := StartScreen.new()
 	_swap(s)
-	s.setup()
+	s.setup(SaveGame.latest_slot() >= 0)
 	s.start_game.connect(show_configurator)
+	s.continue_game.connect(func():
+		var why := load_game(SaveGame.latest_slot())
+		if why != "":
+			s.note(why))
+	s.load_game.connect(func():
+		var slots := SaveSlots.new()
+		s.add_child(slots)
+		slots.setup(false)
+		slots.closed.connect(slots.queue_free)
+		slots.picked.connect(func(slot: int):
+			var why := load_game(slot)
+			if why != "":
+				slots.note(why)))
 	s.options.connect(func():
 		var o := OptionsScreen.new()
 		s.add_child(o)
@@ -78,6 +92,24 @@ func start_game() -> void:
 	_swap(b, false)
 	b.start(data, log, config, _preview_map)
 	_preview_map = null
+	_wire(b)
+
+
+## Loads a save slot onto the battlemap. "" on success, otherwise why not.
+func load_game(slot: int) -> String:
+	var r = SaveGame.read(slot, data, log)
+	if r is String:
+		return r
+	config = r["config"]
+	var b := Battlemap.new()
+	b.options = options
+	_swap(b, false)
+	b.start_loaded(data, log, config, r["state"])
+	_wire(b)
+	return ""
+
+
+func _wire(b: Battlemap) -> void:
 	b.to_title.connect(show_title)
 	b.quit_game.connect(func(): get_tree().quit())
 	b.save_settings.connect(_save_settings)

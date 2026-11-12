@@ -1,9 +1,10 @@
 class_name MainMenu
 extends Control
-## The in-game main menu (SPEC §5.3), opened with Esc: save settings, options,
-## return to title, quit. A modal: 50% dark overlay; play pauses while it's open.
+## The in-game main menu (SPEC §5.3), opened with Esc: save game, save settings,
+## options, return to title, quit. A modal: 50% dark overlay; play pauses while it's open.
 
 signal resume
+signal save_game
 signal save_settings
 signal options
 signal to_title
@@ -12,7 +13,8 @@ signal quit
 var _note := UiStyle.label("", 14, UiStyle.ACCENT)
 
 
-func setup() -> void:
+## `save_blocker`: why the game can't be saved now, or "" (SaveGame.blocker).
+func setup(save_blocker := "") -> void:
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	var shade := ColorRect.new()
 	shade.color = Color(0, 0, 0, 0.5)
@@ -29,11 +31,14 @@ func setup() -> void:
 	col.add_theme_constant_override("separation", 10)
 	panel.add_child(col)
 	col.add_child(UiStyle.label("Menu", 26))
-	for entry in [["Resume (Esc)", resume], ["Save settings", save_settings], ["Options", options],
+	for entry in [["Resume (Esc)", resume], ["Save game", save_game], ["Save settings", save_settings], ["Options", options],
 			["Return to title", to_title], ["Quit", quit]]:
 		var b := UiStyle.button(entry[0], 280)
 		var sig: Signal = entry[1]
 		b.pressed.connect(func(): sig.emit())
+		if sig == save_game and save_blocker != "":
+			b.disabled = true
+			b.tooltip_text = save_blocker
 		col.add_child(b)
 	col.add_child(_note)
 
