@@ -1,6 +1,6 @@
 """Draft music as General MIDI (ROADMAP M5 session 1).
 
-Writes data/audio/midi/<cue>.mid for the main map theme (day) and three stingers,
+Writes data/audio/midi/<cue>.mid for the main map themes (day, night) and three stingers,
 from the cue list in data/audio-asset-list.csv (bars, tempo, instruments, direction).
 No libraries: a small Standard MIDI File writer is below. Render the files with
 tools/render_audio.py.
@@ -17,8 +17,8 @@ TPB = 480  # ticks per beat
 TRUMPET, TROMBONE, FRENCH_HORN, BRASS = 56, 57, 60, 61
 STRINGS, PIZZICATO, TIMPANI = 48, 45, 47
 GLOCKENSPIEL, TUBULAR_BELLS, BANJO, ACOUSTIC_BASS = 9, 14, 105, 32
-PIANO, SLAP_BASS, JAZZ_GUITAR = 0, 36, 26
-KICK, SNARE, HAT, OPEN_HAT, CRASH = 36, 38, 42, 46, 49
+PIANO, SLAP_BASS, JAZZ_GUITAR, FRETLESS_BASS = 0, 36, 26, 35
+KICK, SIDE_STICK, SNARE, HAT, OPEN_HAT, CRASH = 36, 37, 38, 42, 46, 49
 DRUMS = 9  # the drum channel
 
 NOTE = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}
@@ -219,6 +219,65 @@ def day_theme(reps: int = 1) -> tuple:
     return [trumpet, piano, bass, strings, drums], bars * 4
 
 
+# --- Main map theme (night) -----------------------------------------------------------
+# Draft 1 (user, 2026-11-12: just drum and bass to start, a more somber variant of the
+# day theme). Same tempo and length as the day theme so they crossfade. The day's D-G
+# vamp turned minor (Dm-Gm); a fretless bass carries the motif where the day's guitar
+# does; a half-time kit (rimshot on 3, soft hats, few kicks); B thins out almost to
+# nothing; bar 32 turns on A (a C#, the minor key's leading note) back to the top.
+
+NIGHT_CHORDS = [
+    "Dm", "Gm", "Dm", "Gm", "Dm", "Gm", "Bb", "A",
+    "Dm", "Gm", "Dm", "Gm", "Dm", "Gm", "Bb", "A",
+    "Bb", "Gm", "Bb", "Gm", "Gm", "Bb", "A", "A",
+    "Dm", "Gm", "Dm", "Gm", "Dm", "Gm", "Bb", "A",
+]
+NIGHT_ROOT = {"Dm": "D2", "Gm": "G1", "Bb": "Bb1", "A": "A1"}
+NIGHT_PHRASES = {  # bar of each 8-bar section -> the bass's phrase (the day's guitar bars)
+    0: [("A2", .25), ("A2", .5), ("D3", .75), ("F3", .5), ("E3", .5), ("D3", .5), ("D2", 1)],  # the motif, minor
+    1: [("G2", .5), ("Bb2", .25), ("D3", .25), ("F3", .5), ("D3", .5), ("Bb2", 1), ("G1", 1)],
+    4: [("A2", .25), ("A2", .5), ("D3", .75), ("F3", .5), ("A3", .5), ("F3", .5), ("D2", 1)],
+    5: [("G2", .5), ("F3", .25), ("G3", .25), ("F3", .5), ("D3", .5), ("Bb2", 1), ("G1", 1)],
+    7: [("A1", 1), ("E2", .5), ("G2", .5), ("A2", .5), ("C#3", .5), ("E3", 1)],  # the turn back to Dm
+}
+
+
+def night_theme() -> tuple:
+    bass = Track("Fretless Bass", 0, FRETLESS_BASS)
+    drums = Track("Drums", DRUMS, None)
+    for bar, chord in enumerate(NIGHT_CHORDS):
+        b = bar * 4
+        in_b = 16 <= bar < 24
+        r = n(NIGHT_ROOT[chord])
+        minor = chord.endswith("m")
+        if not in_b and bar % 8 in NIGHT_PHRASES:
+            bass.line(b, NIGHT_PHRASES[bar % 8], 96)
+        elif in_b:  # long, low notes
+            bass.note(b, 2.4, r, 92)
+            bass.note(b + 2.5, .9, r + 7, 70)
+            bass.note(b + 3.5, .45, r + 12, 62)
+        else:  # the groove: a long root, a ghost, the fifth, the octave, a seventh (or fifth)
+            for at, p, length, vel in [(0, r, 1.25, 100), (1.5, r, .2, 54), (1.75, r + 7, .7, 82),
+                                       (2.75, r + 12, .45, 78), (3.5, r + (10 if minor else 7), .45, 72)]:
+                bass.note(b + at, length, p, vel)
+        # half-time kit: kick on 1 (and the "a" of 2), rimshot on 3, soft 8th hats
+        for k in range(8):
+            if in_b and k % 2:
+                continue
+            drums.note(b + k * .5, .2, HAT, 52 if k % 2 == 0 else 34)
+        drums.note(b, .2, KICK, 96 if not in_b else 74)
+        if not in_b:
+            drums.note(b + 1.75, .2, KICK, 66)
+        drums.note(b + 2, .2, SIDE_STICK, 88 if not in_b else 64)
+        if bar % 4 == 3 and not in_b:
+            drums.note(b + 3.5, .2, OPEN_HAT, 50)
+        if bar == len(NIGHT_CHORDS) - 1:
+            for k in range(4):
+                drums.note(b + 3 + k * .25, .2, SIDE_STICK, 44 + k * 10)
+    drums.note(0, .5, CRASH, 36)
+    return [bass, drums], len(NIGHT_CHORDS) * 4
+
+
 # --- Stingers --------------------------------------------------------------------------
 
 def victory_riff() -> tuple:
@@ -263,6 +322,7 @@ def hidden_item_sound() -> tuple:
 if __name__ == "__main__":
     tracks, beats = day_theme()
     write("map_day", 112, tracks, beats)
+    write("map_night", 112, *night_theme())
     write("victory_riff", 120, *victory_riff())
     write("town_riff", 130, *town_riff())
     write("hidden_item", 140, *hidden_item_sound())

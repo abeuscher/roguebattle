@@ -9,7 +9,8 @@ what ships (Godot compresses them on import).
   rings past the end is laid back over the start, as it sounds when the loop repeats,
   so it loops without a click or a gap.
 - A one-shot keeps its tail until it fades out, then gets a short fade.
-- Every cue is levelled to the same peak.
+- Every cue is levelled to the same loudness (RMS), never past a -1 dBFS peak, so a
+  sparse cue (the night theme) doesn't come out louder than a full one.
 
 Needs (kept out of git, in tools/audio_bin/):
 - FluidSynth: https://github.com/FluidSynth/fluidsynth/releases (the win10-x64 zip,
@@ -35,6 +36,7 @@ MIDI = os.path.join(ROOT, "data", "audio", "midi")
 LOOPS = {"map_day", "map_night", "army", "battle"}  # music cues; the rest are one-shots
 RATE = 44100
 PEAK = 10 ** (-1.0 / 20)  # -1 dBFS
+LOUDNESS = 10 ** (-18.5 / 20)  # target RMS (the day theme's level at its peak limit)
 TAIL_SECONDS = 4.0  # rendered past a cue's end to catch its ring-out
 
 
@@ -129,7 +131,7 @@ def make_one_shot(x: np.ndarray, seconds: float) -> np.ndarray:
 
 
 def save(path: str, x: np.ndarray) -> None:
-    x = x * (PEAK / max(1e-9, np.abs(x).max()))
+    x = x * min(PEAK / max(1e-9, np.abs(x).max()), LOUDNESS / max(1e-9, np.sqrt((x ** 2).mean())))
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with wave.open(path, "wb") as w:
         w.setnchannels(x.shape[1])
