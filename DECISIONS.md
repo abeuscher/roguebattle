@@ -752,3 +752,14 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
   - 386 tests passing.
 - **Round 11 notes folded in** (2026-11-12): sessions 34 (map, flavor and economy) and 35 (game start and tactics) in `ROADMAP.md`. The user's answers: day 1 skips the whole noon (income, upkeep, ledger); the one-card rule covers towns, towers and nomad camps, card only (a recapture still pays gold and reputation); the player's name goes on the Game summary. The Gods of Perinea are stored as `data/gods.json` (name, domain, appearance, manifestation, the user's text unchanged) and summarised in SPEC §6.9.
 
+## Session 063 (2026-11-12): map, flavor and economy (M4 session 34)
+
+- **Temples and gods:** `MapPlaces._temple_gods()` runs after town names with its own RNG (map seed + "temple_gods"), so nothing else on the map moves. It gives every temple, and every hidden secret temple, a random god id (`b["god"]`) and `b["name"]` "Temple of <God>". `where()` adds "the" for temples ("the Temple of Ithrael"); the old "the temple near <town>" remains only for maps made before names existed. `_nearest_town` now looks at towns only, since towers and temples have names too. The building window shows the god's name and domain, appearance and manifestation above the usual lines, even out of sight (the god is known; the building's state isn't).
+- **Tower names:** `data/tower_names.json`: patterns ("The Tower of {word}", "{mage}'s Tower of {thing}", "The {adj} Spire", "{mage}'s Folly", "The Tower of {thing}") filled from lists, no two alike on a map, own RNG. Banner place links pick these names up like town names.
+- **One card per building:** `_liberated` draws only if the building has no `card_given` flag, then sets it. Gold, reputation, alignment, morale and tech points still come on a recapture (user's answer). The liberation window then shows no card.
+- **No noon on day 1:** `rules.first_noon_day` 2; `_clock_event` skips the noon settlement before it, and with it that noon's shop restock (shops start full). Rooster jumping to noon on day 1 skips it too. Tests that settled a day 1 noon now start on day 2.
+- **Shop icon:** Lucide hand-coins in the squad menu.
+- **Liberation window:** with no conscripts (and no card offer), the window loses its 420 px minimum and centres the card and View all cards, so it fits the card. A long tower name in the title can still make it wider.
+- **Saves from session 061** still load: their buildings come from the save, so their towers and temples just stay unnamed.
+  - 389 tests passing.
+

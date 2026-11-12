@@ -37,6 +37,8 @@ static func place_all(m: MapData, game_data: GameData, settings: Dictionary, map
 	p._lairs()
 	p._cover_regions()
 	p._town_names()
+	p._tower_names()
+	p._temple_gods()
 
 
 func _setup() -> void:
@@ -616,6 +618,47 @@ func _town_names() -> void:
 				break
 		used[name] = true
 		b["name"] = name
+
+
+## Names every tower from tower_names.json (user's playtest notes, 2026-11-12): a
+## pattern such as "{mage}'s Tower of {thing}" filled from its lists; no two alike.
+func _tower_names() -> void:
+	var t: Dictionary = data.tower_names
+	var r := RandomNumberGenerator.new()
+	r.seed = hash([map.seed, "tower_names"])
+	var used := {}
+	for b in map.buildings:
+		if b["type"] != "tower":
+			continue
+		var name := ""
+		for attempt in 200:
+			name = tower_name(t, r)
+			if not used.has(name):
+				break
+		used[name] = true
+		b["name"] = name
+
+
+static func tower_name(t: Dictionary, r: RandomNumberGenerator) -> String:
+	var name: String = t["patterns"][r.randi() % t["patterns"].size()]
+	for part in ["word", "mage", "thing", "adj"]:
+		var key := "{%s}" % part
+		if name.contains(key):
+			name = name.replace(key, t[part][r.randi() % t[part].size()])
+	return name
+
+
+## Gives every temple (and every hidden secret temple) one of the Gods of Perinea
+## (user's notes, 2026-11-12; repeats on a map are fine) and names it for the god.
+func _temple_gods() -> void:
+	var ids: Array = data.gods["gods"].keys()
+	var r := RandomNumberGenerator.new()
+	r.seed = hash([map.seed, "temple_gods"])
+	for b in map.buildings:
+		if b["type"] == "temple" or (b["type"] == "hidden_site" and b.get("kind", "") == "secret_temple"):
+			var id: String = ids[r.randi() % ids.size()]
+			b["god"] = id
+			b["name"] = "Temple of %s" % data.gods["gods"][id]["name"]
 
 
 static func town_name(t: Dictionary, r: RandomNumberGenerator) -> String:

@@ -1,0 +1,8 @@
+{
+ "_about": "Tower names (user's playtest notes, 2026-11-12): magical, in the spirit of \"The Tower of Ee\" and \"Amaraz's Tower of Surprises\". A pattern is picked, then each {part} is filled from its list. Seeded with the map; no two towers on a map share a name. Add patterns and parts freely.",
+ "patterns": ["The Tower of {word}", "{mage}'s Tower of {thing}", "The {adj} Spire", "{mage}'s Folly", "The Tower of {thing}"],
+ "word": ["Ee", "Ombrel", "Quess", "Thale", "Myrr", "Vey", "Ossory", "Ulm", "Iskelle", "Nnor", "Zavareth", "Aum", "Pell", "Orrindel"],
+ "mage": ["Amaraz", "Velloc", "Ysolde", "Thessaly", "Orrin", "Zephrine", "Malachar", "Ibbet", "Corvane", "Quillon", "Hesper", "Druvan", "Saffi", "Old Mother Gaunt"],
+ "thing": ["Surprises", "Whispers", "Echoes", "Endless Stairs", "Lost Hours", "Small Wonders", "Glass Rain", "Second Thoughts", "Borrowed Light", "Unkept Promises", "Quiet Thunder", "Folded Maps", "Many Doors"],
+ "adj": ["Crooked", "Hollow", "Singing", "Leaning", "Weeping", "Moonlit", "Ashen", "Upside-Down", "Restless", "Glass", "Humming", "Starless"]
+}

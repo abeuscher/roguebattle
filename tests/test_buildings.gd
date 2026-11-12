@@ -238,6 +238,11 @@ func test_towns_get_unique_seeded_names() -> void:
 	check_eq(unique.size(), names.size(), "no two towns share a name")
 	var again := MapGen.generate(_data, 1, {"preset": "continent"})
 	check_eq(_of_type(again, "town").map(func(b): return b["name"]), names, "the same seed gives the same names")
-	check(_of_type(m, "tower").all(func(b): return not b.has("name")), "towers go by their type")
+	var towers := _of_type(m, "tower").map(func(b): return b.get("name", ""))
+	check(towers.all(func(n): return n != ""), "every tower is named too (round 11)")
+	var seen := {}
+	for n in towers:
+		seen[n] = true
+	check_eq(seen.size(), towers.size(), "no two towers share a name")
 	var other := _of_type(_map("continent", 2), "town").map(func(b): return b["name"])
 	check(other != names, "another seed, other names")

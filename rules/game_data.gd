@@ -23,6 +23,8 @@ var terrain_ids: Dictionary = {}    # key -> terrain id
 var mapgen: Dictionary = {}
 var buildings: Dictionary = {}      # building type -> placement rules
 var town_names: Dictionary = {}     # name parts for towns (MapPlaces)
+var tower_names: Dictionary = {}    # name patterns and parts for towers (MapPlaces)
+var gods: Dictionary = {}           # the Gods of Perinea: each temple belongs to one
 var config_fields: Array = []       # configurator settings, in share-code order
 var first_names: PackedStringArray = []
 var last_names: PackedStringArray = []
@@ -51,6 +53,8 @@ static func load_dir(dir: String = "res://data") -> GameData:
 	d.mapgen = _read_json(dir.path_join("mapgen.json"))
 	d.buildings = _read_json(dir.path_join("buildings.json"))
 	d.town_names = _read_json(dir.path_join("town_names.json"))
+	d.tower_names = _read_json(dir.path_join("tower_names.json"))
+	d.gods = _read_json(dir.path_join("gods.json"))
 	d.config_fields = _read_json(dir.path_join("configurator.json"))
 	d._load_names(dir.path_join("unit-names.csv"))
 	return d

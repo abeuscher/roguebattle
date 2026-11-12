@@ -29,7 +29,7 @@ func setup(game_state: GameState, building: Dictionary, drawn_card: String, opti
 	center.add_child(panel)
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 14)
-	col.custom_minimum_size.x = 420
+	col.custom_minimum_size.x = 420 if not recruits.is_empty() or _offering else 0  # no conscripts: just fit the card (round 11)
 	panel.add_child(col)
 	var what: String = building.get("name", state.data.buildings[building["type"]]["name"])
 	var title := UiStyle.label("%s liberated!" % what, 24)
@@ -46,7 +46,7 @@ func setup(game_state: GameState, building: Dictionary, drawn_card: String, opti
 	if drawn_card != "":
 		left.add_child(UiStyle.label("You draw:", 16, Color(0.7, 0.72, 0.76)))
 		var face := CardFace.make(state.data, drawn_card)
-		face.size_flags_horizontal = SIZE_SHRINK_BEGIN
+		face.size_flags_horizontal = SIZE_SHRINK_BEGIN if not recruits.is_empty() else SIZE_SHRINK_CENTER
 		left.add_child(face)
 	elif _offering:
 		left.add_child(UiStyle.label("Choose a card:", 16, Color(0.7, 0.72, 0.76)))
@@ -59,7 +59,7 @@ func setup(game_state: GameState, building: Dictionary, drawn_card: String, opti
 				state.choose_card(id)
 				closed.emit())
 			row.add_child(CardFace.make(state.data, id, 1, take))
-	_hand(left)
+	_hand(left, recruits.is_empty())
 	if not recruits.is_empty():  # single map mode's conscription
 		var right := VBoxContainer.new()
 		right.add_theme_constant_override("separation", 10)
@@ -91,9 +91,9 @@ func _conscript(u: Unit) -> Control:
 
 
 ## A "View all cards" toggle that lists the current hand inside this dialog.
-func _hand(col: VBoxContainer) -> void:
+func _hand(col: VBoxContainer, centered := false) -> void:
 	var toggle := UiStyle.button("View all cards (%d)" % state.cards.size(), CardFace.SIZE.x)
-	toggle.size_flags_horizontal = SIZE_SHRINK_BEGIN
+	toggle.size_flags_horizontal = SIZE_SHRINK_CENTER if centered else SIZE_SHRINK_BEGIN
 	toggle.disabled = state.cards.is_empty()
 	col.add_child(toggle)
 	var list := VBoxContainer.new()

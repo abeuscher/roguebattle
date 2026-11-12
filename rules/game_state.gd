@@ -112,7 +112,7 @@ func _clock_event(event: String) -> void:
 		_loyalty_day()
 	elif event == "half_day":
 		_move_nomads()
-	if event == "noon":
+	if event == "noon" and clock.day() >= int(data.rules["first_noon_day"]):  # day 1 runs without one (round 11)
 		_noon()
 
 
@@ -310,7 +310,7 @@ func where(hex: int) -> String:
 	if b.is_empty():
 		return str(map.hex_at(hex))
 	if b.has("name"):
-		return b["name"]
+		return ("the " if b["type"] == "temple" else "") + b["name"]  # "the Temple of Ithrael"
 	var kind: String = data.buildings[b["type"]]["name"]
 	if b["type"] == "temple" and _nearest_town(hex) != "":
 		return "the temple near %s" % _nearest_town(hex)
@@ -323,7 +323,7 @@ func _nearest_town(hex: int) -> String:
 	var best := ""
 	var best_d := -1
 	for b in map.buildings:
-		if b.has("name"):
+		if b["type"] == "town" and b.has("name"):
 			var d := Hex.distance(at, map.hex_at(b["hex"]))
 			if best_d < 0 or d < best_d:
 				best = b["name"]
@@ -354,7 +354,9 @@ func _liberated(s: Squad, b: Dictionary) -> void:
 	change_alignment(s.units, int(st["liberate_alignment"]) * (1 if aligned == "holy" else -1), "liberating a %s" % what)
 	change_morale(s, int(data.battle["morale"]["liberation"]), "liberating a %s" % what)
 	var before := cards.size()
-	draw_card(s)
+	if not b.get("card_given", false):  # one card per building, the first time only (round 11)
+		b["card_given"] = true
+		draw_card(s)
 	earn_tech_points(int(data.tech["points"]["liberation"]), "a liberation")
 	liberations.append({"building": b, "card": cards[-1] if cards.size() > before else "", "recruits": _conscript("player", b)})
 

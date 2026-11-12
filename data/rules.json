@@ -15,6 +15,7 @@
  "capture": {"_note": "SPEC 6.5, placeholders: ticks a squad with a ground unit must stay to liberate a town or tower; Sapper lines (the sapper tag) are faster; towns hint at hidden sites within hint_range hexes.", "ticks": 60, "sapper_speed": 2, "hint_range": 15},
  "temples": {"_note": "Session 059 (user's answers, 2026-11-11). Training: each new day, a squad standing still in a temple you hold gives each living unit training_xp / its level XP (at least 1, x the XP rate). Portals: a squad standing in a temple you hold can step to any other temple you hold, at once.", "training_xp": 30},
  "services": {"_note": "SPEC 15.1, placeholders. Revive restores full HP.", "heal": 20, "revive_per_stage": 50},
+ "first_noon_day": 2, "_first_noon_day": "Round 11 (user's answer): no noon settlement (income, upkeep, ledger) before this day; day 1 runs without one.",
  "starting_reputation": 50,
  "crawl_slowdown": 2.0, "_crawl_note": "A leaderless squad marching home moves this many times slower (playtest round 9).",
  "starting_morale": 50,

@@ -128,6 +128,7 @@ func _state() -> GameState:
 	m.buildings.append({"type": "town", "hex": m.index_of(Hex.from_offset(Vector2i(8, 3))), "shop": false, "hint": false, "hidden": false, "kind": "", "road": false})
 	var st := GameState.new(d, m, GameLog.new())
 	st.setup_army()
+	st.clock.tick += GameClock.TICKS_PER_DAY  # day 2: day 1 has no noon settlement (round 11)
 	return st
 
 

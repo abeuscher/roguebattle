@@ -17,7 +17,9 @@ func _state(towns := 0, seed := 9) -> GameState:
 	m.enemy_base = _at(m, 38, 4)
 	for i in towns:
 		m.buildings.append(_b("town", _at(m, 2 + i % 36, 11 - int(i / 36.0))))
-	return GameState.new(d, m, GameLog.new())
+	var st := GameState.new(d, m, GameLog.new())
+	st.clock.tick += GameClock.TICKS_PER_DAY  # day 2: day 1 has no noon settlement (round 11)
+	return st
 
 
 func _b(type: String, hex: int) -> Dictionary:

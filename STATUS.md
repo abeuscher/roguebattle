@@ -133,7 +133,8 @@ Where the project stands, for picking up in a new session or on another machine.
 - **M4 session 32 done (session 061):** save game: 3 slots from the Esc menu, a save prompt on Return to title and Quit, Continue and Load game on the start screen; loaded games play on identically. Also, between sessions (session 060): the Portal picks a glowing temple on the map with a confirmation, and the debug squad builder pops up its refusals and empties after placing. See `DECISIONS.md` sessions 059–061.
 - **M4 session 33 done (session 062):** player tips: the mechanism (data-driven tips shown once, pointing at the screen, with a "Show player tips" box and option) and the first tip on the opening Edit Units screen. See `DECISIONS.md` session 062.
 - **Playtest round 11 (2026-11-12) folded in:** sessions 34 (gods and temples, tower names, one card per building, no noon on day 1, shop icon, liberation window) and 35 (your name, enemy forward towns, tactics per squad). The Gods of Perinea are in `data/gods.json`.
-- **Next: M4 sessions 34–35, then the M4 milestone check.**
+- **M4 session 34 done (session 063):** temples belong to the Gods of Perinea (named for them, lore in their window), magical tower names, one card per building, no noon on day 1, a hand-with-coins shop icon, and a liberation window that fits the card. See `DECISIONS.md` session 063.
+- **Next: M4 session 35 (your name, enemy forward towns, tactics per squad), then the M4 milestone check.**
 - **M4 sessions 15–20 planned (playtest round 7, 2026-11-10)** in `ROADMAP.md`: battle and rules fixes (cards truly at once, enemy makeup after a fight, items equippable anywhere, fewer neutrals, arrival log line); map generation (100% land, reef-like shallows around islands); HUD layout (clock under the minimap, gold coin, reputation meter, squad drawer, smaller rounded toolbar with icons); squad status icons and flag-free tokens with destination flags; debug panel overhaul; save game (3 slots, prompt to save on quit). The user's answers are in the ROADMAP rows.
 - **M4 milestone check: the first real playtest**, after session 33.
 - **Unit portraits:** the user's large unit images (21 so far) are committed in `data/unit_art/` (not used in the game yet). Building them into the unit detail view is a future task in `ROADMAP.md`, waiting on more of the set.
@@ -145,7 +146,7 @@ Where the project stands, for picking up in a new session or on another machine.
 
 ## How the user works
 
-- **One git branch per session,** named `session-NNN` (next: `session-063`), cut from `main`.
+- **One git branch per session,** named `session-NNN` (next: `session-064`), cut from `main`.
 - **Commit locally only:**
   - Never push or merge; the user merges and pushes, then says "continue".
   - Commit messages end with a `Co-Authored-By:` line naming whatever Claude model is doing the session (the harness's own attribution instructions say exactly what to write).

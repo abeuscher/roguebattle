@@ -86,7 +86,7 @@ func setup(state: GameState, s: Squad) -> void:
 	_button(actions, "flask-conical", "Use item", herbs > 0, "Give a herb to a hurt unit." if herbs > 0 else "No supplies: buy herbs at a shop.") 			.pressed.connect(func(): use_item.emit())
 	var place := state.shop_at(s)
 	var shop_name := "Temple services" if place.get("type", "") == "temple" else "Shop"
-	_button(actions, "store", shop_name, not place.is_empty(), "Buy here." if not place.is_empty() else "Stand still in a building with a shop (not enemy-held) or a temple.") 			.pressed.connect(func(): shop.emit())
+	_button(actions, "hand-coins", shop_name, not place.is_empty(), "Buy here." if not place.is_empty() else "Stand still in a building with a shop (not enemy-held) or a temple.") 			.pressed.connect(func(): shop.emit())
 	_button(actions, "footprints", "Move", true, "Click hexes to lay rally points.").pressed.connect(func(): move.emit())
 	var here := state.building_at(s.hex)
 	if here.get("type", "") == "temple" and not s.is_moving():  # session 059

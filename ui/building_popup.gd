@@ -38,10 +38,22 @@ func setup(state: GameState, b: Dictionary) -> void:
 			lines = ["Shop: yes" if b.get("shop", false) else "Shop: no", "Out of your squads' sight."]
 		else:
 			lines = _details(state, b, info)
+	if b.has("god"):  # the temple's god (the Gods of Perinea, round 11)
+		_god(col, state.data.gods["gods"][b["god"]])
 	for t in lines:
 		var l := UiStyle.label(t, 16, Color(0.85, 0.87, 0.9))
 		l.autowrap_mode = TextServer.AUTOWRAP_WORD
 		col.add_child(l)
+
+
+## A god's name and domain, then how they look and how they show themselves.
+func _god(col: VBoxContainer, g: Dictionary) -> void:
+	col.add_child(UiStyle.label("%s, god of %s" % [g["name"], g["domain"]], 18, Color("#f4ead2")))
+	for t in [g["appearance"], g["manifestation"]]:
+		var l := UiStyle.label(t, 15, Color(0.72, 0.74, 0.8))
+		l.autowrap_mode = TextServer.AUTOWRAP_WORD
+		col.add_child(l)
+	col.add_child(HSeparator.new())
 
 
 ## Everything about a building in sight or held: defense and rest, liberating, shop,

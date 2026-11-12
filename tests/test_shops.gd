@@ -19,6 +19,7 @@ func _state() -> GameState:
 	st.army.cells[0] = st._form(1, "", _at(m, 8, 3), [["Knight", "front"], ["Fighter", "front"], ["Bowman", "back"]], "player")
 	st.squads.append(st.army.cells[0])
 	st.gold = 100000
+	st.clock.tick += GameClock.TICKS_PER_DAY  # day 2: day 1 has no noon settlement (round 11)
 	return st
 
 

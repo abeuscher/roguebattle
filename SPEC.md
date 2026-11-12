@@ -167,7 +167,7 @@ Land % runs 25–100 (changed 2026-11-10). Presets built on water cap it so they
 | Player Base | Spawn point. Holds the recruit pool; deploy squads, revive, heal and spend tech here. Routed squads return here | Spawn side |
 | Enemy Base | The enemy leader's home; the default victory target | Far side |
 | Town | Liberate by moving a ground unit in. Some have a shop. Some give hints about nearby hidden sites | Plains, forest, snow, desert; never mountains |
-| Tower | Home to evil residents. Can have a shop. Reputation runs opposite to towns | Any land, including mountains |
+| Tower | Home to evil residents. Can have a shop. Reputation runs opposite to towns. Each has a magical name ("The Tower of Ee", "Amaraz's Tower of Surprises"; 2026-11-12) | Any land, including mountains |
 | Temple | Pay to heal or revive. Squads inside heal slowly for free, whatever their alignment. Taken like a town (changed 2026-11-11), but with no liberation rewards; the enemy takes them too, as a low priority. A temple you hold trains the squads resting in it and has a portal to every other temple you hold (below) | High ground or remote spots |
 | Nomads | A town on the move: 4–6 hexes every half day. Each move has a 20% chance of staying hidden until the next half day. Always has a shop | Never on water, lava or mountains. 50% more likely to spawn along a road, 25% more likely far from other buildings |
 | Hidden site | Treasure, a card, a secret temple, a rare recruit or a lair. Seen from afar, claimed by stepping onto it. Treasure, card and rare recruit are one-time and leave the map once claimed; a secret temple works as a temple; a lair is guarded by a neutral squad (Recruit or Fight, §16) and afterwards shelters squads like a town (changed 2026-11-11) | Off-road; revealed when a squad comes within sight |
@@ -249,7 +249,7 @@ Added 2026-11-12 (the user's lore). The world is Perinea. Twelve gods, each with
 | Quillith | Knowledge, Secrets, and Memory |
 | Pellan | Travel, Trade, and Luck |
 
-Each temple belongs to one god (repeats on a map are fine) and is named for it (planned, ROADMAP M4 session 34).
+Each temple belongs to one god (repeats on a map are fine) and is named for it ("the Temple of Ithrael"); its window shows the god's domain, appearance and manifestation (2026-11-12).
 
 ## 7. Time
 
@@ -526,7 +526,7 @@ These apply to both sides by default. A configurator toggle makes them player-on
 ## 13. Cards
 
 - **Start:** 3 random cards.
-- **Earning:** draw 1 card per building liberated or card site claimed (§6.5). Seer lines choose from 2 cards and Oracle lines from 3; the Foresight aura previews the next card.
+- **Earning:** draw 1 card per building liberated, the first time only (a recaptured building pays its bonus gold and reputation but no card; round 11, 2026-11-12), or card site claimed (§6.5). Seer lines choose from 2 cards and Oracle lines from 3; the Foresight aura previews the next card.
 - **Limits:** none on cards held or played per battle.
 - **Rarity:** each card has a draw weight (1 unless rarer); Phoenix is rare (playtest round 9).
 - **XP:** card-caused XP goes to the Opinion Leader's squad.
@@ -587,7 +587,7 @@ All values are placeholders.
 | Flow | Rule |
 | --- | --- |
 | Starting gold | 2 days' upkeep of a full field army (the squad cap of full squads) on this map, at least 500 (round 10, 2026-11-11) |
-| Town and tower income | 50 gold per day each, at noon |
+| Town and tower income | 50 gold per day each, at noon. Day 1 has no noon settlement (no income, upkeep or ledger); the first is on day 2 (round 11, 2026-11-12) |
 | Liberation bonus | 100 × (0.5 + reputation/100), once per liberation |
 | Upkeep | Per unit per day at noon, for squads on the map only; units in the recruit pool and squads at base cost nothing. Stage 1 = 5, stage 2 = 10, stage 3 = 20, stage 4 = 35. Large ×2, Tiny ×0.5. Then × the map's towns and towers ÷ a reference count (a Small map's, 28), so cost follows what the map can pay: holding half a map's towns and towers covers a full field army at stage 2 with room to spare (round 10, 2026-11-11). Deploying a squad costs one day of its upkeep |
 | End-of-map bonus | Scaled by reputation, like the liberation bonus |

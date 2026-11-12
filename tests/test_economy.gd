@@ -35,6 +35,7 @@ func _state() -> GameState:
 	st.squads.append(st.army.cells[0])
 	st.army.cells[1] = st._form(2, "", -1, [["Lancer", "front"], ["Squire", "front"], ["Squire", "front"], ["Slinger", "back"], ["Acolyte", "back"]], "player")
 	st.army.cells[2] = st._form(3, "", -1, [["Archer", "back"], ["Soldier", "front"], ["Bowman", "back"], ["Apprentice", "back"]], "player")
+	st.clock.tick += GameClock.TICKS_PER_DAY  # day 2: day 1 has no noon settlement (round 11)
 	return st
 
 
@@ -158,7 +159,7 @@ func test_going_broke() -> void:
 	check(s not in st.army.squads(), "it leaves the army")
 	check(st.army.holder(sword) == null, "its items go back to the inventory")
 	st.gold = 0
-	st.clock.tick = 12 * 60 - 1
+	st.clock.tick = GameClock.TICKS_PER_DAY + 12 * 60 - 1
 	st.step()
 	check_eq(st.gold, -st.upkeep(st.army.cells[0]), "upkeep you can't pay puts you in debt (round 9)")
 	check_eq(st.debt_noons, 1, "the first noon in debt")
