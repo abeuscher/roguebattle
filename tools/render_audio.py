@@ -38,6 +38,7 @@ RATE = 44100
 PEAK = 10 ** (-1.0 / 20)  # -1 dBFS
 LOUDNESS = 10 ** (-18.5 / 20)  # target RMS (the day theme's level at its peak limit)
 TAIL_SECONDS = 4.0  # rendered past a cue's end to catch its ring-out
+TAIL_LIMIT = {"victory_riff": 0.8}  # one-shots whose ring-out is cut short: seconds kept past the cue's end
 
 
 def tool_paths() -> tuple:
@@ -121,11 +122,13 @@ def make_loop(x: np.ndarray, seconds: float) -> np.ndarray:
     return out
 
 
-def make_one_shot(x: np.ndarray, seconds: float) -> np.ndarray:
+def make_one_shot(x: np.ndarray, seconds: float, limit: float | None = None) -> np.ndarray:
     loud = np.nonzero(np.abs(x).max(axis=1) > 10 ** (-60 / 20))[0]
     end = max(round(seconds * RATE), (loud[-1] + 1) if len(loud) else 0)
+    if limit is not None:
+        end = min(end, round((seconds + limit) * RATE))
     out = x[:end].copy()
-    fade = min(len(out), round(0.05 * RATE))
+    fade = min(len(out), round((limit / 2 if limit else 0.05) * RATE))
     out[len(out) - fade:] *= np.linspace(1, 0, fade)[:, None]
     return out
 
@@ -161,7 +164,7 @@ if __name__ == "__main__":
         x = render(fs, sf, mid)
         loop = cue in LOOPS
         out = os.path.join(ROOT, "data", "audio", "music" if loop else "stingers", cue + ".wav")
-        y = make_loop(x, seconds) if loop else make_one_shot(x, seconds)
+        y = make_loop(x, seconds) if loop else make_one_shot(x, seconds, TAIL_LIMIT.get(cue))
         save(out, y)
         if loop:
             _mark_loop(out)

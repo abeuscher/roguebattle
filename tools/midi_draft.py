@@ -281,25 +281,22 @@ def night_theme() -> tuple:
 # --- Stingers --------------------------------------------------------------------------
 
 def victory_riff() -> tuple:
-    """1 bar at 150 (draft 2, user 2026-11-12: faster, a drum roll under it): a trumpet
-    fanfare on the motif's notes, timpani, and a snare roll that builds to a crash on
-    the last note."""
+    """Half a bar at 150 (draft 3, user 2026-11-12: four notes, shorter): a rising
+    trumpet run on the motif's notes, a second trumpet under the top note, timpani, and a
+    snare roll into a crash on the last note."""
     t1, t2 = Track("Trumpet 1", 0, TRUMPET), Track("Trumpet 2", 1, TRUMPET)
     timp = Track("Timpani", 2, TIMPANI)
-    third = 1 / 3
-    t1.line(0, [("A4", third), ("A4", third), ("A4", third), ("D5", .5), ("F#5", .5), ("A5", 2)], 110)
-    t2.line(0, [(None, 2), ("F#5", 2)], 96)
-    t2.line(0, [(None, 1), ("A4", .5), ("D5", .5)], 90)
-    for k in range(4):
-        timp.note(k * .25, .25, n("A2"), 70 + k * 6)
-    timp.note(1, .5, n("D2"), 104)
-    timp.note(2, 2, n("D2"), 96)
     drums = Track("Drums", DRUMS, None)
-    for k in range(16):  # 32nd notes over the first two beats, rising
-        drums.note(k * .125, .1, SNARE, 46 + k * 4)
-    drums.note(2, .5, CRASH, 100)
-    drums.note(2, .25, KICK, 100)
-    return [t1, t2, timp, drums], 4
+    t1.line(0, [("A4", .25), ("D5", .25), ("F#5", .5), ("A5", 1)], 110)
+    t2.line(1, [("F#5", 1)], 96)
+    timp.note(0, .25, n("A2"), 80)
+    timp.note(.5, .25, n("A2"), 90)
+    timp.note(1, 1, n("D2"), 104)
+    for k in range(8):  # 32nd notes over the first beat, rising
+        drums.note(k * .125, .1, SNARE, 50 + k * 7)
+    drums.note(1, .5, CRASH, 100)
+    drums.note(1, .25, KICK, 100)
+    return [t1, t2, timp, drums], 2
 
 
 def town_riff() -> tuple:
