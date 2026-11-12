@@ -20,7 +20,7 @@
   "firework": {"file": "", "bus": "Effects", "_note": "One burst: a pop or crackle. Plays with each of the fireworks show's 5 bursts (0.35 s apart), separate from the building's riff."}
  },
  "events": {
-  "_note": "taken_<type>: a town, tower or temple taken when it wasn't yours: by you, or by the enemy where you can see it; building_lost: the enemy takes one of yours; firework_burst: each burst of the fireworks over a liberated building.",
+  "_note": "taken_<type>: you take a town, tower or temple (the enemy taking a neutral one plays nothing); building_lost: the enemy takes one of yours; firework_burst: each burst of the fireworks over a liberated building.",
   "click": ["click"],
   "battle_fight": ["fight"],
   "battle_won": ["victory_riff", {"cue": "victory", "after": 0.5}],

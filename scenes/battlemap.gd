@@ -180,7 +180,7 @@ func _process(delta: float) -> void:
 	if not state.pending_rare.is_empty() and _free():
 		_open_rare_popup()
 	for c in state.captures:  # buildings that changed hands: their sounds (SPEC §24)
-		Sound.event(Sound.capture_event(c, state.seen(c["hex"])))
+		Sound.event(Sound.capture_event(c))
 	state.captures.clear()
 	_pump_liberations()
 	_pump_losses()

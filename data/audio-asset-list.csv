@@ -3,6 +3,10 @@
 """Defeat!""",Voice,One-shot,,,,Spoken line (Al records),,To do
 """Fight!""",Voice,One-shot,,,,Spoken line (Al records),,To do
 """Hidden Location!""",Voice,One-shot,,,,Spoken line (Al records),,To do
+"""New Town!""",Voice,One-shot,,,,"Spoken line (Al records). The first time you take a town (it was neutral or the enemy's, never yours).",,To do
+"""New Tower!""",Voice,One-shot,,,,"Spoken line (Al records). The first time you take a tower.",,To do
+"""New Temple!""",Voice,One-shot,,,,"Spoken line (Al records). The first time you take a temple.",,To do
+"""Give it back!""",Voice,One-shot,,,,"Spoken line (Al records). Taking back a town, tower or temple the enemy took from you.",,To do
 Main map theme (day),Music,Loop,32,112,68.6,"Sunny, bright, fanfare feel. Holds the main motif reused across the score.","Trumpet, French Horn, String Ensemble, Pizzicato Strings, light snare",To do
 Main map theme (night),Music,Loop,32,112,68.6,Variant of the day theme with spookier instrumentation. Same BPM as day so the two can crossfade.,"Harpsichord, Choir Aahs, Goblins pad, Contrabass",To do
 Edit units / army theme,Music,Loop,16,120,32.0,Snare-based military bit. 120 is standard march tempo.,"Snare (drum channel), Brass Section, Piccolo",To do
