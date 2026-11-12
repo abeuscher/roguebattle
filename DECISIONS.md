@@ -720,3 +720,12 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **Tests:** the economy and base tests set `reference_buildings` to their strip's own count, so the hand-worked ledgers keep scale 1.
   - 369 tests passing.
 
+## Session 059 (2026-11-11): temples, portals and training (M4 session 31)
+
+- **Holding temples** (user's answers): temples are `capturable` with `liberation: false` in `buildings.json`. `_capture` takes a no-reward building with a log line and a banner ("Ours takes the temple near Ashford."), with no bonus gold, reputation, alignment, card or conscripts. The enemy retaking one adds a `losses` entry with reputation 0, so the "lost" window shows "Reputation 0". The enemy AI's `type_value` gives temples 1.0 (towns 3, towers 2), so they're last choices. Temple services now refuse an enemy-held temple (the shop already did). The user plans a pantheon to give temples more meaning later.
+- **Temple names:** `where()` calls a temple "the temple near <nearest town>", for the portal list, banners and the lost window.
+- **Portals:** `portal_targets(s)` = every other player-held temple, when `s` is a player squad on the map standing still in a player-held temple. `portal(s, hex)` moves it at once and clears its route, rally points, following and capture progress. The squad menu shows the button (Lucide orbit) only in a temple, greyed out with the reason when there's nowhere to go. `PortalMenu` lists destinations with distance and direction (`GameState.direction()`, shared with town hints). The camera follows the squad and a banner says where it went.
+- **Training:** in `_rest()` (new day), a player squad standing still in a player-held temple gets `training_xp(u)` = max(1, round(30 ÷ level × XP rate)) per living unit, through `_give_xp`; level-ups go to the banner.
+- **Catch-up XP:** `Progression.catch_up()` multiplies battle XP by 1 + 0.25 × levels under the squad's average, capped at ×2 (`progression.catch_up_per_level`, `catch_up_max`). It also applies to drive-off XP, which reuses `battle_xp`.
+  - 376 tests passing.
+

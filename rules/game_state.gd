@@ -278,7 +278,11 @@ func _capture() -> void:
 			var was: String = b["owner"]
 			b["owner"] = s.side
 			var what: String = data.buildings[b["type"]]["name"].to_lower()
-			if s.side == "player":
+			var rewards: bool = data.buildings[b["type"]].get("liberation", true)
+			if s.side == "player" and not rewards:  # a temple: just yours (session 059)
+				log.add(clock.tick, "map", "%s takes %s." % [s.name, place_label(b)], s.id)
+				notices.append("%s takes %s." % [s.name, where(b["hex"])])
+			elif s.side == "player":
 				log.add(clock.tick, "map", "%s liberates %s." % [s.name, place_label(b)], s.id)
 				var bonus := liberation_bonus()
 				_pay(bonus, "Liberation bonus: %s" % place_label(b))
@@ -287,8 +291,8 @@ func _capture() -> void:
 			else:
 				log.add(clock.tick, "map", "%s captures %s." % [s.name, place_label(b)], s.id)
 				if s.side == "enemy" and b["type"] != "player_base":  # (the Player Base taken ends the game)
-					if was == "player":  # a modal and a little reputation (playtest round 9)
-						var loss := -int(data.rules["standing"]["lose_reputation"])
+					if was == "player":  # a modal and a little reputation (playtest round 9); none for a temple
+						var loss := -int(data.rules["standing"]["lose_reputation"]) if rewards else 0
 						change_reputation(null, loss, "the enemy retook %s" % where(b["hex"]))
 						losses.append({"building": b, "reputation": loss})
 					else:
@@ -308,7 +312,23 @@ func where(hex: int) -> String:
 	if b.has("name"):
 		return b["name"]
 	var kind: String = data.buildings[b["type"]]["name"]
+	if b["type"] == "temple" and _nearest_town(hex) != "":
+		return "the temple near %s" % _nearest_town(hex)
 	return "the " + (kind if b["type"] in ["player_base", "enemy_base"] else kind.to_lower())
+
+
+## The name of the town nearest a hex, "" on a map without named towns.
+func _nearest_town(hex: int) -> String:
+	var at := map.hex_at(hex)
+	var best := ""
+	var best_d := -1
+	for b in map.buildings:
+		if b.has("name"):
+			var d := Hex.distance(at, map.hex_at(b["hex"]))
+			if best_d < 0 or d < best_d:
+				best = b["name"]
+				best_d = d
+	return best
 
 
 ## A building as the log names it: a town by its name ("Ashford"), anything else by
@@ -524,6 +544,8 @@ func _rest() -> void:
 			_heal_share(s.living(), building_effect(b, s)[1])
 			if b["type"] == "temple" and not s.living().is_empty():
 				change_morale(s, int(data.battle["morale"]["temple_rest"]), "resting in a temple")
+				if s.side == "player" and b["owner"] == "player" and not s.is_moving():
+					_train(s)
 			if s.side == "player" and b["type"] in ["town", "tower", "nomads"]:  # nomads count as towns
 				var aligned: String = data.buildings[b["type"]]["aligned"]
 				change_reputation(s, _swing(aligned, s.alignment_band(data)) * int(data.rules["standing"]["stay_reputation"]),
@@ -533,6 +555,52 @@ func _rest() -> void:
 		if s not in squads:
 			_heal_share(s.living(), base)
 	_heal_share(army.pool.filter(func(u: Unit): return u.is_alive()), base)
+
+
+## Training in a temple you hold (session 059): each living unit earns training_xp ÷
+## its level, at least 1, times the XP rate, so the low levels catch up fastest.
+func _train(s: Squad) -> void:
+	var out := {"level_ups": []}
+	var gains: Array[String] = []
+	for u in s.living():
+		var amount := training_xp(u)
+		_give_xp(s, u, amount, out)
+		gains.append(str(amount))
+	log.add(clock.tick, "progression", "%s trains in the temple: %s XP." % [s.name, "/".join(PackedStringArray(gains))], s.id)
+	for line in out["level_ups"]:
+		notices.append(line)
+
+
+func training_xp(u: Unit) -> int:
+	return maxi(1, roundi(float(data.rules["temples"]["training_xp"]) / maxi(1, u.level) * xp_rate()))
+
+
+## Temples a squad can step to through a portal (session 059): every other temple you
+## hold, when it stands still in one you hold. Player squads only.
+func portal_targets(s: Squad) -> Array[int]:
+	var out: Array[int] = []
+	var here := building_at(s.hex)
+	if s.side != "player" or s not in squads or s.is_moving() or here.get("type", "") != "temple" or here["owner"] != "player":
+		return out
+	for b in map.buildings:
+		if b["type"] == "temple" and b["owner"] == "player" and b["hex"] != s.hex:
+			out.append(b["hex"])
+	return out
+
+
+## Steps a squad through the portal to another temple you hold, at once.
+func portal(s: Squad, to_hex: int) -> bool:
+	if to_hex not in portal_targets(s):
+		return false
+	var from := s.hex
+	s.hex = to_hex
+	s.path.clear()
+	s.rally.clear()
+	s.follow = null
+	s.progress = 0.0
+	s.capture_ticks = 0.0
+	log.add(clock.tick, "map", "%s steps through the portal from %s to %s." % [s.name, where(from), where(to_hex)], s.id)
+	return true
 
 
 func _heal_share(units: Array, share: float) -> void:
@@ -626,6 +694,13 @@ func nomad_spots(from: int) -> Array:
 	return out
 
 
+## Which way one hex lies from another, as a compass word ("northeast").
+static func direction(from: Vector2i, to: Vector2i) -> String:
+	var delta := Hex.to_pixel(to, 1.0) - Hex.to_pixel(from, 1.0)
+	var names := ["east", "southeast", "south", "southwest", "west", "northwest", "north", "northeast"]
+	return names[posmod(roundi(delta.angle() / (PI / 4.0)), 8)]
+
+
 ## A town's hint about the nearest unseen hidden site within range: "to the northeast,
 ## about 12 hexes away", or "".
 func hint(b: Dictionary) -> String:
@@ -641,9 +716,7 @@ func hint(b: Dictionary) -> String:
 				best = i
 	if best < 0:
 		return ""
-	var delta := Hex.to_pixel(map.hex_at(map.buildings[best]["hex"]), 1.0) - Hex.to_pixel(at, 1.0)
-	var names := ["east", "southeast", "south", "southwest", "west", "northwest", "north", "northeast"]
-	var dir: String = names[posmod(roundi(delta.angle() / (PI / 4.0)), 8)]
+	var dir := direction(at, map.hex_at(map.buildings[best]["hex"]))
 	return "Travellers speak of something hidden to the %s, about %d hexes away." % [dir, Hex.distance(at, map.hex_at(map.buildings[best]["hex"]))]
 
 
@@ -1303,7 +1376,7 @@ func can_service(u: Unit) -> bool:
 	if at_base(u):
 		return true
 	var s := army.squad_of(u)
-	return not s.is_moving() and building_at(s.hex).get("type", "") == "temple"
+	return not s.is_moving() and building_at(s.hex).get("type", "") == "temple" and building_at(s.hex)["owner"] != "enemy"
 
 
 func heal_cost(u: Unit) -> int:

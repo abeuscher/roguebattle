@@ -68,11 +68,12 @@ func _details(state: GameState, b: Dictionary, info: Dictionary) -> Array:
 			lines.append("Any squad defends +%d%% and heals %d%% a day here." % [_pct(d[0]), _pct(r[0])])
 	if info.get("capturable", false) and b["owner"] != "player":
 		var c: Dictionary = data.rules["capture"]
-		lines.append("Liberate it by keeping a squad with a ground unit here for %d minutes (%d with a Sapper)." % [int(c["ticks"]),
+		var verb := "Liberate" if info.get("liberation", true) else "Take"  # a temple is just taken (session 059)
+		lines.append("%s it by keeping a squad with a ground unit here for %d minutes (%d with a Sapper)." % [verb, int(c["ticks"]),
 				int(float(c["ticks"]) / float(c["sapper_speed"]))])
 		var p := state.capture_progress(b)
 		if p > 0.0:
-			lines.append("Liberating: %d%% done." % _pct(p))
+			lines.append("%s: %d%% done." % ["Liberating" if verb == "Liberate" else "Taking", _pct(p)])
 	if b["type"] == "nomads":
 		lines.append("A town on the move: it travels every half day.")
 	if b.get("shop", false):
@@ -82,6 +83,7 @@ func _details(state: GameState, b: Dictionary, info: Dictionary) -> Array:
 		lines.append("Shop: no")
 	if b["type"] == "temple":
 		lines.append("Healing and revival: stand a squad here and choose Temple services in its squad menu.")
+		lines.append("Once yours: squads resting here train each day (more XP for lower levels), and its portal steps a squad at once to any other temple you hold.")
 	if b.get("hint", false):
 		var h := state.hint(b)
 		lines.append(("Local news: " + h) if b["owner"] == "player" and h != "" else

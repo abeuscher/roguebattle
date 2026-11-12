@@ -11,7 +11,15 @@ static func battle_xp(data: GameData, own: Squad, enemy: Squad, u: Unit) -> int:
 	var ratio := clampf(_average_level(enemy) / maxf(1.0, _average_level(own)), float(p["level_ratio"][0]), float(p["level_ratio"][1]))
 	var charisma := 0.5 + (own.leader.charisma / 100.0 if own.leader else 0.0)
 	var talent := 1.0 + float(data.rules["talents"][u.talent]["xp_bonus"])
-	return roundi(float(p["battle_xp"]) * ratio * charisma * talent)
+	return roundi(float(p["battle_xp"]) * ratio * charisma * talent * catch_up(data, own, u))
+
+
+## Catch-up XP (session 059): a unit below its squad's average level earns more, by
+## catch_up_per_level for each level under, up to catch_up_max.
+static func catch_up(data: GameData, own: Squad, u: Unit) -> float:
+	var p: Dictionary = data.rules["progression"]
+	var under := maxf(0.0, _average_level(own) - u.level)
+	return minf(float(p["catch_up_max"]), 1.0 + float(p["catch_up_per_level"]) * under)
 
 
 static func _average_level(s: Squad) -> float:

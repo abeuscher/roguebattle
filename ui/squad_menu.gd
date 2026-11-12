@@ -10,6 +10,7 @@ signal edit
 signal shop
 signal use_item
 signal view_destination
+signal portal
 signal closed
 
 const ALIGN_COLORS := {"holy": Color("#ffe08a"), "neutral": Color(0.8, 0.82, 0.86), "evil": Color("#e0604a")}
@@ -87,6 +88,12 @@ func setup(state: GameState, s: Squad) -> void:
 	var shop_name := "Temple services" if place.get("type", "") == "temple" else "Shop"
 	_button(actions, "store", shop_name, not place.is_empty(), "Buy here." if not place.is_empty() else "Stand still in a building with a shop (not enemy-held) or a temple.") 			.pressed.connect(func(): shop.emit())
 	_button(actions, "footprints", "Move", true, "Click hexes to lay rally points.").pressed.connect(func(): move.emit())
+	var here := state.building_at(s.hex)
+	if here.get("type", "") == "temple" and not s.is_moving():  # session 059
+		var gates := state.portal_targets(s)
+		var no_gate := "Take this temple to use its portal." if here["owner"] != "player" else "Hold another temple to step to it."
+		_button(actions, "orbit", "Portal", not gates.is_empty(), "Step at once to another temple you hold." if not gates.is_empty() else no_gate) \
+				.pressed.connect(func(): portal.emit())
 	if s.is_moving():
 		_button(actions, "flag", "View destination", true, "Show where %s is headed." % s.name).pressed.connect(func(): view_destination.emit())
 	var targets := state.fire_targets(s)

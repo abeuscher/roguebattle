@@ -167,7 +167,7 @@ Land % runs 25–100 (changed 2026-11-10). Presets built on water cap it so they
 | Enemy Base | The enemy leader's home; the default victory target | Far side |
 | Town | Liberate by moving a ground unit in. Some have a shop. Some give hints about nearby hidden sites | Plains, forest, snow, desert; never mountains |
 | Tower | Home to evil residents. Can have a shop. Reputation runs opposite to towns | Any land, including mountains |
-| Temple | Pay to heal or revive. Squads inside heal slowly for free, whatever their alignment | High ground or remote spots |
+| Temple | Pay to heal or revive. Squads inside heal slowly for free, whatever their alignment. Taken like a town (changed 2026-11-11), but with no liberation rewards; the enemy takes them too, as a low priority. A temple you hold trains the squads resting in it and has a portal to every other temple you hold (below) | High ground or remote spots |
 | Nomads | A town on the move: 4–6 hexes every half day. Each move has a 20% chance of staying hidden until the next half day. Always has a shop | Never on water, lava or mountains. 50% more likely to spawn along a road, 25% more likely far from other buildings |
 | Hidden site | Treasure, a card, a secret temple, a rare recruit or a lair. Seen from afar, claimed by stepping onto it. Treasure, card and rare recruit are one-time and leave the map once claimed; a secret temple works as a temple; a lair is guarded by a neutral squad (Recruit or Fight, §16) and afterwards shelters squads like a town (changed 2026-11-11) | Off-road; revealed when a squad comes within sight |
 
@@ -182,6 +182,8 @@ Land % runs 25–100 (changed 2026-11-10). Presets built on water cap it so they
 **Who holds what at the start (changed 2026-11-10).** Every building except the two bases starts neutral. Both sides set out from their base to take buildings; a neutral town or tower taken by the player counts as a full liberation (bonus gold, reputation, alignment, a card), the same as one taken back from the enemy.
 
 **Liberation and capture.** A squad with at least one ground unit that stays in a building for 60 ticks (placeholder) captures it. Sapper lines capture twice as fast. Only ground units can capture.
+
+**Temples you hold** (user's answers, 2026-11-11). Taking a temple gives no bonus gold, reputation, alignment, card or conscripts, and losing one costs no reputation. *Portals:* a squad standing in a temple you hold can step at once to any other temple you hold (player only for now; no time in transit). *Training:* a squad resting in a temple you hold earns XP each day, more for lower-level units (placeholder: 30 ÷ the unit's level). A pantheon that gives temples more meaning is planned for later.
 
 **Defense and rest in buildings**
 
@@ -320,6 +322,7 @@ Read classes from the sheet: stage, lines, size, slots, can lead, alignment lean
   - **Level ratio:** enemy squad average level ÷ own squad average level, clamped 0.5–2.
   - **Charisma factor:** 0.5 + leader charisma ÷ 100.
   - **Talent bonus:** see §12.2.
+  - **Catch-up** (2026-11-11): a unit below its squad's average level earns +25% per level under, at most double.
 - **Level cost.** A level costs 100 XP × the class's XP rate (from the sheet).
 - **Level-up.** Key stats +1 every level. Other stats follow the hidden growth profile (§12.2).
 - **Promotion** is available at level 3 (stage 2), 6 (stage 3) and 9 (stage 4). It adds the difference between the new class's base stats and the old one's. Where the sheet shows an alignment branch (Witch, dragon colors), the bands decide which branch is available.

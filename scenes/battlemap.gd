@@ -43,6 +43,7 @@ var _encounter: EncounterPopup
 var _announced := false  # the pending battle needs no encounter popup (already announced, or a recruit refused)
 var _edit: EditUnits
 var _deploy_menu: DeployMenu
+var _portal_menu: PortalMenu
 var _confirm: ConfirmDialog
 var _deploying := false  # _selected is a squad from base whose route is being laid
 var _building_popup: BuildingPopup
@@ -484,7 +485,26 @@ func _open_menu() -> void:
 		var cell := _selected.id - 1
 		_end_selection()
 		_open_edit(cell))
+	_menu.portal.connect(func():
+		var s := _selected
+		_end_selection()
+		_portal_menu = PortalMenu.new()
+		_ui.add_child(_portal_menu)
+		_portal_menu.setup(state, s)
+		_portal_menu.picked.connect(func(hex: int):
+			_close_portal_menu()
+			var from := state.where(s.hex)
+			if state.portal(s, hex):
+				camera.center_on(MapView.hex_center(state.map, hex))
+				hud.show_banner("%s steps through the portal from %s to %s." % [s.name, from, state.where(hex)], 4.0)
+				_sync_tokens())
+		_portal_menu.closed.connect(_close_portal_menu))
 	_menu.closed.connect(_end_selection)
+
+
+func _close_portal_menu() -> void:
+	_portal_menu.queue_free()
+	_portal_menu = null
 
 
 func _close_menu() -> void:
@@ -969,7 +989,7 @@ func _on_speed_chosen(index: int) -> void:
 ## No menu, popup or dialog is open (a squad order may be under way: its menu, or laying
 ## a route or picking a target, which take map clicks).
 func _can_open() -> bool:
-	return not (_log_panel or _debug_panel or _menu or _main_menu or _battle or _encounter or _rare_popup or _edit or _deploy_menu or _confirm or _building_popup or _enemy_popup \
+	return not (_log_panel or _debug_panel or _menu or _main_menu or _battle or _encounter or _rare_popup or _edit or _deploy_menu or _portal_menu or _confirm or _building_popup or _enemy_popup \
 			or _shop or _recruit_popup or _liberation_popup or _end_screen or _chooser or _ledger or _lost_popup)
 
 

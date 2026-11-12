@@ -1,9 +1,9 @@
 {
- "_about": "AI weights (SPEC §12.3, §17), map-level only (in-battle tactic and retreat weights come later). A field squad, when idle, scores holding the building it's on against moving to each neutral or player-held town or tower no other enemy squad is after (EnemyAI).",
+ "_about": "AI weights (SPEC §12.3, §17), map-level only (in-battle tactic and retreat weights come later). A field squad, when idle, scores holding the building it's on against moving to each neutral or player-held town, tower or temple (worth least, session 059) no other enemy squad is after (EnemyAI).",
  "go_home_fallen_share": 0.5,
  "field": {
   "_value": "A building's worth: type_value × (1 + middle_weight × how central it is between the two bases, 0 at a base to 1 midway) × player_held if the player holds it.",
-  "type_value": {"town": 3.0, "tower": 2.0},
+  "type_value": {"town": 3.0, "tower": 2.0, "temple": 1.0},
   "middle_weight": 1.0,
   "player_held": 2.0,
   "_hold": "Holding: the value × (hold_base + threat_weight × min(1, player Threat within threat_radius ÷ the squad's own Threat)); 0 if another enemy squad already holds it.",
