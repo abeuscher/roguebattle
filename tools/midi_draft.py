@@ -281,7 +281,9 @@ def night_theme() -> tuple:
 # --- Stingers --------------------------------------------------------------------------
 
 def victory_riff() -> tuple:
-    """1 bar at 120: a trumpet fanfare on the motif's notes, timpani under it."""
+    """1 bar at 150 (draft 2, user 2026-11-12: faster, a drum roll under it): a trumpet
+    fanfare on the motif's notes, timpani, and a snare roll that builds to a crash on
+    the last note."""
     t1, t2 = Track("Trumpet 1", 0, TRUMPET), Track("Trumpet 2", 1, TRUMPET)
     timp = Track("Timpani", 2, TIMPANI)
     third = 1 / 3
@@ -292,7 +294,12 @@ def victory_riff() -> tuple:
         timp.note(k * .25, .25, n("A2"), 70 + k * 6)
     timp.note(1, .5, n("D2"), 104)
     timp.note(2, 2, n("D2"), 96)
-    return [t1, t2, timp], 4
+    drums = Track("Drums", DRUMS, None)
+    for k in range(16):  # 32nd notes over the first two beats, rising
+        drums.note(k * .125, .1, SNARE, 46 + k * 4)
+    drums.note(2, .5, CRASH, 100)
+    drums.note(2, .25, KICK, 100)
+    return [t1, t2, timp, drums], 4
 
 
 def town_riff() -> tuple:
@@ -324,6 +331,6 @@ if __name__ == "__main__":
     tracks, beats = day_theme()
     write("map_day", 112, tracks, beats)
     write("map_night", 112, *night_theme())
-    write("victory_riff", 120, *victory_riff())
+    write("victory_riff", 150, *victory_riff())
     write("town_riff", 130, *town_riff())
     write("hidden_item", 140, *hidden_item_sound())
