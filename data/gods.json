@@ -1,0 +1,78 @@
+{
+ "_note": "The Gods of Perinea (the user's lore, 2026-11-12). Each temple belongs to one god; repeats on a map are fine. Shown in temple descriptions; more of the game may draw on them later (the pantheon, ROADMAP). Text is the user's: edit here, not in code.",
+ "world": "Perinea",
+ "gods": {
+  "ithrael": {
+   "name": "Ithrael",
+   "domain": "Sun, Day, and Truth",
+   "appearance": "A tall, bald figure with eyes too bright to look at directly.",
+   "manifestation": "He appears as a white-robed stranger who casts no shadow, even standing in full sun. Anyone who lies in his presence feels their tongue burn until they take the lie back."
+  },
+  "seramund": {
+   "name": "Seramund",
+   "domain": "Moon, Night, and Dreams",
+   "appearance": "A veiled woman carrying a hooded lamp.",
+   "manifestation": "She visits only those asleep or half-asleep, sitting at the foot of the bed with a dim lantern. When the dreamer wakes, a faint silver dust lies on the blanket where she sat."
+  },
+  "velkaris": {
+   "name": "Velkaris",
+   "domain": "Sky, Storms, and Weather",
+   "appearance": "A storm-grey bearded figure with lightning flickering visibly behind his ribs.",
+   "manifestation": "He arrives as a sudden change in the weather, then takes shape as a soaked, wild-haired traveler who smells of ozone. His voice crackles like distant thunder, and small metal objects nearby hum while he speaks."
+  },
+  "ondrumel": {
+   "name": "Ondrumel",
+   "domain": "Seas, Rivers, and Rain",
+   "appearance": "A vast, slow-moving woman with kelp for hair and pearls for eyes.",
+   "manifestation": "She rises from any body of water as a dripping old woman draped in weeds. She leaves puddles wherever she walks on land, and any nearby fish turn to face her."
+  },
+  "hasketh": {
+   "name": "Hasketh",
+   "domain": "Earth, Stone, and Mountains",
+   "appearance": "A squat, craggy giant, most often depicted asleep.",
+   "manifestation": "He rarely takes a form at all; usually a boulder simply opens its eyes and speaks. When he does walk among mortals, he looks like a huge, grey-skinned laborer whose footsteps sink into solid rock."
+  },
+  "bramwyr": {
+   "name": "Bramwyr",
+   "domain": "Harvest, Growth, and Fertility",
+   "appearance": "A round-bellied, genderless figure with wheat sprouting from their shoulders.",
+   "manifestation": "They appear at harvest as a cheerful, mud-spattered farmhand who outworks everyone in the field. Seeds sprout in their footprints, and bread they help bake never goes stale."
+  },
+  "korrath": {
+   "name": "Korrath",
+   "domain": "War, Courage, and Discipline",
+   "appearance": "A scarred warrior missing one hand, sacrificed to win a war among the gods.",
+   "manifestation": "He appears on the eve of battle as a one-handed veteran by the campfire, asking soldiers why they fight. Those who answer honestly fight without fear the next day; those who lie find their weapons strangely heavy."
+  },
+  "vessaline": {
+   "name": "Vessaline",
+   "domain": "Love, Family, and Home",
+   "appearance": "A warm, middle-aged woman with flour on her hands.",
+   "manifestation": "She knocks on doors as a weary traveling woman asking for a meal and a bed, testing the household's hospitality. Homes that welcome her find their hearth fire never goes out, and homes that turn her away find it never stays lit."
+  },
+  "morvayne": {
+   "name": "Morvayne",
+   "domain": "Death, Endings, and Passage",
+   "appearance": "A thin, kind-eyed figure in grey, carrying a ferryman's pole.",
+   "manifestation": "He comes quietly to the dying as a polite, grey-robed man waiting patiently in the corner of the room. Only the dying see him clearly, but everyone present notices the air turn cool and still."
+  },
+  "tolgren": {
+   "name": "Tolgren",
+   "domain": "Craft, Forge, and Invention",
+   "appearance": "A stocky, burn-scarred smith with a soot-black beard, always holding a half-finished object.",
+   "manifestation": "He wanders into workshops as a sooty, muttering tinker who can't resist fixing whatever is broken nearby. When he leaves, one tool always works far better than it ever has, and no one remembers making it."
+  },
+  "quillith": {
+   "name": "Quillith",
+   "domain": "Knowledge, Secrets, and Memory",
+   "appearance": "A figure wearing many layered masks; no one agrees on what lies beneath.",
+   "manifestation": "They appear in libraries and archives as a masked scholar whose face no one can recall afterward. They will answer any question, but the asker always forgets something they once knew in exchange."
+  },
+  "pellan": {
+   "name": "Pellan",
+   "domain": "Travel, Trade, and Luck",
+   "appearance": "A grinning wanderer in a patched cloak, forever flipping a coin.",
+   "manifestation": "He meets travelers in disguise as a peddler, beggar, or fellow wayfarer, always idly flipping a coin. Anyone who shares a road or a deal with him has strange luck for a year after, good or bad depending on whether they dealt fairly."
+  }
+ }
+}

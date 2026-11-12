@@ -230,6 +230,27 @@ Nomad camps count as towns.
 - The Player Base is captured (assumption; see §22).
 - Death by penury (playtest round 9): 3 noons running in debt, or debt past about 2 days' upkeep of a full field army (§15.1). Always on.
 
+### 6.9 The Gods of Perinea
+
+Added 2026-11-12 (the user's lore). The world is Perinea. Twelve gods, each with a domain, an appearance and a manifestation (how they show themselves to mortals). The full text is in `data/gods.json`; it appears in temple descriptions, and more of the game may draw on it later.
+
+| God | Domain |
+| --- | --- |
+| Ithrael | Sun, Day, and Truth |
+| Seramund | Moon, Night, and Dreams |
+| Velkaris | Sky, Storms, and Weather |
+| Ondrumel | Seas, Rivers, and Rain |
+| Hasketh | Earth, Stone, and Mountains |
+| Bramwyr | Harvest, Growth, and Fertility |
+| Korrath | War, Courage, and Discipline |
+| Vessaline | Love, Family, and Home |
+| Morvayne | Death, Endings, and Passage |
+| Tolgren | Craft, Forge, and Invention |
+| Quillith | Knowledge, Secrets, and Memory |
+| Pellan | Travel, Trade, and Luck |
+
+Each temple belongs to one god (repeats on a map are fine) and is named for it (planned, ROADMAP M4 session 34).
+
 ## 7. Time
 
 - **Ticks and days.** 1 tick = 1 in-game minute; 1 day = 1,440 ticks.
