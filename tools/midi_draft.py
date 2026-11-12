@@ -17,7 +17,8 @@ TPB = 480  # ticks per beat
 TRUMPET, TROMBONE, FRENCH_HORN, BRASS = 56, 57, 60, 61
 STRINGS, PIZZICATO, TIMPANI = 48, 45, 47
 GLOCKENSPIEL, TUBULAR_BELLS, BANJO, ACOUSTIC_BASS = 9, 14, 105, 32
-KICK, SNARE, CRASH = 36, 38, 49
+PIANO, SLAP_BASS = 0, 36
+KICK, SNARE, HAT, OPEN_HAT, CRASH = 36, 38, 42, 46, 49
 DRUMS = 9  # the drum channel
 
 NOTE = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}
@@ -114,94 +115,107 @@ def voicing(chord: str, low: str) -> list:
 
 
 # --- Main map theme (day) -------------------------------------------------------------
-# 32 bars at 112, D major: A (the main motif) A' B (horn melody) A'' ending on the
-# dominant so it loops back to bar 1. Trumpet, French horn, strings, pizzicato, light snare.
+# Draft 2 (user's notes, 2026-11-12: more funk inside the pentatonic scale, more bass,
+# less trumpet, piano instead of horn). 32 bars at 112, D major pentatonic (D E F# A B)
+# for every melody note. A D-G vamp; A (trumpet motif, then rests) A' B (piano tune)
+# A'' ending on A so it loops back. Slap bass leads the mix; a funk kit (16th hats,
+# ghost snares, kicks off the beat); piano stabs on the 16ths.
 
-DAY_CHORDS = [  # one entry per bar; a list splits the bar into halves
-    "D", "G", "D", "A", "D", "G", "A", "D",
-    "D", "Bm", "G", "A", "D", "Bm", ["G", "A"], "D",
-    "G", "A", "F#m", "Bm", "G", "A", "Em", "A7",
-    "D", "G", "D", "A", "D", "G", "A", "A7",
+DAY_CHORDS = [
+    "D", "G", "D", "G", "D", "G", "Em", "A",
+    "D", "G", "D", "G", "Bm", "G", "Em", "A",
+    "Bm", "G", "Bm", "G", "Em", "G", "A", "A",
+    "D", "G", "D", "G", "D", "G", "Em", "A",
 ]
+PIANO_VOICING = {  # rootless, near middle C, mostly pentatonic tones
+    "D": ["F#4", "A4", "B4", "E5"], "G": ["G4", "B4", "D5", "E5"], "Em": ["G4", "B4", "D5", "E5"],
+    "Bm": ["A4", "B4", "D5", "F#5"], "A": ["G4", "A4", "D5", "E5"],
+}
+BASS_ROOT = {"D": "D2", "G": "G2", "Em": "E2", "Bm": "B1", "A": "A1"}
 
-MOTIF = [("A4", .5), ("A4", .5), ("D5", 1), ("F#5", 1.5), ("E5", .5)]  # the score's main motif
-
-TRUMPET_A = MOTIF + [
-    ("D5", 1.5), ("B4", .5), ("G4", 2),
-    ("A4", .5), ("A4", .5), ("D5", 1), ("F#5", 1), ("A5", 1),
-    ("E5", 1.5), ("C#5", .5), ("A4", 2),
-    ("F#5", 1), ("E5", .5), ("D5", .5), ("F#5", 1), ("A5", 1),
-    ("B5", 1.5), ("A5", .5), ("G5", 1), ("B4", 1),
-]
+MOTIF = [("A4", .25), ("A4", .5), ("D5", .75), ("F#5", .5), ("E5", .5), ("D5", .5), (None, 1)]  # the main motif, funked
+ANSWER = [(None, .5), ("B4", .25), ("D5", .25), ("E5", .5), ("D5", .5), ("B4", 1), (None, 1)]
+REST = [(None, 4)]
+TRUMPET_A = MOTIF + ANSWER + REST + REST + [
+    ("A4", .25), ("A4", .5), ("D5", .75), ("F#5", .5), ("A5", .5), ("F#5", .5), (None, 1),
+    (None, .5), ("E5", .25), ("F#5", .25), ("E5", .5), ("D5", .5), ("B4", 1), (None, 1),
+] + REST
 TRUMPET_SECTIONS = [
-    TRUMPET_A + [("A4", 1), ("C#5", 1), ("E5", 1), ("G5", 1), ("F#5", 2), ("D5", 1), (None, 1)],
-    MOTIF + [
-        ("D5", 1.5), ("B4", .5), ("F#4", 2),
-        ("G4", .5), ("B4", .5), ("D5", 1), ("G5", 1.5), ("F#5", .5),
-        ("E5", 2), ("C#5", 1), ("A4", 1),
-    ] + MOTIF + [
-        ("F#5", 1), ("D5", 1), ("B4", 1), ("D5", 1),
-        ("B4", 1), ("D5", 1), ("C#5", 1), ("E5", 1),
-        ("D5", 3), (None, 1),
-    ],
-    [(None, 24),  # B: the horn has the tune; the trumpet comes back for the turn
-     ("B4", .5), ("B4", .5), ("E5", 1), ("G5", 1), ("E5", 1),
-     ("A4", .5), ("A4", .5), ("C#5", .5), ("E5", .5), ("G5", 1), ("A5", 1)],
-    TRUMPET_A + [("A4", 1), ("C#5", 1), ("E5", 1), ("A5", 1), ("G5", 2), ("E5", 1), ("C#5", 1)],
+    TRUMPET_A + [(None, 2), ("E5", .5), ("D5", .5), ("B4", .5), ("A4", .5)],
+    TRUMPET_A + [(None, 2), ("A4", .25), ("B4", .25), ("D5", .5), ("E5", 1)],
+    REST * 7 + [(None, 2), ("A4", .25), ("B4", .25), ("D5", .5), ("E5", 1)],
+    TRUMPET_A + [(None, 2), ("E5", .5), ("F#5", .5), ("A5", 1)],
 ]
-HORN_B = [
-    ("B4", 2), ("D5", 1), ("B4", 1),
-    ("C#5", 2), ("E5", 1), ("C#5", 1),
-    ("A4", 1.5), ("F#4", .5), ("A4", 1), ("C#5", 1),
-    ("B4", 3), ("F#4", 1),
-    ("G4", 1), ("B4", 1), ("D5", 2),
-    ("E5", 1.5), ("D5", .5), ("C#5", 1), ("A4", 1),
-    ("G4", 2), ("B4", 2),
-    ("A4", 2), ("C#5", 2),
+PIANO_B = [  # the B tune, all pentatonic, syncopated
+    ("B4", .75), ("D5", .25), ("E5", .5), ("D5", .5), ("B4", .5), ("A4", .5), ("B4", 1),
+    (None, .5), ("D5", .25), ("E5", .25), ("D5", .5), ("B4", .5), ("D5", .75), ("E5", .25), ("D5", 1),
+    ("F#5", .75), ("E5", .25), ("D5", .5), ("B4", .5), ("D5", .5), ("E5", .5), ("F#5", 1),
+    ("A5", .5), ("F#5", .25), ("E5", .25), ("D5", 1), (None, 2),
+    ("E5", .75), ("D5", .25), ("B4", .5), ("A4", .5), ("B4", .5), ("D5", .5), ("E5", 1),
+    (None, .5), ("B4", .25), ("D5", .25), ("E5", .5), ("F#5", .5), ("E5", .75), ("D5", .25), ("B4", 1),
+    ("A4", .5), ("B4", .25), ("D5", .25), ("E5", 1), ("D5", .5), ("B4", .5), ("A4", 1),
+    (None, 4),
 ]
+STABS = [(.5, .2), (1.25, .2), (2.5, .4), (3.25, .2), (3.75, .2)]  # piano comping, beat and length
 
 
 def day_theme(reps: int = 1) -> tuple:
     trumpet = Track("Trumpet", 0, TRUMPET)
-    horn = Track("French Horn", 1, FRENCH_HORN)
-    strings = Track("Strings", 2, STRINGS)
-    pizz = Track("Pizzicato", 3, PIZZICATO)
-    drums = Track("Snare", DRUMS, None)
+    piano = Track("Piano", 1, PIANO)
+    bass = Track("Slap Bass", 2, SLAP_BASS)
+    strings = Track("Strings", 3, STRINGS)
+    drums = Track("Drums", DRUMS, None)
     bars = len(DAY_CHORDS)
     for rep in range(reps):
         start = rep * bars * 4
         beat = start
         for section in TRUMPET_SECTIONS:
-            beat = trumpet.line(beat, section, 100)
-        horn.line(start + 64, HORN_B, 92)
+            beat = trumpet.line(beat, section, 84)
+        piano.line(start + 64, PIANO_B, 88)
         for bar, chord in enumerate(DAY_CHORDS):
             b = start + bar * 4
-            halves = chord if isinstance(chord, list) else [chord, chord]
             in_b = 16 <= bar < 24
-            for h, c in enumerate(halves):
-                # strings: the chord, held; a little fuller in B
-                for p in voicing(c, "D3"):
-                    strings.note(b + h * 2, 1.95, p, 62 if in_b else 52)
-                # horn: chord tones under the trumpet, outside B
-                if not in_b:
-                    horn.note(b + h * 2, 1.9, voicing(c, "E4")[0], 70)
-                # pizzicato: root and fifth
-                root = voicing(c, "D2")[0]
-                fifth = n(CHORDS[c][2] + "0")
-                while fifth <= root:
-                    fifth += 12
-                pizz.note(b + h * 2, .5, root, 84)
-                pizz.note(b + h * 2 + 1, .5, fifth, 72)
-            # light snare: 2 and 4, a pickup into the next bar, a soft kick on 1 and 3
-            drums.note(b + 1, .25, SNARE, 58)
-            drums.note(b + 3, .25, SNARE, 58)
-            drums.note(b + 3.5, .25, SNARE, 40)
+            last = bar == bars - 1
+            # piano: stabs on the 16ths; in B, one soft chord under its own tune
+            if in_b:
+                for p in PIANO_VOICING[chord][:3]:
+                    piano.note(b, 3.8, n(p) - 12, 48)
+                for p in voicing(chord, "D3"):
+                    strings.note(b, 3.95, p, 44)
+            else:
+                for at, length in STABS:
+                    for p in PIANO_VOICING[chord]:
+                        piano.note(b + at, length, n(p), 70 if at in (.5, 2.5) else 60)
+            # slap bass: root, ghost, octave pop, fifth, and a chromatic step into the next bar
+            r = n(BASS_ROOT[chord])
+            nxt = n(BASS_ROOT[DAY_CHORDS[(bar + 1) % bars]])
+            for at, p, length, vel in [
+                (0, r, .45, 118), (.75, r, .2, 70), (1, r + 12, .2, 108), (1.5, r + 7, .2, 92),
+                (2, r, .2, 104), (2.5, r, .2, 76), (2.75, r + 12, .2, 104), (3.25, r + 7, .2, 88),
+                (3.5, r + 10 if chord in ("Em", "Bm") else r + 9, .2, 90), (3.75, nxt - 1, .2, 96),
+            ]:
+                bass.note(b + at, length, p, vel)
+            # drums: 16th hats (accents on the 8ths), kick on 1, the "a" of 2 and the "and" of 3,
+            # snare on 2 and 4 with ghosts; lighter in B; a snare fill into the loop
+            for k in range(16):
+                if in_b and k % 2:
+                    continue
+                drums.note(b + k * .25, .2, HAT, 72 if k % 2 == 0 else 46)
+            for at, vel in [(0, 100), (1.75, 82), (2.5, 92)]:
+                drums.note(b + at, .2, KICK, vel - (16 if in_b else 0))
+            drums.note(b + 1, .2, SNARE, 98)
+            drums.note(b + 3, .2, SNARE, 98)
             if not in_b:
-                drums.note(b, .25, KICK, 64)
-                drums.note(b + 2, .25, KICK, 54)
+                drums.note(b + 2.25, .2, SNARE, 34)
+                drums.note(b + 3.75, .2, SNARE, 38)
+            if bar % 2 == 1 and not in_b:
+                drums.note(b + 3.5, .2, OPEN_HAT, 64)
+            if last:
+                for k in range(8):
+                    drums.note(b + 2 + k * .25, .2, SNARE, 50 + k * 7)
         if rep == 0:
-            drums.note(start, .5, CRASH, 50)  # only the very first downbeat
-    return [trumpet, horn, strings, pizz, drums], bars * 4
+            drums.note(start, .5, CRASH, 56)  # only the very first downbeat
+    return [trumpet, piano, bass, strings, drums], bars * 4
 
 
 # --- Stingers --------------------------------------------------------------------------
