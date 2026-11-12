@@ -240,6 +240,7 @@ func _sync_tokens() -> void:
 			if s.side != "player":
 				token.color = ENEMY
 			token.scale = _token_scale()  # new tokens match the current zoom
+			token.z_index = 1  # above mountains, trees and buildings, which could hide it (playtest note)
 			view.add_object(token)
 			_tokens[s.id] = token
 
@@ -287,6 +288,7 @@ func _update_dest_flag() -> void:
 	if show and _dest_flag == null:
 		_dest_flag = SquadToken.new()
 		_dest_flag.as_flag = true
+		_dest_flag.z_index = 1
 		view.add_object(_dest_flag)
 	if _dest_flag:
 		_dest_flag.visible = show
