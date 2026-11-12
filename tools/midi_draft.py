@@ -17,7 +17,7 @@ TPB = 480  # ticks per beat
 TRUMPET, TROMBONE, FRENCH_HORN, BRASS = 56, 57, 60, 61
 STRINGS, PIZZICATO, TIMPANI = 48, 45, 47
 GLOCKENSPIEL, TUBULAR_BELLS, BANJO, ACOUSTIC_BASS = 9, 14, 105, 32
-PIANO, SLAP_BASS, CLEAN_GUITAR = 0, 36, 27
+PIANO, SLAP_BASS, JAZZ_GUITAR = 0, 36, 26
 KICK, SNARE, HAT, OPEN_HAT, CRASH = 36, 38, 42, 46, 49
 DRUMS = 9  # the drum channel
 
@@ -120,7 +120,7 @@ def voicing(chord: str, low: str) -> list:
 # for every melody note. A D-G vamp; A (trumpet motif, then rests) A' B (piano tune)
 # A'' ending on A so it loops back. Slap bass leads the mix; a funk kit (16th hats,
 # ghost snares, kicks off the beat); piano stabs on the 16ths. Draft 3 (user, same day):
-# the trumpet's part on clean electric guitar, nothing else changed.
+# the trumpet's part on clean electric guitar, nothing else changed. Draft 4: jazz guitar.
 
 DAY_CHORDS = [
     "D", "G", "D", "G", "D", "G", "Em", "A",
@@ -161,7 +161,7 @@ STABS = [(.5, .2), (1.25, .2), (2.5, .4), (3.25, .2), (3.75, .2)]  # piano compi
 
 
 def day_theme(reps: int = 1) -> tuple:
-    trumpet = Track("Guitar", 0, CLEAN_GUITAR)  # draft 3: the lead on clean electric guitar instead of trumpet
+    trumpet = Track("Guitar", 0, JAZZ_GUITAR)  # draft 4: the lead on jazz guitar (draft 3: clean electric; 2: trumpet)
     piano = Track("Piano", 1, PIANO)
     bass = Track("Slap Bass", 2, SLAP_BASS)
     strings = Track("Strings", 3, STRINGS)
