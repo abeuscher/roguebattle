@@ -13,6 +13,7 @@ const LIFE := 1.4  # seconds a burst lasts
 const RADIUS := 64.0  # pixels a burst spreads to
 
 var _t := 0.0
+var _heard := 0  # bursts whose sound has played (audio.json "firework_burst")
 var _bursts := []  # [offset, color] per burst
 
 
@@ -25,6 +26,9 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_t += delta
+	while _heard < BURSTS and _t >= _heard * STAGGER:
+		_heard += 1
+		Sound.event("firework_burst")
 	if _t > STAGGER * (BURSTS - 1) + LIFE:
 		queue_free()
 	queue_redraw()

@@ -54,6 +54,11 @@ func test_captures_are_recorded_for_their_sounds() -> void:
 	for i in int(d.rules["capture"]["ticks"]) + 1:
 		st.step()
 	check_eq(st.captures.size(), 1, "one capture")
-	check_eq(Sound.capture_event(st.captures[0]), "taken_town", "taking a neutral town plays the town riff")
-	check_eq(Sound.capture_event({"type": "tower", "side": "enemy", "was": "neutral"}), "taken_tower", "the enemy taking a neutral tower sounds the same")
-	check_eq(Sound.capture_event({"type": "temple", "side": "enemy", "was": "player"}), "building_lost", "the enemy taking one of yours has its own sound")
+	check_eq(st.captures[0]["was"], "neutral", "it was neutral")
+	check_eq(Sound.capture_event(st.captures[0], false), "taken_town", "taking a neutral town plays the town riff, seen or not")
+	check_eq(Sound.capture_event({"type": "tower", "side": "enemy", "was": "neutral"}, true), "taken_tower", "the enemy taking a neutral tower in sight sounds the same")
+	check_eq(Sound.capture_event({"type": "tower", "side": "enemy", "was": "neutral"}, false), "", "but not out of sight")
+	check_eq(Sound.capture_event({"type": "temple", "side": "enemy", "was": "player"}, false), "building_lost", "the enemy taking one of yours always has its own sound")
+	for t in int(d.rules["capture"]["ticks"]) * 3:
+		st.step()
+	check(st.captures.size() == 1, "the capture is recorded once, at the end of the progress bar, not again while the squad stays")

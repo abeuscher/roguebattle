@@ -16,10 +16,11 @@
   "victory": {"file": "res://data/audio/voice/victory.wav", "bus": "Voice", "duck": true},
   "defeat": {"file": "res://data/audio/voice/defeat.wav", "bus": "Voice", "duck": true},
   "hidden_location": {"file": "res://data/audio/voice/hidden_item.wav", "bus": "Voice", "duck": true},
-  "click": {"file": "res://data/audio/effects/click.wav", "bus": "Effects", "db": -10}
+  "click": {"file": "res://data/audio/effects/click.wav", "bus": "Effects", "db": -10},
+  "firework": {"file": "", "bus": "Effects", "_note": "One burst: a pop or crackle. Plays with each of the fireworks show's 5 bursts (0.35 s apart), separate from the building's riff."}
  },
  "events": {
-  "_note": "taken_<type>: a town, tower or temple taken by either side when it wasn't yours; building_lost: the enemy takes one of yours.",
+  "_note": "taken_<type>: a town, tower or temple taken when it wasn't yours: by you, or by the enemy where you can see it; building_lost: the enemy takes one of yours; firework_burst: each burst of the fireworks over a liberated building.",
   "click": ["click"],
   "battle_fight": ["fight"],
   "battle_won": ["victory_riff", {"cue": "victory", "after": 0.5}],
@@ -29,6 +30,7 @@
   "taken_town": ["town_riff"],
   "taken_tower": ["tower_riff"],
   "taken_temple": ["temple_riff"],
-  "building_lost": ["building_lost"]
+  "building_lost": ["building_lost"],
+  "firework_burst": ["firework"]
  }
 }

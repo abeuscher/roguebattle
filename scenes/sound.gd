@@ -72,10 +72,14 @@ static func volume_db(percent: Variant) -> float:
 
 
 ## The event a building changing hands plays (GameState.captures): the enemy taking one
-## of yours has its own sound; anything else plays the building type's riff.
-static func capture_event(capture: Dictionary) -> String:
+## of yours has its own sound; anything else plays the building type's riff, but the
+## enemy taking a neutral building only where you can see it (`seen`), or it would
+## play every game hour or so from all over the map. "" for none.
+static func capture_event(capture: Dictionary, seen: bool) -> String:
 	if capture["was"] == "player" and capture["side"] == "enemy":
 		return "building_lost"
+	if capture["side"] != "player" and not seen:
+		return ""
 	return "taken_" + str(capture["type"])
 
 

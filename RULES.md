@@ -224,7 +224,7 @@ Sound is coming in (ROADMAP M5). In so far:
 - **A click** on every button.
 - **Battles:** "Fight!" as a battle starts playing; on a win, the victory fanfare and "Victory!"; on a loss, "Defeat!". A retreat or a draw has no sound.
 - **Hidden sites:** "Hidden Location!" when one comes into view; a short glockenspiel-and-trumpet sound when you claim a treasure, card cache or rare recruit.
-- **Buildings changing hands:** taking a town plays a banjo riff, whoever takes it, as long as it wasn't yours; the enemy taking one of yours will have its own sound. (Tower and temple riffs, the loss riff and the "building lost" sound are still being made, so those moments are silent for now.)
+- **Buildings changing hands:** taking a town plays a banjo riff when the progress bar fills. The enemy taking a neutral town plays it too, but only where you can see it (it happens every game hour or so somewhere on the map). The enemy taking one of yours will have its own sound, wherever it is. The fireworks over a liberated building will have a sound for each burst. (Tower and temple riffs, the loss riff and the "building lost" sound are still being made, so those moments are silent for now.)
 - **Music** dips while a fanfare, riff or voice line plays. The map music itself (day and night themes) comes next.
 
 ## Player tips
