@@ -179,9 +179,6 @@ func _process(delta: float) -> void:
 		_open_recruit_popup()
 	if not state.pending_rare.is_empty() and _free():
 		_open_rare_popup()
-	for c in state.captures:  # buildings that changed hands: their sounds (SPEC §24)
-		Sound.event(Sound.capture_event(c))
-	state.captures.clear()
 	_pump_liberations()
 	_pump_losses()
 	if not state.card_offer.is_empty() and _free():
@@ -953,12 +950,14 @@ func _pump_liberations() -> void:
 	if state.liberations.is_empty() or not _free():
 		return
 	var entry: Dictionary = state.liberations.pop_front()
+	Sound.event("taken_" + str(entry["building"]["type"]))  # the riff goes with the window (or its banner), one at a time
 	var offering: bool = entry["card"] == "" and not state.card_offer.is_empty()
 	if bool(options.get("show_liberations", true)) or offering:
 		_open_liberation_popup(entry)
 	else:  # the player turned the window off: a banner, and the fireworks show where
 		var joined: int = entry.get("recruits", []).size()
-		state.notices.append("%s liberated!%s" % [state.where(entry["building"]["hex"]), " %d conscripts join the recruit pool." % joined if joined > 0 else ""])
+		var won: String = "taken" if not state.data.buildings[entry["building"]["type"]].get("liberation", true) else "liberated"
+		state.notices.append("%s %s!%s" % [state.where(entry["building"]["hex"]), won, " %d conscripts join the recruit pool." % joined if joined > 0 else ""])
 		_fireworks(entry["building"]["hex"])
 
 
@@ -967,6 +966,7 @@ func _pump_losses() -> void:
 	if state.losses.is_empty() or not _free():
 		return
 	var entry: Dictionary = state.losses.pop_front()
+	Sound.event("building_lost")
 	camera.center_on(MapView.hex_center(state.map, entry["building"]["hex"]))
 	_lost_popup = TownLostPopup.new()
 	_ui.add_child(_lost_popup)

@@ -71,17 +71,6 @@ static func volume_db(percent: Variant) -> float:
 	return -80.0 if v <= 0.0 else linear_to_db(v)
 
 
-## The event a building changing hands plays (GameState.captures): you taking one plays
-## the building type's riff; the enemy taking one of yours has its own sound; the enemy
-## taking a neutral one plays nothing (user's playtest, 2026-11-12). "" for none.
-static func capture_event(capture: Dictionary) -> String:
-	if capture["side"] == "player":
-		return "taken_" + str(capture["type"])
-	if capture["was"] == "player" and capture["side"] == "enemy":
-		return "building_lost"
-	return ""
-
-
 ## An event's cues, some after a delay.
 func _event(id: String) -> void:
 	for e in events.get(id, []):

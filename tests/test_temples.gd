@@ -39,8 +39,8 @@ func test_taking_a_temple_gives_no_rewards() -> void:
 		st.step()
 	check_eq(_temple(st, 10)["owner"], "player", "the temple is ours")
 	check_eq([st.gold, st.reputation, st.cards.size()], [gold, rep, cards], "no bonus gold, reputation or card")
-	check(st.liberations.is_empty(), "no liberation window")
-	check(st.notices.any(func(t: String): return t.contains("takes")), "a banner says so")
+	check_eq(st.liberations.size(), 1, "a window says so, like a liberation (round 11)")
+	check_eq([str(st.liberations[0]["card"]), st.liberations[0]["recruits"].size()], ["", 0], "with no card and no conscripts")
 	check_eq(s.capture_ticks, 0.0, "done")
 
 

@@ -1,6 +1,6 @@
 extends TestCase
 ## Sound (ROADMAP M5 session 2): the data hangs together, volumes save with the options,
-## and a building changing hands is recorded for the scenes to sound.
+## and every building you take has its riff.
 
 var d := GameData.load_dir()
 
@@ -39,26 +39,7 @@ func test_volumes_save_with_the_options() -> void:
 	check(absf(Sound.volume_db(50) - linear_to_db(0.5)) < 0.01, "50 is half")
 
 
-func test_captures_are_recorded_for_their_sounds() -> void:
-	var m := MapData.new(30, 9)
-	for i in m.size():
-		m.terrain[i] = d.terrain_ids["plains"]
-	m.settings = {"preset": "continent", "size": "small"}
-	m.player_base = m.index_of(Hex.from_offset(Vector2i(1, 4)))
-	m.enemy_base = m.index_of(Hex.from_offset(Vector2i(28, 4)))
-	var town := m.index_of(Hex.from_offset(Vector2i(10, 4)))
-	m.buildings.append({"type": "town", "hex": town, "shop": false, "hint": false, "hidden": false, "kind": "", "road": false, "name": "Testford"})
-	var st := GameState.new(d, m, GameLog.new())
-	st.debug_freeze_ai = true
-	st.add_squad("Ours", town, [["Knight", "front"]])
-	for i in int(d.rules["capture"]["ticks"]) + 1:
-		st.step()
-	check_eq(st.captures.size(), 1, "one capture")
-	check_eq(st.captures[0]["was"], "neutral", "it was neutral")
-	check_eq(Sound.capture_event(st.captures[0]), "taken_town", "taking a neutral town plays the town riff")
-	check_eq(Sound.capture_event({"type": "town", "side": "player", "was": "enemy"}), "taken_town", "and taking one back from the enemy")
-	check_eq(Sound.capture_event({"type": "tower", "side": "enemy", "was": "neutral"}), "", "the enemy taking a neutral tower plays nothing")
-	check_eq(Sound.capture_event({"type": "temple", "side": "enemy", "was": "player"}), "building_lost", "the enemy taking one of yours has its own sound")
-	for t in int(d.rules["capture"]["ticks"]) * 3:
-		st.step()
-	check(st.captures.size() == 1, "the capture is recorded once, at the end of the progress bar, not again while the squad stays")
+func test_every_building_you_take_has_a_riff_event() -> void:
+	for type in ["town", "tower", "temple"]:
+		check(d.audio["events"].has("taken_" + type), "taking a %s has its event (played when its window opens)" % type)
+	check(d.audio["events"].has("building_lost"), "and losing one (played when the lost window opens)")
