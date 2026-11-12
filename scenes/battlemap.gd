@@ -820,10 +820,30 @@ func _open_edit(cell := -1) -> void:
 	_edit = EditUnits.new()
 	_ui.add_child(_edit)
 	_edit.setup(state, cell)
+	_offer_tip("edit_units_open", _edit)
 	_edit.closed.connect(_close_edit)
 	_edit.deploy.connect(func(s: Squad):
 		_close_edit()
 		_start_deploy(s))
+
+
+## Shows the player tip due at `moment` (PlayerTips), if any, over `host`, pointing at
+## the part of it the tip names. Once dismissed it never shows again.
+func _offer_tip(moment: String, host: Control) -> void:
+	var id := PlayerTips.due(data, options, moment, "single_map" if state.single_map() else "campaign")
+	if id == "":
+		return
+	await get_tree().process_frame  # let the host lay itself out, so the anchor's rect is real
+	await get_tree().process_frame
+	if not is_instance_valid(host):
+		return
+	var t: Dictionary = data.tips["tips"][id]
+	var tip := TipPopup.new()
+	host.add_child(tip)
+	tip.setup(t["text"], host.anchor(t["anchor"]), options)
+	tip.closed.connect(func():
+		PlayerTips.mark_seen(options, id)
+		tip.queue_free())
 
 
 func _close_edit() -> void:

@@ -215,7 +215,12 @@ The enemy fields half as many squads as the map has towns (at least 3; 8 on the 
 
 ## Options
 
-Options on the Start screen and in the in-game menu (Esc) hold your own settings, saved between sessions. All on by default: whether a battle shows both squads and waits for Fight (a checkbox next to Fight turns it off too), whether switching to another window pauses the game (the battle, if one is playing, otherwise the map; you resume it yourself), the noon ledger, and the liberation message. The game also remembers the battle speed you last picked.
+Options on the Start screen and in the in-game menu (Esc) hold your own settings, saved between sessions. All on by default: whether a battle shows both squads and waits for Fight (a checkbox next to Fight turns it off too), whether switching to another window pauses the game (the battle, if one is playing, otherwise the map; you resume it yourself), the noon ledger, the liberation message, and player tips. The game also remembers the battle speed you last picked, and which tips you've seen.
+
+## Player tips
+
+- The first time you reach certain parts of the game, a small tip appears beside the part of the screen it's about, with an arrow and an outline pointing at it. You can carry on using the screen while it's up. **Got it** (or Esc, or the X) dismisses it for good. Untick **Show player tips** on any tip, or in Options, to turn them all off.
+- **So far:** when Edit Units opens at the start of a single map game, a tip points at the Recruits list: "To begin creating a new squad, drag a leader into an empty slot. To add to a squad, drag any unit into an active squad slot." More tips will be added over time.
 
 ## Testing tools (debug panel)
 

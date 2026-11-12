@@ -26,7 +26,7 @@ Where this spec and the spreadsheet disagree, this spec wins (see §21).
 
 **In scope:** one complete map, played start to finish (map 1), with the configurator, battlemap, Edit Units, battles, buildings, economy, cards, tech, neutrals, recruiting, enemy AI, log and debug tools.
 
-**Out of scope for now:** maps 2 and 3, the between-map army turn, the campaign layer, audio, tutorial, difficulty settings, magic items, final art.
+**Out of scope for now:** maps 2 and 3, the between-map army turn, the campaign layer, audio, a full tutorial (player tips are in; see §19.4), difficulty settings, magic items, final art.
 
 ## 3. Terminology
 
@@ -632,7 +632,7 @@ Changed 2026-11-10 (the user's "even start"): the enemy fields half as many squa
 - **Neutrals and hidden sites** per configurator settings.
 - **Default size:** Small.
 
-## 19. Log, debug and names
+## 19. Log, debug, names and tips
 
 ### 19.1 Game log
 
@@ -663,6 +663,14 @@ Changed 2026-11-10 (the user's "even start"): the enemy fields half as many squa
 ### 19.3 Names
 
 First and last names come from `data/unit-names.csv`, mixed independently, with no repeats in a run. Names appear on Edit Units, in the log, and in level-up and bond messages.
+
+### 19.4 Player tips
+
+Added 2026-11-11 (round 10). A tip is a small popup beside a part of the screen with an arrow pointing at it, shown once, the first time the player reaches a named moment, while the "Show player tips" option is on. Each tip has "Got it" and a ticked "Show player tips" box; unticking it turns all tips off (also in Options). Tips seen are remembered in the player's options, not the save. Text, moment, what it points at and the game modes it shows in are data (`data/tips.json`); tips are added over time.
+
+| Tip | Moment | Points at | Text |
+| --- | --- | --- | --- |
+| Building a squad | Single map mode, Edit Units opens (the opening screen) | The recruit pool | To begin creating a new squad, drag a leader into an empty slot. To add to a squad, drag any unit into an active squad slot. |
 
 ## 20. Technical approach
 

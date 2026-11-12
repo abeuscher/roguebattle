@@ -22,6 +22,17 @@
    "tip": "Off: a banner names the place instead (the window still opens when there's a card to choose).",
    "default": true
   },
+  "show_tips": {
+   "label": "Show player tips",
+   "tip": "Short pointers the first time you reach a part of the game (data/tips.json). Each shows once.",
+   "default": true
+  },
+  "tips_seen": {
+   "label": "Player tips seen",
+   "tip": "Not on the Options screen: the ids of tips already shown, so each shows once.",
+   "default": [],
+   "remembered": true
+  },
   "pause_on_focus_loss": {
    "label": "Pause when the game window loses focus",
    "tip": "Switching to another window pauses the map, or the battle if one is playing.",

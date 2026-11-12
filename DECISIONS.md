@@ -742,3 +742,12 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **Tests:** saving a loaded game gives the same file; after 1500 more ticks with battles and recruits, the loaded copy and the original match exactly (same RNG streams); slots on disk; a broken file, an old version and a changed map are refused; no saving with a battle waiting.
   - 381 tests passing.
 
+## Session 062 (2026-11-12): player tips (M4 session 33)
+
+- **Data:** `data/tips.json`, one entry per tip: `moment` (where the game asks; `edit_units_open` for now), `anchor` (what it points at; `recruit_pool`), optional `modes` (`single_map`, `campaign`) and `text`. Tips are offered in file order, one at a time.
+- **Rules:** `PlayerTips.due(data, options, moment, mode)` picks the first unseen tip for that moment and mode while the `show_tips` option is on; `mark_seen` adds the id to the remembered option `tips_seen` and saves the options. A tip counts as seen once dismissed (Got it, X or Esc), so one that vanishes because its screen closed shows again next time.
+- **Options:** `show_tips` (on the Options screen, on by default) and `tips_seen` (remembered, not shown) in `options.json`, so tips belong to the player, not the save, as agreed.
+- **Popup:** `TipPopup` sits over the screen without blocking it (only its panel takes the mouse), so the player can drag units while it's up. It goes to the left of the target if there's room, otherwise to the right, with a gold wedge pointing at the target and an outline round it. Esc closes the tip first, not the screen under it.
+- **Hook:** `Battlemap._offer_tip(moment, host)` waits two frames for the host to lay out, then asks the host's `anchor(name)` for a global rect (`EditUnits.anchor("recruit_pool")` is the Recruits panel). It's called when Edit Units opens, so the first tip shows on the opening screen of a single map game.
+  - 386 tests passing.
+

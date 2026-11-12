@@ -1,0 +1,11 @@
+{
+ "_note": "Player tips (ROADMAP M4 session 33). Each tip shows once, the first time its moment comes, while the player's \"Show player tips\" option is on; tips seen are remembered in the options, not the save. moment: where the game asks for a tip (edit_units_open: Edit Units opens). anchor: the part of the screen the popup points at (recruit_pool: the Recruits list in Edit Units). modes: game modes it shows in (single_map, campaign); missing means all. Tips are offered in this order.",
+ "tips": {
+  "build_squad": {
+   "moment": "edit_units_open",
+   "anchor": "recruit_pool",
+   "modes": ["single_map"],
+   "text": "To begin creating a new squad, drag a leader into an empty slot. To add to a squad, drag any unit into an active squad slot."
+  }
+ }
+}

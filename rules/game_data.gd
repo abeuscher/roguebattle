@@ -15,6 +15,7 @@ var items: Dictionary = {}          # item slots and items (§15.2)
 var cards: Dictionary = {}          # cards (§13)
 var tech: Dictionary = {}           # the tech tree (§14)
 var options: Dictionary = {}        # player options and their defaults (the Options screen)
+var tips: Dictionary = {}           # player tips: text, the moment that shows them, what they point at
 var tag_cache: Dictionary = {}      # "class|tag" -> bool, filled by Unit.has_tag
 var threat_ref: Dictionary = {}     # average stage-2 base stats, filled by Threat.reference
 var terrains: Array = []            # index = terrain id
@@ -43,6 +44,7 @@ static func load_dir(dir: String = "res://data") -> GameData:
 	d.cards = _read_json(dir.path_join("cards.json"))
 	d.tech = _read_json(dir.path_join("tech.json"))
 	d.options = _read_json(dir.path_join("options.json"))
+	d.tips = _read_json(dir.path_join("tips.json"))
 	d.terrains = _read_json(dir.path_join("terrain.json"))
 	for i in d.terrains.size():
 		d.terrain_ids[d.terrains[i]["key"]] = i

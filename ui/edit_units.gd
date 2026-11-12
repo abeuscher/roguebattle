@@ -36,6 +36,7 @@ var _modal: Control  # the unit detail panel while open
 var _title := UiStyle.label("Edit Units", 26)
 var _main := VBoxContainer.new()
 var _pool := VBoxContainer.new()
+var _gutter_box: Control  # the recruit pool's panel, which a player tip points at
 var _tab := "recruits"  # the gutter shows "recruits" or "items"
 var _tabs := {}  # tab -> Button
 var _pool_tools := VBoxContainer.new()  # the Recruits sort menu and color key, shown on that tab
@@ -125,6 +126,7 @@ func _leave() -> void:
 ## The recruit pool on the right; dropping a unit here sends it to the pool.
 func _gutter() -> Control:
 	var box := PanelContainer.new()
+	_gutter_box = box
 	box.add_theme_stylebox_override("panel", UiStyle.box(Color(0.07, 0.08, 0.1), 12))
 	box.custom_minimum_size.x = 300
 	box.set_drag_forwarding(Callable(), _can_drop.bind(-1, "", -1), _drop.bind(-1, "", -1))
@@ -181,6 +183,14 @@ func _gutter() -> Control:
 	_pool.add_theme_constant_override("separation", 6)
 	scroll.add_child(_pool)
 	return box
+
+
+## Where a player tip points (data/tips.json "anchor"), as a global rect.
+func anchor(name: String) -> Rect2:
+	match name:
+		"recruit_pool":
+			return _gutter_box.get_global_rect()
+	return Rect2()
 
 
 ## `from_army`: opened from inside Edit Units (the squad view's X comes back to the

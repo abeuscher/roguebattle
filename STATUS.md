@@ -131,7 +131,8 @@ Where the project stands, for picking up in a new session or on another machine.
 - **M4 session 30 done (session 058):** held buildings see enemies (towers furthest); one more Recruit chance after beating neutrals, joining hurt; a rare Phoenix card; shops vary and one per map holds a very rare item; Demand they flee only at 25%+; debt and death by penury; upkeep only for squads on the map, scaled to the map's towns and towers; starting gold 2 days of a full field army. See `DECISIONS.md` session 058.
 - **M4 session 31 done (session 059):** temples are taken like towns (no rewards; the enemy wants them least), a Portal between temples you hold, training XP while resting in one (more for low levels), and catch-up battle XP. See `DECISIONS.md` session 059.
 - **M4 session 32 done (session 061):** save game: 3 slots from the Esc menu, a save prompt on Return to title and Quit, Continue and Load game on the start screen; loaded games play on identically. Also, between sessions (session 060): the Portal picks a glowing temple on the map with a confirmation, and the debug squad builder pops up its refusals and empties after placing. See `DECISIONS.md` sessions 059–061.
-- **M4 session 33 next:** player tips (the mechanism and the first tip). Then the M4 milestone playtest.
+- **M4 session 33 done (session 062):** player tips: the mechanism (data-driven tips shown once, pointing at the screen, with a "Show player tips" box and option) and the first tip on the opening Edit Units screen. See `DECISIONS.md` session 062.
+- **Next: the M4 milestone check, the first real playtest.** Every M4 session in `ROADMAP.md` is done.
 - **M4 sessions 15–20 planned (playtest round 7, 2026-11-10)** in `ROADMAP.md`: battle and rules fixes (cards truly at once, enemy makeup after a fight, items equippable anywhere, fewer neutrals, arrival log line); map generation (100% land, reef-like shallows around islands); HUD layout (clock under the minimap, gold coin, reputation meter, squad drawer, smaller rounded toolbar with icons); squad status icons and flag-free tokens with destination flags; debug panel overhaul; save game (3 slots, prompt to save on quit). The user's answers are in the ROADMAP rows.
 - **M4 milestone check: the first real playtest**, after session 33.
 - **Unit portraits:** the user's large unit images (21 so far) are committed in `data/unit_art/` (not used in the game yet). Building them into the unit detail view is a future task in `ROADMAP.md`, waiting on more of the set.
@@ -143,7 +144,7 @@ Where the project stands, for picking up in a new session or on another machine.
 
 ## How the user works
 
-- **One git branch per session,** named `session-NNN` (next: `session-062`), cut from `main`.
+- **One git branch per session,** named `session-NNN` (next: `session-063`), cut from `main`.
 - **Commit locally only:**
   - Never push or merge; the user merges and pushes, then says "continue".
   - Commit messages end with a `Co-Authored-By:` line naming whatever Claude model is doing the session (the harness's own attribution instructions say exactly what to write).
