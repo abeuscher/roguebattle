@@ -161,10 +161,14 @@ func _units_tab() -> Control:
 			_status.text = "Open the panel with the mouse over a hex."
 			return
 		var placed = DebugTools.place(state, _draft, SIDES[side.selected], cursor)
-		if placed is String:
+		if placed is String:  # a popup, not just the status line, which was easy to miss (user's notes, 2026-11-11)
 			_status.text = placed
+			_alert("Can't place this squad", placed)
 			return
-		_done("Placed %s." % placed.name)
+		_draft = DebugTools.draft(state)  # an empty builder, ready for the next squad
+		_picked_unit = null
+		_show_draft()
+		_done("Placed %s. The builder is empty again." % placed.name)
 		_fill_squads(), true), _button("Clear", func():
 		_draft = DebugTools.draft(state)
 		_picked_unit = null
@@ -357,6 +361,16 @@ func _on_squad(action: Callable) -> void:
 		return
 	action.call(s)
 	_done("Done: %s." % s.name)
+
+
+## A notice over the panel with one OK button.
+func _alert(title: String, text: String) -> void:
+	var box := ConfirmDialog.new()
+	add_child(box)
+	box.setup("%s
+%s" % [title, text], "OK", "")
+	box.confirmed.connect(box.queue_free)
+	box.cancelled.connect(box.queue_free)
 
 
 func _done(text: String) -> void:

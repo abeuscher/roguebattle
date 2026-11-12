@@ -1,13 +1,14 @@
 class_name ConfirmDialog
 extends Control
 ## A yes/no question over the screen, e.g. "Deploy Noal (Archer) for 60 gold?".
-## A modal: 50% dark overlay. Enter confirms, Esc cancels.
+## A modal: 50% dark overlay. Enter confirms, Esc cancels. With no cancel text it's a
+## plain notice with one button (either key closes it).
 
 signal confirmed
 signal cancelled
 
 
-func setup(question: String, ok_text: String) -> void:
+func setup(question: String, ok_text: String, cancel_text := "Cancel") -> void:
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	var shade := ColorRect.new()
 	shade.color = Color(0, 0, 0, 0.5)
@@ -23,14 +24,19 @@ func setup(question: String, ok_text: String) -> void:
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 20)
 	panel.add_child(col)
-	col.add_child(UiStyle.label(question, 22))
+	var text := UiStyle.label(question, 22)
+	if question.length() > 60:  # long text wraps instead of stretching the box across the screen
+		text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		text.custom_minimum_size.x = 640
+	col.add_child(text)
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_END
 	row.add_theme_constant_override("separation", 12)
 	col.add_child(row)
-	var no := UiStyle.button("Cancel", 160)
-	no.pressed.connect(func(): cancelled.emit())
-	row.add_child(no)
+	if cancel_text != "":
+		var no := UiStyle.button(cancel_text, 160)
+		no.pressed.connect(func(): cancelled.emit())
+		row.add_child(no)
 	var yes := UiStyle.button(ok_text, 180, true)
 	yes.pressed.connect(func(): confirmed.emit())
 	row.add_child(yes)

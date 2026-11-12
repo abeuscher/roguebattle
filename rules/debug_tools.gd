@@ -43,8 +43,8 @@ static func remove_unit(state: GameState, s: Squad, u: Unit) -> void:
 static func place(state: GameState, d: Squad, side: String, hex: int) -> Variant:
 	if d.units.is_empty():
 		return "Add some units first."
-	if d.leader == null:
-		return "The squad needs a unit that can lead."
+	if d.leader == null or d.leader not in d.units or not d.leader.info(state.data)["can_lead"] or not d.leader.is_alive():
+		return "It has no leader. Add a unit that can lead (the gray star in Edit Units marks them): a squad without one can't take buildings or act properly."
 	var number := 0
 	var cell := -1
 	if side == "player":

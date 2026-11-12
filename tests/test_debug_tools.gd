@@ -64,6 +64,13 @@ func test_removing_a_unit_from_the_draft() -> void:
 	check(dr.leader == null, "no one else can lead")
 	check(DebugTools.place(st, dr, "player", _at(st.map, 5, 4)) is String, "a squad without a leader isn't placed")
 	check(DebugTools.place(st, DebugTools.draft(st), "player", _at(st.map, 5, 4)) is String, "nor an empty one")
+	var stale := _draft(st)
+	var gone := stale.leader
+	stale.units.erase(gone)  # a leader that's no longer in the squad doesn't count
+	check(DebugTools.place(st, stale, "player", _at(st.map, 5, 4)) is String, "a stale leader isn't a leader")
+	var fallen := _draft(st)
+	fallen.leader.hp = 0
+	check(DebugTools.place(st, fallen, "player", _at(st.map, 5, 4)) is String, "nor a fallen one")
 
 
 func test_the_draft_holds_a_full_squad_and_no_more() -> void:
