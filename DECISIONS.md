@@ -765,3 +765,11 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **Info button (user's request):** the key help at the map's bottom left is hidden behind a round Lucide "info" button there; clicking it shows the help above the button (icon gold while it's open). Off at the start of every game, not remembered.
   - 389 tests passing.
 
+## Session 064 (2026-11-12): game start and tactics (M4 session 35)
+
+- **Your name:** the Game summary has a "Your name" field (a LineEdit, up to `rules.player_name_max` 24 characters), pre-filled with a random first and last name from the unit names list; an empty field gets a random one too. It's `GameConfig.player_name` (not in the share code, so shared maps don't carry names) and goes to the game as `settings.player_name`, which is saved. `_form` names the Opinion Leader before logging, so the log uses the name from the first line; their squad is named after them as usual ("Ada (Sapper)"). The name is reserved in the name book so no recruit shares it.
+- **Enemy forward towns:** after placing its squads, the enemy picks 1 or 2 towns (`rules.enemy_forward_towns.count`, never more than its field squads), each neutral and not hidden, weighted by `GameState.centrality()` squared (`middle_power` 2): 1 at the hex midway between the bases, falling to 0 at half the bases' distance away. The AI's own "middle" score (equal distance to both bases) wasn't used, because it rates a town far off to the side, near neither base, as central; on seed 7 it put a Warband just south of the Player Base. The first field squads move straight to those towns, which become enemy-held. The squad count is unchanged. Their `post` stays the Enemy Base (where they return to revive). Liberating one counts as a first liberation (a card). `EnemyAI.middle()` is the old formula split out, unchanged.
+- **Tactics per squad:** `Squad.tactic` ("best" to start); `start_battle` puts it on the player's side; the battle view writes the player's choice back to the squad. Saved like any squad field; older saves load with Best. The enemy still always fights on Best.
+- `test_contact.test_enemy_placement` now allows field squads on enemy-held forward towns.
+  - 392 tests passing.
+

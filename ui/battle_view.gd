@@ -261,7 +261,9 @@ func _build_controls() -> void:
 		_tactic.set_item_tooltip(_tactic.item_count - 1, TACTIC_TIPS[t])
 	_tactic.select(Battle.TACTICS.find(battle.tactics[0]))
 	_tactic.custom_minimum_size = Vector2(140, 44)
-	_tactic.item_selected.connect(func(i: int): battle.tactics[0] = Battle.TACTICS[i])
+	_tactic.item_selected.connect(func(i: int):
+		battle.tactics[0] = Battle.TACTICS[i]
+		battle.sides[0].tactic = Battle.TACTICS[i])  # kept for its next battle (round 11)
 	_controls.add_child(_tactic)
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = SIZE_EXPAND_FILL

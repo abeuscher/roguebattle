@@ -415,7 +415,7 @@ Occultist and Necromancer lines can, once per battle, fill an empty slot with a 
    - Ranged and Magic can hit any row.
    - Melee (any row), (reach 2nd row), group attacks, Bulwark, Guard, Pounce and the other traits follow the sheet's Mechanics tab.
 3. **Player controls during battle:**
-   - Tactic, switchable any time: Best (each unit hits the target it hurts most), Strong (focus the strongest), Weak (focus the weakest), Leader (focus the leader).
+   - Tactic, switchable any time: Best (each unit hits the target it hurts most), Strong (focus the strongest), Weak (focus the weakest), Leader (focus the leader). Each squad keeps the tactic last chosen for it into its next battles until changed, saved with the game (round 11, 2026-11-12).
    - Retreat.
    - Play any number of cards.
 4. **Outcomes:**

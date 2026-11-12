@@ -42,10 +42,12 @@ func test_enemy_placement() -> void:
 		check(not s.units.any(func(u: Unit): return Battle.base_kind(u.info(d)["back_attack" if u.row == "back" else "front_attack"]) == "Heal"),
 				"%s: no healers" % s.name)
 		check(s.id > 100, "enemy squads are numbered from 101")
-		check_eq(s.hex, m.enemy_base, "%s starts on the Enemy Base" % s.name)
+		var town := st.building_at(s.hex)
+		check(s.hex == m.enemy_base or (s.role == "field" and town.get("type", "") == "town" and town["owner"] == "enemy"),
+				"%s starts on the Enemy Base or a forward town (round 11)" % s.name)
 	check_eq(roles, {"leader": 1, "base_guard": 1, "field": enemies.size() - 2}, "roles")
 	for b in m.buildings:
-		if b["type"] not in ["player_base", "enemy_base"] and b.has("owner"):
+		if b["type"] not in ["player_base", "enemy_base"] and b.has("owner") and not st.squads.any(func(s: Squad): return s.side == "enemy" and s.hex == b["hex"]):
 			check_eq(b["owner"], "neutral", "%s starts neutral" % b["type"])
 	var bare := MapData.new(10, 10)
 	bare.settings = {"preset": "continent", "size": "small"}

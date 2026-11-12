@@ -1435,12 +1435,20 @@ func _form(number: int, squad_name: String, at_hex: int, members: Array, side: S
 		s.base_slots = army.base_slots
 	elif side == "enemy" and single_map():  # enemy builds of 5-6 need the same 6 slots
 		s.base_slots = int(data.rules["single_map"]["base_slots"])
+	var joined: Array[Unit] = []
 	for m in members:
 		var u := Unit.roll(data, m[0], rng.get_stream("recruit"), names)
 		if s.add(data, u, m[1]):
-			log.add(clock.tick, "progression", "%s the %s joins %s." % [u.name, u.unit_class, s.name], s.id,
-					{"stats": u.stats, "alignment": u.alignment, "charisma": u.charisma, "growth": u.growth,
-					"talent": u.talent, "luck": u.luck})
+			joined.append(u)
+	var given: String = settings.get("player_name", "")
+	if side == "player" and number == 1 and opinion_leader == null and given != "" and s.leader:
+		s.leader.name = given  # the player's name goes to the Opinion Leader (round 11)
+		names.used[given] = true
+		s.refresh(data)
+	for u in joined:
+		log.add(clock.tick, "progression", "%s the %s joins %s." % [u.name, u.unit_class, s.name], s.id,
+				{"stats": u.stats, "alignment": u.alignment, "charisma": u.charisma, "growth": u.growth,
+				"talent": u.talent, "luck": u.luck})
 	s.morale = int(data.rules["starting_morale"])
 	log.add(clock.tick, "map", "%s forms: travels as %s, speed tier %d." % [s.name, s.travel_name(), s.speed_tier], s.id)
 	return s
@@ -1670,6 +1678,44 @@ func place_enemies() -> void:
 			s.balance_rows(data)
 			s.role = entry["role"]
 			s.post = map.enemy_base
+	_forward_towns(r)
+
+
+## Enemy forward towns (round 11): the enemy starts holding 1 or 2 towns (rules.json
+## enemy_forward_towns), picked at random with a weight toward the middle between the
+## bases (centrality()); one of its field squads, already placed, starts on each. No
+## extra squads, and never more towns than field squads.
+func _forward_towns(r: RandomNumberGenerator) -> void:
+	var cfg: Dictionary = data.rules["enemy_forward_towns"]
+	var field := squads.filter(func(o: Squad): return o.side == "enemy" and o.role == "field")
+	var count := mini(r.randi_range(int(cfg["count"][0]), int(cfg["count"][1])), field.size())
+	var towns := map.buildings.filter(func(b): return b["type"] == "town" and not b["hidden"] and b["owner"] == "neutral")
+	for k in count:
+		var weights := towns.map(func(b): return pow(centrality(b["hex"]), float(cfg["middle_power"])))
+		var total: float = weights.reduce(func(a, w): return a + w, 0.0)
+		if total <= 0.0:
+			return
+		var roll := r.randf() * total
+		var pick := 0
+		while pick < towns.size() - 1 and roll >= weights[pick]:
+			roll -= weights[pick]
+			pick += 1
+		var b: Dictionary = towns[pick]
+		towns.remove_at(pick)
+		b["owner"] = "enemy"
+		var s: Squad = field[k]
+		s.hex = b["hex"]
+		log.add(clock.tick, "map", "%s holds %s." % [s.name, where(b["hex"])], s.id)
+
+
+## How close a hex is to the point midway between the two bases: 1 there, falling to 0
+## half the bases' distance away (and beyond).
+func centrality(i: int) -> float:
+	var p := map.hex_at(map.player_base)
+	var e := map.hex_at(map.enemy_base)
+	var mid := Hex.round_axial((p.x + e.x) / 2.0, (p.y + e.y) / 2.0)
+	var half := maxf(1.0, Hex.distance(p, e) / 2.0)
+	return maxf(0.0, 1.0 - Hex.distance(map.hex_at(i), mid) / half)
 
 
 ## Gives an idle roamer a new order from NeutralAI.target_hex, if it needs one.
@@ -2131,6 +2177,7 @@ func start_battle(player: Squad, enemy: Squad, defender: Squad) -> Battle:
 	b.odds = Threat.label(data, player, enemy)
 	if player.side == "player":
 		b.tech[0] = tech
+		b.tactics[0] = player.tactic  # the squad's last tactic (round 11)
 	log.add(clock.tick, "battle", "Battle: %s against %s on %s. The enemy looks %s." % [player.name, enemy.name, info["name"],
 			Threat.label(data, player, enemy).to_lower()], player.id)
 	if player.side == "player":

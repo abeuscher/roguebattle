@@ -11,6 +11,7 @@ const ALPHABET := "0123456789ABCDEFGHJKMNPQRSTVWXYZ"  # 32 symbols, no I, L, O o
 var data: GameData
 var values := {}  # field key -> chosen option
 var seed := 0
+var player_name := ""  # the Game summary's "Your name" (round 11): the Opinion Leader's name; not in the share code
 
 
 static func create(game_data: GameData, game_seed := 0) -> GameConfig:
@@ -122,6 +123,8 @@ func game_settings() -> Dictionary:
 	for f in data.config_fields:
 		if f["target"] == "game":
 			out[f["key"]] = values[f["key"]]
+	if player_name != "":
+		out["player_name"] = player_name
 	return out
 
 

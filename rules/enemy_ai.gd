@@ -46,13 +46,16 @@ static func _takeable(state: GameState, b: Dictionary) -> bool:
 ## between the two bases, double if the player holds it.
 static func value(state: GameState, b: Dictionary) -> float:
 	var f: Dictionary = state.data.ai["field"]
-	var m := state.map
-	var at := m.hex_at(b["hex"])
+	var v := float(f["type_value"][b["type"]]) * (1.0 + float(f["middle_weight"]) * middle(state.map, b["hex"]))
+	return v * float(f["player_held"]) if b["owner"] == "player" else v
+
+
+## How central a hex is between the two bases: 0 at a base, 1 midway.
+static func middle(m: MapData, i: int) -> float:
+	var at := m.hex_at(i)
 	var de := float(Hex.distance(at, m.hex_at(m.enemy_base)))
 	var dp := float(Hex.distance(at, m.hex_at(m.player_base)))
-	var middle := 1.0 - absf(de - dp) / maxf(1.0, de + dp)
-	var v := float(f["type_value"][b["type"]]) * (1.0 + float(f["middle_weight"]) * middle)
-	return v * float(f["player_held"]) if b["owner"] == "player" else v
+	return 1.0 - absf(de - dp) / maxf(1.0, de + dp)
 
 
 ## Holding the building it stands on: worth more the more player strength is near,
