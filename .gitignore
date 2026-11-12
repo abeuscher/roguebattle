@@ -17,3 +17,6 @@ logs/
 export_presets.cfg
 *.exe
 *.pck
+
+# Audio tools (FluidSynth, the SoundFont): see tools/render_audio.py
+tools/audio_bin/
