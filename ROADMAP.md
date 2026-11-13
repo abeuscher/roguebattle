@@ -53,7 +53,7 @@ Goal: a generated map the player can look at, and one squad they can move.
 - Front/rear row placement at half-slot granularity, with coverage from front to rear taken more literally by position rather than just by row — visual/positional rework, not sure yet if it's a good idea.
 - Unit graphics: a playing-card-style graphic for attack mode, and a character sheet built around that same graphic space. Presentation-layer attention to detail.
 - Iconography in the full Edit Units view: small per-class icons, and a ranged-vs-melee icon instead of spelling it out — current text is a lot to scan.
-- A small campaign mode (small/medium/large stages) as a separate mode layered on top of the single-map work here, adding as little as possible on top of it. **Expanded 2026-11-08, now the top post-M4 topic:** the game is too hard to start, but the current map and AI are a good *final* level and must not be nerfed; build toward it instead. Three maps: a tiny intro (under 25% of today's Small, maybe 3–4 buildings in a reachable area plus the enemy base) with 5 squads and a couple of fairly easy wins; a second map that adds 5 more squads; a third where the army can grow to the full 16. Needs SPEC changes (§2 lists maps 2–3 and the campaign layer as out of scope; §18 says 6 starting squads).
+- A small campaign mode (small/medium/large stages) as a separate mode layered on top of the single-map work here, adding as little as possible on top of it. **Expanded 2026-11-08, now the top post-M4 topic:** the game is too hard to start, but the current map and AI are a good *final* level and must not be nerfed; build toward it instead. Three maps: a tiny intro (under 25% of today's Small, maybe 3–4 buildings in a reachable area plus the enemy base) with 5 squads and a couple of fairly easy wins; a second map that adds 5 more squads; a third where the army can grow to the full 16. Needs SPEC changes (§2 lists maps 2–3 and the campaign layer as out of scope; §18 says 6 starting squads). **Superseded 2026-11-12** by the campaign outline under M6 below.
 - Unit iconography for all 190 classes (strategy exploration only, no build yet): simple icons for the Edit Units overview and a more detailed picture for the squad detail. One idea: a symbol per progression step, so Serf has a base image, each Serf-line class adds to it and its descendants add again, so a whole line reads as one consistent family at a glance. Goes with the unit graphics and Edit Units iconography notes above.
 - A player-friendly, readable slice of the log shown on screen (or a small notifier box with the most recent message) as a lighter-weight alternative to popups for telling the player what's currently happening. Noted 2026-11-07 alongside the liberation popup work; not started.
 
@@ -139,3 +139,29 @@ The small notes from this round went in at once (session 067): the pause sign, b
 | --- | --- | --- | --- | --- |
 | 1 | **Windows: title bar and close button.** Every modal gets the same treatment: a title bar set apart from the content (its own band, the title in a display font, a divider), the close button sized and placed consistently in it, with its own small background and hover and pressed states so it reads as a button. Then a hierarchy pass on the busiest windows (liberation, battle start, building, squad, shop): headings, groups and spacing so the content doesn't run together. Done in `UiStyle` (`title_row` and a window helper) so every window picks it up | §5 | Screenshots of each window before and after; the close button's hover and pressed states | |
 | 2 | **Shop overhaul.** The shop should look and behave like a familiar RPG shop, with some personality. Proposed, to settle with the user first: a shopkeeper (name, a line of greeting, a portrait slot), Buy and Sell tabs, goods in a list or grid with icon, price and stock, a detail panel (what it does, who in the squad can use it, and how it compares to what they hold), a quantity picker for supplies, and your gold before and after. **Question for the user:** selling isn't in the design yet (SPEC §15): sell items back for a share of the price (half is the usual)? Serfs, healing at temples and the Smuggler and Fence discounts keep working as now | §15, §16 | Tests: buying and selling move gold and stock as set; screenshots of a town, tower, nomad and temple shop | |
+
+## M6: Campaign (outline, user's notes 2026-11-12)
+
+Shaping only: no sessions yet. Sessions get planned once the thin story is written, so each map's settings hang on its chapter. Replaces the three-map plan parked after M4.
+
+**Lengths:** Short (3 maps), Medium (6) and Long (10). The user will provide a structure for each; how the levels progress gets settled around the story.
+
+**Map 1 (every length):**
+- **Very small:** 100 × 50 hexes with a handful of buildings, about 2 or 3 of each kind.
+- **A real enemy from the start:** fairly challenging from the first map, not a pushover.
+- **Starting army:** 4 squads, rolled at random but each with at least 2 front-row fighters and at least one healer, and only one squad with a monster in it (read as a race-line Large unit: to confirm). In the recruit pool besides: 6 Serfs and 3 recruits, to mix and match for anyone who wants to diversify.
+
+**Map 2 on:**
+- **Scaling up:** larger maps, more of the army, a stronger enemy.
+- **A thin story:** each chapter is a map with a named set of configuration settings (a preset in the configurator's terms: size, terrain mix, buildings, enemy strength, victory conditions). Chapters lean on different terrain, which also changes which neutrals are likely.
+- **Carried between maps:** to settle (the army, gold, cards, tech?). The single map mode's rules stay the baseline.
+
+**Open questions (for when sessions get planned):**
+- Which "monster" units count for the one-monster-squad rule.
+- What carries from one map to the next, and what resets.
+- Where the story shows: a screen between maps, a few lines at each map's start, both?
+- How a lost map works in a campaign: retry it, or the campaign ends.
+- SPEC changes: §2 lists the campaign layer as out of scope; §18's start is the single map's.
+
+**Earmarked for later: a campaign creator.** Players write their own campaign: a series of maps, each with its text and map settings, saved to a file that can be shared and loaded by others. Builds on the named chapter settings above, so worth keeping those in data from the start.
+
