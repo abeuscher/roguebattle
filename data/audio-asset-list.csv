@@ -12,15 +12,15 @@ Main map theme (night),Music,Loop,32,112,68.6,Variant of the day theme with spoo
 Edit units / army theme,Music,Loop,16,120,32.0,Snare-based military bit. 120 is standard march tempo.,"Snare (drum channel), Brass Section, Piccolo","Done (draft 2: slower, orchestral)"
 Battle theme (+ terrain variants),Music,Loop,16,160,24.0,"Percussive, bass-heavy, fast. Same theme and chords per terrain, with small instrument swaps. Terrain list TBD.","Synth Bass / Slap Bass, Taiko Drum, drum kit, Brass Section","Done (plains, forest, mountain, swamp)"
 Victory riff,Stinger,One-shot,1,120,2.0,Trumpet fanfare,"Trumpet, Timpani",Done
-Loss riff,Stinger,One-shot,1,90,2.7,Trumpet fail noise (flatulent). Needs pitch bend; may be easier as a recorded SFX.,Muted Trumpet or Trombone,Draft to hear (session 069)
+Loss riff,Stinger,One-shot,1,90,2.7,Trumpet fail noise (flatulent). Needs pitch bend; may be easier as a recorded SFX.,Muted Trumpet or Trombone,Done
 Liberation theme,Stinger,One-shot,2,80,6.0,Orchestral swell,"String Ensemble, Brass Section, Timpani",Not used: the building riffs carry liberations (keep or drop?)
-Temple riff,Stinger,One-shot,2,90,5.3,Pan flute type sound,Pan Flute,Draft to hear (session 069)
+Temple riff,Stinger,One-shot,2,90,5.3,Pan flute type sound,Pan Flute,Done
 Town riff,Stinger,One-shot,2,130,3.7,Banjo / guitar boing boing,Banjo or Steel Guitar,Done
-Tower riff,Stinger,One-shot,2,76,6.3,"Organ riff, Dracula style",Church Organ,Draft to hear (session 069)
+Tower riff,Stinger,One-shot,2,76,6.3,"Organ riff, Dracula style",Church Organ,Done
 Hidden item sound,Stinger,One-shot,1,140,1.7,"Surprise music, bells ringing in sequence","Glockenspiel, Tubular Bells or Tinkle Bell",Done
-Building lost,Stinger,One-shot,2,80,6.0,"The enemy takes one of your towns, towers or temples. One sound for all three, clearly different from the capture riffs: ominous, falling.","French Horn or Trombone (low), Timpani, Tremolo Strings",Draft to hear (session 069)
+Building lost,Stinger,One-shot,2,80,6.0,"The enemy takes one of your towns, towers or temples. One sound for all three, clearly different from the capture riffs: ominous, falling.","French Horn or Trombone (low), Timpani, Tremolo Strings",Done
 Fireworks burst,Effect,One-shot,,,,"One burst of the fireworks over a liberated building: a pop or crackle. Plays with each of the show's 5 bursts, 0.35 s apart, separate from the building's riff.",,"Done (one pop per burst, 5 bursts)"
-Recruit joined,Stinger,One-shot,1,,1.5,"A recruit attempt succeeds, or a rare recruit joins: short and welcoming.",,Draft to hear (session 069)
+Recruit joined,Stinger,One-shot,1,,1.5,"A recruit attempt succeeds, or a rare recruit joins: short and welcoming.",,Done
 Button click,Effect,One-shot,,,,"Every button press: one short, high wood block.",Wood Block (drum channel),Done
 End of map: victory,Music,Loop,8,96,20.0,The motif broad on trumpet over horns and strings.,"Trumpet, French Horn, String Ensemble, Timpani, Glockenspiel",Done
 End of map: defeat,Music,Loop,8,66,29.1,The motif slow on oboe over strings and contrabass.,"Oboe, String Ensemble, Contrabass, Timpani",Done
