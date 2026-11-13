@@ -596,6 +596,7 @@ All values are placeholders.
 | Going broke | At zero gold, the player can pull a squad back to base for gold equal to its total value. Tune so this gives room to recover rather than prolonging a loss |
 | Services | Cure one status 10, heal a unit to full 20, revive 50 × stage |
 | Debt | Gold can go below zero at noon (playtest round 9). Nothing can be bought while in debt; the HUD and the noon ledger count the noons. 3 noons running in debt, or debt past about 2 days' upkeep of a full field army, is a defeat (§6.8). Selling a squad stays the way out |
+| Selling back | Items nobody wears and supplies sell to any shop for half their base price, whatever the reputation or the squad (user, 2026-11-13) |
 | Consumables | Herb (+30 HP) 15; Revival Draught (revive a fallen unit anywhere on the map) 80; one cure potion per status, used in battle (Antidote for poison, and so on) 10–20. Shops hold limited stock, refilled at noon (user's playtest notes, 2026-11-08) |
 
 ### 15.2 Items

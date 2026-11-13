@@ -1,0 +1,27 @@
+{
+ "_note": "Shops (playtest round 12, ROADMAP shop overhaul). sell_share: what an item or supply sells back for, as a share of its base price (user, 2026-11-13: half). Each shop gets a shopkeeper the first time it's opened: a name from the names list and one greeting for its building type, kept for the rest of the map. Placeholders.",
+ "sell_share": 0.5,
+ "greetings": {
+  "town": [
+   "Welcome, friend! Everything here is honest work and fair coin.",
+   "Ah, a customer! Mind the floorboards, and take your time.",
+   "Fresh stock this morning. Well, fresh enough.",
+   "You look like you've walked a long way. Something for the road?"
+  ],
+  "tower": [
+   "Mind the shadows. They bite only paying customers.",
+   "Everything has a price. Most things have two.",
+   "Ah. You found the stairs. Few do.",
+   "Don't touch the jars on the top shelf. Anything else, we can talk."
+  ],
+  "nomads": [
+   "Quick now, the caravan leaves at half day!",
+   "From the far side of the map, every piece. Look, look!",
+   "We buy, we sell, we move on. Today you are lucky.",
+   "The road gives, the road takes. What will you take?"
+  ],
+  "temple": [
+   "Peace be with you. Rest, and let the wounded be tended."
+  ]
+ }
+}

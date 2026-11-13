@@ -1221,6 +1221,55 @@ func buy_serf(b: Dictionary, s: Squad = null) -> Unit:
 	return u
 
 
+## Selling back (playtest round 12; user, 2026-11-13): items and supplies sell for half
+## their base price (shops.json sell_share), whatever the reputation or the squad. Only
+## a free item sells: one someone wears comes off first (Edit Units).
+func sell_price(id: String) -> int:
+	var base: Dictionary = data.items["items"].get(id, data.items["consumables"].get(id, {}))
+	return maxi(1, roundi(int(base.get("price", 0)) * float(data.shops["sell_share"])))
+
+
+## Items nobody wears, in the order they were got.
+func free_items() -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for item in army.items:
+		if army.holder(item) == null:
+			out.append(item)
+	return out
+
+
+func sell_item(b: Dictionary, item: Dictionary) -> bool:
+	if not b.get("shop", false) or item not in army.items or army.holder(item) != null:
+		return false
+	var value := sell_price(item["id"])
+	army.items.erase(item)
+	_pay(value, "Sold a %s" % data.items["items"][item["id"]]["name"])
+	log.add(clock.tick, "economy", "Sold a %s for %d gold." % [data.items["items"][item["id"]]["name"], value])
+	return true
+
+
+func sell_supply(b: Dictionary, id: String) -> bool:
+	if not b.get("shop", false) or int(army.supplies.get(id, 0)) <= 0:
+		return false
+	var value := sell_price(id)
+	army.supplies[id] = int(army.supplies[id]) - 1
+	if army.supplies[id] == 0:
+		army.supplies.erase(id)
+	_pay(value, "Sold a %s" % data.items["consumables"][id]["name"])
+	log.add(clock.tick, "economy", "Sold a %s for %d gold." % [data.items["consumables"][id]["name"], value])
+	return true
+
+
+## The shop's keeper (playtest round 12): a name and a greeting for the building type,
+## rolled the first time the shop opens and kept (saved with the building).
+func shopkeeper(b: Dictionary) -> Dictionary:
+	if not b.has("keeper"):
+		var r := rng.get_stream("shopkeepers")
+		var lines: Array = data.shops["greetings"].get(b["type"], data.shops["greetings"]["town"])
+		b["keeper"] = {"name": names.take(r) if names else "The keeper", "greeting": lines[r.randi() % lines.size()]}
+	return b["keeper"]
+
+
 ## Whether a map consumable would do anything for this unit: a Herb for a hurt
 ## living unit, a Revival Draught for a fallen one.
 func supply_helps(u: Unit, id: String) -> bool:

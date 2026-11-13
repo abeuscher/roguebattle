@@ -123,3 +123,35 @@ func test_options_defaults_and_saving() -> void:
 	PlayerOptions.save_values(v, path)
 	check_eq(PlayerOptions.load_values(d, path)["battle_wait_for_fight"], false, "the choice is kept")
 	DirAccess.remove_absolute(path)
+
+
+## Selling back (playtest round 12; user, 2026-11-13): half the base price, free items only.
+func test_selling_back_for_half() -> void:
+	var st := _state()
+	var shop: Dictionary = st.map.buildings[0]
+	var sword := st.army.add_item("sword")
+	var worn := st.army.add_item("dagger")
+	var u: Unit = st.army.cells[0].units[0]
+	st.army.equip(u, worn)
+	var gold := st.gold
+	check_eq(st.sell_price("sword"), int(d.items["items"]["sword"]["price"]) / 2, "half the base price")
+	check(worn not in st.free_items() and sword in st.free_items(), "only what nobody wears is for sale")
+	check(not st.sell_item(shop, worn), "a worn item doesn't sell")
+	check(st.sell_item(shop, sword), "a free one does")
+	check_eq(st.gold, gold + st.sell_price("sword"), "for its price")
+	check(sword not in st.army.items, "and it's gone")
+	st.reputation = 100
+	check_eq(st.sell_price("dagger"), int(d.items["items"]["dagger"]["price"]) / 2, "reputation doesn't change what you get")
+	st.army.supplies["herb"] = 2
+	check(st.sell_supply(shop, "herb"), "supplies sell too")
+	check_eq(int(st.army.supplies["herb"]), 1, "one at a time")
+	check(st.sell_supply(shop, "herb") and not st.army.supplies.has("herb"), "down to none")
+	check(not st.sell_supply(shop, "herb"), "and no more")
+
+
+func test_a_shopkeeper_stays_the_same() -> void:
+	var st := _state()
+	var shop: Dictionary = st.map.buildings[0]
+	var k := st.shopkeeper(shop)
+	check(str(k["name"]) != "" and str(k["greeting"]) in d.shops["greetings"]["town"], "a name and a town greeting")
+	check_eq(st.shopkeeper(shop), k, "the same keeper next time")
