@@ -13,7 +13,7 @@ Edit units / army theme,Music,Loop,16,120,32.0,Snare-based military bit. 120 is 
 Battle theme (+ terrain variants),Music,Loop,16,160,24.0,"Percussive, bass-heavy, fast. Same theme and chords per terrain, with small instrument swaps. Terrain list TBD.","Synth Bass / Slap Bass, Taiko Drum, drum kit, Brass Section","Done (plains, forest, mountain, swamp)"
 Victory riff,Stinger,One-shot,1,120,2.0,Trumpet fanfare,"Trumpet, Timpani",Done
 Loss riff,Stinger,One-shot,1,90,2.7,Trumpet fail noise (flatulent). Needs pitch bend; may be easier as a recorded SFX.,Muted Trumpet or Trombone,Done
-Liberation theme,Stinger,One-shot,2,80,6.0,Orchestral swell,"String Ensemble, Brass Section, Timpani",Not used: the building riffs carry liberations (keep or drop?)
+Liberation theme,Stinger,One-shot,2,80,6.0,Orchestral swell,"String Ensemble, Brass Section, Timpani","Kept for later (user, 2026-11-12): not played anywhere yet"
 Temple riff,Stinger,One-shot,2,90,5.3,Pan flute type sound,Pan Flute,Done
 Town riff,Stinger,One-shot,2,130,3.7,Banjo / guitar boing boing,Banjo or Steel Guitar,Done
 Tower riff,Stinger,One-shot,2,76,6.3,"Organ riff, Dracula style",Church Organ,Done
