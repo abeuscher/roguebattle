@@ -4,7 +4,7 @@
 """Fight!""",Voice,One-shot,,,,Spoken line (Al records),,Done (recorded; prepared by tools/prepare_voice.py)
 """Hidden Location!""",Voice,One-shot,,,,Spoken line (Al records),,Done (recorded; prepared by tools/prepare_voice.py)
 """New Town!""",Voice,One-shot,,,,"Spoken line (Al records). The first time you take a town (it was neutral or the enemy's, never yours).",,Done (recorded; prepared by tools/prepare_voice.py)
-"""New Tower!""",Voice,One-shot,,,,Spoken line (Al records). The first time you take a tower.,,Re-record (Al): the first take clips (375 samples at full scale)
+"""New Tower!""",Voice,One-shot,,,,Spoken line (Al records). The first time you take a tower.,,"Done (recorded, a thunderclap at the front, loud on purpose)"
 """New Temple!""",Voice,One-shot,,,,Spoken line (Al records). The first time you take a temple.,,Done (recorded; prepared by tools/prepare_voice.py)
 """Give it back!""",Voice,One-shot,,,,"Spoken line (Al records). Taking back a town, tower or temple the enemy took from you.",,"To record (Al); wired, silent until then"
 Main map theme (day),Music,Loop,32,112,68.6,"Sunny, bright, fanfare feel. Holds the main motif reused across the score.","Trumpet, French Horn, String Ensemble, Pizzicato Strings, light snare",Done
@@ -19,7 +19,7 @@ Town riff,Stinger,One-shot,2,130,3.7,Banjo / guitar boing boing,Banjo or Steel G
 Tower riff,Stinger,One-shot,2,76,6.3,"Organ riff, Dracula style",Church Organ,Draft to hear (session 069)
 Hidden item sound,Stinger,One-shot,1,140,1.7,"Surprise music, bells ringing in sequence","Glockenspiel, Tubular Bells or Tinkle Bell",Done
 Building lost,Stinger,One-shot,2,80,6.0,"The enemy takes one of your towns, towers or temples. One sound for all three, clearly different from the capture riffs: ominous, falling.","French Horn or Trombone (low), Timpani, Tremolo Strings",Draft to hear (session 069)
-Fireworks burst,Effect,One-shot,,,,"One burst of the fireworks over a liberated building: a pop or crackle. Plays with each of the show's 5 bursts, 0.35 s apart, separate from the building's riff.",,Draft to hear (session 069)
+Fireworks burst,Effect,One-shot,,,,"One burst of the fireworks over a liberated building: a pop or crackle. Plays with each of the show's 5 bursts, 0.35 s apart, separate from the building's riff.",,"Done (one pop per burst, 5 bursts)"
 Recruit joined,Stinger,One-shot,1,,1.5,"A recruit attempt succeeds, or a rare recruit joins: short and welcoming.",,Draft to hear (session 069)
 Button click,Effect,One-shot,,,,"Every button press: one short, high wood block.",Wood Block (drum channel),Done
 End of map: victory,Music,Loop,8,96,20.0,The motif broad on trumpet over horns and strings.,"Trumpet, French Horn, String Ensemble, Timpani, Glockenspiel",Done

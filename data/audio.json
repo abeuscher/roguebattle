@@ -26,12 +26,12 @@
   "defeat": {"file": "res://data/audio/lines/defeat.wav", "bus": "Voice", "duck": true},
   "hidden_location": {"file": "res://data/audio/lines/hidden_item.wav", "bus": "Voice", "duck": true},
   "new_town": {"file": "res://data/audio/lines/new_town.wav", "bus": "Voice", "duck": true, "_note": "\"New Town!\" (the user records it)"},
-  "new_tower": {"file": "", "bus": "Voice", "duck": true, "_note": "\"New Tower!\" (the first recording clipped: waiting on a new take)"},
+  "new_tower": {"file": "res://data/audio/lines/new_tower.wav", "bus": "Voice", "duck": true, "_note": "\"New Tower!\", with a thunderclap at the front (clipped on purpose, the user's call)"},
   "new_temple": {"file": "res://data/audio/lines/new_temple.wav", "bus": "Voice", "duck": true, "_note": "\"New Temple!\""},
   "give_it_back": {"file": "", "bus": "Voice", "duck": true, "_note": "\"Give it back!\""},
   "click": {"file": "res://data/audio/effects/click.wav", "bus": "Effects", "db": -10},
   "recruit_joined": {"file": "", "bus": "Effects", "duck": true, "_note": "A recruit attempt succeeds, or a rare recruit joins."},
-  "firework": {"file": "", "bus": "Effects", "_note": "One burst: a pop or crackle. Plays with each of the fireworks show's 5 bursts (0.35 s apart), separate from the building's riff."}
+  "firework": {"file": "res://data/audio/effects/firework.wav", "bus": "Effects", "_note": "One burst: a pop or crackle. Plays with each of the fireworks show's 5 bursts (0.35 s apart), separate from the building's riff."}
  },
  "music": {
   "_note": "Which music plays where. Music cues crossfade over fade_seconds; cues with the same sync (day and night, same tempo and length) pick up where the other was, so dawn and dusk change the arrangement, not the place in the tune. The title screen plays intro_music; the other menus play the day theme, so it carries on into a map that starts by day. battle: by the battle hex's terrain, anything not listed plays _default.",
