@@ -155,6 +155,15 @@ func test_seer_and_oracle_choose() -> void:
 	var o := st.add_squad("Oracles", 0, [["Oracle", "front"]])
 	st.draw_card(o)
 	check_eq(st.card_offer.size(), 3, "an Oracle chooses from 3")
+	for i in 200:  # never the same card twice in one offer (user, 2026-11-13)
+		st.card_offer.clear()
+		st.draw_card(o)
+		var seen := {}
+		for id in st.card_offer:
+			seen[id] = true
+		if seen.size() != st.card_offer.size():
+			check(false, "an offer repeats a card: %s" % [st.card_offer])
+			break
 
 
 func test_foresight() -> void:

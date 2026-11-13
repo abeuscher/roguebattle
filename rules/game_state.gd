@@ -830,17 +830,22 @@ func _apply_tech() -> void:
 # --- Cards (SPEC §13) ---------------------------------------------------------------
 
 ## A random card id, by each card's draw weight (1 unless it says otherwise; rare cards less).
-func _roll_card() -> String:
+## A random card by weight, never one in `exclude` (a Seer's offer shows different
+## cards: user, 2026-11-13), unless that would leave none.
+func _roll_card(exclude: Array = []) -> String:
 	var all: Dictionary = data.cards["cards"]
+	var ids := all.keys().filter(func(id): return id not in exclude)
+	if ids.is_empty():
+		ids = all.keys()
 	var total := 0.0
-	for id in all:
+	for id in ids:
 		total += float(all[id].get("weight", 1.0))
 	var roll := rng.get_stream("cards").randf() * total
-	for id in all:
+	for id in ids:
 		roll -= float(all[id].get("weight", 1.0))
 		if roll < 0.0:
 			return id
-	return all.keys()[-1]
+	return ids[-1]
 
 
 ## Draws a card for a liberation or a found hidden site. A squad with a Seer (2) or an
@@ -855,8 +860,8 @@ func draw_card(s: Squad) -> void:
 		next_card = _roll_card()
 	var drawn: Array[String] = []
 	for i in choose:
-		drawn.append(next_card)
-		next_card = _roll_card()
+		drawn.append(next_card)  # the first is the card Foresight showed
+		next_card = _roll_card(drawn if i < choose - 1 else [])
 	if choose == 1:
 		cards.append(drawn[0])
 		log.add(clock.tick, "progression", "You draw %s." % card_name(drawn[0]), s.id if s else -1)
