@@ -2,6 +2,7 @@
  "_note": "Sound (SPEC §24, ROADMAP M5). cues: each sound's file (\"\" = none yet: it plays nothing), its bus, and an optional db offset. events: the game moments that play cues, each entry a cue id or {\"cue\", \"after\" seconds}. The cue list being made is data/audio-asset-list.csv; music comes from tools/midi_draft.py and tools/render_audio.py.",
  "buses": ["Music", "Effects", "Voice"],
  "duck": {"db": -9, "seconds": 2.0, "_note": "Music dips this much while a stinger or voice line plays, for about this long, then comes back."},
+ "queue": {"max_wait": 2.0, "_note": "Cues that duck the music (stingers and voice lines) take turns: one starts when the last ends; one that would wait longer than max_wait seconds is dropped. No cue plays over itself. Clicks and fireworks aren't queued."},
  "cues": {
   "map_day": {"file": "res://data/audio/music/map_day.wav", "bus": "Music", "sync": "map"},
   "map_night": {"file": "res://data/audio/music/map_night.wav", "bus": "Music", "sync": "map"},
@@ -23,6 +24,10 @@
   "victory": {"file": "res://data/audio/voice/victory.wav", "bus": "Voice", "duck": true},
   "defeat": {"file": "res://data/audio/voice/defeat.wav", "bus": "Voice", "duck": true},
   "hidden_location": {"file": "res://data/audio/voice/hidden_item.wav", "bus": "Voice", "duck": true},
+  "new_town": {"file": "", "bus": "Voice", "duck": true, "_note": "\"New Town!\" (the user records it)"},
+  "new_tower": {"file": "", "bus": "Voice", "duck": true, "_note": "\"New Tower!\""},
+  "new_temple": {"file": "", "bus": "Voice", "duck": true, "_note": "\"New Temple!\""},
+  "give_it_back": {"file": "", "bus": "Voice", "duck": true, "_note": "\"Give it back!\""},
   "click": {"file": "res://data/audio/effects/click.wav", "bus": "Effects", "db": -10},
   "firework": {"file": "", "bus": "Effects", "_note": "One burst: a pop or crackle. Plays with each of the fireworks show's 5 bursts (0.35 s apart), separate from the building's riff."}
  },
@@ -38,7 +43,7 @@
   "defeat": "end_defeat"
  },
  "events": {
-  "_note": "taken_<type>: you take a town, tower or temple (the enemy taking a neutral one plays nothing); building_lost: the enemy takes one of yours; firework_burst: each burst of the fireworks over a liberated building.",
+  "_note": "new_<type>: after the riff, the first time you take that building; retaken: after the riff, when you take back one the enemy took from you. taken_<type>: you take a town, tower or temple (the enemy taking a neutral one plays nothing); building_lost: the enemy takes one of yours; firework_burst: each burst of the fireworks over a liberated building.",
   "click": ["click"],
   "battle_fight": ["fight"],
   "battle_won": ["victory_riff", {"cue": "victory", "after": 0.5}],
@@ -48,6 +53,10 @@
   "taken_town": ["town_riff"],
   "taken_tower": ["tower_riff"],
   "taken_temple": ["temple_riff"],
+  "new_town": ["new_town"],
+  "new_tower": ["new_tower"],
+  "new_temple": ["new_temple"],
+  "retaken": ["give_it_back"],
   "building_lost": ["building_lost"],
   "firework_burst": ["firework"]
  }

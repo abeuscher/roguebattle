@@ -62,3 +62,13 @@ func test_every_place_has_music_that_loops() -> void:
 	var night: Dictionary = cues[Sound.music_for(d.audio, "night")]
 	check(day.get("sync", "") != "" and day["sync"] == night.get("sync", ""), "day and night stay in step")
 	check(absf((load(day["file"]) as AudioStreamWAV).get_length() - (load(night["file"]) as AudioStreamWAV).get_length()) < 0.01, "and are the same length")
+
+
+## Stingers and voice lines take turns (ROADMAP M5 session 5).
+func test_stingers_take_turns() -> void:
+	check_eq(Sound.queue_slot(10.0, 9.0, 2.0), 10.0, "a free queue plays a stinger at once")
+	check_eq(Sound.queue_slot(10.0, 11.5, 2.0), 11.5, "a busy one plays it when the last ends")
+	check_eq(Sound.queue_slot(10.0, 12.5, 2.0), -1.0, "and drops it if that's more than 2 s off")
+	check_eq(float(d.audio["queue"]["max_wait"]), 2.0, "the wait limit is data")
+	for id in ["new_town", "new_tower", "new_temple", "retaken"]:
+		check(d.audio["events"].has(id), "the %s voice line has its event" % id)

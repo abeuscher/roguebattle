@@ -148,6 +148,7 @@
  "_sees_enemy_details": "Classes (the Scout line) whose presence, alive, in your squad shows enemy HP numbers and attack labels in battle; otherwise the enemy shows only its HP bars.",
  "view": {"beat": 0.6, "round_pause": 0.8, "speeds": [1, 2, 4]},
  "row_choice_targets": {"row": 3, "pierce": 2, "all": 5, "_note": "Edit Units puts a unit in the back row when its ranged or magic attack there hits at least as many units as its front attack (hits x units per hit). Units per hit: a plain attack 1; a chain or cleave its number (chain 3 = 3); these groups as listed (a row counted as full, 3). Anything else (any row, reach 2nd row) is 1. User, 2026-11-12: the Sapper (3 melee hits, 1 shot) is a front-row unit, but a single row-wide shot counts as 3."},
+ "site_ping": {"seconds": 3.0, "camera_seconds": 0.8, "_note": "A hidden site coming into view: rings spread from it this long, and if it's off screen the camera glides there (keeping its zoom) over camera_seconds."},
  "encounter_camera": {"map_share": 0.5, "seconds": 1.0},
  "push_back": {"on_travel_terrain": 1, "otherwise": 2},
  "drive_off": {"morale_below": 25, "halved_from": 10, "xp_share": 1.0, "min_chance": 0.25, "_min_chance": "Round 9 (user's answer): the demand is offered only at this chance or better; lower odds feel like zero to a player.", "_xp_share": "A successful demand pays each living unit this share of the battle XP again (as if the enemy had been beaten)."},

@@ -20,6 +20,9 @@ var music_cue := ""  # what's playing (or fading in)
 var _music_player: AudioStreamPlayer
 var _fade := 2.0
 var _left_at := {}  # sync group -> where its music was when it last faded out
+var queue := {}  # audio.json "queue"
+var _queue_free_at := 0.0  # when the last queued stinger or voice line ends (seconds, engine time)
+var _sounding := {}  # cue -> true while it plays or waits its turn
 
 
 ## Makes the one instance under `parent`, with the sound data and the player's options.
@@ -65,6 +68,7 @@ func _setup(audio: Dictionary, options: Dictionary) -> void:
 	cues = audio.get("cues", {})
 	events = audio.get("events", {})
 	duck = audio.get("duck", {})
+	queue = audio.get("queue", {})
 	_fade = float(audio.get("music", {}).get("fade_seconds", 2.0))
 	for bus in audio.get("buses", []):
 		if AudioServer.get_bus_index(bus) < 0:
@@ -102,17 +106,46 @@ func _event(id: String) -> void:
 			play(str(e))
 
 
+## Plays a cue now, or, for one that ducks the music (a stinger or voice line), when the
+## last of those ends: they take turns, and one that would wait more than the queue's
+## max_wait is dropped. A cue already playing or waiting doesn't play again over itself.
 func play(cue: String) -> void:
 	var c: Dictionary = cues.get(cue, {})
 	var stream := _stream(str(c.get("file", "")))
-	if stream == null:
+	if stream == null or _sounding.has(cue):
 		return
+	if not c.get("duck", false):
+		_start(cue, c, stream)
+		return
+	var now := Time.get_ticks_msec() / 1000.0
+	var at := queue_slot(now, _queue_free_at, float(queue.get("max_wait", 2.0)))
+	if at < 0.0:
+		return
+	_queue_free_at = at + stream.get_length()
+	_sounding[cue] = true
+	if at <= now:
+		_start(cue, c, stream)
+	else:
+		get_tree().create_timer(at - now).timeout.connect(_start.bind(cue, c, stream))
+
+
+## When a queued cue asked for at `now` starts: at once if the queue is free, else when
+## it frees (`free_at`); -1 (dropped) if that's more than `max_wait` away.
+static func queue_slot(now: float, free_at: float, max_wait: float) -> float:
+	var at := maxf(now, free_at)
+	return -1.0 if at - now > max_wait else at
+
+
+func _start(cue: String, c: Dictionary, stream: AudioStream) -> void:
+	_sounding[cue] = true
 	var p := AudioStreamPlayer.new()
 	p.stream = stream
 	p.bus = str(c.get("bus", "Master"))
 	p.volume_db = float(c.get("db", 0.0))
 	add_child(p)
-	p.finished.connect(p.queue_free)
+	p.finished.connect(func():
+		_sounding.erase(cue)
+		p.queue_free())
 	p.play()
 	if c.get("duck", false):
 		_duck()

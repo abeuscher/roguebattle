@@ -125,3 +125,24 @@ func test_catch_up_xp() -> void:
 	s.units[0].level = 40
 	check_eq(Progression.catch_up(d, s, s.units[2]), float(p["catch_up_max"]), "capped")
 	check(even > 0, "XP flows")
+
+
+## Each building remembers whether it was ever yours (ROADMAP M5 session 5): the first
+## capture says "New Temple!", taking it back from the enemy says "Give it back!".
+func test_first_capture_and_retake_are_told_apart() -> void:
+	var st := _state()
+	var ours := st.add_squad("Ours", _at(st.map, 10, 4), [["Knight", "front"]])
+	for i in int(d.rules["capture"]["ticks"]) + 1:
+		st.step()
+	check_eq(str(st.liberations[-1].get("taken", "")), "new", "the first time it's ours: new")
+	ours.hex = _at(st.map, 2, 4)  # step away (far from the enemy, so no fight)
+	var foe := st.add_squad("Foe", _at(st.map, 10, 4), [["Soldier", "front"]], "enemy")
+	for i in int(d.rules["capture"]["ticks"]) + 1:
+		st.step()
+	check_eq(_temple(st, 10)["owner"], "enemy", "the enemy takes it")
+	foe.hex = _at(st.map, 38, 1)
+	ours.hex = _at(st.map, 10, 4)
+	for i in int(d.rules["capture"]["ticks"]) + 1:
+		st.step()
+	check_eq(_temple(st, 10)["owner"], "player", "ours again")
+	check_eq(str(st.liberations[-1].get("taken", "")), "retaken", "taken back from the enemy: retaken")

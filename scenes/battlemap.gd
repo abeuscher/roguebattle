@@ -273,16 +273,31 @@ func _sync_tokens() -> void:
 			_tokens[s.id] = token
 
 
+## A hidden site just came into view: rings spread from it, and the camera glides there
+## if it's off screen (only for the first of several found at once).
+func _ping_site(hex: int, follow: bool) -> void:
+	var cfg: Dictionary = data.battle["site_ping"]
+	var ping := SitePing.new()
+	ping.seconds = float(cfg["seconds"])
+	ping.position = MapView.hex_center(state.map, hex)
+	view.add_object(ping)
+	if follow and not camera.visible_rect().grow(-MapView.HEX_SIZE * 2.0).has_point(ping.position):
+		camera.fly_to(ping.position, 1.0, float(cfg["camera_seconds"]))  # a share of 1: keeps the zoom
+
+
 ## Places each token, sliding smoothly between hexes as the squad moves; squads standing
 ## on the same hex fan out side by side. Enemies show only within sight (SPEC §8.5);
 ## hidden sites appear once seen.
 func _update_tokens() -> void:
+	var pinged := false
 	for i in state.revealed:
 		if not _shown_sites.has(i):
 			_shown_sites[i] = true
 			view.reveal(state.map.buildings[i]["hex"])
 			if _sites_known and state.map.buildings[i]["hidden"]:
 				Sound.event("site_found")
+				_ping_site(state.map.buildings[i]["hex"], not pinged)
+				pinged = true
 	for i in state.map.buildings.size():
 		var b: Dictionary = state.map.buildings[i]
 		if b.get("claimed", false):
@@ -969,6 +984,11 @@ func _pump_liberations() -> void:
 		return
 	var entry: Dictionary = state.liberations.pop_front()
 	Sound.event("taken_" + str(entry["building"]["type"]))  # the riff goes with the window (or its banner), one at a time
+	match str(entry.get("taken", "")):  # then "New Town!" or "Give it back!" (queued after the riff)
+		"new":
+			Sound.event("new_" + str(entry["building"]["type"]))
+		"retaken":
+			Sound.event("retaken")
 	var offering: bool = entry["card"] == "" and not state.card_offer.is_empty()
 	if bool(options.get("show_liberations", true)) or offering:
 		_open_liberation_popup(entry)

@@ -524,11 +524,9 @@ func _play(e: Dictionary, animate: bool) -> float:
 			_add_card(e["target"], battle.side_of(e["target"]))
 			_layout(animate)
 		"card":
-			var c: Dictionary = state.data.cards["cards"][e["card"]]
-			var l := UiStyle.label(c["name"], 40, UiStyle.ACCENT)
-			l.add_theme_color_override("font_outline_color", Color.BLACK)
-			l.add_theme_constant_override("outline_size", 8)
-			l.position = Vector2(FIELD.x / 2.0 - 80, FIELD.y / 2.0 - 60)
+			var l := CardFace.make(state.data, str(e["card"]))  # the card itself, flashed mid-field (round 12)
+			l.mouse_filter = MOUSE_FILTER_IGNORE
+			l.position = (FIELD - CardFace.SIZE) / 2.0
 			_field.add_child(l)
 			if animate:
 				var t := l.create_tween()

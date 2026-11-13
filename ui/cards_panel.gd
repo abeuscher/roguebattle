@@ -2,7 +2,8 @@ class_name CardsPanel
 extends Control
 ## The hand of cards (SPEC §13), from the battlemap toolbar: each card's effect; Rooster
 ## and Fox can be played here, the rest in battle. With Foresight it shows the next card.
-## In offer mode (a Seer or Oracle drew) it asks which card to take instead.
+## In offer mode (a Seer or Oracle drew) it asks which card to take instead. View-only
+## (from the liberation window's "View all cards") shows the hand with nothing to play.
 ## A modal laid out like the battle's card picker (user's playtest notes, 2026-11-10):
 ## a dark shade over the screen, the title, then the cards in a centered wrapping row,
 ## scrolling only when they don't fit the screen.
@@ -11,6 +12,7 @@ signal closed
 
 var state: GameState
 var offer := false
+var view_only := false
 var _list := HFlowContainer.new()
 var _note := UiStyle.label("", 16, UiStyle.ACCENT)
 var _title := UiStyle.label("", 26)
@@ -18,12 +20,13 @@ var _scroll := ScrollContainer.new()
 var _tiles: Array[Control] = []  # the cards now showing, for sizing the scroll area
 
 
-func setup(game_state: GameState, is_offer := false) -> void:
+func setup(game_state: GameState, is_offer := false, only_view := false) -> void:
 	state = game_state
 	offer = is_offer
+	view_only = only_view
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	var shade := ColorRect.new()
-	shade.color = Color(0, 0, 0, 0.6)
+	shade.color = Color(0, 0, 0, 0.85 if view_only else 0.6)  # over another window, hide it more
 	shade.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	add_child(shade)
 	var center := CenterContainer.new()
@@ -64,8 +67,14 @@ func _refresh() -> void:
 		return
 	_title.text = "Cards (%d)" % state.cards.size()
 	_note.text = ""
-	if state.foresight():
-		_note.text = "Foresight: the next card drawn will be %s." % state.card_name(state.next_card)
+	if state.foresight() and state.next_card != "":  # the next draw, shown as its card (round 12)
+		var ribbon := UiStyle.label("Next draw (Foresight)", 16, UiStyle.ACCENT)
+		ribbon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		var sample := UiStyle.button("Play", 188, true)  # as tall as the other cards' buttons
+		ribbon.custom_minimum_size.y = sample.get_combined_minimum_size().y
+		sample.free()
+		_tiles.append(CardFace.make(state.data, state.next_card, 1, ribbon))
+		_list.add_child(_tiles[-1])
 	if state.cards.is_empty():
 		_note.text += ("
 " if _note.text != "" else "") + "No cards. Liberate buildings and find hidden sites to draw more."
@@ -74,7 +83,7 @@ func _refresh() -> void:
 	for id in state.cards:
 		counts[id] = counts.get(id, 0) + 1
 	for id in counts:
-		var on_map: bool = cards[id]["where"] == "map"
+		var on_map: bool = cards[id]["where"] == "map" and not view_only
 		_row(id, "Play" if on_map else "In battle", on_map, func():
 			state.play_map_card(id)
 			_refresh(), counts[id])

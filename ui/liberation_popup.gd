@@ -112,26 +112,17 @@ func _conscript(u: Unit) -> Control:
 	return row
 
 
-## A "View all cards" toggle that lists the current hand inside this dialog.
+## "View all cards": the hand as card faces (the Cards window, view-only) over this one.
 func _hand(col: VBoxContainer, centered := false) -> void:
-	var toggle := UiStyle.button("View all cards (%d)" % state.cards.size(), CardFace.SIZE.x)
-	toggle.size_flags_horizontal = SIZE_SHRINK_CENTER if centered else SIZE_SHRINK_BEGIN
-	toggle.disabled = state.cards.is_empty()
-	col.add_child(toggle)
-	var list := VBoxContainer.new()
-	list.visible = false
-	col.add_child(list)
-	var counts := {}
-	for id in state.cards:
-		counts[id] = counts.get(id, 0) + 1
-	for id in counts:
-		var c: Dictionary = state.data.cards["cards"][id]
-		var l := UiStyle.label("%s%s  ·  %s" % [c["name"], "  ×%d" % counts[id] if counts[id] > 1 else "", c["text"]], 14, Color(0.8, 0.82, 0.86))
-		l.autowrap_mode = TextServer.AUTOWRAP_WORD
-		list.add_child(l)
-	toggle.pressed.connect(func():
-		list.visible = not list.visible
-		toggle.text = ("Hide cards (%d)" if list.visible else "View all cards (%d)") % state.cards.size())
+	var view := UiStyle.button("View all cards (%d)" % state.cards.size(), CardFace.SIZE.x)
+	view.size_flags_horizontal = SIZE_SHRINK_CENTER if centered else SIZE_SHRINK_BEGIN
+	view.disabled = state.cards.is_empty()
+	col.add_child(view)
+	view.pressed.connect(func():
+		var hand := CardsPanel.new()
+		add_child(hand)
+		hand.setup(state, false, true)
+		hand.closed.connect(hand.queue_free))
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
