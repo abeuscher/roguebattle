@@ -41,6 +41,7 @@ var _menu: SquadMenu
 var _main_menu: MainMenu
 var _battle: BattleView
 var _encounter: EncounterPopup
+var _flying_to_fight := false  # a ranged attack's battle waits while the camera glides to it
 var _announced := false  # the pending battle needs no encounter popup (already announced, or a recruit refused)
 var _edit: EditUnits
 var _deploy_menu: DeployMenu
@@ -171,7 +172,9 @@ func _process(delta: float) -> void:
 			break
 	# What the world brings up opens only on the free map, one at a time; until then it waits.
 	if state.pending and _free():
-		if _announced or state.pending.ranged_only:
+		if state.pending.ranged_only:
+			_fly_to_ranged_attack()
+		elif _announced:
 			_open_battle()
 		else:
 			_open_encounter()
@@ -789,6 +792,20 @@ func _open_encounter() -> void:
 		_open_battle())
 
 
+## A ranged attack opens its battle with no encounter popup, so the camera, which may be
+## anywhere (say, on a town a liberation window just showed), first glides to the two
+## squads the way an encounter does, then the battle springs open there.
+func _fly_to_ranged_attack() -> void:
+	_flying_to_fight = true
+	var b := state.pending
+	var at := [b.sides[0], b.sides[1]].map(func(s: Squad): return _tokens[s.id].position if _tokens.has(s.id) else MapView.hex_center(state.map, s.hex))
+	var cam: Dictionary = data.battle["encounter_camera"]
+	camera.fly_to((at[0] + at[1]) / 2.0, float(cam["map_share"]), float(cam["seconds"])).finished.connect(func():
+		_flying_to_fight = false
+		if state.pending == b:
+			_open_battle())
+
+
 ## Glides the camera to two squads that just met (zooming in, never out), with the
 ## popup hidden until it lands.
 func _fly_to_meeting(a: Squad, b: Squad, popup: Control) -> void:
@@ -1123,7 +1140,7 @@ func _on_speed_chosen(index: int) -> void:
 ## No menu, popup or dialog is open (a squad order may be under way: its menu, or laying
 ## a route or picking a target, which take map clicks).
 func _can_open() -> bool:
-	return not (_log_panel or _debug_panel or _menu or _main_menu or _battle or _encounter or _rare_popup or _edit or _deploy_menu or _confirm or _building_popup or _enemy_popup \
+	return not (_flying_to_fight or _log_panel or _debug_panel or _menu or _main_menu or _battle or _encounter or _rare_popup or _edit or _deploy_menu or _confirm or _building_popup or _enemy_popup \
 			or _shop or _recruit_popup or _liberation_popup or _end_screen or _chooser or _ledger or _lost_popup)
 
 
