@@ -29,6 +29,16 @@ static func make(data: GameData, id: String, count := 1, button: Control = null)
 	pic.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	tile.add_child(pic)
 	var box: Array = data.cards["art_text_box"]["rect"]
+	var back := Panel.new()  # a plain parchment patch, so the text isn't read over cracks and stains
+	var paper := StyleBoxFlat.new()
+	paper.bg_color = Color(PARCHMENT, 0.92)
+	paper.set_corner_radius_all(6)
+	back.add_theme_stylebox_override("panel", paper)
+	back.anchor_left = box[0] - 0.03
+	back.anchor_top = box[1]
+	back.anchor_right = box[2] + 0.03
+	back.anchor_bottom = box[3]
+	pic.add_child(back)
 	var text := UiStyle.label(c["text"], 14, INK)
 	text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
