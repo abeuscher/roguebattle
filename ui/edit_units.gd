@@ -885,11 +885,16 @@ func _drop(_at: Vector2, what: Variant, cell: int, r: String, c: int) -> void:
 	_refresh()
 
 
-## Back row for units that heal, support or attack from range there; front otherwise.
+## Back row for units that heal or support there, or whose ranged or magic attack there
+## has at least as many hits as their front attack; front otherwise (a Sapper's 3 melee
+## hits beat its 1 shot: it's a front-row unit).
 static func preferred_row(game_data: GameData, u: Unit) -> String:
 	var c: Dictionary = u.info(game_data)
 	var back := Battle.base_kind(c["back_attack"])
-	if back in SUPPORT and (Battle.base_kind(c["front_attack"]) == "Melee" or int(c["back_count"]) >= int(c["front_count"])):
+	var more_behind := int(c["back_count"]) >= int(c["front_count"])
+	if back in ["Ranged", "Magic"]:
+		return "back" if more_behind else "front"
+	if back in SUPPORT and (Battle.base_kind(c["front_attack"]) == "Melee" or more_behind):
 		return "back"
 	return "front"
 
