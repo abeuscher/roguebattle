@@ -1688,16 +1688,16 @@ func _run_enemy_ai() -> void:
 	for s in squads:
 		if s.side != "enemy" or s.living().is_empty():
 			continue
-		if s.hex == map.enemy_base and not s.is_moving():
+		if _is_refuge(s.hex, s) and not s.is_moving():
 			_revive_at_enemy_base(s)
 		else:
-			s.revive_at = -1  # the revival clock only runs while the squad stands on its base
-			if s.marching_home and not s.is_moving():  # stopped on the way (no route left): set off again
-				order_move(s, PackedInt32Array([map.enemy_base]))
+			s.revive_at = -1  # the revival clock only runs while the squad stands on a refuge
+			if s.marching_home and (not s.is_moving() or not _is_refuge(s.refuge, s)):  # stopped on the way, or its refuge fell: set off again
+				_fall_back(s)
 			elif not s.marching_home and _fallen(s) > 0 and _fallen(s) >= s.units.size() * float(data.ai["go_home_fallen_share"]):
 				s.marching_home = true
 				s.goal = -1
-				order_move(s, PackedInt32Array([map.enemy_base]))
+				_fall_back(s)
 		if s.is_moving() or s.marching_home:
 			continue
 		var target := EnemyAI.target_hex(self, s)
@@ -1706,15 +1706,47 @@ func _run_enemy_ai() -> void:
 			s.goal = -1
 
 
+## Where a battered enemy squad goes to recover (user, 2026-11-13): the nearest town (or
+## other ai.json refuge_types building) the enemy holds with no hostile squad on it, the
+## Enemy Base if there's none.
+func enemy_refuge(s: Squad) -> int:
+	var at := map.hex_at(s.hex)
+	var best := map.enemy_base
+	var best_d := Hex.distance(at, map.hex_at(best))
+	for b in map.buildings:
+		if b["hex"] != best and _is_refuge(b["hex"], s) and Hex.distance(at, map.hex_at(b["hex"])) < best_d:
+			best = b["hex"]
+			best_d = Hex.distance(at, map.hex_at(b["hex"]))
+	return best
+
+
+## Whether an enemy squad can recover on this hex: an enemy-held refuge building with no
+## hostile squad on it.
+func _is_refuge(hex: int, s: Squad) -> bool:
+	var b := building_at(hex)
+	return not b.is_empty() and b["owner"] == "enemy" and b["type"] in data.ai["refuge_types"] and not _hostile_at(hex, s)
+
+
+## Sends a battered enemy squad to its refuge (enemy_refuge), or the Enemy Base if no route.
+func _fall_back(s: Squad) -> void:
+	s.refuge = enemy_refuge(s)
+	if s.refuge == s.hex:
+		s.path.clear()
+		s.rally.clear()
+	elif not order_move(s, PackedInt32Array([s.refuge])):
+		s.refuge = map.enemy_base
+		order_move(s, PackedInt32Array([map.enemy_base]))
+
+
 func _fallen(s: Squad) -> int:
 	return s.units.size() - s.living().size()
 
 
-## The Enemy Base is the only place enemy units come back (user's playtest notes,
-## 2026-11-09), and slowly (2026-11-10, so the player can wear the Warlord down): a squad
-## standing there brings back one fallen unit, leader first, at full HP every
-## `base_revive_ticks`. A squad that marched home stays until all are back; then EnemyAI
-## sends it to its post or its target. Living units don't heal there at all.
+## Enemy units come back only on a refuge (_is_refuge: the Enemy Base, or since
+## 2026-11-13 a town the enemy holds), and slowly (2026-11-10, so the player can wear the
+## Warlord down): a squad standing still there brings back one fallen unit, leader first,
+## at full HP every `base_revive_ticks`. A squad that fell back stays until all are back;
+## then EnemyAI sends it to its post or its target. Living units don't heal there at all.
 func _revive_at_enemy_base(s: Squad) -> void:
 	var fallen := s.units.filter(func(u: Unit): return not u.is_alive())
 	if fallen.is_empty():
@@ -1728,7 +1760,7 @@ func _revive_at_enemy_base(s: Squad) -> void:
 		return
 	var u: Unit = s.leader if s.leader in fallen else fallen[0]
 	u.hp = u.max_hp(data)
-	log.add(clock.tick, "map", "%s's %s is back on its feet at the Enemy Base." % [s.name, u.name], s.id)
+	log.add(clock.tick, "map", "%s's %s is back on its feet at %s." % [s.name, u.name, where(s.hex)], s.id)
 	s.revive_at = clock.tick + int(data.enemy["base_revive_ticks"]) if fallen.size() > 1 else -1
 	if fallen.size() == 1:
 		s.marching_home = false
@@ -2295,7 +2327,8 @@ func start_battle(player: Squad, enemy: Squad, defender: Squad) -> Battle:
 	var b := Battle.new(data, player, enemy, info["key"], clock.is_day(), stream, settings.get("fairness", "both"))
 	b.fairness_rules = debug_fairness.duplicate()
 	b.attacker = 0 if defender == enemy else 1
-	b.defense = [building_defense(player), building_defense(enemy)]
+	b.broken = [is_broken(player), is_broken(enemy)]
+	b.defense = [0.0 if b.broken[0] else building_defense(player), 0.0 if b.broken[1] else building_defense(enemy)]
 	b.odds = Threat.label(data, player, enemy)
 	if player.side == "player":
 		b.tech[0] = tech
@@ -2354,8 +2387,15 @@ func end_battle(b: Battle) -> Dictionary:
 			if not s.marching_home:
 				log.add(clock.tick, "battle", "%s lost its leader and marches home." % s.name, s.id)
 			s.marching_home = true  # a push cleared its route: it sets off home again
-			order_move(s, PackedInt32Array([map.player_base if s.side == "player" else map.enemy_base]))
+			if s.side == "enemy":
+				_fall_back(s)
+			else:
+				order_move(s, PackedInt32Array([map.player_base]))
 			s.entering_base = s.side == "player"
+	if not b.ranged_only:
+		for side in 2:
+			if b.sides[side] in squads and (out["retreated"] == side or _won(out, 1 - side)):
+				_lost_battle(b.sides[side])
 	for side in 2:  # an enemy that beat your squad stands a while, so you can come back at it (round 10)
 		if b.sides[side].side == "enemy" and b.sides[1 - side].side == "player" and _won(out, side) and b.sides[side] in squads:
 			b.sides[side].hold_until = clock.tick + int(data.enemy["victor_pause_ticks"])
@@ -2367,6 +2407,26 @@ func end_battle(b: Battle) -> Dictionary:
 	_award_xp(b, out)
 	_neutral_leaves(b, out)
 	return out
+
+
+## Losing heart (user, 2026-11-13; battle.json broken): a squad that has lost `losses`
+## battles within `window_ticks` fights without its defensive bonuses until the oldest
+## of them falls out of that window.
+func is_broken(s: Squad) -> bool:
+	var cfg: Dictionary = data.battle["broken"]
+	return s.losses.filter(func(t: int): return clock.tick - t < int(cfg["window_ticks"])).size() >= int(cfg["losses"])
+
+
+func _lost_battle(s: Squad) -> void:
+	var was := is_broken(s)
+	s.losses.append(clock.tick)
+	var window := int(data.battle["broken"]["window_ticks"])
+	s.losses = s.losses.filter(func(t: int): return clock.tick - t < window)
+	if is_broken(s) and not was:
+		var line := "%s has lost heart after %d defeats: it fights without its defenses for now." % [s.name, s.losses.size()]
+		log.add(clock.tick, "battle", line, s.id)
+		if s.side != "neutral":
+			notices.append(line)
 
 
 ## What the player learns of an enemy squad by fighting it (user's playtest notes,

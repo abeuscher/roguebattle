@@ -49,7 +49,7 @@ var _ended := false  # the battle has no turns left
 var _done := false  # the result is showing
 var _retreat_asked := false
 var _cards_btn: Button
-var _on_enemy_base := false  # the enemy squad stood on its base when the battle began (a push can move it off)
+var _on_refuge := false  # the enemy squad stood where its fallen come back (its base or a town it holds) when the battle began
 var _picker: Control  # the hand, shown large; the battle holds while it's open
 var _items_btn: Button
 var _round := UiStyle.label("", 28, UiStyle.ACCENT)
@@ -65,7 +65,7 @@ func setup(game_state: GameState, b: Battle, is_replay := false, wait_for_fight 
 	battle = b
 	replay = is_replay
 	_waiting = wait_for_fight
-	_on_enemy_base = b.sides[1].hex == state.map.enemy_base
+	_on_refuge = b.sides[1].side == "enemy" and state._is_refuge(b.sides[1].hex, b.sides[1])
 	_view = state.data.battle["view"]
 	_speed = clampi(int(options.get("battle_speed", 0)), 0, _view["speeds"].size() - 1)
 	var spotters: Array = state.data.battle["sees_enemy_details"]
@@ -632,7 +632,7 @@ func _float(c: Card, text: String, color: Color, animate: bool, font_size := 24)
 
 ## The battle field goes away and the result shows on its own (user's playtest notes,
 ## 2026-11-09): Won or Lost once at the top, then your squad and the enemy side by side
-## (HP lost, units lost), XP, the offer to drive the enemy off, and Continue.
+## (units lost), XP, the offer to drive the enemy off, and Continue.
 func _finish() -> void:
 	_done = true
 	var out := battle.finish() if replay else state.resolve_pending()
@@ -726,12 +726,13 @@ func _hints(out: Dictionary, can_drive: bool) -> Array[String]:
 		out_hints.append("Their spirit is broken, but your leader lacks the charisma to make them flee (it takes a %d%% chance)." % roundi(float(state.data.battle["drive_off"]["min_chance"]) * 100))
 	elif GameState.battle_result(out) == "won" and player.leader and player.leader.is_alive():
 		out_hints.append("Their spirit holds for now. Keep beating them and it will break; then your leader can demand they flee." + warlord)
-	if _on_enemy_base and enemy.living().size() < enemy.units.size():
-		out_hints.append("On their base, the enemy's fallen come back only one at a time, one every %s, and the living don't heal. Strike again soon." 				% GameState.duration_text(int(state.data.enemy["base_revive_ticks"])))
+	if _on_refuge and enemy.living().size() < enemy.units.size():
+		out_hints.append("Here, the enemy's fallen come back only one at a time, one every %s, and the living don't heal. Strike again soon." 				% GameState.duration_text(int(state.data.enemy["base_revive_ticks"])))
 	return out_hints
 
 
-## One side's column: its name (the other side is always "Enemy"), HP lost, units lost.
+## One side's column: its name (the other side is always "Enemy") and units lost (no HP
+## share: user, 2026-11-13, it confused more than it told).
 func _side_stats(side: int, out: Dictionary) -> Control:
 	var s := battle.sides[side]
 	var box := PanelContainer.new()
@@ -741,8 +742,8 @@ func _side_stats(side: int, out: Dictionary) -> Control:
 	col.add_theme_constant_override("separation", 6)
 	box.add_child(col)
 	col.add_child(UiStyle.label(s.name if side == 0 else "Enemy", 20, Color(LOG_COLORS[side])))
-	col.add_child(UiStyle.label("HP lost: %d%%" % roundi(out["hp_lost"][side] * 100), 17))
-	col.add_child(UiStyle.label("Units lost: %d" % s.living(false).size(), 17))
+	var fought: Array = battle.fought[side]  # alive when the battle began
+	col.add_child(UiStyle.label("Units lost: %d of %d" % [fought.filter(func(u: Unit): return not u.is_alive()).size(), fought.size()], 17))
 	if out["leader_dead"][side] and not out["wiped"][side] and side == 0:
 		col.add_child(UiStyle.label("Leader fell: marching home", 15, Color(0.8, 0.82, 0.86)))
 	return box

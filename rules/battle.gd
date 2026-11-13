@@ -21,6 +21,7 @@ var attacker := 0  # the side that started the battle
 var fair := [true, true]  # fairer dice per side (§12.1)
 var fairness_rules := {"two_dice": true, "ramping_crits": true, "streak_breaker": true, "spread": true}  # each can be switched off from the debug panel (§19.2)
 var defense := [0.0, 0.0]  # building defense bonus per side (§6.5)
+var broken := [false, false]  # per side: lost heart (too many recent losses): no defensive bonuses (battle.json broken)
 var tactics := ["best", "best"]
 var first_side := -1  # a side that takes its whole first round first (neutrals that resisted recruitment)
 var ranged_only := false  # a ranged map attack: only Ranged and Magic units act, no push-back (§11.2)
@@ -839,6 +840,11 @@ func _blocks_healing(u: Unit) -> bool:
 ## A stat with statuses, auras and Last stand applied. `vs` is the attack being
 ## defended against, for effects like Aerie (+PDEF against ranged).
 func stat(u: Unit, s: String, vs := "") -> float:
+	if s in ["PDEF", "MDEF"] and broken[side_of(u)]:  # its own armor only: no bonus, every penalty
+		var bare := float(u.stat(data, s))
+		for st in _status.get(u, {}):
+			bare *= minf(1.0, float(cfg["statuses"][st].get("stats", {}).get(s, 1.0)))
+		return bare
 	var v := float(u.stat(data, s)) + (terrain_level(side_of(u), u) if s in ["STR", "INT", "PDEF", "MDEF"] else 0)
 	if s in ["PDEF", "MDEF"]:
 		v *= tech_defense(u, s)
@@ -1088,8 +1094,34 @@ func _taken_multiplier(u: Unit, t: Unit, base: String) -> float:
 	var physical := base in PHYSICAL
 	var key := "physical_taken" if physical else "magic_taken"
 	var m := 1.0
+	if broken[side_of(t)]:  # lost heart: nothing softens a blow, though weaknesses still count
+		return maxf(1.0, _taken_raw(u, t, base))
 	if t.row == "front":  # the front row takes the brunt, so it takes less of each blow
 		m *= 1.0 - float(cfg["front_row_damage_cut"])
+	for s in _status.get(t, {}):
+		m *= float(cfg["statuses"][s].get(key, 1.0)) * float(cfg["statuses"][s].get("damage_taken", 1.0))
+	for name in t.info(data)["traits"]:
+		m *= float(cfg["traits"].get(name, {}).get(key, 1.0))
+	for e in _effects_on(t):
+		if not e.has("taken"):
+			continue
+		var applies := false
+		match e.get("from", ""):
+			"mounted": applies = u.has_tag(data, "mounted")
+			"Dark": applies = attack_element(u, base) == "Dark"
+			"magic": applies = not physical
+			"dark_or_magic": applies = not physical or attack_element(u, base) == "Dark"
+		if applies:
+			m *= 1.0 + float(e["taken"])
+	return m
+
+
+## The taken multiplier without the front row's cut, for a broken side (it keeps only
+## what makes it take more).
+func _taken_raw(u: Unit, t: Unit, base: String) -> float:
+	var physical := base in PHYSICAL
+	var key := "physical_taken" if physical else "magic_taken"
+	var m := 1.0
 	for s in _status.get(t, {}):
 		m *= float(cfg["statuses"][s].get(key, 1.0)) * float(cfg["statuses"][s].get("damage_taken", 1.0))
 	for name in t.info(data)["traits"]:
@@ -1185,6 +1217,8 @@ func hit_chance(u: Unit, t: Unit, base := "Melee") -> float:
 	c = clampf(c, float(cfg["hit_range"][0]), float(cfg["hit_range"][1]))
 	for s in _status.get(u, {}):
 		c += float(cfg["statuses"][s].get("hit", 0.0))
+	if broken[side_of(t)]:  # lost heart: no dodge bonuses
+		return maxf(0.0, c)
 	if not daytime and t.has_trait(data, "Night evasion"):
 		c -= float(cfg["traits"]["Night evasion"]["night_dodge"])
 	if sides[side_of(t)].bonded_partner(t):  # §12.2: a bonded pair dodges better while both live

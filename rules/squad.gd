@@ -35,6 +35,8 @@ var entering_base := false  # leaves the map when it reaches the Player Base (§
 var capture_ticks := 0.0  # time spent so far liberating the building it stands in (§6.5)
 var capture_wait := -1  # after a battle, its capture count stands still until this tick (rules.json capture.after_battle_ticks)
 var ordered_at := -1  # tick of its last move order (GameState.order_move)
+var losses: Array = []  # ticks of its recent lost battles, toward losing heart (battle.json broken)
+var refuge := -1  # an enemy squad marching back to recover: the hex it heads for (GameState.enemy_refuge)
 var tech: Array = []  # the army's tech nodes (the player's squads share GameState.tech)
 var bond_battles := {}  # "id:id" (lowest instance id first) -> battles two units have fought together, toward a bond (§12.2)
 var base_slots := 0  # slots before growth; 0 = rules.json slot_growth.base (single map mode sets 6)
