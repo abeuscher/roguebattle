@@ -151,6 +151,45 @@ func test_same_side_and_cooldown() -> void:
 		check(st2.pending != null, "and fights again after the cooldown if still adjacent")
 
 
+## User, 2026-11-13: a squad ordered back at the squad it just fought fights it as soon
+## as they meet; the cooldown only holds back squads left side by side.
+func test_ordered_back_fights_at_once() -> void:
+	var st := _state()
+	var o := _ours(st, 8)
+	var t := _theirs(st, 11)
+	st.pending = st.start_battle(o, t, t)
+	st.resolve_pending()  # the pair's cooldown starts now
+	st.order_move(o, PackedInt32Array([t.hex]))
+	var waited := 0
+	while st.pending == null and waited < int(d.enemy["contact_cooldown_ticks"]) - 5:
+		st.step()
+		waited += 1
+	check(st.pending != null, "the fight starts before the cooldown ends")
+	check(Hex.distance(st.map.hex_at(o.hex), st.map.hex_at(t.hex)) <= 1, "as soon as they meet (%d ticks)" % waited)
+
+
+func test_capture_waits_after_a_battle() -> void:
+	var st := _state()
+	var town := {"type": "town", "hex": _at(st.map, 15, 4), "shop": false, "hint": false, "hidden": false, "kind": "", "road": false, "owner": "neutral", "away": false}
+	st.map.buildings.append(town)
+	st._building_at[town["hex"]] = st.map.buildings.size() - 1
+	var t := _theirs(st, 15)
+	for i in 10:
+		st.step()
+	check(t.capture_ticks > 0.0, "the enemy starts taking the town")
+	var before := t.capture_ticks
+	var o := _ours(st, 25)  # far away: a fight set up by hand
+	st.pending = st.start_battle(o, t, t)
+	st.resolve_pending()
+	st.squads.erase(o)
+	for i in int(d.rules["capture"]["after_battle_ticks"]) - 1:
+		st.step()
+	check_eq(t.capture_ticks, before, "the count stands still for a while after the battle, and isn't lost")
+	for i in 3:
+		st.step()
+	check(t.capture_ticks > before, "then goes on")
+
+
 func test_friendly_squads_share_hexes() -> void:
 	var st := _state()
 	var a := _ours(st, 5)

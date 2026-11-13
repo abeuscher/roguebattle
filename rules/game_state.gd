@@ -299,6 +299,8 @@ func _capture() -> void:
 				or not s.living().any(func(u: Unit): return not u.has_tag(data, "flyer")):
 			s.capture_ticks = 0.0
 			continue
+		if clock.tick < s.capture_wait:  # just fought: the count waits, keeping what it has (user, 2026-11-13)
+			continue
 		var sapper := s.living().any(func(u: Unit): return u.has_tag(data, "sapper"))
 		s.capture_ticks += float(c["sapper_speed"]) if sapper else 1.0
 		if s.capture_ticks >= float(c["ticks"]):
@@ -1581,6 +1583,7 @@ func order_move(s: Squad, points: PackedInt32Array) -> bool:
 		return false
 	s.entering_base = false
 	s.follow = null  # any new order ends following
+	s.ordered_at = clock.tick
 	s.path = route
 	s.rally = points.duplicate()
 	s.progress = 0.0
@@ -1915,7 +1918,7 @@ func _check_contact() -> void:
 				continue
 			if Hex.distance(map.hex_at(a.hex), map.hex_at(b.hex)) > 1:
 				continue
-			if clock.tick < int(_contact_until.get(_pair(a, b), -1)):
+			if clock.tick < int(_contact_until.get(_pair(a, b), -1)) and not _coming_back(a, b) and not _coming_back(b, a):
 				continue
 			var defender := b if _moved.has(a) or not _moved.has(b) else a
 			if a.side == "player" and b.side == "neutral":
@@ -1930,6 +1933,14 @@ func _check_contact() -> void:
 			if a.side != "player" and b.side != "player":
 				resolve_pending()
 			return
+
+
+## Whether `s`, since its last fight with `o`, was ordered to the hex `o` stands on: the
+## intent is clear, so they fight now, without waiting out the contact cooldown (user,
+## 2026-11-13). Squads left next to each other after a fight still wait.
+func _coming_back(s: Squad, o: Squad) -> bool:
+	var fought := int(_contact_until.get(_pair(s, o), -1)) - int(data.enemy["contact_cooldown_ticks"])
+	return s.is_moving() and s.path[s.path.size() - 1] == o.hex and s.ordered_at >= fought
 
 
 func _pair(p: Squad, e: Squad) -> String:
@@ -2035,6 +2046,8 @@ func resolve_pending() -> Dictionary:
 	var out := end_battle(b)
 	if not b.ranged_only:
 		_contact_until[key] = clock.tick + int(data.enemy["contact_cooldown_ticks"])
+		for s in b.sides:
+			s.capture_wait = clock.tick + int(data.rules["capture"]["after_battle_ticks"])
 	out["text"] = battle_summary(b, out)
 	return out
 

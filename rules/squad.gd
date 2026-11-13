@@ -33,6 +33,8 @@ var morale := 50  # 0-100, hidden (§12.2); below 30 deals less damage, below 25
 var marching_home := false  # lost its leader: heads for base on its own (§11.3)
 var entering_base := false  # leaves the map when it reaches the Player Base (§8.4)
 var capture_ticks := 0.0  # time spent so far liberating the building it stands in (§6.5)
+var capture_wait := -1  # after a battle, its capture count stands still until this tick (rules.json capture.after_battle_ticks)
+var ordered_at := -1  # tick of its last move order (GameState.order_move)
 var tech: Array = []  # the army's tech nodes (the player's squads share GameState.tech)
 var bond_battles := {}  # "id:id" (lowest instance id first) -> battles two units have fought together, toward a bond (§12.2)
 var base_slots := 0  # slots before growth; 0 = rules.json slot_growth.base (single map mode sets 6)
