@@ -40,7 +40,7 @@ def n(name: str) -> int:
 CHORDS = {  # root, then the triad (or 7th) as pitch classes above C
     "D": ["D", "F#", "A"], "G": ["G", "B", "D"], "A": ["A", "C#", "E"], "A7": ["A", "C#", "E", "G"],
     "Bm": ["B", "D", "F#"], "F#m": ["F#", "A", "C#"], "Em": ["E", "G", "B"],
-    "Dm": ["D", "F", "A"], "Gm": ["G", "Bb", "D"], "Bb": ["Bb", "D", "F"], "C": ["C", "E", "G"],
+    "Dm": ["D", "F", "A"], "Gm": ["G", "Bb", "D"], "Bb": ["Bb", "D", "F"], "C": ["C", "E", "G"], "F": ["F", "A", "C"],
 }
 
 
@@ -337,63 +337,65 @@ def click() -> tuple:
 
 
 # --- Army theme (Edit Units) ----------------------------------------------------------
-# Draft 1 (M5 session 3). 16 bars at 120, a march in D: the day motif in a dotted march
-# rhythm on piccolo, oom-pah brass and tuba, a rudimental snare with a roll every fourth
-# bar. A: the motif (bars 1-8); B: a higher piccolo tune over held brass (bars 9-16),
-# ending on A so it loops.
+# Draft 2 (user, 2026-11-12: draft 1's march was hard to listen to; slower and
+# orchestral, like a film score under a charging army, pleasant to organize units to).
+# 16 bars at 96 in D minor, the epic i-VI-III-VII climb. Strings gallop underneath (an
+# 8th and two 16ths a beat); horns carry the motif broadly; a soft string pad holds the
+# chords; trombones and tuba swell on each chord; timpani mark the phrases. A: the motif
+# rising through Dm, Bb, F, C (bars 1-8); B: higher, through Gm, Bb, Dm, turning on A
+# back to the top (bars 9-16).
 
-ARMY_CHORDS = ["D", "G", "D", "A", "D", "G", "A", "D", "G", "D", "Em", "A", "G", "D", "A", "A"]
+ARMY_CHORDS = ["Dm", "Dm", "Bb", "Bb", "F", "F", "C", "C", "Gm", "Gm", "Bb", "Bb", "Dm", "Dm", "A", "A"]
+ARMY_ROOT = {"Dm": "D2", "Bb": "Bb1", "F": "F2", "C": "C2", "Gm": "G1", "A": "A1"}
 ARMY_TUNE = [
-    [("A4", .75), ("A4", .25), ("D5", 1), ("F#5", 1), ("E5", .5), ("D5", .5)],
-    [("B4", 1), ("D5", .5), ("E5", .5), ("D5", 2)],
-    [("A4", .75), ("A4", .25), ("D5", 1), ("F#5", 1), ("A5", 1)],
-    [("F#5", .5), ("E5", .5), ("D5", .5), ("E5", .5), ("A4", 2)],
-    [("A4", .75), ("A4", .25), ("D5", 1), ("F#5", 1), ("E5", .5), ("D5", .5)],
-    [("B4", 1), ("D5", .5), ("E5", .5), ("F#5", 1), ("E5", 1)],
-    [("E5", 1), ("D5", .5), ("E5", .5), ("C#5", 1), ("A4", 1)],
-    [("D5", 2), (None, 2)],
-    [("B5", 1), ("A5", .5), ("G5", .5), ("F#5", 1), ("D5", 1)],
-    [("A5", 1), ("F#5", .5), ("E5", .5), ("D5", 2)],
-    [("G5", 1), ("F#5", .5), ("E5", .5), ("B4", 1), ("E5", 1)],
-    [("C#5", .5), ("D5", .5), ("E5", 1), ("A4", 2)],
-    [("B5", 1), ("A5", .5), ("G5", .5), ("F#5", .5), ("G5", .5), ("A5", 1)],
-    [("F#5", 1), ("D5", 1), ("A4", 2)],
-    [("E5", .5), ("F#5", .5), ("G5", .5), ("A5", .5), ("E5", 1), ("C#5", 1)],
-    [("A4", 2), (None, 2)],
+    [("A3", 1), ("D4", 1), ("F4", 1.5), ("E4", .5)], [("D4", 3), (None, 1)],
+    [("D4", 1), ("F4", 1), ("Bb4", 1.5), ("A4", .5)], [("F4", 3), (None, 1)],
+    [("C4", 1), ("F4", 1), ("A4", 1.5), ("G4", .5)], [("F4", 2), ("E4", 1), ("F4", 1)],
+    [("G4", 2), ("E4", 1), ("C4", 1)], [("G4", 4)],
+    [("D4", 1), ("G4", 1), ("Bb4", 2)], [("A4", 1), ("G4", 1), ("D4", 2)],
+    [("F4", 1), ("Bb4", 1), ("D5", 2)], [("C5", 1), ("Bb4", 1), ("F4", 2)],
+    [("A4", 1), ("D5", 1), ("F5", 1.5), ("E5", .5)], [("D5", 2), ("A4", 2)],
+    [("C#5", 2), ("E5", 2)], [("A4", 3), (None, 1)],
 ]
-TUBA_ROOT = {"D": "D2", "G": "G1", "A": "A1", "Em": "E2"}
+TUBA_ROOT = {"D": "D2", "G": "G1", "A": "A1", "Em": "E2"}  # the end-of-map victory tune's bass
 
 
 def army_theme() -> tuple:
-    piccolo = Track("Piccolo", 0, PICCOLO)
-    brass = Track("Brass", 1, BRASS)
-    tuba = Track("Tuba", 2, TUBA)
-    drums = Track("Drums", DRUMS, None)
+    horns = Track("Horns", 0, FRENCH_HORN)
+    gallop = Track("Strings (gallop)", 1, STRINGS)
+    pad = Track("Strings (pad)", 2, 49)  # String Ensemble 2: slow, soft
+    low = Track("Trombones", 3, TROMBONE)
+    tuba = Track("Tuba", 4, TUBA)
+    timp = Track("Timpani", 5, TIMPANI)
+    trumpet = Track("Trumpet", 6, TRUMPET)
+    drums = Track("Cymbals", DRUMS, None)
     for bar, chord in enumerate(ARMY_CHORDS):
         b = bar * 4
         in_b = bar >= 8
-        piccolo.line(b, ARMY_TUNE[bar], 82 if not in_b else 88)
-        r = n(TUBA_ROOT[chord])
-        tuba.note(b, .8, r, 96)
-        tuba.note(b + 2, .8, r + 7, 84)
-        chord_notes = voicing(chord, "F3")
-        if in_b:  # held chords under the high tune
-            for p in chord_notes:
-                brass.note(b, 3.9, p, 70)
-        else:  # oom-pah: the chord on 2 and 4
-            for at in (1, 3):
-                for p in chord_notes:
-                    brass.note(b + at, .45, p, 78)
-        for at, vel in [(0, 108), (1, 78), (1.5, 78), (2, 98), (2.25, 64), (2.5, 82), (3, 102)]:
-            drums.note(b + at, .2, SNARE, vel)
-        if bar % 4 == 3:  # a roll into the next phrase
-            for k in range(8):
-                drums.note(b + 3 + k * .125, .1, SNARE, 60 + k * 6)
-        drums.note(b, .3, KICK, 92)
-        drums.note(b + 2, .3, KICK, 80)
+        horns.line(b, ARMY_TUNE[bar], 92 if in_b else 84)
+        horns.line(b, ARMY_TUNE[bar], 60, -12)  # the section doubled an octave down
+        if 12 <= bar < 14:  # the climb's top: a trumpet joins the horns
+            trumpet.line(b, ARMY_TUNE[bar], 70)
+        r = n(ARMY_ROOT[chord])
+        for beat in range(4):  # the gallop: an 8th and two 16ths, root and octave
+            for at, length, p, vel in [(0, .45, r + 12, 82), (.5, .2, r + 12, 62), (.75, .2, r + 24 if beat % 2 else r + 19, 66)]:
+                gallop.note(b + beat + at, length, p, vel - (0 if in_b else 8))
+        first = bar == 0 or ARMY_CHORDS[bar - 1] != chord
+        if first:  # each chord held two bars
+            for p in voicing(chord, "A3"):
+                pad.note(b, 7.9, p, 54)
+            for p in (r + 12, r + 19):
+                low.note(b, 7.5, p, 62 if in_b else 52)
+            tuba.note(b, 7.5, r, 70)
+            timp.note(b, 1, r + 12 if r + 12 <= n("F3") else r, 92)
+        else:
+            timp.note(b + 3, .2, r + 12 if r + 12 <= n("F3") else r, 58)
+            timp.note(b + 3.5, .4, r + 12 if r + 12 <= n("F3") else r, 72)
         if bar in (0, 8):
-            drums.note(b, 1, CRASH, 60)
-    return [piccolo, brass, tuba, drums], len(ARMY_CHORDS) * 4
+            drums.note(b, 2, CRASH, 52)
+    for k in range(8):  # a timpani roll into the loop
+        timp.note(62 + k * .25, .2, n("A2"), 48 + k * 6)
+    return [horns, gallop, pad, low, tuba, timp, trumpet, drums], len(ARMY_CHORDS) * 4
 
 
 # --- Battle theme, by terrain ----------------------------------------------------------
@@ -545,7 +547,7 @@ if __name__ == "__main__":
     write("town_riff", 130, *town_riff())
     write("hidden_item", 140, *hidden_item_sound())
     write("click", 120, *click())
-    write("army", 120, *army_theme())
+    write("army", 96, *army_theme())
     for variant in BATTLE_VARIANTS:
         write(variant, 160, *battle_theme(variant))
     write("end_victory", 96, *end_victory())
