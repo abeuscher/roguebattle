@@ -33,7 +33,7 @@ import numpy as np
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 BIN = os.path.join(ROOT, "tools", "audio_bin")
 MIDI = os.path.join(ROOT, "data", "audio", "midi")
-LOOPS = {"map_day", "map_night", "army", "battle"}  # music cues; the rest are one-shots
+LOOPS = {"map_day", "map_night", "army", "battle_plains", "battle_forest", "battle_mountain", "battle_swamp", "end_victory", "end_defeat"}  # music cues; the rest are one-shots
 EFFECTS = {"click"}  # one-shots that go to data/audio/effects/ (the rest to stingers/)
 RATE = 44100
 PEAK = 10 ** (-1.0 / 20)  # -1 dBFS

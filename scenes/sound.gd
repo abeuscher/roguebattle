@@ -16,6 +16,10 @@ var _streams := {}  # file -> AudioStream, loaded once
 var _music_db := 0.0  # the Music bus's volume from the options, before any dip
 var _dip := 0.0  # the current dip, in dB (0 or below)
 var _dip_tween: Tween
+var music_cue := ""  # what's playing (or fading in)
+var _music_player: AudioStreamPlayer
+var _fade := 2.0
+var _left_at := {}  # sync group -> where its music was when it last faded out
 
 
 ## Makes the one instance under `parent`, with the sound data and the player's options.
@@ -33,6 +37,23 @@ static func event(id: String) -> void:
 		_it._event(id)
 
 
+## Crossfades to a music cue (audio.json "cues"); the same cue again does nothing. A cue
+## with no file fades the music out.
+static func music(cue: String) -> void:
+	if _it:
+		_it._music(cue)
+
+
+## The music cue for a place (audio.json "music": menus, day, night, army, victory,
+## defeat), or for a battle on `terrain` when `place` is "battle".
+static func music_for(audio: Dictionary, place: String, terrain := "") -> String:
+	var m: Dictionary = audio.get("music", {})
+	if place == "battle":
+		var by: Dictionary = m.get("battle", {})
+		return str(by.get(terrain, by.get("_default", "")))
+	return str(m.get(place, ""))
+
+
 ## Sets the buses from the options (after the player changes them).
 static func apply_options(options: Dictionary) -> void:
 	if _it:
@@ -44,6 +65,7 @@ func _setup(audio: Dictionary, options: Dictionary) -> void:
 	cues = audio.get("cues", {})
 	events = audio.get("events", {})
 	duck = audio.get("duck", {})
+	_fade = float(audio.get("music", {}).get("fade_seconds", 2.0))
 	for bus in audio.get("buses", []):
 		if AudioServer.get_bus_index(bus) < 0:
 			AudioServer.add_bus()
@@ -94,6 +116,39 @@ func play(cue: String) -> void:
 	p.play()
 	if c.get("duck", false):
 		_duck()
+
+
+## The old music fades out as the new fades in. A cue with a "sync" group (day and night)
+## starts where that group's music last was: at dawn and dusk the other arrangement takes
+## over in step, and after Edit Units or a battle the map's tune carries on.
+func _music(cue: String) -> void:
+	if cue == music_cue:
+		return
+	var old := _music_player
+	var c: Dictionary = cues.get(cue, {})
+	var left := str(cues.get(music_cue, {}).get("sync", ""))
+	if old and left != "":
+		_left_at[left] = old.get_playback_position()
+	var sync := str(c.get("sync", ""))
+	var from: float = _left_at.get(sync, 0.0) if sync != "" else 0.0
+	music_cue = cue
+	_music_player = null
+	if old:
+		var out := old.create_tween()
+		out.tween_property(old, "volume_db", -60.0, _fade)
+		out.tween_callback(old.queue_free)
+	var stream := _stream(str(c.get("file", "")))
+	if stream == null:
+		return
+	var p := AudioStreamPlayer.new()
+	p.stream = stream
+	p.bus = str(c.get("bus", "Music"))
+	p.volume_db = -60.0 if old else float(c.get("db", 0.0))
+	add_child(p)
+	p.play(from)
+	if old:
+		p.create_tween().tween_property(p, "volume_db", float(c.get("db", 0.0)), _fade).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_music_player = p
 
 
 func _stream(file: String) -> AudioStream:

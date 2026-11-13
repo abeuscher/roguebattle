@@ -18,6 +18,9 @@ TRUMPET, TROMBONE, FRENCH_HORN, BRASS = 56, 57, 60, 61
 STRINGS, PIZZICATO, TIMPANI = 48, 45, 47
 GLOCKENSPIEL, TUBULAR_BELLS, BANJO, ACOUSTIC_BASS = 9, 14, 105, 32
 PIANO, SLAP_BASS, JAZZ_GUITAR, FRETLESS_BASS = 0, 36, 26, 35
+PICCOLO, TUBA, FLUTE, OBOE, CONTRABASS, FINGER_BASS, SYNTH_BASS = 72, 58, 73, 68, 43, 33, 38
+TAIKO, SHANAI = 116, 111
+TAMBOURINE, LOW_TOM, HIGH_TOM = 54, 45, 50
 KICK, SIDE_STICK, SNARE, HAT, OPEN_HAT, CRASH, WOOD_BLOCK = 36, 37, 38, 42, 46, 49, 76
 DRUMS = 9  # the drum channel
 
@@ -37,6 +40,7 @@ def n(name: str) -> int:
 CHORDS = {  # root, then the triad (or 7th) as pitch classes above C
     "D": ["D", "F#", "A"], "G": ["G", "B", "D"], "A": ["A", "C#", "E"], "A7": ["A", "C#", "E", "G"],
     "Bm": ["B", "D", "F#"], "F#m": ["F#", "A", "C#"], "Em": ["E", "G", "B"],
+    "Dm": ["D", "F", "A"], "Gm": ["G", "Bb", "D"], "Bb": ["Bb", "D", "F"], "C": ["C", "E", "G"],
 }
 
 
@@ -50,11 +54,12 @@ class Track:
         self.events.append((on, 1, bytes([0x90 | self.channel, pitch, vel])))
         self.events.append((off, 0, bytes([0x80 | self.channel, pitch, 0])))
 
-    def line(self, beat: float, notes: list, vel: int) -> float:
-        """Plays [(name or None for a rest, beats), ...] from `beat`; returns where it ends."""
+    def line(self, beat: float, notes: list, vel: int, shift: int = 0) -> float:
+        """Plays [(name or None for a rest, beats), ...] from `beat`, `shift` semitones up;
+        returns where it ends."""
         for name, length in notes:
             if name:
-                self.note(beat, length * 0.95, n(name), vel)
+                self.note(beat, length * 0.95, n(name) + shift, vel)
             beat += length
         return beat
 
@@ -331,6 +336,207 @@ def click() -> tuple:
     return [drums], .25
 
 
+# --- Army theme (Edit Units) ----------------------------------------------------------
+# Draft 1 (M5 session 3). 16 bars at 120, a march in D: the day motif in a dotted march
+# rhythm on piccolo, oom-pah brass and tuba, a rudimental snare with a roll every fourth
+# bar. A: the motif (bars 1-8); B: a higher piccolo tune over held brass (bars 9-16),
+# ending on A so it loops.
+
+ARMY_CHORDS = ["D", "G", "D", "A", "D", "G", "A", "D", "G", "D", "Em", "A", "G", "D", "A", "A"]
+ARMY_TUNE = [
+    [("A4", .75), ("A4", .25), ("D5", 1), ("F#5", 1), ("E5", .5), ("D5", .5)],
+    [("B4", 1), ("D5", .5), ("E5", .5), ("D5", 2)],
+    [("A4", .75), ("A4", .25), ("D5", 1), ("F#5", 1), ("A5", 1)],
+    [("F#5", .5), ("E5", .5), ("D5", .5), ("E5", .5), ("A4", 2)],
+    [("A4", .75), ("A4", .25), ("D5", 1), ("F#5", 1), ("E5", .5), ("D5", .5)],
+    [("B4", 1), ("D5", .5), ("E5", .5), ("F#5", 1), ("E5", 1)],
+    [("E5", 1), ("D5", .5), ("E5", .5), ("C#5", 1), ("A4", 1)],
+    [("D5", 2), (None, 2)],
+    [("B5", 1), ("A5", .5), ("G5", .5), ("F#5", 1), ("D5", 1)],
+    [("A5", 1), ("F#5", .5), ("E5", .5), ("D5", 2)],
+    [("G5", 1), ("F#5", .5), ("E5", .5), ("B4", 1), ("E5", 1)],
+    [("C#5", .5), ("D5", .5), ("E5", 1), ("A4", 2)],
+    [("B5", 1), ("A5", .5), ("G5", .5), ("F#5", .5), ("G5", .5), ("A5", 1)],
+    [("F#5", 1), ("D5", 1), ("A4", 2)],
+    [("E5", .5), ("F#5", .5), ("G5", .5), ("A5", .5), ("E5", 1), ("C#5", 1)],
+    [("A4", 2), (None, 2)],
+]
+TUBA_ROOT = {"D": "D2", "G": "G1", "A": "A1", "Em": "E2"}
+
+
+def army_theme() -> tuple:
+    piccolo = Track("Piccolo", 0, PICCOLO)
+    brass = Track("Brass", 1, BRASS)
+    tuba = Track("Tuba", 2, TUBA)
+    drums = Track("Drums", DRUMS, None)
+    for bar, chord in enumerate(ARMY_CHORDS):
+        b = bar * 4
+        in_b = bar >= 8
+        piccolo.line(b, ARMY_TUNE[bar], 82 if not in_b else 88)
+        r = n(TUBA_ROOT[chord])
+        tuba.note(b, .8, r, 96)
+        tuba.note(b + 2, .8, r + 7, 84)
+        chord_notes = voicing(chord, "F3")
+        if in_b:  # held chords under the high tune
+            for p in chord_notes:
+                brass.note(b, 3.9, p, 70)
+        else:  # oom-pah: the chord on 2 and 4
+            for at in (1, 3):
+                for p in chord_notes:
+                    brass.note(b + at, .45, p, 78)
+        for at, vel in [(0, 108), (1, 78), (1.5, 78), (2, 98), (2.25, 64), (2.5, 82), (3, 102)]:
+            drums.note(b + at, .2, SNARE, vel)
+        if bar % 4 == 3:  # a roll into the next phrase
+            for k in range(8):
+                drums.note(b + 3 + k * .125, .1, SNARE, 60 + k * 6)
+        drums.note(b, .3, KICK, 92)
+        drums.note(b + 2, .3, KICK, 80)
+        if bar in (0, 8):
+            drums.note(b, 1, CRASH, 60)
+    return [piccolo, brass, tuba, drums], len(ARMY_CHORDS) * 4
+
+
+# --- Battle theme, by terrain ----------------------------------------------------------
+# Draft 1 (M5 session 3). 16 bars at 160 in D minor; the same tune and chords for every
+# terrain, with a few instruments swapped (SPEC §24): driving 8th-note bass, taiko on the
+# downbeats, a rock kit, brass stabs on the chord changes, the motif (minor) on the lead.
+
+BATTLE_CHORDS = ["Dm", "Dm", "Bb", "C", "Dm", "Dm", "Bb", "A", "Gm", "Gm", "Dm", "Dm", "Bb", "C", "A", "A"]
+BATTLE_ROOT = {"Dm": "D2", "Gm": "G1", "Bb": "Bb1", "C": "C2", "A": "A1"}
+BATTLE_TUNE = [
+    [("A4", .5), ("A4", .5), ("D5", 1), ("F5", 1), ("E5", .5), ("D5", .5)],
+    [("C5", 1), ("D5", .5), ("E5", .5), ("A4", 2)],
+    [("Bb4", .5), ("Bb4", .5), ("D5", 1), ("F5", 1), ("D5", 1)],
+    [("E5", 1), ("G5", 1), ("E5", 1), ("C5", 1)],
+    [("A4", .5), ("A4", .5), ("D5", 1), ("F5", 1), ("A5", 1)],
+    [("G5", .5), ("F5", .5), ("E5", 1), ("D5", 2)],
+    [("F5", 1), ("D5", 1), ("Bb4", 1), ("D5", 1)],
+    [("C#5", 1.5), ("E5", .5), ("A5", 2)],
+    [("D5", .5), ("D5", .5), ("F5", .5), ("G5", .5), ("A5", 1), ("G5", 1)],
+    [("F5", .5), ("E5", .5), ("D5", 1), ("Bb4", 2)],
+    [("A4", .5), ("D5", .5), ("F5", .5), ("A5", .5), ("G5", 1), ("F5", 1)],
+    [("E5", 1), ("D5", 1), ("A4", 2)],
+    [("Bb4", 1), ("D5", 1), ("F5", 1), ("Bb5", 1)],
+    [("C5", 1), ("E5", 1), ("G5", 1), ("C6", 1)],
+    [("A5", 1), ("G5", .5), ("F5", .5), ("E5", 1), ("C#5", 1)],
+    [("A4", 2), (None, 2)],
+]
+BATTLE_VARIANTS = {  # cue -> the lead, an octave double (or None), the bass, an extra percussion
+    "battle_plains": (BRASS, TRUMPET, SLAP_BASS, None),
+    "battle_forest": (FRENCH_HORN, FLUTE, FINGER_BASS, WOOD_BLOCK),
+    "battle_mountain": (TROMBONE, TUBULAR_BELLS, SYNTH_BASS, None),
+    "battle_swamp": (SHANAI, None, FRETLESS_BASS, TAMBOURINE),
+}
+
+
+def battle_theme(variant: str) -> tuple:
+    lead_program, double_program, bass_program, extra = BATTLE_VARIANTS[variant]
+    lead = Track("Lead", 0, lead_program)
+    double = Track("Double", 1, double_program) if double_program is not None else None
+    bass = Track("Bass", 2, bass_program)
+    stabs = Track("Stabs", 3, BRASS)
+    taiko = Track("Taiko", 4, TAIKO)
+    drums = Track("Drums", DRUMS, None)
+    for bar, chord in enumerate(BATTLE_CHORDS):
+        b = bar * 4
+        lead.line(b, BATTLE_TUNE[bar], 100)
+        if double is not None:
+            if double_program == TUBULAR_BELLS:  # bells: just the bar's first note
+                first = BATTLE_TUNE[bar][0][0]
+                if first:
+                    double.note(b, 1.5, n(first), 70)
+            else:
+                double.line(b, BATTLE_TUNE[bar], 70, 12)
+        r = n(BATTLE_ROOT[chord])
+        for k in range(8):  # driving 8ths, the octave on the offbeats of 2 and 4
+            bass.note(b + k * .5, .4, r + (12 if k in (3, 7) else 0), 110 if k % 2 == 0 else 88)
+        if bar == 0 or BATTLE_CHORDS[bar - 1] != chord:
+            for p in voicing(chord, "F3"):
+                stabs.note(b, .4, p, 92)
+                stabs.note(b + 1.5, .3, p, 78)
+        taiko.note(b, .5, n("D2"), 112)
+        taiko.note(b + 2, .5, n("D2"), 96)
+        taiko.note(b + 2.5, .5, n("D2"), 80)
+        for k in range(8):
+            drums.note(b + k * .5, .2, HAT, 70 if k % 2 == 0 else 50)
+        for at in (0, 1.5, 2, 3.5):
+            drums.note(b + at, .2, KICK, 100)
+        drums.note(b + 1, .2, SNARE, 104)
+        drums.note(b + 3, .2, SNARE, 104)
+        if extra is not None:
+            for k in range(1, 8, 2):
+                drums.note(b + k * .5, .2, extra, 64)
+        if bar % 4 == 3:  # a tom fill
+            for k, tom in enumerate([HIGH_TOM, HIGH_TOM, LOW_TOM, LOW_TOM]):
+                drums.note(b + 3 + k * .25, .2, tom, 90)
+        if bar in (0, 8):
+            drums.note(b, 1, CRASH, 90)
+    tracks = [lead] + ([double] if double is not None else []) + [bass, stabs, taiko, drums]
+    return tracks, len(BATTLE_CHORDS) * 4
+
+
+# --- End of the map: victory and defeat screens -----------------------------------------
+# Draft 1 (M5 session 3). Both loop, 8 bars, while the end screen is up.
+
+END_VICTORY_CHORDS = ["D", "G", "D", "A", "D", "G", "A", "D"]
+END_VICTORY_TUNE = [
+    [("A4", 1), ("D5", 1), ("F#5", 2)], [("E5", 1), ("D5", 1), ("B4", 2)],
+    [("A4", 1), ("D5", 1), ("F#5", 1), ("A5", 1)], [("B5", 1), ("A5", 1), ("E5", 2)],
+    [("A4", 1), ("D5", 1), ("F#5", 2)], [("E5", 1), ("F#5", 1), ("B5", 2)],
+    [("A5", 1.5), ("F#5", .5), ("E5", 1), ("C#5", 1)], [("D5", 4)],
+]
+
+
+def end_victory() -> tuple:
+    """96 BPM, D major: the motif broad on trumpet, strings and horns holding the chords,
+    timpani on the downbeats, a glockenspiel sparkle on the last bar."""
+    trumpet = Track("Trumpet", 0, TRUMPET)
+    horns = Track("Horns", 1, FRENCH_HORN)
+    strings = Track("Strings", 2, STRINGS)
+    timp = Track("Timpani", 3, TIMPANI)
+    glock = Track("Glockenspiel", 4, GLOCKENSPIEL)
+    for bar, chord in enumerate(END_VICTORY_CHORDS):
+        b = bar * 4
+        trumpet.line(b, END_VICTORY_TUNE[bar], 96)
+        root = n(TUBA_ROOT[chord])
+        for p in voicing(chord, "D3"):
+            horns.note(b, 3.9, p, 66)
+        for p in voicing(chord, "A3") + [root + 12]:
+            strings.note(b, 3.95, p, 60)
+        timp.note(b, .5, root + 12, 88)
+        timp.note(b + 2, .5, root + 12, 64)
+    glock.line(28, [("D6", .5), ("F#6", .5), ("A6", .5), ("D7", 2.5)], 70)
+    return [trumpet, horns, strings, timp, glock], 32
+
+
+END_DEFEAT_CHORDS = ["Dm", "Gm", "Dm", "A", "Bb", "Gm", "A", "Dm"]
+END_DEFEAT_TUNE = [
+    [("A4", 1), ("D5", 1), ("F5", 2)], [("E5", 1), ("D5", 1), ("Bb4", 2)],
+    [("A4", 1), ("D5", 1), ("C5", 1), ("A4", 1)], [("C#5", 2), ("E5", 2)],
+    [("F5", 1), ("D5", 1), ("Bb4", 2)], [("D5", 1), ("Bb4", 1), ("G4", 2)],
+    [("A4", 1), ("E5", 1), ("C#5", 2)], [("D5", 4)],
+]
+
+
+def end_defeat() -> tuple:
+    """66 BPM, D minor: the motif slow on oboe over strings and a contrabass, a soft
+    timpani roll into the last bar."""
+    oboe = Track("Oboe", 0, OBOE)
+    strings = Track("Strings", 1, STRINGS)
+    contrabass = Track("Contrabass", 2, CONTRABASS)
+    timp = Track("Timpani", 3, TIMPANI)
+    for bar, chord in enumerate(END_DEFEAT_CHORDS):
+        b = bar * 4
+        oboe.line(b, END_DEFEAT_TUNE[bar], 84)
+        for p in voicing(chord, "D3"):
+            strings.note(b, 3.95, p, 58)
+        contrabass.note(b, 3.9, n(BATTLE_ROOT[chord]), 76)
+    for k in range(8):
+        timp.note(26 + k * .25, .2, n("A2"), 30 + k * 5)
+    timp.note(28, 2, n("D2"), 70)
+    return [oboe, strings, contrabass, timp], 32
+
+
 if __name__ == "__main__":
     tracks, beats = day_theme()
     write("map_day", 112, tracks, beats)
@@ -339,3 +545,8 @@ if __name__ == "__main__":
     write("town_riff", 130, *town_riff())
     write("hidden_item", 140, *hidden_item_sound())
     write("click", 120, *click())
+    write("army", 120, *army_theme())
+    for variant in BATTLE_VARIANTS:
+        write(variant, 160, *battle_theme(variant))
+    write("end_victory", 96, *end_victory())
+    write("end_defeat", 66, *end_defeat())

@@ -225,7 +225,7 @@ Sound is coming in (ROADMAP M5). In so far:
 - **Battles:** "Fight!" as a battle starts playing; on a win, the victory fanfare and "Victory!"; on a loss, "Defeat!". A retreat or a draw has no sound.
 - **Hidden sites:** "Hidden Location!" when one comes into view; a short glockenspiel-and-trumpet sound when you claim a treasure, card cache or rare recruit.
 - **Buildings changing hands:** taking a town plays a banjo riff as its liberation window opens (or with its banner, if the window is off), so liberations sound one at a time, each with its own window. The enemy taking a neutral building makes no sound. The enemy taking one of yours will have its own sound, with its "lost" window. The fireworks over a liberated building will have a sound for each burst. (Tower and temple riffs, the loss riff and the "building lost" sound are still being made, so those moments are silent for now.)
-- **Music** dips while a fanfare, riff or voice line plays. The map music itself (day and night themes) comes next.
+- **Music:** the title and menus play the day theme, and it carries on into the map. On the map the day theme turns into the night theme at 18:00 and back at 06:00, without losing its place in the tune. Edit Units has a march; a battle has a fast battle theme whose instruments change with the battle hexs terrain (plains, forest, mountain and snow, swamp and desert); the end-of-map screen has a victory or a defeat tune. Each change crossfades over 2 seconds, and after Edit Units or a battle the map music picks up where it left off. Music dips while a fanfare, riff or voice line plays. (These are first drafts; the tunes may change.)
 
 ## Player tips
 

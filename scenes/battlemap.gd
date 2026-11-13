@@ -197,6 +197,7 @@ func _process(delta: float) -> void:
 			hud.show_banner(state.noon_report, 5.0)
 		state.daily_ledger = {}
 	_prompt_start()
+	Sound.music(_music())
 	if _tokens.size() != state.squads.size():  # a squad went into the base, or left the map
 		_sync_tokens()
 		hud.set_squads(state.player_squads())
@@ -1020,6 +1021,18 @@ func _open_liberation_popup(entry: Dictionary) -> void:
 func _close_liberation_popup() -> void:
 	_liberation_popup.queue_free()
 	_liberation_popup = null
+
+
+## The music for what's on screen (SPEC §24): the end screen's, the battle's (by its
+## terrain), the army theme in Edit Units, else the map's by the time of day.
+func _music() -> String:
+	if _end_screen:
+		return Sound.music_for(data.audio, state.game_over)
+	if _battle and _battle.battle:
+		return Sound.music_for(data.audio, "battle", str(_battle.battle.terrain["key"]))
+	if _edit:
+		return Sound.music_for(data.audio, "army")
+	return Sound.music_for(data.audio, "day" if state.clock.is_day() else "night")
 
 
 ## The map has ended (§6.8): the player's only way out is to the title screen.

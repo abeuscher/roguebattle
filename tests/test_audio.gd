@@ -43,3 +43,22 @@ func test_every_building_you_take_has_a_riff_event() -> void:
 	for type in ["town", "tower", "temple"]:
 		check(d.audio["events"].has("taken_" + type), "taking a %s has its event (played when its window opens)" % type)
 	check(d.audio["events"].has("building_lost"), "and losing one (played when the lost window opens)")
+
+
+func test_every_place_has_music_that_loops() -> void:
+	var cues: Dictionary = d.audio["cues"]
+	for place in ["menus", "day", "night", "army", "victory", "defeat"]:
+		var cue := Sound.music_for(d.audio, place)
+		check(cues.has(cue), "%s plays %s, a known cue" % [place, cue])
+		check(cues[cue]["bus"] == "Music", "%s is on the Music bus" % cue)
+		var stream := load(cues[cue]["file"]) as AudioStreamWAV
+		check(stream != null and stream.loop_mode == AudioStreamWAV.LOOP_FORWARD, "%s loops" % cue)
+	for t in d.terrains:
+		var cue := Sound.music_for(d.audio, "battle", t["key"])
+		check(cues.has(cue) and (load(cues[cue]["file"]) as AudioStreamWAV).loop_mode == AudioStreamWAV.LOOP_FORWARD, "a battle on %s plays %s, a loop" % [t["key"], cue])
+	check_eq(Sound.music_for(d.audio, "battle", "forest"), "battle_forest", "forest has its own")
+	check_eq(Sound.music_for(d.audio, "battle", "deep"), "battle_plains", "anything else borrows plains")
+	var day: Dictionary = cues[Sound.music_for(d.audio, "day")]
+	var night: Dictionary = cues[Sound.music_for(d.audio, "night")]
+	check(day.get("sync", "") != "" and day["sync"] == night.get("sync", ""), "day and night stay in step")
+	check(absf((load(day["file"]) as AudioStreamWAV).get_length() - (load(night["file"]) as AudioStreamWAV).get_length()) < 0.01, "and are the same length")
