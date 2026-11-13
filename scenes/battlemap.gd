@@ -522,20 +522,31 @@ func _open_menu() -> void:
 		var screen := ShopScreen.new()
 		_ui.add_child(screen)
 		screen.setup(state, s, state.shop_at(s))
-		_open_shop(screen))
+		_open_shop(screen)
+		screen.closed.connect(_back_to_menu.bind(s)))
 	_menu.use_item.connect(func():
 		var s := _selected
 		_end_selection()
 		var screen := SuppliesMenu.new()
 		_ui.add_child(screen)
 		screen.setup(state, s)
-		_open_shop(screen))
+		_open_shop(screen)
+		screen.closed.connect(_back_to_menu.bind(s)))
 	_menu.edit.connect(func():
-		var cell := _selected.id - 1
+		var s := _selected
 		_end_selection()
-		_open_edit(cell))
+		_open_edit(s.id - 1)
+		_edit.closed.connect(_back_to_menu.bind(s)))  # (Deploy from Edit Units goes on to the map instead)
 	_menu.portal.connect(_start_portal)
 	_menu.closed.connect(_end_selection)
+
+
+## Leaving the shop, Use item or Edit squad goes back to the squad's menu, as backing out
+## of a move, a ranged attack or a portal does (user, 2026-11-13), if the squad is still
+## on the map and nothing else has opened meanwhile.
+func _back_to_menu(s: Squad) -> void:
+	if s in state.squads and s.hex >= 0 and _free():
+		_select(s)
 
 
 ## Portal (user's notes, 2026-11-11): back to the map, which pulls back to show the
