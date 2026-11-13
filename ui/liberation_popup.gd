@@ -36,7 +36,7 @@ func setup(game_state: GameState, building: Dictionary, drawn_card: String, opti
 	var what: String = building.get("name", state.data.buildings[building["type"]]["name"])
 	var rewards: bool = state.data.buildings[building["type"]].get("liberation", true)
 	var title := UiStyle.label("%s %s!" % [what, "liberated" if rewards else "taken"], 24)
-	col.add_child(title if _offering else UiStyle.title_row(title, func(): closed.emit()))
+	col.add_child(UiStyle.title_row(title, Callable() if _offering else func(): closed.emit()))
 	# Round 9 layout: the card and View all cards on the left, the conscripts in an
 	# equal-width column on the right.
 	var body := HBoxContainer.new()
@@ -49,12 +49,12 @@ func setup(game_state: GameState, building: Dictionary, drawn_card: String, opti
 	if not rewards:  # a temple (round 11): what holding it means, and its god
 		_temple(left, building)
 	elif drawn_card != "":
-		left.add_child(UiStyle.label("You draw:", 16, Color(0.7, 0.72, 0.76)))
+		left.add_child(UiStyle.section("You draw"))
 		var face := CardFace.make(state.data, drawn_card)
 		face.size_flags_horizontal = SIZE_SHRINK_BEGIN if not recruits.is_empty() else SIZE_SHRINK_CENTER
 		left.add_child(face)
 	elif _offering:
-		left.add_child(UiStyle.label("Choose a card:", 16, Color(0.7, 0.72, 0.76)))
+		left.add_child(UiStyle.section("Choose a card"))
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 12)
 		left.add_child(row)
@@ -72,7 +72,7 @@ func setup(game_state: GameState, building: Dictionary, drawn_card: String, opti
 		right.size_flags_horizontal = SIZE_EXPAND_FILL
 		right.custom_minimum_size.x = CardFace.SIZE.x
 		body.add_child(right)
-		right.add_child(UiStyle.label("Conscripts", 18, UiStyle.ACCENT))
+		right.add_child(UiStyle.section("Conscripts"))
 		right.add_child(UiStyle.label("They join the recruit pool at the Player Base.", 14, Color(0.7, 0.72, 0.76)))
 		for u in recruits:
 			right.add_child(_conscript(u))

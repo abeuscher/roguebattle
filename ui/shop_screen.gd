@@ -35,13 +35,9 @@ func setup(game_state: GameState, s: Squad, b: Dictionary) -> void:
 	col.add_theme_constant_override("separation", 12)
 	col.custom_minimum_size.x = 760
 	panel.add_child(col)
-	var head := HBoxContainer.new()
-	col.add_child(head)
 	var title := UiStyle.label("%s  ·  %s" % [state.data.buildings[b["type"]]["name"], s.name], 24)
-	title.size_flags_horizontal = SIZE_EXPAND_FILL
-	head.add_child(title)
-	head.add_child(_gold)
-	head.add_child(UiStyle.close_x(func(): closed.emit()))
+	_gold.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	col.add_child(UiStyle.title_row(title, func(): closed.emit(), "Close (Esc)", [_gold]))
 	_list.add_theme_constant_override("separation", 8)
 	col.add_child(_list)
 	_refresh()

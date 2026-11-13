@@ -24,7 +24,7 @@ func setup(state: GameState, entry: Dictionary) -> void:
 	col.custom_minimum_size.x = 420
 	panel.add_child(col)
 	var where := state.where(entry["building"]["hex"])
-	col.add_child(UiStyle.label("%s is lost" % (where.left(1).to_upper() + where.substr(1)), 24))
+	col.add_child(UiStyle.title_row(UiStyle.label("%s is lost" % (where.left(1).to_upper() + where.substr(1)), 24), func(): closed.emit()))
 	col.add_child(UiStyle.label("The enemy has retaken %s." % where, 16))
 	col.add_child(UiStyle.label("Reputation %d." % int(entry["reputation"]), 16, Color("#e0604a")))
 	var ok := UiStyle.button("Continue", 200, true)

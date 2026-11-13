@@ -38,7 +38,7 @@ func setup(game_state: GameState, is_offer := false, only_view := false) -> void
 	col.alignment = BoxContainer.ALIGNMENT_CENTER
 	center.add_child(col)
 	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	col.add_child(_title if offer else UiStyle.title_row(_title, func(): closed.emit()))
+	col.add_child(UiStyle.title_row(_title, Callable() if offer else func(): closed.emit()))
 	_note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(_note)
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED

@@ -48,12 +48,16 @@ func setup(state: GameState, b: Dictionary) -> void:
 
 ## A god's name and domain, then how they look and how they show themselves.
 func _god(col: VBoxContainer, g: Dictionary) -> void:
+	col.add_child(UiStyle.section("Its god"))
 	col.add_child(UiStyle.label("%s, god of %s" % [g["name"], g["domain"]], 18, Color("#f4ead2")))
 	for t in [g["appearance"], g["manifestation"]]:
 		var l := UiStyle.label(t, 15, Color(0.72, 0.74, 0.8))
 		l.autowrap_mode = TextServer.AUTOWRAP_WORD
 		col.add_child(l)
-	col.add_child(HSeparator.new())
+	var gap := Control.new()
+	gap.custom_minimum_size.y = 4
+	col.add_child(gap)
+	col.add_child(UiStyle.section("The temple"))
 
 
 ## Everything about a building in sight or held: defense and rest, liberating, shop,

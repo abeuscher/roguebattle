@@ -31,13 +31,8 @@ func setup(game_state: GameState) -> void:
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 12)
 	panel.add_child(col)
-	var head := HBoxContainer.new()
-	head.add_theme_constant_override("separation", 20)
-	col.add_child(head)
-	head.add_child(UiStyle.label("Tech", 26))
-	_points.size_flags_horizontal = SIZE_EXPAND_FILL
-	head.add_child(_points)
-	head.add_child(UiStyle.close_x(func(): closed.emit()))
+	_points.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	col.add_child(UiStyle.title_row(UiStyle.label("Tech", 26), func(): closed.emit(), "Close (Esc)", [_points]))
 	_body.add_theme_constant_override("separation", 30)
 	col.add_child(_body)
 	col.add_child(_status)

@@ -4,6 +4,7 @@ class_name UiStyle
 const BACKGROUND := Color("#12161c")
 const PANEL := Color(0.1, 0.12, 0.15)
 const ACCENT := Color("#ffe08a")
+const TITLE := Color("#f4ead2")  # window titles
 const ACTION := Color("#f2a93b")  # the main way forward on a screen
 const OUTLINE := Color(0.42, 0.46, 0.53)
 const ICON_SIZE := 20
@@ -43,26 +44,94 @@ static func dont_show_again(options: Dictionary, id: String, text := "Do not sho
 
 ## The X at a modal's top right that closes it (playtest round 9: replaces the Close
 ## buttons at the bottom). `tip` names the key that also closes it.
+## The close button (playtest round 12): a 34 px square with its own soft background,
+## lighter on hover, darker and gold when pressed, so it reads as a button.
 static func close_x(action: Callable, tip := "Close (Esc)") -> Button:
 	var x := Button.new()
-	x.icon = svg("x", 24)
-	x.flat = true
+	x.icon = svg("x", 20)
+	x.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	x.custom_minimum_size = Vector2(34, 34)
+	for state in [["normal", Color(1, 1, 1, 0.07), Color(1, 1, 1, 0.0)], ["hover", Color(1, 1, 1, 0.18), Color(1, 1, 1, 0.35)],
+			["pressed", Color(0, 0, 0, 0.35), ACCENT], ["focus", Color(0, 0, 0, 0), Color(0, 0, 0, 0)]]:
+		var look := StyleBoxFlat.new()
+		look.bg_color = state[1]
+		look.border_color = state[2]
+		look.set_border_width_all(1)
+		look.set_corner_radius_all(8)
+		x.add_theme_stylebox_override(state[0], look)
+	x.add_theme_color_override("icon_hover_color", Color.WHITE)
+	x.add_theme_color_override("icon_pressed_color", ACCENT)
+	x.add_theme_color_override("icon_normal_color", Color(0.85, 0.87, 0.9))
 	x.tooltip_text = tip
 	x.focus_mode = Control.FOCUS_NONE
-	x.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	x.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	x.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	x.pressed.connect(action)
 	return x
 
 
-## A modal's title line: `title` filling the width, then the X that closes it.
-static func title_row(title: Control, action: Callable, tip := "Close (Esc)") -> HBoxContainer:
+## The title font (Cinzel, playtest round 12): carved capitals that set a window's title
+## apart from its content.
+static func title_font() -> Font:
+	var f := FontVariation.new()
+	f.base_font = load("res://ui/fonts/Cinzel.ttf")
+	f.variation_opentype = {TextServerManager.get_primary_interface().name_to_tag("wght"): 650}
+	return f
+
+
+## A modal's title bar (playtest round 12): its own band, the title in the title font,
+## the close button at its right, and a thin gold rule under it. A Label title takes the
+## title font and a warm white unless it already has its own color. `extras` (gold, a
+## squad's markers) sit between the title and the close button. An empty `action`
+## (`Callable()`) leaves the close button off, for a window that needs an answer.
+static func title_row(title: Control, action: Callable, tip := "Close (Esc)", extras: Array = []) -> Control:
+	var bar := VBoxContainer.new()
+	bar.add_theme_constant_override("separation", 0)
+	var band := PanelContainer.new()
+	var look := StyleBoxFlat.new()
+	look.bg_color = Color(1, 1, 1, 0.045)
+	look.set_corner_radius_all(8)
+	look.content_margin_left = 14
+	look.content_margin_right = 6
+	look.content_margin_top = 6
+	look.content_margin_bottom = 6
+	band.add_theme_stylebox_override("panel", look)
+	bar.add_child(band)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 12)
+	band.add_child(row)
+	if title is Label:
+		title.add_theme_font_override("font", title_font())
+		if not title.has_theme_color_override("font_color") or title.get_theme_color("font_color") == Color.WHITE:
+			title.add_theme_color_override("font_color", TITLE)
+		title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(title)
-	row.add_child(close_x(action, tip))
-	return row
+	for e in extras:
+		row.add_child(e)
+	if action.is_valid():
+		row.add_child(close_x(action, tip))
+	else:
+		look.content_margin_right = 14
+		look.content_margin_top = 10
+		look.content_margin_bottom = 10
+	var rule := ColorRect.new()
+	rule.color = Color(ACCENT, 0.35)
+	rule.custom_minimum_size.y = 1
+	rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var gap := Control.new()
+	gap.custom_minimum_size.y = 6
+	bar.add_child(gap)
+	bar.add_child(rule)
+	return bar
+
+
+## A heading inside a window, under the title bar: small capitals in the title font and
+## a muted gold, to group what follows (playtest round 12).
+static func section(text: String) -> Label:
+	var l := label(text.to_upper(), 13, Color(ACCENT, 0.75))
+	l.add_theme_font_override("font", title_font())
+	return l
 
 
 ## The game's name in the title font (Fleur De Leah, trial pick 2026-11-12), centred.

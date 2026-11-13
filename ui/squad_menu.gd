@@ -36,20 +36,13 @@ func setup(state: GameState, s: Squad) -> void:
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 10)
 	panel.add_child(col)
-	var head := HBoxContainer.new()
-	head.add_theme_constant_override("separation", 12)
-	col.add_child(head)
 	var title := UiStyle.label("%d · %s" % [s.id, s.name], 26)
-	title.size_flags_horizontal = SIZE_EXPAND_FILL
-	head.add_child(title)
-	head.add_child(markers(data, s, 26))
 	var status := TextureRect.new()  # moving, in a building or in the open (playtest round 7)
 	status.texture = Hud.status_icon(state.squad_status(s), 26)
 	status.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
 	status.size_flags_vertical = SIZE_SHRINK_CENTER
 	status.tooltip_text = state.status_text(s)
-	head.add_child(status)
-	head.add_child(UiStyle.close_x(func(): closed.emit()))
+	col.add_child(UiStyle.title_row(title, func(): closed.emit(), "Close (Esc)", [markers(data, s, 26), status]))
 	var cols := s.capacity(data)
 	for u in s.units:
 		cols = maxi(cols, u.col + 1)

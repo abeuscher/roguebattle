@@ -33,7 +33,7 @@ func setup(class_name_: String, beaten := false) -> void:
 	_col.custom_minimum_size = Vector2(320, 150)
 	panel.add_child(_col)
 	_title = UiStyle.label(("The %s band is beaten" if beaten else "A band of %s") % class_name_, 22)
-	_col.add_child(_title)
+	_col.add_child(UiStyle.title_row(_title, Callable()))
 	var ask := UiStyle.label("Try once more to recruit them? They would join with the HP they have left." if beaten
 			else "Recruit them, or fight?", 14, Color(0.7, 0.72, 0.76))
 	ask.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

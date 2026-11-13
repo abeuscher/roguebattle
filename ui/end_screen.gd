@@ -28,7 +28,7 @@ func setup(state: GameState) -> void:
 	col.add_theme_constant_override("separation", 12)
 	col.custom_minimum_size.x = 440
 	panel.add_child(col)
-	col.add_child(UiStyle.label("Victory!" if won else "Defeat", 32, VICTORY if won else DEFEAT))
+	col.add_child(UiStyle.title_row(UiStyle.label("Victory!" if won else "Defeat", 32, VICTORY if won else DEFEAT), Callable()))
 	col.add_child(UiStyle.label(str(summary["reason"]), 18))
 	var lines := [
 		"Day %d" % int(summary["day"]),

@@ -839,3 +839,10 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **Fireworks pop:** the drafted burst is in: one pop per burst, 5 bursts (the user kept 5), each triggered as its burst starts, so sound and picture can't drift. **New Tower!** wired as recorded: it opens with a thunderclap that clips on purpose (the user's call). The prepare tool levels it like the others by its speaking loudness, which leaves the thunder peaking at -5 dB.
 - **Stinger drafts approved and wired:** loss riff, tower riff, temple riff, building lost, recruit joined. The only cue still without a file is "Give it back!" (to record).
 - **Levels (user):** the fireworks pop at half volume (-6 dB) and the intro music 20% quieter (-1.9 dB), as cue `db` offsets in `audio.json`. The unused liberation swell stays on the asset list for later.
+
+## Session 070 (2026-11-13): windows (playtest round 12, session 1)
+
+- **Title font: Cinzel** (Google Fonts, OFL, `ui/fonts/Cinzel.ttf` with `OFL-Cinzel.txt`), carved capitals at weight 650 (a variable font; the weight is set by its OpenType tag, a "wght" string key didn't take). Window titles only; Sen stays the body font and Fleur De Leah the game's name.
+- **One title bar for every window** (`UiStyle.title_row`): the title on its own soft band (white at 4.5%, rounded), in Cinzel and a warm white unless the caller gave it a color, extras (gold, squad markers, tech points) before the close button, a 1 px gold rule under it. Windows that need an answer (battle start, recruit, a card choice, the end screen) pass `Callable()` and get the bar without a close button. The shop, squad menu and Tech window moved their own headers onto it.
+- **Close button** (`UiStyle.close_x`): 34 px square, rounded, a faint fill; lighter with a light border on hover; darker with a gold border and a gold X when pressed; vertically centred in the bar.
+- **Section headings** (`UiStyle.section`): small Cinzel capitals in muted gold, for groups inside a window: "You draw", "Choose a card", "Conscripts" in the liberation window, "Its god" and "The temple" in a temple's window.
