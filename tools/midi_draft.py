@@ -551,4 +551,5 @@ if __name__ == "__main__":
     for variant in BATTLE_VARIANTS:
         write(variant, 160, *battle_theme(variant))
     write("end_victory", 96, *end_victory())
+    write("intro_music", 192, *end_victory())  # the title screen: the victory tune at double tempo (user, 2026-11-12)
     write("end_defeat", 66, *end_defeat())

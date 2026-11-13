@@ -47,7 +47,7 @@ func test_every_building_you_take_has_a_riff_event() -> void:
 
 func test_every_place_has_music_that_loops() -> void:
 	var cues: Dictionary = d.audio["cues"]
-	for place in ["menus", "day", "night", "army", "victory", "defeat"]:
+	for place in ["title", "menus", "day", "night", "army", "victory", "defeat"]:
 		var cue := Sound.music_for(d.audio, place)
 		check(cues.has(cue), "%s plays %s, a known cue" % [place, cue])
 		check(cues[cue]["bus"] == "Music", "%s is on the Music bus" % cue)

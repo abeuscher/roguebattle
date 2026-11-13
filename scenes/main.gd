@@ -30,7 +30,9 @@ func _swap(node: Node, as_screen := true) -> void:
 	if _current:
 		_current.queue_free()
 	_current = node
-	if not node is Battlemap:  # the title and menus (the battlemap picks its own)
+	if node is TitleScreen:
+		Sound.music(Sound.music_for(data.audio, "title"))
+	elif not node is Battlemap:  # the menus (the battlemap picks its own)
 		Sound.music(Sound.music_for(data.audio, "menus"))
 	if as_screen:
 		_screens.add_child(node)
