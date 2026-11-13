@@ -86,7 +86,7 @@ func start(game_data: GameData, game_log: GameLog, game_config: GameConfig, map:
 	state.place_enemies()
 	state.place_neutrals()
 	_show_state()
-	if state.single_map():  # build the squads from the pool first (user's design, 2026-11-10)
+	if state.single_map() and not state.quick_start():  # build the squads from the pool first (user's design, 2026-11-10)
 		_open_edit.call_deferred()
 	print("Battlemap ready in %d ms" % (Time.get_ticks_msec() - started))
 

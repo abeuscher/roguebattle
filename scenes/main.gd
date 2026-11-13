@@ -1,7 +1,7 @@
 extends Node
 ## The game's screens and the flow between them (SPEC §4):
-## Title -> Start -> Configurator -> Game summary -> Battlemap, or Start -> Continue /
-## Load game -> Battlemap.
+## Title -> Start -> Configurator -> Game summary -> Battlemap, Start -> Quick Start ->
+## Battlemap, or Start -> Continue / Load game -> Battlemap.
 ## The game starts on the battlemap; Edit Units opens from its toolbar.
 
 const SETTINGS_PATH := "user://settings.json"
@@ -52,6 +52,7 @@ func show_start() -> void:
 	_swap(s)
 	s.setup(SaveGame.latest_slot() >= 0)
 	s.start_game.connect(show_configurator)
+	s.quick_start.connect(func(): start_game(GameConfig.quick(data, randi())))
 	s.continue_game.connect(func():
 		var why := load_game(SaveGame.latest_slot())
 		if why != "":
@@ -91,11 +92,12 @@ func show_summary() -> void:
 	s.confirm.connect(start_game)
 
 
-func start_game() -> void:
+## Starts a map from `game_config` (Quick start's own), or the configurator's settings.
+func start_game(game_config: GameConfig = null) -> void:
 	var b := Battlemap.new()
 	b.options = options
 	_swap(b, false)
-	b.start(data, log, config, _preview_map)
+	b.start(data, log, game_config if game_config else config, _preview_map)
 	_preview_map = null
 	_wire(b)
 
@@ -117,10 +119,13 @@ func load_game(slot: int) -> String:
 func _wire(b: Battlemap) -> void:
 	b.to_title.connect(show_title)
 	b.quit_game.connect(func(): get_tree().quit())
-	b.save_settings.connect(_save_settings)
-	b.regenerate.connect(func(seed: int):
-		config.seed = seed
-		start_game())
+	b.save_settings.connect(func():  # this game's settings, Quick start's included
+		config = b.config
+		_save_settings())
+	b.regenerate.connect(func(seed: int):  # same settings (Quick start's too), new seed
+		var c := b.config
+		c.seed = seed
+		start_game(c))
 
 
 ## The configurator starts from the last saved settings (seed included), or the defaults.

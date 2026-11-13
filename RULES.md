@@ -8,12 +8,13 @@ This describes how the game actually plays right now, not the full design (that'
 
 ## Starting a map
 
+- **Quick Start** (on the Start screen, under Start Game) skips the configurator and the Game summary and drops you straight into a small game with your squads already built: see "Quick start" under "Your starting army". A new seed every time.
 - **Title → Start → Configurator → Game summary → the map.** The configurator sets every map-generation option (size, land shape, terrain amounts, building density, road coverage, neutral density, victory/defeat toggles, squad cap, a fairness toggle), with a seed you can randomize and a live minimap preview. Settings plus seed can be copied as a short share code and reproduce the exact same map. The Game summary has a **Your name** field, filled with a random name you can change; your Opinion Leader takes that name (and their squad is named after it).
-- **Map size:** width and height in hexes, each its own slider (400×225 — Small — by default). Landing exactly on Small, Medium (800×450) or Large (1200×675) shows that name next to the numbers; any other combination just shows the numbers. A much smaller custom map generates and plays through in a fraction of the time, handy for a quick playtest.
-- **Game mode** (the configurator's first setting): **Single map** (the default) or **Campaign start**. They differ only in how your army starts — see "Your starting army" below. Single map mode also has an **XP rate** (150% by default, 100–300%) that multiplies every unit's battle XP, so units advance further within one map; the campaign start ignores it.
+- **Map size:** width and height in hexes, each its own slider (400×225 — Small — by default; as small as 100×45). Landing exactly on Small, Medium (800×450) or Large (1200×675) shows that name next to the numbers; any other combination just shows the numbers. A much smaller custom map generates and plays through in a fraction of the time, handy for a quick playtest.
+- **Game mode** (the configurator's first setting): **Single map** (the default), **Campaign start** or **Quick start**. They differ in how your army starts — see "Your starting army" below; Quick start also gives a small map at least 3 towns, 2 towers and a temple, one of the towns 8–15 hexes from your base. Single map mode (and Quick start) also has an **XP rate** (150% by default, 100–300%) that multiplies every unit's battle XP, so units advance further within one map; the campaign start ignores it.
 - **Map 1's setup** in the campaign start gives you 6 starting squads, the Opinion Leader on the map, 3 random cards, 3 tech points, starting gold (see "Buildings and the economy") and a starting kit of items and supplies — see "Your starting army" below.
 - **Building counts follow the map's land:** the default map gets 16 towns, 10 towers, 4 temples and 2 nomad camps (times the density setting); a map with more land gets proportionally more, one with less gets fewer. Hidden sites and lairs scale the same way. An islands map has less land, so fewer buildings than a continent of the same size.
-- The game opens on the battlemap with your one deployed squad standing on the Player Base. In single map mode Edit Units opens over it straight away, so you build your squads first.
+- The game opens on the battlemap with your one deployed squad standing on the Player Base. In single map mode Edit Units opens over it straight away, so you build your squads first (not in Quick start, whose squads are ready).
 
 ## The map
 
@@ -163,6 +164,14 @@ This describes how the game actually plays right now, not the full design (that'
 - **Enemy squads are bigger:** each has 5–6 units (its usual 4 plus 1–2 stage 2 units) and 6 slots, to match your squads of 6.
 - Cards, tech points, gold, items and supplies as below.
 
+**Quick start** (the Start screen's Quick Start, or Quick start mode in the configurator): single map mode in every other way (XP rate, conscription, bigger enemy squads, 6-slot squads), but your army is ready:
+- **A small map:** 100×45 hexes, a Continent with 50% land and no offshore islands, at least 3 towns, 2 towers and a temple, and one town 8–15 hexes from your base.
+- **4 squads**, each a stage-3 leader plus four stage-2 units, all from the Serf lines. Each squad has at least 2 front-line units (the leader counts) and at least 1 healer. One squad has a Large race-line monster (stage 1) in place of one of its stage-2 units. The leaders cover 4 different terrains.
+- Squad 1 is the Opinion Leader's, on the map at the Player Base; the other 3 wait at base, ready to deploy.
+- **The recruit pool** holds 3 Serf-line stage-2 units and 6 Serfs.
+- **The first fight is close:** the town nearest your base is held by the enemy's **Garrison**, one of its field squads, which stays there instead of roaming (it still goes home to the Enemy Base after losing half its units). That town always has a shop. The enemy holds no other towns at the start.
+- Cards, tech points, gold, items and supplies as below.
+
 **Campaign start:**
 - **6 squads**, each a stage-3 leader plus four stage-2 units, rolled only from the basic "Serf" promotion lines (never the rarer race lines).
 - Between the 6 leaders, every terrain a Serf line can reach (Plains, Forest, Swamp, Mountain, Desert) is covered by at least one squad's leader. Each squad also always has at least one front-line unit and one healer-or-support unit; everything else about the roll is random.
@@ -174,6 +183,7 @@ This describes how the game actually plays right now, not the full design (that'
 
 The enemy fields half as many squads as the map has towns (at least 3; 8 on the default map). Each has 4 units, 2 front and 2 back, and no healers (5–6 units in single map mode, which also adds conscripted Warbands; see "Your starting army"). Every one starts on the Enemy Base, just as yours start at your base, except that **the enemy starts holding 1 or 2 towns** (at random), with one of its field squads already on each. These towns are picked at random, more likely the nearer they are to the point midway between the two bases, so fighting starts sooner and less all at once. They aren't extra squads, just field squads that start forward:
 
+- **Quick start** is the exception: no forward towns, but its Garrison holds the town nearest your base (see "Your starting army").
 - **The Warlord and a Base guard** stay on the Enemy Base and never go looking for a fight. They only move if pushed back from losing a fight there, or to come back after one.
 - **Field squads** (the rest) march out to take towns and towers. Standing on one the enemy doesn't hold, a field squad stays until it's taken. Then it weighs holding it against moving on to another neutral or player-held town or tower that no other enemy squad is heading for:
   - Towns are worth more than towers, buildings toward the middle of the map are worth more than ones near either base, and a building you hold is worth double.

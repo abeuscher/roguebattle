@@ -5,7 +5,7 @@ extends RefCounted
 ## (victory, defeat, squad cap, fairness) feed the game. Settings and seed
 ## pack into a short share code.
 
-const CODE_VERSION := 4  # 2: "size" became "width"/"height" (§6.1); 3: Land % to 100 and the No Ocean preset; 4: game mode and XP rate
+const CODE_VERSION := 5  # 2: "size" became "width"/"height" (§6.1); 3: Land % to 100 and the No Ocean preset; 4: game mode and XP rate; 5: Quick start mode, heights from 45
 const ALPHABET := "0123456789ABCDEFGHJKMNPQRSTVWXYZ"  # 32 symbols, no I, L, O or U
 
 var data: GameData
@@ -26,6 +26,18 @@ static func create(game_data: GameData, game_seed := 0) -> GameConfig:
 	c.values["height"] = game_data.mapgen["defaults"]["height"]
 	c.apply_preset()
 	c.fit_squad_cap()
+	return c
+
+
+## Quick start's settings (rules.json quick_start): its mode and its small map, the rest
+## as the defaults. The Start screen's Quick Start begins a game straight from these.
+static func quick(game_data: GameData, game_seed := 0) -> GameConfig:
+	var c := create(game_data, game_seed)
+	var m: Dictionary = game_data.rules["quick_start"]["map"]
+	c.set_value("preset", m["preset"])  # first: the map type resets the fields below
+	for k in m:
+		c.set_value(k, m[k])
+	c.set_value("mode", "quick")
 	return c
 
 
@@ -74,7 +86,7 @@ func set_value(key: String, value: Variant) -> void:
 ## field's own default. The player can still move it afterwards.
 func fit_squad_cap() -> void:
 	var f := field("squad_cap")
-	if values.get("mode", "campaign") != "single":
+	if values.get("mode", "campaign") == "campaign":
 		values["squad_cap"] = f["default"]
 		return
 	var area := int(values["width"]) * int(values["height"])
@@ -114,6 +126,9 @@ func map_overrides() -> Dictionary:
 			out[parts[0]][parts[1]] = v
 		else:
 			out[parts[0]] = v
+	if values.get("mode", "") == "quick":  # a small map still gets a few of each building
+		out["building_min"] = data.rules["quick_start"]["buildings"]
+		out["town_near_base"] = data.rules["quick_start"]["town_near_base"]
 	return out
 
 

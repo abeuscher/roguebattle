@@ -27,6 +27,10 @@
  },
  "defaults": {
   "building_density": "medium",
+  "building_min": {},
+  "town_near_base": [],
+  "_town_near_base": "[nearest, farthest] in hexes: one town placed that far from the Player Base (empty: none); Quick start sets it (rules.json quick_start.town_near_base).",
+  "_building_min": "At least this many of a building type (town, tower, temple, nomads) whatever the map's size, unless Density is none; Quick start sets it (rules.json quick_start.buildings).",
   "hidden_sites": "medium",
   "road_coverage": "main",
   "hidden_road_chance": 0.25,

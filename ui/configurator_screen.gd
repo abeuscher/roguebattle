@@ -256,7 +256,7 @@ func _changed(key: String, value: Variant) -> void:
 	elif key in ["width", "height", "mode"]:
 		_refresh_controls()  # the other one's "· Small/Medium/Large" hint may now match or not; the squad cap follows size and mode
 	_code.text = config.to_code()
-	if config.field(key)["target"] == "map":
+	if config.field(key)["target"] == "map" or key == "mode":  # Quick start also sets building minimums
 		_dirty = true
 
 

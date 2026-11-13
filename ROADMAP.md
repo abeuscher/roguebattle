@@ -167,11 +167,23 @@ Shaping only: no sessions yet. Sessions get planned once the thin story is writt
 
 ## Next: easing players in (user's notes, 2026-11-13)
 
-The core goal is met: Ogre Battle's squad play in a roguelike setting. Playtesters find the start daunting: too many unit types at once, and battles don't come quickly enough for the game's nature to be clear. The user prefers a simple starting preset over a separate tutorial: players should learn from the main game, not a detour. The full roster stays; not every map needs all of it. Questions for the next session:
+The core goal is met: Ogre Battle's squad play in a roguelike setting. Playtesters find the start daunting: too many unit types at once, and battles don't come quickly enough for the game's nature to be clear. The user prefers a simple starting preset over a separate tutorial: players should learn from the main game, not a detour. The full roster stays; not every map needs all of it.
 
-- **Entry presets in the configurator:** one or more named easy setups (small map, few buildings, enemies close enough that the first fight comes within the first minute or two, a gentle enemy). Which settings, and how many levels (Easy, Normal, today's game as Hard)?
-- **A smaller unit pool per map:** limit which lines and classes appear (recruits, neutrals, enemies) on an easy map, for example Serf-line humans and a couple of race lines, widening as the player progresses. By line, by stage, or a hand-picked list?
-- **Faster first battles:** enemies placed or sent toward the player early on easy maps; a shorter distance between bases.
-- **How it joins the campaign:** campaign map 1 (M6) is the same idea; the presets could be the campaign's chapter settings, or the campaign could use them.
-- **On hold:** unit playing-card art (the user's image pipeline, a day or two); tarot cards are settled as they are.
+**Answered by Quick start (session 071, user's notes 2026-11-13):** one entry preset, reached from the Start screen without the configurator: a 100×45 map, 50% land, no islands; 4 ready squads of basic Serf-line units and a few recruits; an enemy Garrison in a town with a shop near the Player Base, for the first fight. Settings in `rules.json` `quick_start`, so they can be tuned. Still open, for later: more preset levels, and a smaller unit pool for recruits, neutrals and enemies. Campaign map 1 (M6) can build on the same settings. On hold: unit playing-card art (the user's image pipeline); tarot cards are settled as they are.
+
+## Playtest round 13 (user's notes, 2026-11-13)
+
+| # | Session | Spec | Verify | Status |
+| --- | --- | --- | --- | --- |
+| 1 | **Quick start.** A Start screen button: a small map (about 100×50 or under, 50% land, 0 islands), the player's units seeded at random from basic units, an enemy in a nearby town with a shop. "A near priority": it makes playtesting easy for friends | §4, §18 | Tests: settings, buildings, ready squads, the garrison; screenshots | Done (session 071) |
+| 2 | **Quick start tips** that draw the player to the Garrison's town and the first battle (user: tomorrow) | §5 | Screenshots of each tip in order | Next |
+| 3 | **Enemy ranged attacks open the battle start.** When an enemy starts any attack, the player always gets the chance to edit the squad and use items; the user believes an enemy's ranged attack skips this | §11, §12 | A test or probe of an enemy ranged attack; screenshot of the battle start | |
+| 4 | **Edit Units: front and back rows.** Let any unit move between the rows inside Edit Units; today it works only for some units in some cases. If the limit is about losing the leader, add the check and make the UI say so | §8 | Tests: row moves; screenshot of a refused move with its reason | |
+| 5 | **Every map has at least two shops, one of them in a town**, however small the map | §6.5, §15 | Map tests across sizes and presets | |
+| 6 | **Notifications log.** Every notification goes to a log, opened by a book icon to the left of the gold, in its own small space (not in that toolbar). Town links still work: clicking one closes the log and zooms to the town. Styled like a big ledger book | §5 | Screenshots; a link click zooms to the town | |
+| 7 | **Unit glossary.** From a neutral encounter or a unit in Edit Units, a link to that unit's entry: what it is and does. Open on presentation; may become part of a wider help system | §5, §16 | Screenshots from each entry point | |
+| 8 | **Liberation window: View all cards as an icon** (a hand of cards) at the bottom right, opposite the checkbox; the tarot card there 20% larger | §5, §13 | Screenshot | |
+| 9 | **Played tarot cards grow to 500% as they fade** from the board | §13 | Screenshot mid-fade | |
+| 10 | **Title font: UnifrakturMaguntia** for the game's name on the title screen | §5 | Screenshot of the title and Start screens | |
+| 11 | **Single unit view as a character sheet:** D&D-like, its two top buttons become tabs, RPG styling throughout (the user can bring examples) | §5 | Screenshots of each tab | |
 

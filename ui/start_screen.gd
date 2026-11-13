@@ -1,9 +1,10 @@
 class_name StartScreen
 extends Control
-## Start (SPEC §4): Continue (the latest save), Start Game, Load game (when any slot
-## is in use), Options and Quit. Campaign and custom game come later.
+## Start (SPEC §4): Continue (the latest save), Start Game, Quick Start (a small map,
+## squads ready, no configurator), Load game (when any slot is in use), Options and Quit. Campaign and custom game come later.
 
 signal start_game
+signal quick_start
 signal continue_game
 signal load_game
 signal options
@@ -30,6 +31,10 @@ func setup(has_save := false) -> void:
 	var start := UiStyle.button("Start Game", 300, not has_save)
 	start.pressed.connect(func(): start_game.emit())
 	col.add_child(start)
+	var quick := UiStyle.button("Quick Start", 300)
+	quick.tooltip_text = "A small map with your squads ready, straight away."
+	quick.pressed.connect(func(): quick_start.emit())
+	col.add_child(quick)
 	var load := UiStyle.button("Load game", 300)
 	load.pressed.connect(func(): load_game.emit())
 	load.visible = has_save

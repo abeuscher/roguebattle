@@ -65,6 +65,47 @@ static func build_single(data: GameData, rng: RandomNumberGenerator, squad_cap: 
 	return {"leader": leaders[0], "pool": pool}
 
 
+## Quick start's army (rules.json quick_start): {"squads": member lists ([class, row],
+## leader first; squad 0 is the Opinion Leader's), "pool": classes for the recruit pool}.
+## Leaders cover distinct terrains first; each squad gets its front-line and healer
+## minimums, and the first large_squads squads a Large monster in place of a stage 2 unit.
+static func build_quick(data: GameData, rng: RandomNumberGenerator) -> Dictionary:
+	var cfg: Dictionary = data.rules["quick_start"]
+	var stage2 := _stage2_classes(data)
+	var front := stage2.filter(func(c): return _is_front_line(data, c))
+	var healers := stage2.filter(func(c): return String(data.units[c]["role"]).to_lower().contains("healer"))
+	var large := large_stage1_classes(data)
+	_shuffle(large, rng)
+	var by_terrain := _leaders_by_terrain(data)
+	var all_leaders: Array = by_terrain.values().reduce(func(a, b): return a + b, [])
+	var terrains := TERRAINS.duplicate()
+	_shuffle(terrains, rng)
+	var squads := []
+	for i in int(cfg["squads"]):
+		var options: Array = by_terrain[terrains[i]] if i < terrains.size() else all_leaders
+		var leader: String = options[rng.randi() % options.size()]
+		var picks := []
+		for k in int(cfg["front_min"]) - (1 if _is_front_line(data, leader) else 0):
+			picks.append(front[rng.randi() % front.size()])
+		for k in int(cfg["healer_min"]):
+			picks.append(healers[rng.randi() % healers.size()])
+		var room := int(cfg["stage2_per_squad"]) - (1 if i < int(cfg["large_squads"]) else 0)
+		while picks.size() < room:
+			picks.append(stage2[rng.randi() % stage2.size()])
+		var members := [[leader, _row(data, leader)]]
+		for c in picks.slice(0, room):
+			members.append([c, _row(data, c)])
+		if i < int(cfg["large_squads"]):
+			members.append([large[i % large.size()], _row(data, large[i % large.size()])])
+		squads.append(members)
+	var pool := []
+	for i in int(cfg["recruits"]):
+		pool.append(stage2[rng.randi() % stage2.size()])
+	for i in int(cfg["serfs"]):
+		pool.append(data.lines[_serf_line_ids(data)[0]][0][0])
+	return {"squads": squads, "pool": pool}
+
+
 ## Conscripts for a town taken in single map mode (rules.json single_map.conscription):
 ## `fighters` random Serf-line stage 2 classes, the first of them a Serf-line leader
 ## instead when `need_leader`, then `serfs` Serfs.

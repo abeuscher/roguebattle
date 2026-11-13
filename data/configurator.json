@@ -1,8 +1,8 @@
 [
- {"key": "mode", "group": "Game mode", "label": "Mode", "target": "game", "options": ["single", "campaign"], "labels": ["Single map", "Campaign start"], "default": "single"},
- {"key": "xp_rate", "group": "Game mode", "label": "XP rate % (single map)", "target": "game", "range": [100, 300, 25], "default": 150},
+ {"key": "mode", "group": "Game mode", "label": "Mode", "target": "game", "options": ["single", "campaign", "quick"], "labels": ["Single map", "Campaign start", "Quick start"], "default": "single"},
+ {"key": "xp_rate", "group": "Game mode", "label": "XP rate % (single map, quick start)", "target": "game", "range": [100, 300, 25], "default": 150},
  {"key": "width", "group": "Size", "label": "Map width (hexes)", "target": "map", "range": [100, 1200, 50]},
- {"key": "height", "group": "Size", "label": "Map height (hexes)", "target": "map", "range": [60, 675, 15]},
+ {"key": "height", "group": "Size", "label": "Map height (hexes)", "target": "map", "range": [45, 675, 15]},
  {"key": "preset", "group": "Land shape", "label": "Map type", "target": "map",
   "options": ["continent", "islands", "archipelago", "floating_isles", "highlands", "river_valley", "deep_forest", "tundra", "volcanic", "no_ocean"]},
  {"key": "land_pct", "group": "Land shape", "label": "Land %", "target": "map", "range": [25, 100, 1]},

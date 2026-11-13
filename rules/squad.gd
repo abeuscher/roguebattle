@@ -7,7 +7,7 @@ extends RefCounted
 var id: int
 var name: String
 var side := "player"  # "player", "enemy" or "neutral"; only player and non-player squads fight
-var role := ""  # enemy role (§17): leader, base_guard (hold the base) or field (EnemyAI); "roamer" for a neutral
+var role := ""  # enemy role (§17): leader, base_guard (hold the base), garrison (Quick start: hold a town) or field (EnemyAI); "roamer" for a neutral
 var ai_mode := ""  # a field squad's last choice, "hold" or "move" (shown by the debug AI overlay)
 var post := -1  # an enemy squad's placed hex, to return to after reviving at the Enemy Base
 var goal := -1  # the building a field squad is heading for, so others pick something else

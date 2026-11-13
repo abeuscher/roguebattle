@@ -66,6 +66,14 @@ func _count(base: float) -> int:
 	return roundi(base * _area)
 
 
+## A building count raised to the settings' building_min for that type (Quick start's
+## small map), unless buildings are off.
+func _at_least(type: String, n: int) -> int:
+	if s["building_density"] == "none":
+		return n
+	return maxi(n, int(s["building_min"].get(type, 0)))
+
+
 func _allowed(type: String) -> PackedByteArray:
 	var out := PackedByteArray()
 	out.resize(data.terrains.size())
@@ -175,9 +183,11 @@ func _buildings() -> void:
 					high_pools[j][q].append(i)
 	for j in types.size():
 		var type: String = types[j]
-		var n := _count(float(cfg["building_counts"][type]) * scale)
+		var n := _at_least(type, _count(float(cfg["building_counts"][type]) * scale))
 		if n == 0:
 			continue
+		if type == "town" and s["town_near_base"].size() == 2 and _town_near_base(pools[j]):
+			n -= 1
 		var high := high_flags[j] == 1
 		var by_quadrant: Array = pools[j]
 		var high_ground: Array = high_pools[j]
@@ -198,6 +208,24 @@ func _buildings() -> void:
 				var info: Dictionary = data.buildings[type]
 				_add(type, i, {"shop": rng.randf() < float(info.get("shop_chance", 0.0)),
 						"hint": rng.randf() < float(info.get("hint_chance", 0.0))})
+
+
+## Places one town between town_near_base's two distances from the Player Base (Quick
+## start's first fight, close to home). False if no candidate hex is that far.
+func _town_near_base(by_quadrant: Array) -> bool:
+	var home := map.hex_at(map.player_base)
+	var near := PackedInt32Array()
+	for pool: PackedInt32Array in by_quadrant:
+		for i in pool:
+			var dist := Hex.distance(home, map.hex_at(i))
+			if dist >= int(s["town_near_base"][0]) and dist <= int(s["town_near_base"][1]):
+				near.append(i)
+	var i := _pick(near) if near.size() > 0 else -1
+	if i < 0:
+		return false
+	var info: Dictionary = data.buildings["town"]
+	_add("town", i, {"shop": rng.randf() < float(info.get("shop_chance", 0.0)), "hint": rng.randf() < float(info.get("hint_chance", 0.0))})
+	return true
 
 
 func _near_terrain(i: int, t: int) -> bool:
@@ -353,7 +381,7 @@ func _road_path(a: int, b: int) -> PackedInt32Array:
 # --- Nomads, hidden sites (layer 4, after roads) -------------------------------
 
 func _nomads() -> void:
-	var n := _count(float(cfg["building_counts"]["nomads"]) * float(cfg["density_scale"][s["building_density"]]))
+	var n := _at_least("nomads", _count(float(cfg["building_counts"]["nomads"]) * float(cfg["density_scale"][s["building_density"]])))
 	if n == 0:
 		return
 	var allowed := _allowed("nomads")

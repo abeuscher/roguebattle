@@ -133,6 +133,9 @@ func add_squad(squad_name: String, at_hex: int, members: Array, side := "player"
 ## --wide-roster) that swaps in Map1Setup.build_wide_roster() for playtesting
 ## unit variety; it isn't part of the real game.
 func setup_army(wide_roster_count := 0) -> void:
+	if quick_start() and wide_roster_count <= 0:
+		_setup_quick_start()
+		return
 	if single_map() and wide_roster_count <= 0:
 		_setup_single_map()
 		return
@@ -150,10 +153,16 @@ func setup_army(wide_roster_count := 0) -> void:
 	_starting_kit()
 
 
-## Whether this is single map mode (user's design, 2026-11-10; configurator Game mode).
-## Settings without a mode (most tests) are the campaign start.
+## Whether this is single map mode (user's design, 2026-11-10; configurator Game mode),
+## Quick start included. Settings without a mode (most tests) are the campaign start.
 func single_map() -> bool:
-	return settings.get("mode", "campaign") == "single"
+	return settings.get("mode", "campaign") in ["single", "quick"]
+
+
+## Whether this is Quick start (user's playtest notes, 2026-11-13): single map mode with
+## the army already in squads and an enemy garrison in the nearest town.
+func quick_start() -> bool:
+	return settings.get("mode", "") == "quick"
 
 
 ## XP multiplier: the configurator's XP rate in single map mode, 1 otherwise.
@@ -184,6 +193,25 @@ func _setup_single_map() -> void:
 		log.add(clock.tick, "progression", "%s the %s joins the recruit pool." % [u.name, u.unit_class], -1,
 				{"stats": u.stats, "alignment": u.alignment, "charisma": u.charisma, "growth": u.growth,
 				"talent": u.talent, "luck": u.luck})
+	for i in int(data.cards["start"]):
+		draw_card(null)
+	_starting_kit()
+
+
+## Quick start's army (Map1Setup.build_quick): its squads ready in the first cells, the
+## Opinion Leader's (cell 0) on the map at the Player Base, a few recruits in the pool.
+func _setup_quick_start() -> void:
+	army.base_slots = int(data.rules["single_map"]["base_slots"])
+	var built := Map1Setup.build_quick(data, rng.get_stream("army_setup"))
+	for i in built["squads"].size():
+		var s := _form(i + 1, "", map.player_base if i == 0 else -1, built["squads"][i], "player")
+		s.balance_rows(data)
+		army.cells[i] = s
+		if i == 0:
+			squads.append(s)
+			opinion_leader = s.leader
+	for c in built["pool"]:
+		army.pool.append(Unit.roll(data, c, rng.get_stream("recruit"), names))
 	for i in int(data.cards["start"]):
 		draw_card(null)
 	_starting_kit()
@@ -1734,7 +1762,32 @@ func place_enemies() -> void:
 			s.balance_rows(data)
 			s.role = entry["role"]
 			s.post = map.enemy_base
-	_forward_towns(r)
+	if quick_start():
+		_garrison_nearest_town()
+	else:
+		_forward_towns(r)
+
+
+## Quick start: the first field squad holds the town nearest the Player Base, as a
+## garrison that stays there (EnemyAI keeps a non-field squad at its post), and that
+## town has a shop: the first fight, close to home, with a shop to win.
+func _garrison_nearest_town() -> void:
+	var field := squads.filter(func(o: Squad): return o.side == "enemy" and o.role == "field")
+	var home := map.hex_at(map.player_base)
+	var best := {}
+	for b in map.buildings:
+		if b["type"] == "town" and not b["hidden"] and b["owner"] == "neutral" 				and (best.is_empty() or Hex.distance(home, map.hex_at(b["hex"])) < Hex.distance(home, map.hex_at(best["hex"]))):
+			best = b
+	if best.is_empty() or field.is_empty():
+		return
+	best["owner"] = "enemy"
+	best["shop"] = true
+	var s: Squad = field[0]
+	s.hex = best["hex"]
+	s.role = "garrison"
+	s.post = best["hex"]
+	s.name = String(data.rules["quick_start"]["garrison_name"])
+	log.add(clock.tick, "map", "%s holds %s." % [s.name, where(best["hex"])], s.id)
 
 
 ## Enemy forward towns (round 11): the enemy starts holding 1 or 2 towns (rules.json
