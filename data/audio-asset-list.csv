@@ -3,9 +3,9 @@
 """Defeat!""",Voice,One-shot,,,,Spoken line (Al records),,Done (recorded; prepared by tools/prepare_voice.py)
 """Fight!""",Voice,One-shot,,,,Spoken line (Al records),,Done (recorded; prepared by tools/prepare_voice.py)
 """Hidden Location!""",Voice,One-shot,,,,Spoken line (Al records),,Done (recorded; prepared by tools/prepare_voice.py)
-"""New Town!""",Voice,One-shot,,,,"Spoken line (Al records). The first time you take a town (it was neutral or the enemy's, never yours).",,"To record (Al); wired, silent until then"
-"""New Tower!""",Voice,One-shot,,,,Spoken line (Al records). The first time you take a tower.,,"To record (Al); wired, silent until then"
-"""New Temple!""",Voice,One-shot,,,,Spoken line (Al records). The first time you take a temple.,,"To record (Al); wired, silent until then"
+"""New Town!""",Voice,One-shot,,,,"Spoken line (Al records). The first time you take a town (it was neutral or the enemy's, never yours).",,Done (recorded; prepared by tools/prepare_voice.py)
+"""New Tower!""",Voice,One-shot,,,,Spoken line (Al records). The first time you take a tower.,,Re-record (Al): the first take clips (375 samples at full scale)
+"""New Temple!""",Voice,One-shot,,,,Spoken line (Al records). The first time you take a temple.,,Done (recorded; prepared by tools/prepare_voice.py)
 """Give it back!""",Voice,One-shot,,,,"Spoken line (Al records). Taking back a town, tower or temple the enemy took from you.",,"To record (Al); wired, silent until then"
 Main map theme (day),Music,Loop,32,112,68.6,"Sunny, bright, fanfare feel. Holds the main motif reused across the score.","Trumpet, French Horn, String Ensemble, Pizzicato Strings, light snare",Done
 Main map theme (night),Music,Loop,32,112,68.6,Variant of the day theme with spookier instrumentation. Same BPM as day so the two can crossfade.,"Harpsichord, Choir Aahs, Goblins pad, Contrabass",Done
