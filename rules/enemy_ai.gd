@@ -14,6 +14,8 @@ extends RefCounted
 
 ## The hex an idle enemy squad should move to, or -1 to stay where it is.
 static func target_hex(state: GameState, s: Squad) -> int:
+	if s.role == "raider":
+		return -1 if state.clock.tick < s.think_at else raid_target(state, s)
 	if s.role != "field":
 		return s.post if s.post != s.hex else -1
 	var here := state.building_at(s.hex)
@@ -35,6 +37,21 @@ static func target_hex(state: GameState, s: Squad) -> int:
 	s.ai_mode = "move"
 	s.goal = best[0]
 	return best[0]
+
+
+## Quick start's Raiders (user, 2026-11-13): the nearest town you hold, or your base if
+## you hold none; -1 once standing on it (taking it needs the squad to stand still).
+static func raid_target(state: GameState, s: Squad) -> int:
+	var at := state.map.hex_at(s.hex)
+	var best := state.map.player_base
+	var best_d := INF
+	for b in state.map.buildings:
+		if b["type"] == "town" and b["owner"] == "player" and not b["hidden"]:
+			var dist := float(Hex.distance(at, state.map.hex_at(b["hex"])))
+			if dist < best_d:
+				best_d = dist
+				best = b["hex"]
+	return -1 if best == s.hex else best
 
 
 ## A town or tower (the buildings worth taking for income and ground).

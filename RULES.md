@@ -170,6 +170,7 @@ This describes how the game actually plays right now, not the full design (that'
 - Squad 1 is the Opinion Leader's, on the map at the Player Base; the other 3 wait at base, ready to deploy.
 - **The recruit pool** holds 3 Serf-line stage-2 units and 6 Serfs.
 - **The first fight is close:** the town nearest your base is held by the enemy's **Garrison**, one of its field squads, which stays there instead of roaming (it still goes home to the Enemy Base after losing half its units). That town always has a shop. The enemy holds no other towns at the start.
+- **Raiders:** one more enemy squad (5–6 units, like the others) waits on open ground about midway between the bases. After 4 game hours it marches on the nearest town you hold, or straight for your Player Base if you hold none, and takes it if nobody stops it (taking your base loses the map). Beaten down, it falls back to recover like any enemy squad, then comes again.
 - Cards, tech points, gold, items and supplies as below.
 
 **Campaign start:**
@@ -183,7 +184,7 @@ This describes how the game actually plays right now, not the full design (that'
 
 The enemy fields half as many squads as the map has towns (at least 3; 8 on the default map). Each has 4 units, 2 front and 2 back, and no healers (5–6 units in single map mode, which also adds conscripted Warbands; see "Your starting army"). Every one starts on the Enemy Base, just as yours start at your base, except that **the enemy starts holding 1 or 2 towns** (at random), with one of its field squads already on each. These towns are picked at random, more likely the nearer they are to the point midway between the two bases, so fighting starts sooner and less all at once. They aren't extra squads, just field squads that start forward:
 
-- **Quick start** is the exception: no forward towns, but its Garrison holds the town nearest your base (see "Your starting army").
+- **Quick start** is the exception: no forward towns, but its Garrison holds the town nearest your base, and its Raiders come at you from midway (see "Your starting army").
 - **The Warlord and a Base guard** stay on the Enemy Base and never go looking for a fight. They only move if pushed back from losing a fight there, or to come back after one.
 - **Field squads** (the rest) march out to take towns and towers. Standing on one the enemy doesn't hold, a field squad stays until it's taken. Then it weighs holding it against moving on to another neutral or player-held town or tower that no other enemy squad is heading for:
   - Towns are worth more than towers, buildings toward the middle of the map are worth more than ones near either base, and a building you hold is worth double.

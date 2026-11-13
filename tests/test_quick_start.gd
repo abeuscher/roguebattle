@@ -66,3 +66,17 @@ func test_enemy_garrison_holds_the_nearest_town() -> void:
 		check_eq(g.size(), 1, "one enemy squad stands there")
 		check_eq(g[0].role, "garrison", "as a garrison")
 		check_eq(EnemyAI.target_hex(s, g[0]), -1, "which stays put")
+
+
+func test_raiders_wait_midway_then_attack() -> void:
+	var s := _state(4)
+	var raiders := s.squads.filter(func(o: Squad): return o.role == "raider")
+	check_eq(raiders.size(), 1, "one Raiders squad")
+	var r: Squad = raiders[0]
+	check(s.centrality(r.hex) > 0.8, "waiting about midway between the bases (%.2f)" % s.centrality(r.hex))
+	check_eq(EnemyAI.target_hex(s, r), -1, "holding at first")
+	s.clock.tick += int(d.rules["quick_start"]["raider_delay_ticks"])
+	check_eq(EnemyAI.target_hex(s, r), s.map.player_base, "then for your base, holding no town")
+	var town: Dictionary = s.map.buildings.filter(func(b): return b["type"] == "town" and b["owner"] == "neutral")[0]
+	town["owner"] = "player"
+	check_eq(EnemyAI.target_hex(s, r), town["hex"], "or the nearest town you hold")

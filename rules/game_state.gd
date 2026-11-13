@@ -1804,8 +1804,38 @@ func place_enemies() -> void:
 			s.post = map.enemy_base
 	if quick_start():
 		_garrison_nearest_town()
+		_place_raiders(r)
 	else:
 		_forward_towns(r)
+
+
+## Quick start's Raiders (user, 2026-11-13: some adversity): one more enemy squad, built
+## like the others, on open ground nearest the point midway between the bases. After
+## rules.json quick_start.raider_delay_ticks it marches on the nearest town you hold, or
+## your base (EnemyAI, role "raider").
+func _place_raiders(r: RandomNumberGenerator) -> void:
+	var cfg: Dictionary = data.rules["quick_start"]
+	var builds: Array = data.enemy["builds"]
+	var extra: Array = data.rules["single_map"]["enemy_builds"]["extra"]
+	var members: Array = builds[r.randi() % builds.size()].duplicate()
+	members += Map1Setup.extra_members(data, r, r.randi_range(int(extra[0]), int(extra[1])))
+	var s := add_squad(String(cfg["raider_name"]), map.enemy_base, members, "enemy")
+	s.balance_rows(data)
+	s.role = "raider"
+	s.post = map.enemy_base
+	s.think_at = clock.tick + int(cfg["raider_delay_ticks"])
+	enemy_start_squads += 1
+	var spots := []  # open ground, most central first
+	for i in map.size():
+		if centrality(i) > 0.0 and building_at(i).is_empty() and not _hostile_at(i, s) and pathfinder.hex_cost(i, s.travel_type, s.sky) != INF:
+			spots.append(i)
+	spots.sort_custom(func(a: int, b: int): return centrality(a) > centrality(b))
+	for i in spots.slice(0, 20):  # the first that has a route to your base (not a cut-off island)
+		s.hex = i
+		if not plan(s, PackedInt32Array([map.player_base])).is_empty():
+			break
+		s.hex = map.enemy_base
+	log.add(clock.tick, "map", "%s wait at %s." % [s.name, where(s.hex)], s.id)
 
 
 ## Quick start: the first field squad holds the town nearest the Player Base, as a
