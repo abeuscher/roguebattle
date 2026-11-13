@@ -886,17 +886,32 @@ func _drop(_at: Vector2, what: Variant, cell: int, r: String, c: int) -> void:
 
 
 ## Back row for units that heal or support there, or whose ranged or magic attack there
-## has at least as many hits as their front attack; front otherwise (a Sapper's 3 melee
-## hits beat its 1 shot: it's a front-row unit).
+## hits at least as many units as their front attack (hits x units per hit, battle.json
+## row_choice_targets); front otherwise. A Sapper's 3 melee hits beat its 1 shot, so
+## it's a front-row unit; a Siege Engineer's 1 row-wide shot (3) ties its 3 melee hits,
+## so it goes in back.
 static func preferred_row(game_data: GameData, u: Unit) -> String:
 	var c: Dictionary = u.info(game_data)
 	var back := Battle.base_kind(c["back_attack"])
-	var more_behind := int(c["back_count"]) >= int(c["front_count"])
+	var more_behind := targets_hit(game_data, c["back_attack"], c["back_count"]) >= targets_hit(game_data, c["front_attack"], c["front_count"])
 	if back in ["Ranged", "Magic"]:
 		return "back" if more_behind else "front"
 	if back in SUPPORT and (Battle.base_kind(c["front_attack"]) == "Melee" or more_behind):
 		return "back"
 	return "front"
+
+
+## How many units an attack reaches over its hits: "Magic (row)" x1 is 3, "Melee
+## (cleave 2)" x3 is 6, a plain attack is its hit count (battle.json row_choice_targets).
+static func targets_hit(game_data: GameData, kind: String, hits: Variant) -> int:
+	var group := Battle.group_of(kind)
+	var per: Dictionary = game_data.battle["row_choice_targets"]
+	var each := 1
+	if group.begins_with("chain") or group.begins_with("cleave"):
+		each = int(group.get_slice(" ", 1))
+	elif per.has(group):
+		each = int(per[group])
+	return int(hits) * each
 
 
 static func _num(v: float) -> String:
