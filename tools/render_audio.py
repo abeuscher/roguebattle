@@ -34,12 +34,12 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 BIN = os.path.join(ROOT, "tools", "audio_bin")
 MIDI = os.path.join(ROOT, "data", "audio", "midi")
 LOOPS = {"map_day", "map_night", "army", "battle_plains", "battle_forest", "battle_mountain", "battle_swamp", "end_victory", "end_defeat", "intro_music"}  # music cues; the rest are one-shots
-EFFECTS = {"click"}  # one-shots that go to data/audio/effects/ (the rest to stingers/)
+EFFECTS = {"click", "firework"}  # one-shots that go to data/audio/effects/ (the rest to stingers/)
 RATE = 44100
 PEAK = 10 ** (-1.0 / 20)  # -1 dBFS
 LOUDNESS = 10 ** (-18.5 / 20)  # target RMS (the day theme's level at its peak limit)
 TAIL_SECONDS = 4.0  # rendered past a cue's end to catch its ring-out
-TAIL_LIMIT = {"victory_riff": 0.8, "click": 0.08}  # one-shots whose ring-out is cut short: seconds kept past the cue's end
+TAIL_LIMIT = {"victory_riff": 0.8, "click": 0.08, "firework": 0.3}  # one-shots whose ring-out is cut short: seconds kept past the cue's end
 
 
 def tool_paths() -> tuple:

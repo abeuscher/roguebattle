@@ -1,23 +1,27 @@
 ﻿Cue,Category,Playback,Bars,BPM (guess),Length (sec),Direction,Instruments (GM),Status
-"""Victory!""",Voice,One-shot,,,,Spoken line (Al records),,To do
-"""Defeat!""",Voice,One-shot,,,,Spoken line (Al records),,To do
-"""Fight!""",Voice,One-shot,,,,Spoken line (Al records),,To do
-"""Hidden Location!""",Voice,One-shot,,,,Spoken line (Al records),,To do
-"""New Town!""",Voice,One-shot,,,,"Spoken line (Al records). The first time you take a town (it was neutral or the enemy's, never yours).",,To do
-"""New Tower!""",Voice,One-shot,,,,"Spoken line (Al records). The first time you take a tower.",,To do
-"""New Temple!""",Voice,One-shot,,,,"Spoken line (Al records). The first time you take a temple.",,To do
-"""Give it back!""",Voice,One-shot,,,,"Spoken line (Al records). Taking back a town, tower or temple the enemy took from you.",,To do
-Main map theme (day),Music,Loop,32,112,68.6,"Sunny, bright, fanfare feel. Holds the main motif reused across the score.","Trumpet, French Horn, String Ensemble, Pizzicato Strings, light snare",To do
-Main map theme (night),Music,Loop,32,112,68.6,Variant of the day theme with spookier instrumentation. Same BPM as day so the two can crossfade.,"Harpsichord, Choir Aahs, Goblins pad, Contrabass",To do
-Edit units / army theme,Music,Loop,16,120,32.0,Snare-based military bit. 120 is standard march tempo.,"Snare (drum channel), Brass Section, Piccolo",To do
-Battle theme (+ terrain variants),Music,Loop,16,160,24.0,"Percussive, bass-heavy, fast. Same theme and chords per terrain, with small instrument swaps. Terrain list TBD.","Synth Bass / Slap Bass, Taiko Drum, drum kit, Brass Section",To do
-Victory riff,Stinger,One-shot,1,120,2.0,Trumpet fanfare,"Trumpet, Timpani",To do
-Loss riff,Stinger,One-shot,1,90,2.7,"Trumpet fail noise (flatulent). Needs pitch bend; may be easier as a recorded SFX.",Muted Trumpet or Trombone,To do
-Liberation theme,Stinger,One-shot,2,80,6.0,Orchestral swell,"String Ensemble, Brass Section, Timpani",To do
-Temple riff,Stinger,One-shot,2,90,5.3,Pan flute type sound,Pan Flute,To do
-Town riff,Stinger,One-shot,2,130,3.7,Banjo / guitar boing boing,Banjo or Steel Guitar,To do
-Tower riff,Stinger,One-shot,2,76,6.3,"Organ riff, Dracula style",Church Organ,To do
-Hidden item sound,Stinger,One-shot,1,140,1.7,"Surprise music, bells ringing in sequence","Glockenspiel, Tubular Bells or Tinkle Bell",To do
-Building lost,Stinger,One-shot,2,80,6.0,"The enemy takes one of your towns, towers or temples. One sound for all three, clearly different from the capture riffs: ominous, falling.","French Horn or Trombone (low), Timpani, Tremolo Strings",To do
-Fireworks burst,Effect,One-shot,,,,"One burst of the fireworks over a liberated building: a pop or crackle. Plays with each of the show's 5 bursts, 0.35 s apart, separate from the building's riff.",,To do
-Recruit joined,Stinger,One-shot,1,,1.5,"A recruit attempt succeeds, or a rare recruit joins: short and welcoming.",,To do
+"""Victory!""",Voice,One-shot,,,,Spoken line (Al records),,"Done (recorded; prepared by tools/prepare_voice.py, left channel)"
+"""Defeat!""",Voice,One-shot,,,,Spoken line (Al records),,Done (recorded; prepared by tools/prepare_voice.py)
+"""Fight!""",Voice,One-shot,,,,Spoken line (Al records),,Done (recorded; prepared by tools/prepare_voice.py)
+"""Hidden Location!""",Voice,One-shot,,,,Spoken line (Al records),,Done (recorded; prepared by tools/prepare_voice.py)
+"""New Town!""",Voice,One-shot,,,,"Spoken line (Al records). The first time you take a town (it was neutral or the enemy's, never yours).",,"To record (Al); wired, silent until then"
+"""New Tower!""",Voice,One-shot,,,,Spoken line (Al records). The first time you take a tower.,,"To record (Al); wired, silent until then"
+"""New Temple!""",Voice,One-shot,,,,Spoken line (Al records). The first time you take a temple.,,"To record (Al); wired, silent until then"
+"""Give it back!""",Voice,One-shot,,,,"Spoken line (Al records). Taking back a town, tower or temple the enemy took from you.",,"To record (Al); wired, silent until then"
+Main map theme (day),Music,Loop,32,112,68.6,"Sunny, bright, fanfare feel. Holds the main motif reused across the score.","Trumpet, French Horn, String Ensemble, Pizzicato Strings, light snare",Done
+Main map theme (night),Music,Loop,32,112,68.6,Variant of the day theme with spookier instrumentation. Same BPM as day so the two can crossfade.,"Harpsichord, Choir Aahs, Goblins pad, Contrabass",Done
+Edit units / army theme,Music,Loop,16,120,32.0,Snare-based military bit. 120 is standard march tempo.,"Snare (drum channel), Brass Section, Piccolo","Done (draft 2: slower, orchestral)"
+Battle theme (+ terrain variants),Music,Loop,16,160,24.0,"Percussive, bass-heavy, fast. Same theme and chords per terrain, with small instrument swaps. Terrain list TBD.","Synth Bass / Slap Bass, Taiko Drum, drum kit, Brass Section","Done (plains, forest, mountain, swamp)"
+Victory riff,Stinger,One-shot,1,120,2.0,Trumpet fanfare,"Trumpet, Timpani",Done
+Loss riff,Stinger,One-shot,1,90,2.7,Trumpet fail noise (flatulent). Needs pitch bend; may be easier as a recorded SFX.,Muted Trumpet or Trombone,Draft to hear (session 069)
+Liberation theme,Stinger,One-shot,2,80,6.0,Orchestral swell,"String Ensemble, Brass Section, Timpani",Not used: the building riffs carry liberations (keep or drop?)
+Temple riff,Stinger,One-shot,2,90,5.3,Pan flute type sound,Pan Flute,Draft to hear (session 069)
+Town riff,Stinger,One-shot,2,130,3.7,Banjo / guitar boing boing,Banjo or Steel Guitar,Done
+Tower riff,Stinger,One-shot,2,76,6.3,"Organ riff, Dracula style",Church Organ,Draft to hear (session 069)
+Hidden item sound,Stinger,One-shot,1,140,1.7,"Surprise music, bells ringing in sequence","Glockenspiel, Tubular Bells or Tinkle Bell",Done
+Building lost,Stinger,One-shot,2,80,6.0,"The enemy takes one of your towns, towers or temples. One sound for all three, clearly different from the capture riffs: ominous, falling.","French Horn or Trombone (low), Timpani, Tremolo Strings",Draft to hear (session 069)
+Fireworks burst,Effect,One-shot,,,,"One burst of the fireworks over a liberated building: a pop or crackle. Plays with each of the show's 5 bursts, 0.35 s apart, separate from the building's riff.",,Draft to hear (session 069)
+Recruit joined,Stinger,One-shot,1,,1.5,"A recruit attempt succeeds, or a rare recruit joins: short and welcoming.",,Draft to hear (session 069)
+Button click,Effect,One-shot,,,,"Every button press: one short, high wood block.",Wood Block (drum channel),Done
+End of map: victory,Music,Loop,8,96,20.0,The motif broad on trumpet over horns and strings.,"Trumpet, French Horn, String Ensemble, Timpani, Glockenspiel",Done
+End of map: defeat,Music,Loop,8,66,29.1,The motif slow on oboe over strings and contrabass.,"Oboe, String Ensemble, Contrabass, Timpani",Done
+Intro music (title screen),Music,Loop,8,192,10.0,The end-of-map victory tune at double tempo.,As the victory tune,Done

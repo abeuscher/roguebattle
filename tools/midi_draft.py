@@ -336,6 +336,91 @@ def click() -> tuple:
     return [drums], .25
 
 
+# --- The remaining stingers (M5 session 4, drafts for the user to hear) ------------------
+
+MUTED_TRUMPET, CHURCH_ORGAN, PAN_FLUTE, HARP = 59, 19, 75, 46
+GUNSHOT, TREMOLO = 127, 44
+CABASA = 69
+
+
+def loss_riff() -> tuple:
+    """A bar at 90: the sad trombone, four steps down, the last one sagging and wobbling
+    (the CSV: a trumpet fail noise; trombone for the pitch bend)."""
+    bone = Track("Trombone", 0, TROMBONE)
+    bone.line(0, [("D3", .75), ("C#3", .75), ("C3", .75)], 96)
+    bone.note(2.25, 1.6, n("B2"), 100)
+    for k in range(14):  # sag a semitone, wobbling
+        bone.bend(2.5 + k * .08, -0.5 * k / 13 + (0.25 if k % 2 else -0.25) * min(1, k / 4))
+    bone.bend(3.9, 0)
+    return [bone], 4
+
+
+def tower_riff() -> tuple:
+    """2 bars at 76: a church organ in the old horror style, a fast mordent and a run
+    down to a low D minor chord (the CSV: organ, Dracula style)."""
+    organ = Track("Organ", 0, CHURCH_ORGAN)
+    organ.line(0, [("A4", .125), ("G4", .125), ("A4", 1.25), (None, .5)], 100, 0)
+    organ.line(0, [("A3", .125), ("G3", .125), ("A3", 1.25), (None, .5)], 92, 0)
+    organ.line(2, [("G4", .125), ("F4", .125), ("E4", .125), ("D4", .125), ("C#4", .5), ("D4", 1)], 100)
+    organ.line(2, [("G3", .125), ("F3", .125), ("E3", .125), ("D3", .125), ("C#3", .5), ("D3", 1)], 92)
+    for p in ("D2", "D3", "F3", "A3", "D4"):
+        organ.note(4, 3.6, n(p), 96)
+    return [organ], 8
+
+
+def temple_riff() -> tuple:
+    """2 bars at 90: a pan flute's calm pentatonic phrase over a slow harp arpeggio
+    (the CSV: pan flute type sound)."""
+    flute = Track("Pan Flute", 0, PAN_FLUTE)
+    harp = Track("Harp", 1, HARP)
+    flute.line(0, [("A4", .5), ("D5", .5), ("E5", 1), ("A5", .75), ("G5", .25), ("E5", .5), ("D5", .5), ("E5", 3)], 92)
+    harp.line(0, [(p, .5) for p in ["D3", "A3", "D4", "E4", "F#4", "A4", "D5", "F#5"]], 70)
+    for p in ("D3", "A3", "F#4"):
+        harp.note(4, 3.5, n(p), 60)
+    return [flute, harp], 8
+
+
+def building_lost() -> tuple:
+    """2 bars at 80, ominous and falling: low horns and trombones step down from D under
+    tremolo strings on D minor, a timpani roll swelling to a low A."""
+    horns = Track("Horns", 0, FRENCH_HORN)
+    bones = Track("Trombones", 1, TROMBONE)
+    strings = Track("Tremolo Strings", 2, TREMOLO)
+    timp = Track("Timpani", 3, TIMPANI)
+    fall = [("D4", 1), ("C4", 1), ("Bb3", 1), ("A3", 4)]
+    horns.line(0, fall, 92)
+    bones.line(0, fall, 88, -12)
+    for p in ("D3", "F3", "A3", "D4"):
+        strings.note(0, 3, n(p), 70)
+    for p in ("C#3", "E3", "A3"):
+        strings.note(3, 4, n(p), 64)
+    for k in range(16):
+        timp.note(1 + k * .125, .1, n("A2"), 40 + k * 4)
+    timp.note(3, 2, n("A1") + 12, 104)
+    return [horns, bones, strings, timp], 8
+
+
+def firework() -> tuple:
+    """One burst: a soft pop, then a crackle that fades (gunshot effect, cabasa)."""
+    pop = Track("Pop", 0, GUNSHOT)
+    drums = Track("Crackle", DRUMS, None)
+    pop.note(0, .3, n("C3"), 64)
+    for k in range(10):
+        drums.note(.15 + k * .07, .05, CABASA, max(20, 96 - k * 8))
+    return [pop, drums], 1.0
+
+
+def recruit_joined() -> tuple:
+    """A bar at 100: a recruit joins, a harp sweeping up and two warm horn notes (the
+    motif's opening fourth, A to D)."""
+    harp = Track("Harp", 0, HARP)
+    horns = Track("Horns", 1, FRENCH_HORN)
+    harp.line(0, [(p, .125) for p in ["D4", "F#4", "A4", "D5", "F#5", "A5"]] + [("D6", 1.25)], 80)
+    horns.line(.5, [("A3", .75), ("D4", 1.75)], 88)
+    horns.line(.5, [("F#3", .75), ("A3", 1.75)], 72)
+    return [harp, horns], 3
+
+
 # --- Army theme (Edit Units) ----------------------------------------------------------
 # Draft 2 (user, 2026-11-12: draft 1's march was hard to listen to; slower and
 # orchestral, like a film score under a charging army, pleasant to organize units to).
@@ -551,5 +636,11 @@ if __name__ == "__main__":
     for variant in BATTLE_VARIANTS:
         write(variant, 160, *battle_theme(variant))
     write("end_victory", 96, *end_victory())
-    write("intro_music", 192, *end_victory())  # the title screen: the victory tune at double tempo (user, 2026-11-12)
+    write("intro_music", 192, *end_victory())
+    write("loss_riff", 90, *loss_riff())
+    write("tower_riff", 76, *tower_riff())
+    write("temple_riff", 90, *temple_riff())
+    write("building_lost", 80, *building_lost())
+    write("firework", 120, *firework())
+    write("recruit_joined", 100, *recruit_joined())  # the title screen: the victory tune at double tempo (user, 2026-11-12)
     write("end_defeat", 66, *end_defeat())

@@ -2,13 +2,13 @@
 
 importer="wav"
 type="AudioStreamWAV"
-uid="uid://b8wn4xk1a5p4n"
-path="res://.godot/imported/defeat.wav-3bd8c9781470047b28506c7858e88aa5.sample"
+uid="uid://c0b8v65scfvu7"
+path="res://.godot/imported/defeat.wav-a6369cc3716410e919e3d7ae298a05cc.sample"
 
 [deps]
 
-source_file="res://data/audio/voice/defeat.wav"
-dest_files=["res://.godot/imported/defeat.wav-3bd8c9781470047b28506c7858e88aa5.sample"]
+source_file="res://data/audio/lines/defeat.wav"
+dest_files=["res://.godot/imported/defeat.wav-a6369cc3716410e919e3d7ae298a05cc.sample"]
 
 [params]
 

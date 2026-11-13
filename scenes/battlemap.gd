@@ -950,6 +950,8 @@ func _open_recruit_popup() -> void:
 	_recruit_popup.recruit.connect(func():
 		var result := state.resolve_recruit(true)
 		_announced = true  # the result panel already announced any fight
+		if result["joined"]:
+			Sound.event("recruit_joined")
 		_recruit_popup.show_result(result["joined"], result["text"]))
 	_recruit_popup.done.connect(_close_recruit_popup)
 	_recruit_popup.fight.connect(func():
@@ -965,6 +967,8 @@ func _open_rare_popup() -> void:
 	_ui.add_child(_rare_popup)
 	_rare_popup.setup(state)
 	_rare_popup.answered.connect(func(take: bool):
+		if take:
+			Sound.event("recruit_joined")
 		state.resolve_rare(take)
 		_rare_popup.queue_free()
 		_rare_popup = null

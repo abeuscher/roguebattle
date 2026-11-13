@@ -21,15 +21,16 @@
   "temple_riff": {"file": "", "bus": "Effects", "duck": true},
   "building_lost": {"file": "", "bus": "Effects", "duck": true},
   "hidden_item": {"file": "res://data/audio/stingers/hidden_item.wav", "bus": "Effects", "duck": true},
-  "fight": {"file": "res://data/audio/voice/fight.wav", "bus": "Voice", "duck": true},
-  "victory": {"file": "res://data/audio/voice/victory.wav", "bus": "Voice", "duck": true},
-  "defeat": {"file": "res://data/audio/voice/defeat.wav", "bus": "Voice", "duck": true},
-  "hidden_location": {"file": "res://data/audio/voice/hidden_item.wav", "bus": "Voice", "duck": true},
+  "fight": {"file": "res://data/audio/lines/fight.wav", "bus": "Voice", "duck": true},
+  "victory": {"file": "res://data/audio/lines/victory.wav", "bus": "Voice", "duck": true},
+  "defeat": {"file": "res://data/audio/lines/defeat.wav", "bus": "Voice", "duck": true},
+  "hidden_location": {"file": "res://data/audio/lines/hidden_item.wav", "bus": "Voice", "duck": true},
   "new_town": {"file": "", "bus": "Voice", "duck": true, "_note": "\"New Town!\" (the user records it)"},
   "new_tower": {"file": "", "bus": "Voice", "duck": true, "_note": "\"New Tower!\""},
   "new_temple": {"file": "", "bus": "Voice", "duck": true, "_note": "\"New Temple!\""},
   "give_it_back": {"file": "", "bus": "Voice", "duck": true, "_note": "\"Give it back!\""},
   "click": {"file": "res://data/audio/effects/click.wav", "bus": "Effects", "db": -10},
+  "recruit_joined": {"file": "", "bus": "Effects", "duck": true, "_note": "A recruit attempt succeeds, or a rare recruit joins."},
   "firework": {"file": "", "bus": "Effects", "_note": "One burst: a pop or crackle. Plays with each of the fireworks show's 5 bursts (0.35 s apart), separate from the building's riff."}
  },
  "music": {
@@ -60,6 +61,7 @@
   "new_temple": ["new_temple"],
   "retaken": ["give_it_back"],
   "building_lost": ["building_lost"],
-  "firework_burst": ["firework"]
+  "firework_burst": ["firework"],
+  "recruit_joined": ["recruit_joined"]
  }
 }
