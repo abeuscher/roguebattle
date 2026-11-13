@@ -141,7 +141,7 @@ Where the project stands, for picking up in a new session or on another machine.
 - **Session 068:** army theme draft 2 (slower, orchestral); M5 session 5 (sounds take turns, "New Town!"/"Give it back!" slots, a found-site ping, cards as pictures everywhere). Waiting on the user's ear: army draft 2 and the end-of-map victory and defeat loops (their WAVs are uncommitted).
 - **Session 069:** campaign outline in the ROADMAP (M6); M5 session 4: voice lines prepared by `tools/prepare_voice.py`, six stinger drafts await the user's ear (loss, tower, temple, building lost, fireworks, recruit joined).
 - **Session 070:** playtest round 12's window overhaul: a shared title bar (band, Cinzel title, gold rule, a real close button) on every window, section headings. Then the shop overhaul: a shopkeeper, Buy and Sell tabs, a detail panel with the squad comparison, a quantity picker; selling for half the base price.
-- **Next:** M5 session 6 (battle sounds; the list needs the user's cut) and 7 (variants, title medley).
+- **Next (2026-11-13):** answer the questions under "Next: easing players in" in `ROADMAP.md` (entry presets, a smaller unit pool per map, faster first battles), then build it. Battle sounds: the user supplies them, Claude wires and processes. M5 session 7 (variants) still open. On hold: unit card art (the user's image pipeline), Whale card, "Give it back!" line.
 - **M4 sessions 15–20 planned (playtest round 7, 2026-11-10)** in `ROADMAP.md`: battle and rules fixes (cards truly at once, enemy makeup after a fight, items equippable anywhere, fewer neutrals, arrival log line); map generation (100% land, reef-like shallows around islands); HUD layout (clock under the minimap, gold coin, reputation meter, squad drawer, smaller rounded toolbar with icons); squad status icons and flag-free tokens with destination flags; debug panel overhaul; save game (3 slots, prompt to save on quit). The user's answers are in the ROADMAP rows.
 - **M4 milestone check: the first real playtest**, after session 33.
 - **Unit portraits:** the user's large unit images (21 so far) are committed in `data/unit_art/` (not used in the game yet). Building them into the unit detail view is a future task in `ROADMAP.md`, waiting on more of the set.
@@ -153,7 +153,7 @@ Where the project stands, for picking up in a new session or on another machine.
 
 ## How the user works
 
-- **One git branch per session,** named `session-NNN` (next: `session-071`), cut from `main`.
+- **One git branch per session,** named `session-NNN` (next: `session-072`), cut from `main`.
 - **Commit locally only:**
   - Never push or merge; the user merges and pushes, then says "continue".
   - Commit messages end with a `Co-Authored-By:` line naming whatever Claude model is doing the session (the harness's own attribution instructions say exactly what to write).
