@@ -1,11 +1,26 @@
 {
- "_note": "Player tips (ROADMAP M4 session 33). Each tip shows once, the first time its moment comes, while the player's \"Show player tips\" option is on; tips seen are remembered in the options, not the save. moment: where the game asks for a tip (edit_units_open: Edit Units opens). anchor: the part of the screen the popup points at (recruit_pool: the Recruits list in Edit Units). modes: game modes it shows in (single_map, campaign); missing means all. Tips are offered in this order.",
+ "_note": "Player tips (ROADMAP M4 session 33). Each tip shows once, the first time its moment comes, while the player's \"Show player tips\" option is on; tips seen are remembered in the options, not the save. moment: where the game asks for a tip (edit_units_open: Edit Units opens; map_open: the map shows with nothing over it, after the opening Edit Units; town_liberated, tower_liberated: the liberation window for one opens). anchor: the part of the screen the popup points at (recruit_pool: the Recruits list in Edit Units; deploy_button: the toolbar's Deploy Squad; panel: the liberation window). modes: game modes it shows in (single_map, campaign); missing means all. Tips are offered in this order.",
  "tips": {
   "build_squad": {
    "moment": "edit_units_open",
    "anchor": "recruit_pool",
    "modes": ["single_map"],
    "text": "To begin creating a new squad, drag a leader into an empty slot. To add to a squad, drag any unit into an active squad slot."
+  },
+  "deploy": {
+   "moment": "map_open",
+   "anchor": "deploy_button",
+   "text": "Use the deploy button to send your squads out into the field of battle after composing them in the edit units screen. Conquering buildings will provide bonuses and abilities."
+  },
+  "first_town": {
+   "moment": "town_liberated",
+   "anchor": "panel",
+   "text": "Your reputation will rise if you liberate towns with positively aligned characters. Towns that you control at the end of the day cycle will provide income to help your empire thrive. Some towns also feature shops, indicated by a dollar symbol on the roof of their icon."
+  },
+  "first_tower": {
+   "moment": "tower_liberated",
+   "anchor": "panel",
+   "text": "Your reputation will rise if you liberate towers with negatively aligned characters. Towers that you control at the end of the day cycle will provide income to help your armies grow in power. Some towers also feature shops."
   }
  }
 }

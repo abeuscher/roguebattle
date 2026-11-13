@@ -8,6 +8,7 @@ signal closed
 
 var state: GameState
 var _offering := false
+var _panel: PanelContainer
 
 
 ## `drawn_card` is the card id if one went straight into the hand, or "" if there
@@ -25,6 +26,7 @@ func setup(game_state: GameState, building: Dictionary, drawn_card: String, opti
 	add_child(center)
 	UiStyle.close_on_click(shade, center, func(): if not _offering: closed.emit())
 	var panel := PanelContainer.new()
+	_panel = panel
 	panel.add_theme_stylebox_override("panel", UiStyle.box(UiStyle.PANEL, 22))
 	center.add_child(panel)
 	var col := VBoxContainer.new()
@@ -76,6 +78,11 @@ func setup(game_state: GameState, building: Dictionary, drawn_card: String, opti
 			right.add_child(_conscript(u))
 	if not _offering:
 		col.add_child(UiStyle.dont_show_again(options, "show_liberations"))
+
+
+## Where a player tip points (PlayerTips): the window itself.
+func anchor(name: String) -> Rect2:
+	return _panel.get_global_rect() if name == "panel" else Rect2()
 
 
 ## A temple taken: its god, and what holding it gives.

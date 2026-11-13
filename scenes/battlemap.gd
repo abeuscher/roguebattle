@@ -868,9 +868,8 @@ func _offer_tip(moment: String, host: Control) -> void:
 	var tip := TipPopup.new()
 	host.add_child(tip)
 	tip.setup(t["text"], host.anchor(t["anchor"]), options)
-	tip.closed.connect(func():
-		PlayerTips.mark_seen(options, id)
-		tip.queue_free())
+	tip.closed.connect(tip.queue_free)
+	tip.tree_exiting.connect(func(): PlayerTips.mark_seen(options, id))  # seen, even if its window closes first
 
 
 func _close_edit() -> void:
@@ -879,6 +878,7 @@ func _close_edit() -> void:
 	state.after_edit()
 	_sync_tokens()
 	hud.set_squads(state.player_squads())
+	_offer_tip("map_open", hud)
 
 
 func _open_log() -> void:
@@ -1029,6 +1029,7 @@ func _open_liberation_popup(entry: Dictionary) -> void:
 	_liberation_popup = LiberationPopup.new()
 	_ui.add_child(_liberation_popup)
 	_liberation_popup.setup(state, entry["building"], entry["card"], options, entry.get("recruits", []))
+	_offer_tip(str(entry["building"]["type"]) + "_liberated", _liberation_popup)
 	var hex: int = entry["building"]["hex"]
 	_liberation_popup.closed.connect(func():
 		_close_liberation_popup()

@@ -40,6 +40,7 @@ var _drawer_toggle := Button.new()
 var _drawer_open := false
 var _help := Label.new()
 var _info := Button.new()  # shows or hides _help
+var _pause_mark := PanelContainer.new()  # a large pause sign at the top left while time is stopped (playtest)
 var _banner := PanelContainer.new()  # one line of labels, with place names as links
 var _banner_line := HBoxContainer.new()
 var _banner_text := ""
@@ -72,6 +73,20 @@ func _ready() -> void:
 		_info.icon = UiStyle.svg("info", 24, GOLD if on else Color.WHITE)
 		place())
 	add_child(_info)
+	_pause_mark.add_theme_stylebox_override("panel", _glass(10))
+	_pause_mark.mouse_filter = MOUSE_FILTER_IGNORE
+	var mark := HBoxContainer.new()
+	mark.add_theme_constant_override("separation", 10)
+	_pause_mark.add_child(mark)
+	var sign := TextureRect.new()
+	sign.texture = UiStyle.svg("pause", 48, Color("#ff9b6a"))
+	sign.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+	mark.add_child(sign)
+	var word := UiStyle.label("Paused", 26, Color("#ff9b6a"))
+	word.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	mark.add_child(word)
+	_pause_mark.visible = false
+	add_child(_pause_mark)
 	_banner.add_theme_stylebox_override("panel", UiStyle.box(Color(0.12, 0.1, 0.04, 0.92), 10))
 	_banner.mouse_filter = MOUSE_FILTER_IGNORE
 	_banner_line.add_theme_constant_override("separation", 0)
@@ -346,6 +361,7 @@ func refresh(state: GameState) -> void:
 		for i in names.size():
 			var x := float(state.data.rules["game_speeds"][i])
 			_speed_pick.add_item("%s  ×%s" % [names[i], str(int(x)) if x == int(x) else str(x)])
+	_pause_mark.visible = state.clock.paused
 	var shown := 0 if state.clock.paused else state.clock.speed_index + 1
 	if _speed_pick.selected != shown:
 		_speed_pick.select(shown)
@@ -397,6 +413,11 @@ func refresh(state: GameState) -> void:
 ## Gold top right; the drawer middle left; the minimap bottom right with the clock under
 ## it; the toolbar bottom centre; the info button bottom left with the help text above it
 ## (above the toolbar if they'd overlap). Call after the map or text changes.
+## Where a player tip points (PlayerTips).
+func anchor(name: String) -> Rect2:
+	return _deploy_button.get_global_rect() if name == "deploy_button" else Rect2()
+
+
 func place() -> void:
 	_money_panel.reset_size()
 	_money_panel.position = Vector2(size.x - _money_panel.size.x - 16, 16)
@@ -411,6 +432,8 @@ func place() -> void:
 	_toolbar.position = Vector2((size.x - _toolbar.size.x) / 2.0, size.y - _toolbar.size.y - 16)
 	_info.reset_size()
 	_info.position = Vector2(16, size.y - _info.size.y - 16)
+	_pause_mark.reset_size()
+	_pause_mark.position = Vector2(16, 16)
 	_help.reset_size()
 	_help.position = Vector2(16, _info.position.y - _help.size.y - 8)
 	if _help.position.x + _help.size.x > _toolbar.position.x:
