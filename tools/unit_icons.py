@@ -370,6 +370,9 @@ def contact_sheet(units, path):
                     f'<rect width="100%" height="100%" fill="#fff"/>{"".join(body)}</svg>\n', encoding="utf-8")
 
 
+KEEP_IMPORT = '[remap]\n\nimporter="keep"\n'
+
+
 def main():
     units = json.loads((DATA / "units.json").read_text(encoding="utf-8"))
     problems = [p for u in units for p in problems_for(u)]
@@ -382,9 +385,13 @@ def main():
         name = slug(u["class"]) + ".svg"
         keep.add(name)
         (OUT / name).write_text(icon_svg(u), encoding="utf-8")
+        # The game reads the SVG text itself (to recolor it), so Godot must keep the file
+        # as is: an imported texture alone isn't exported, and icons go blank in a build.
+        (OUT / (name + ".import")).write_text(KEEP_IMPORT, encoding="utf-8", newline="\n")
     for old in OUT.glob("*.svg"):  # classes removed from the sheet
         if old.name not in keep:
             old.unlink()
+            Path(str(old) + ".import").unlink(missing_ok=True)
     if "--sheet" in sys.argv:
         contact_sheet(units, Path(sys.argv[sys.argv.index("--sheet") + 1]))
     print(f"Wrote {len(units)} icons to {OUT.relative_to(ROOT)}")
