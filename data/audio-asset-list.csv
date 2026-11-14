@@ -22,11 +22,13 @@ Building lost,Stinger,One-shot,2,80,6.0,"The enemy takes one of your towns, towe
 Fireworks burst,Effect,One-shot,,,,"One burst of the fireworks over a liberated building: a pop or crackle. Plays with each of the show's 5 bursts, 0.35 s apart, separate from the building's riff.",,"Done (one pop per burst, 5 bursts)"
 Recruit joined,Stinger,One-shot,1,,1.5,"A recruit attempt succeeds, or a rare recruit joins: short and welcoming.",,Done
 Button click,Effect,One-shot,,,,"Every button press: one short, high wood block.",Wood Block (drum channel),Done
-End of map: victory,Music,Loop,8,96,20.0,The motif broad on trumpet over horns and strings.,"Trumpet, French Horn, String Ensemble, Timpani, Glockenspiel",Done
+End of map: victory,Music,Loop,8,96,20.0,The motif broad on trumpet over horns and strings.,"Trumpet, French Horn, String Ensemble, Timpani, Glockenspiel",Replaced by the victory bed (file kept)
 End of map: defeat,Music,Loop,8,66,29.1,The motif slow on oboe over strings and contrabass.,"Oboe, String Ensemble, Contrabass, Timpani",Done
-Intro music (title screen),Music,Loop,8,192,10.0,The end-of-map victory tune at double tempo.,As the victory tune,Done
+Intro music (title screen),Music,Loop,8,192,10.0,The end-of-map victory tune at double tempo.,As the victory tune,Replaced by the title bed (file kept)
 Map phrases (day pool),Music,Pool of one-shots,8 each,60,~32 each,"About 10 sparse piano phrases, silence between (docs/map-ambience.md). Dadd9 C G D; the motif opening rising every third phrase.",Piano (Pianoteq or a VST3 piano when installed),Done (FluidSynth draft; in the game)
 Map phrases (night pool),Music,Pool of one-shots,8 each,54,~36 each,"The day's roots turned minor (Dm C5 Gm Dm), lower and sparser, sometimes an Eb or Ab left hanging.",Piano (softer preset; darker room),Done (FluidSynth draft; in the game)
 Map turns (dusk and dawn),Music,One-shot,4,60/54,~17,"Dusk: the day's progression ending minor. Dawn: the night's ending major.",Piano,Done (FluidSynth draft; in the game)
+Title bed,Music,Pool of one-shots,8 each,60,~32 each,"The title screen: 4 piano phrases on the day's skeleton (Dadd9 C G D), the motif opening rising in each, gaps of 3 to 7 s, the first at once.",Piano (the day's),Draft (FluidSynth; in the game)
+Victory bed,Music,Pool of one-shots,8 each,56,~34 each,"The end-of-map victory screen: as the title bed but broader and fuller: slower, a fifth and octave over each root, the motif in octaves.",Piano (the day's),Draft (FluidSynth; in the game)
 Map ambience beds (day and night),Ambience,Loop,,,60-120,"Day: wind and grass. Night: crickets and low wind. Very quiet.",(recorded or found: freesound CC0 or Sonniss),To find
 Map ambience one-shots (day and night),Ambience,One-shot,,,,"Day: songbirds, a distant chapel bell, a stream, far-off hammering, sheep, a banner. Night: an owl, distant wolves, a crow, creaking timber, a gust, the bell an octave down.",(recorded or found: freesound CC0 or Sonniss),To find

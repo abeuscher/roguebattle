@@ -74,7 +74,7 @@ func test_stingers_take_turns() -> void:
 
 func test_map_phrase_pools() -> void:
 	var amb: Dictionary = d.audio["map_ambience"]
-	for place in ["day", "night", "menus"]:
+	for place in ["day", "night", "menus", "title", "victory"]:
 		var cue: Dictionary = d.audio["cues"][Sound.music_for(d.audio, place)]
 		check(amb["pools"].has(cue.get("pool", "")), "%s plays a phrase pool" % place)
 	for pool in amb["pools"]:
@@ -84,7 +84,12 @@ func test_map_phrase_pools() -> void:
 		for f in files:
 			var w := load(amb["phrases"] + f) as AudioStreamWAV
 			check(w != null and w.loop_mode == AudioStreamWAV.LOOP_DISABLED, "%s plays once, not looped" % f)
-		check(ResourceLoader.exists(amb["phrases"] + amb["turns"][cfg["turn_in"]]), "the turn into %s is there" % pool)
+		if cfg.has("turn_in"):
+			check(ResourceLoader.exists(amb["phrases"] + amb["turns"][cfg["turn_in"]]), "the turn into %s is there" % pool)
+	for pool in ["title", "victory"]:
+		var cfg: Dictionary = amb["pools"][pool]
+		check(not cfg.has("turn_in") and not cfg.has("ambience"), "the %s bed has no turn and no ambience" % pool)
+		check(float(cfg["gap"][1]) <= 10.0 and float(cfg["rest_chance"]) == 0.0, "the %s bed's gaps are short and it never sits out" % pool)
 
 
 func test_a_phrase_never_plays_twice_running() -> void:

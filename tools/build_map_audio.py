@@ -1,10 +1,11 @@
 """Build the map's ambience in one go (docs/map-ambience.md): the tools below, in order.
 
-1. tools/map_phrases.py writes the day and night phrase pools and the dusk and dawn
-   turns as MIDI (skip with --keep-midi, to keep hand-edited files).
+1. tools/map_phrases.py writes the day and night phrase pools, the dusk and dawn
+   turns, and the title and victory beds as MIDI (skip with --keep-midi, to keep hand-edited files).
 2. tools/render_audio.py renders each state with its own settings (RENDER below): the
    same instrument, a different preset and room, so day and night are one piano in two
-   moods. Each pool is levelled as a group so soft phrases stay soft.
+   moods; the title and victory beds as the day. Each pool is levelled as a group so
+   soft phrases stay soft.
 3. tools/prepare_ambience.py readies the environmental sounds, if there are any.
 4. With --preview, tools/preview_map_audio.py mixes a few minutes of the result into
    logs/map_preview_cycle.wav to listen to.
@@ -31,7 +32,8 @@ RENDER = {
     "day": ["--tail", "8"],
     "night": ["--tail", "10"],
 }
-CUES = {"day": ["map/day_*", "map/dusk"], "night": ["map/night_*", "map/dawn"]}
+RENDER["beds"] = RENDER["day"]  # the title and victory beds: the day's piano and room
+CUES = {"day": ["map/day_*", "map/dusk"], "night": ["map/night_*", "map/dawn"], "beds": ["map/title_*", "map/victory_*"]}
 
 
 def run(tool: str, *args: str) -> None:
@@ -48,7 +50,7 @@ if __name__ == "__main__":
     a = ap.parse_args()
     if not a.keep_midi:
         run("map_phrases.py", "--count", a.count, "--seed", a.seed)
-    for state in ("day", "night"):
+    for state in CUES:
         run("render_audio.py", *CUES[state], "--group", *RENDER[state])
     run("prepare_ambience.py")
     if a.preview:

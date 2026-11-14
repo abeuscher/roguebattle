@@ -12,8 +12,10 @@ bars a chord, so each answers the other:
   motif minor and an octave down; now and then one dissonant color note (Eb, a half step
   over the root, or Ab, the tritone) left hanging.
 
-Every phrase is 3 to 7 notes by day and 3 to 6 by night, sustain pedal down through each chord. The phrases are drawn
-at random from a fixed seed, so the same command always writes the same files; change
+Every phrase is 3 to 7 notes by day and 3 to 6 by night, sustain pedal down through each
+chord. It also writes the title and victory beds, title_NN.mid and victory_NN.mid (4 each,
+whatever --count says): the day's skeleton with the motif opening in every phrase, victory
+broader and fuller. The phrases are drawn at random from a fixed seed, so the same command always writes the same files; change
 --seed for a new set, or --count for more or fewer. Render them with
 tools/build_map_audio.py (or tools/render_audio.py "map/day_*").
 
@@ -54,8 +56,45 @@ STATES = {
         "vel": (28, 46),
         "colors": ["Eb", "Ab"],
     },
+    # The title and victory beds (docs/map-ambience.md "The title and victory beds"): small
+    # pools on the day's skeleton, the motif opening rising in every phrase, at a varied
+    # beat; victory broader (slower, wider, a fifth and octave over each root) and fuller.
+    "title": {
+        "bpm": 60,
+        "count": 4,
+        "roots": ["D3", "C3", "G2", "D3"],
+        "chords": [["D", "E", "F#", "A"], ["C", "D", "E", "G"], ["G", "A", "B", "D"], ["D", "F#", "A", "E"]],
+        "range": ("A3", "A5"),
+        "motif": [("A4", 1.5), ("D5", 1.5), ("F#5", 2), ("E5", 3)],
+        "motif_every": 1,
+        "motif_at": [1, 2, 2.5],
+        "root_chance": 0.8,
+        "tones": [1, 3, 2],
+        "notes": (9, 11),
+        "vel": (40, 58),
+        "distinct": True,  # no pitch twice in one chord
+        "colors": [],
+    },
+    "victory": {
+        "bpm": 56,
+        "count": 4,
+        "roots": ["D2", "C2", "G1", "D2"],
+        "chords": [["D", "E", "F#", "A"], ["C", "D", "E", "G"], ["G", "A", "B", "D"], ["D", "F#", "A", "E"]],
+        "range": ("D4", "D6"),
+        "motif": [("A4", 1.5), ("D5", 1.5), ("F#5", 2), ("E5", 3)],
+        "motif_every": 1,
+        "motif_at": [1, 2],
+        "motif_double": 12,  # the motif in octaves
+        "bass": [7, 12],  # a fifth and an octave over every root
+        "root_chance": 1.0,
+        "tones": [0, 1, 3, 2],
+        "notes": (10, 13),
+        "vel": (46, 68),
+        "distinct": True,
+        "colors": [],
+    },
 }
-MOTIF_EVERY = 3  # every third phrase states the motif; the others hint at it at most
+MOTIF_EVERY = 3  # every third phrase states the motif (by day and night); the others hint at it at most
 
 
 def pitches(classes: list, low: str, high: str) -> list:
@@ -82,14 +121,19 @@ def phrase(state: str, index: int, seed: int) -> list:
         if ci == 0 or rng.random() < s["root_chance"]:
             roots.append((start + rng.choice([0, 0, 0, 0.5]), md.n(s["roots"][ci]), rng.randint(lo_v, hi_v)))
         pool = pitches(s["chords"][ci], *s["range"])
-        k = rng.choices([0, 1, 2], weights=s["tones"])[0]
+        k = rng.choices(range(len(s["tones"])), weights=s["tones"])[0]
+        if s.get("distinct"):
+            for b, p in zip(sorted(rng.sample(SLOTS, k)), rng.sample(pool, k)):
+                uppers.append((start + b + rng.uniform(-0.06, 0.06), p, rng.randint(lo_v, hi_v)))
+            continue
         for b in sorted(rng.sample(SLOTS, k)):
             uppers.append((start + b + rng.uniform(-0.06, 0.06), rng.choice(pool), rng.randint(lo_v, hi_v)))
     motif = []
-    if index % MOTIF_EVERY == 0:
+    every = s.get("motif_every", MOTIF_EVERY)
+    if index % every == 0:
         # the motif over the first two chords, in place of whatever was drawn there
         uppers = [u for u in uppers if u[0] >= 2 * CHORD_BEATS]
-        b = 2.0
+        b = rng.choice(s["motif_at"]) if "motif_at" in s else 2.0
         for name, length in s["motif"]:
             motif.append((b, md.n(name), min(127, hi_v + 6)))
             b += length
@@ -101,14 +145,16 @@ def phrase(state: str, index: int, seed: int) -> list:
     while len(roots) + len(motif) + len(uppers) < fewest:
         ci = rng.randrange(4)
         uppers.append((ci * CHORD_BEATS + rng.choice(SLOTS), rng.choice(pitches(s["chords"][ci], *s["range"])), rng.randint(lo_v, hi_v)))
-    if s["colors"] and index % MOTIF_EVERY != 0 and rng.random() < 0.4:
+    if s["colors"] and index % every != 0 and rng.random() < 0.4:
         # one note turned to a dissonant color, never in the first chord
         late = [i for i, u in enumerate(uppers) if u[0] >= CHORD_BEATS]
         if late:
             i = rng.choice(late)
             b, p, v = uppers[i]
             uppers[i] = (b, min(pitches(s["colors"], *s["range"]), key=lambda c: abs(c - p)), v)
-    return sorted(roots + motif + uppers)
+    doubled = [(b, p + s["motif_double"], max(1, v - 12)) for b, p, v in motif] if "motif_double" in s else []
+    bass = [(b + 0.03 * (i + 1), p + iv, max(1, v - 8)) for b, p, v in roots for i, iv in enumerate(s.get("bass", []))]
+    return sorted(roots + bass + motif + doubled + uppers)
 
 
 def pedal(t: md.Track, beat: float, down: bool) -> None:
@@ -145,7 +191,7 @@ def write(cue: str, bpm: float, notes: list, span: float, chord_beats: float) ->
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("--count", type=int, default=10, help="phrases per state (default 10)")
+    ap.add_argument("--count", type=int, default=10, help="phrases per state, day and night (default 10)")
     ap.add_argument("--seed", type=int, default=1, help="a different seed draws a different set")
     a = ap.parse_args()
     os.makedirs(OUT, exist_ok=True)
@@ -153,7 +199,7 @@ if __name__ == "__main__":
         if old.endswith(".mid"):
             os.remove(os.path.join(OUT, old))
     for state, s in STATES.items():
-        for i in range(a.count):
+        for i in range(s.get("count", a.count)):
             notes = phrase(state, i, a.seed)
             write("%s_%02d" % (state, i + 1), s["bpm"], notes, 4 * CHORD_BEATS, CHORD_BEATS)
     write("dusk", STATES["day"]["bpm"], [(b, md.n(p), v) for b, p, v in DUSK], 16, 4)

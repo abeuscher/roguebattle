@@ -163,7 +163,8 @@ func _start(cue: String, c: Dictionary, stream: AudioStream) -> void:
 
 
 ## The old music fades out as the new fades in. A cue with a "pool" plays phrases from
-## that pool instead of one loop (audio.json map_ambience); between two pools that turn
+## that pool instead of one loop (audio.json map_ambience: the map's day and night, the
+## title and victory screens), the first one at once; between two pools that turn
 ## (day and night), the phrase playing finishes and the turn plays instead of a crossfade.
 func _music(cue: String) -> void:
 	if cue == music_cue:
@@ -232,7 +233,7 @@ func _phrase() -> void:
 		return
 	var k := pick_phrase(files.size(), _last_phrase, _rng.randf())
 	var stream := _stream(files[k])
-	if _rng.randf() < float(amb.get("rest_chance", 0.0)):
+	if _rng.randf() < float(_pool_cfg(_pool).get("rest_chance", amb.get("rest_chance", 0.0))):
 		_wait(stream.get_length(), _phrase)
 		return
 	_last_phrase = k
@@ -245,7 +246,7 @@ func _play_phrase(stream: AudioStream) -> void:
 	var p := AudioStreamPlayer.new()
 	p.stream = stream
 	p.bus = "Music"
-	p.volume_db = float(amb.get("phrase_db", 0.0))
+	p.volume_db = float(amb.get("phrase_db", 0.0)) + float(_pool_cfg(_pool).get("db", 0.0))
 	add_child(p)
 	p.finished.connect(func():
 		p.queue_free()

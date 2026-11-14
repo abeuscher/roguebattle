@@ -893,3 +893,12 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **The FluidSynth drafts are in** (user, 2026-11-14: "sounds good, plug it in"): the rendered phrases and turns are committed; a better piano can replace them by re-rendering.
 
 - **Liberation window pictures** (user, 2026-11-14): each building type may name a picture (`buildings.json` art: file and fade), drawn behind the whole window, scaled to cover and pinned to the bottom right so the top and left crop first, under the window color laid on along the diagonal from the top left (opaque, 85% at 0.45, 15% at the bottom right). About 1312×816 suits all three windows: the temple's (424×269) shows nearly all of it; the town and tower windows (320 to 1025 wide, about 630 tall) show at least the right 55% in the usual single-map layout, the right 30% in the narrow campaign one. All three are in (`data/modal_backgrounds/`).
+
+## Session 073: the title and victory beds (M5 session 11)
+
+- **Drawn by the same rules as the day:** `map_phrases.py` has two more states, `title` and `victory`, on the day's chords. Each has 4 phrases (whatever `--count` says) and the motif opening in every phrase, starting on beat 1, 2 or 2.5 so the four don't all begin alike. They hold more notes than the day (title 9 to 11, victory 10 to 13 before doublings) and never repeat a pitch within a chord. Day and night come out byte-identical.
+- **Victory is "broader and fuller"** through: 56 BPM against 60, a fifth and an octave over every root, the motif doubled an octave up, a higher range (D4 to D6) and louder velocities.
+- **Rendered with the day's settings** as one group (`build_map_audio.py`'s `beds`), so victory sits above the title. The title came out about 3 dB under the day pool, so its pool has `db` +2. A pool can now set its own `db` and `rest_chance` as well as `gap`.
+- **Gaps of 3 to 7 s and never a rest**, so the first phrase starts at once and the screen is never silent for long.
+- **The old cues stay:** `intro_music` and `end_victory` keep their WAVs and cue entries, unplayed, in case they're wanted back (as with the funk loops). Pointing `music.title` or `music.victory` back at them restores them.
+- **The preview tool** plays them too: `python tools/preview_map_audio.py --state title` (or `victory`).

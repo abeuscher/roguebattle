@@ -6,9 +6,10 @@ data/audio.json "map_ambience" (gaps, rests, volumes), into one WAV in logs/ (gi
 Tune the settings or the pools, run it again, listen. A part with no files yet (no
 ambience prepared, say) is left out.
 
-    python tools/preview_map_audio.py [--state day|night|cycle] [--minutes 6] [--seed 1]
+    python tools/preview_map_audio.py [--state day|night|cycle|title|victory] [--minutes 6] [--seed 1]
 
 cycle: half the time by day, the dusk turn, then night (beds crossfading at the turn).
+title, victory: those screens' beds (no ambience), the first phrase at once.
 """
 import argparse
 import glob
@@ -50,26 +51,28 @@ def phrases(mix: np.ndarray, cfg: dict, plan: list, rng: random.Random) -> float
     """Lays the phrase pools along the plan [(state, start, end)]; returns the share of
     time a phrase was sounding."""
     folder = res(cfg["phrases"])
-    pools = {s: [load(p) for p in sorted(glob.glob(os.path.join(folder, s + "_*.wav")))] for s, _, _ in plan}
+    pcs = {s: cfg["pools"][s] for s, _, _ in plan}
+    pools = {s: [load(p) for p in sorted(glob.glob(os.path.join(folder, pc["prefix"] + "*.wav")))] for s, pc in pcs.items()}
     turns = {k: os.path.join(folder, v) for k, v in cfg["turns"].items()}
-    g = db(cfg["phrase_db"])
-    t, last, sounding = rng.uniform(2, 8), None, 0.0
+    t, last, sounding = (rng.uniform(2, 8) if "turn_in" in pcs[plan[0][0]] else 0.0), None, 0.0
     for i, (state, start, end) in enumerate(plan):
-        pool = pools[state]
+        pool, pc = pools[state], pcs[state]
+        g = db(cfg["phrase_db"] + pc.get("db", 0.0))
+        gap, rest = pc.get("gap", cfg["gap"]), pc.get("rest_chance", cfg["rest_chance"])
         if not pool:
             print("  no %s phrases in %s: render them first (tools/build_map_audio.py)" % (state, os.path.relpath(folder, ROOT)))
             t = end
             continue
         t = max(t, start)
         while t < end:
-            if rng.random() < cfg["rest_chance"]:
+            if rng.random() < rest:
                 t += len(pool[0]) / RATE
                 continue
             k = rng.choice([j for j in range(len(pool)) if j != last] or [0])
             last = k
             add(mix, pool[k], t, g)
             sounding += len(pool[k]) / RATE
-            t += len(pool[k]) / RATE + rng.uniform(*cfg["gap"])
+            t += len(pool[k]) / RATE + rng.uniform(*gap)
         turn = "dusk" if state == "day" else "dawn"
         if i + 1 < len(plan) and os.path.exists(turns[turn]):
             x = load(turns[turn])
@@ -84,7 +87,9 @@ def ambience(mix: np.ndarray, cfg: dict, plan: list, rng: random.Random) -> None
     folder = res(cfg["ambience"])
     fade = cfg["bed_fade"]
     for state, start, end in plan:
-        files = sorted(glob.glob(os.path.join(folder, state, "*.wav")))
+        if "ambience" not in cfg["pools"][state]:
+            continue
+        files = sorted(glob.glob(os.path.join(folder, cfg["pools"][state]["ambience"], "*.wav")))
         beds = [f for f in files if os.path.basename(f).lower().startswith("bed")]
         shots = [load(f) for f in files if f not in beds]
         if beds:
@@ -112,7 +117,7 @@ def ambience(mix: np.ndarray, cfg: dict, plan: list, rng: random.Random) -> None
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("--state", choices=["day", "night", "cycle"], default="cycle")
+    ap.add_argument("--state", choices=["day", "night", "cycle", "title", "victory"], default="cycle")
     ap.add_argument("--minutes", type=float, default=6.0)
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--out", default="", help="default: logs/map_preview_<state>.wav")
