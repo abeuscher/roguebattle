@@ -690,13 +690,18 @@ func _fire_click(world: Vector2) -> void:
 
 ## Clicking an enemy shows what it is and how it compares with your first squad.
 func _show_enemy(s: Squad) -> void:
-	if state.intel.has(s.id):  # fought before: its makeup as last seen
+	if state.intel.has(s.id):  # fought before: in sight (or it couldn't be clicked), its makeup now (round 14)
 		_enemy_popup = EnemyPopup.new()
 		_ui.add_child(_enemy_popup)
 		_enemy_popup.setup(state, s)
 		_enemy_popup.closed.connect(func():
 			_enemy_popup.queue_free()
 			_enemy_popup = null)
+		_enemy_popup.glossary.connect(func(unit_class: String):  # over the window, which waits under it
+			var g := UnitGlossary.new()
+			_ui.add_child(g)
+			g.setup(data, unit_class)
+			g.closed.connect(g.queue_free))
 		return
 	var own := state.player_squads()
 	var label := Threat.label(state.data, own[0], s).to_lower() if not own.is_empty() else ""

@@ -51,6 +51,7 @@ var _retreat_asked := false
 var _cards_btn: Button
 var _on_refuge := false  # the enemy squad stood where its fallen come back (its base or a town it holds) when the battle began
 var _picker: Control  # the hand, shown large; the battle holds while it's open
+var _peek: Control  # an enemy unit looked at closely (round 14); the battle holds while it's open
 var _items_btn: Button
 var _round := UiStyle.label("", 28, UiStyle.ACCENT)
 var _ticker := RichTextLabel.new()
@@ -378,6 +379,44 @@ func _card_tile(id: String, count: int) -> Control:
 	return tile
 
 
+## An enemy unit up close (playtest round 14): UnitPeek in a small window, and the
+## battle holds until it closes (X, Esc or a click outside). Its glossary entry opens over it.
+func _look_at(u: Unit) -> void:
+	if _peek or _picker:
+		return
+	_peek = Control.new()
+	_peek.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	add_child(_peek)
+	var shade := ColorRect.new()
+	shade.color = Color(0, 0, 0, 0.45)
+	shade.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	_peek.add_child(shade)
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	_peek.add_child(center)
+	UiStyle.close_on_click(shade, center, _close_peek)
+	var panel := PanelContainer.new()
+	panel.add_theme_stylebox_override("panel", UiStyle.box(UiStyle.PANEL, 20))
+	center.add_child(panel)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 10)
+	panel.add_child(col)
+	col.add_child(UiStyle.title_row(UiStyle.label(battle.sides[1].name, 20), _close_peek))
+	var look := UnitPeek.make(state.data, u, func(c: String):
+		var g := UnitGlossary.new()
+		_peek.add_child(g)
+		g.setup(state.data, c)
+		g.closed.connect(g.queue_free), u == battle.sides[1].leader, 220.0)
+	look.size_flags_horizontal = SIZE_SHRINK_CENTER
+	col.add_child(look)
+
+
+func _close_peek() -> void:
+	if _peek:
+		_peek.queue_free()
+		_peek = null
+
+
 func _close_picker() -> void:
 	if _picker:
 		_picker.queue_free()
@@ -453,7 +492,7 @@ func _toggle_pause() -> void:
 # --- Playing the battle ---------------------------------------------------------------
 
 func _process(delta: float) -> void:
-	if battle == null or _done or _paused or _waiting or _picker:
+	if battle == null or _done or _paused or _waiting or _picker or _peek:
 		return
 	if not _fight_called:  # the battle starts playing: "Fight!"
 		_fight_called = true
@@ -589,6 +628,12 @@ func _add_card(u: Unit, side: int) -> void:
 	c.attack = "%s ×%d" % [kind, battle.attack_count(u)]
 	c.concealed = side == 1 and _conceal
 	c.size = CARD
+	if side == 1:  # an enemy: click to look closer (round 14)
+		c.mouse_default_cursor_shape = CURSOR_POINTING_HAND
+		c.tooltip_text = "Look closer"
+		c.gui_input.connect(func(ev: InputEvent):
+			if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
+				_look_at(u))
 	_field.add_child(c)
 	_cards[u] = c
 
@@ -771,6 +816,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if _picker:
 		if key == KEY_ESCAPE:
 			_close_picker()
+	elif _peek:
+		if key == KEY_ESCAPE:
+			_close_peek()
 	elif key == KEY_SPACE and _waiting:
 		_start()
 	elif key == KEY_SPACE and not _done:
