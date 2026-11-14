@@ -13,6 +13,8 @@ signal view_destination
 signal portal
 signal closed
 
+var _actions: Control  # the row of icon buttons, which a player tip points at
+
 const ALIGN_COLORS := {"holy": Color("#ffe08a"), "neutral": Color(0.8, 0.82, 0.86), "evil": Color("#e0604a")}
 
 
@@ -67,6 +69,7 @@ func setup(state: GameState, s: Squad) -> void:
 			row.add_child(slot)
 	# Round 9: one row of icon buttons with tooltips instead of a column of words.
 	var actions := HBoxContainer.new()
+	_actions = actions
 	actions.add_theme_constant_override("separation", 10)
 	actions.alignment = BoxContainer.ALIGNMENT_CENTER
 	col.add_child(_spacer(8))
@@ -170,3 +173,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if event.is_pressed() and (event as InputEventKey).keycode == KEY_ESCAPE:
 		closed.emit()
 		get_viewport().set_input_as_handled()
+
+
+## Where a player tip points (Battlemap._offer_tip): "actions", the row of icon buttons.
+func anchor(name: String) -> Rect2:
+	return _actions.get_global_rect() if name == "actions" and _actions else Rect2()

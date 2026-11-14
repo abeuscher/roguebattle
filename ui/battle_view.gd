@@ -7,6 +7,7 @@ extends Control
 ## A modal: 50% dark overlay; the battlemap holds the clock while it's open.
 
 signal finished(text: String)
+signal results_shown  # the end-of-battle panel is up (for a player tip)
 
 const FIELD := Vector2(1400, 600)
 const CARD := Vector2(200, 104)
@@ -52,6 +53,7 @@ var _cards_btn: Button
 var _on_refuge := false  # the enemy squad stood where its fallen come back (its base or a town it holds) when the battle began
 var _picker: Control  # the hand, shown large; the battle holds while it's open
 var _peek: Control  # an enemy unit looked at closely (round 14); the battle holds while it's open
+var _results: Control  # the end-of-battle panel, which a player tip points at
 var _items_btn: Button
 var _round := UiStyle.label("", 28, UiStyle.ACCENT)
 var _ticker := RichTextLabel.new()
@@ -379,6 +381,11 @@ func _card_tile(id: String, count: int) -> Control:
 	return tile
 
 
+## Where a player tip points (Battlemap._offer_tip): "results", the end-of-battle panel.
+func anchor(name: String) -> Rect2:
+	return _results.get_global_rect() if name == "results" and _results else Rect2()
+
+
 ## An enemy unit up close (playtest round 14): UnitPeek in a small window, and the
 ## battle holds until it closes (X, Esc or a click outside). Its glossary entry opens over it.
 func _look_at(u: Unit) -> void:
@@ -401,12 +408,14 @@ func _look_at(u: Unit) -> void:
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 10)
 	panel.add_child(col)
-	col.add_child(UiStyle.title_row(UiStyle.label(battle.sides[1].name, 20), _close_peek))
-	var look := UnitPeek.make(state.data, u, func(c: String):
+	var open_glossary := func():
 		var g := UnitGlossary.new()
 		_peek.add_child(g)
-		g.setup(state.data, c)
-		g.closed.connect(g.queue_free), u == battle.sides[1].leader, 220.0)
+		g.setup(state.data, u.unit_class)
+		g.closed.connect(g.queue_free)
+	col.add_child(UiStyle.title_row(UiStyle.label(battle.sides[1].name, 20), _close_peek, "Close (Esc)",
+			[UiStyle.help(open_glossary, "The %s in the unit glossary" % u.unit_class)]))
+	var look := UnitPeek.make(state.data, u, Callable(), u == battle.sides[1].leader, 220.0)
 	look.size_flags_horizontal = SIZE_SHRINK_CENTER
 	col.add_child(look)
 
@@ -705,6 +714,7 @@ func _finish() -> void:
 	center.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	add_child(center)
 	var box := PanelContainer.new()
+	_results = box
 	var style := UiStyle.box(UiStyle.PANEL, 28)
 	style.set_border_width_all(2)
 	style.border_color = UiStyle.OUTLINE
@@ -766,6 +776,7 @@ func _finish() -> void:
 	go.pressed.connect(func(): finished.emit(out.get("text", "Replay finished.")))
 	buttons.add_child(go)
 	col.add_child(buttons)
+	results_shown.emit()
 	go.grab_focus.call_deferred()
 
 

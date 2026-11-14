@@ -22,9 +22,11 @@ func test_a_closer_look_shows_no_numbers() -> void:
 	u.hp = 7
 	var peek := UnitPeek.make(d, u, func(_c): pass)
 	var words := " ".join(_texts(peek))
+	var asks := peek.find_children("*", "Button", true, false).filter(func(b): return b.text == "?")
 	check(words.contains("Troll") and words.contains("Level 4"), "class and level: %s" % words)
 	check(words.contains("Front: %s" % d.units["Troll"]["front_attack"]), "the attack from its row")
-	check(words.contains("About the Troll"), "a glossary link")
+	check(asks.size() == 1, "a ? to its glossary entry (round 15)")
+	words = words.replace("?", "")
 	check(not words.contains("HP") and not words.contains("7"), "no HP numbers")
 	for s in Unit.STATS:
 		check(not words.contains(s), "no %s" % s)

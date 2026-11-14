@@ -55,3 +55,16 @@ func test_quick_start_tips_lead_to_the_garrison_and_the_first_battle() -> void:
 	for mode in ["single_map", "campaign", "quick_start"]:
 		check_eq(PlayerTips.due(d, o, "encounter_open", mode), "first_battle", "the first battle tip in %s" % mode)
 	check_eq(PlayerTips.due(d, o, "edit_units_open", "quick_start"), "build_squad", "building squads in Quick start too")
+
+
+## Playtest round 15: the squad menu's icons, healing after the first battle, and flyers
+## (only once the army has one).
+func test_round_15_tips() -> void:
+	var o := _options()
+	check_eq(PlayerTips.due(d, o, "squad_menu_open", "single_map"), "squad_menu", "the squad menu's icons")
+	check_eq(PlayerTips.due(d, o, "battle_over", "single_map"), "healing", "healing, after a battle")
+	check(str(d.tips["tips"]["healing"]["text"]).contains("Heal") and str(d.tips["tips"]["healing"]["text"]).contains("temple"), "Heal and temples")
+	PlayerTips.mark_seen(o, "build_squad", false)
+	check_eq(PlayerTips.due(d, o, "edit_units_open", "single_map"), "", "no flyer, no flyer tip")
+	check_eq(PlayerTips.due(d, o, "edit_units_open", "single_map", ["flyer"]), "flyers", "a flyer in the army: the tip")
+	check(str(d.tips["tips"]["flyers"]["text"]).contains("can't take buildings"), "flyers can't take buildings")

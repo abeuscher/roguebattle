@@ -1,16 +1,27 @@
 {
- "_note": "Player tips (ROADMAP M4 session 33). Each tip shows once, the first time its moment comes, while the player's \"Show player tips\" option is on; tips seen are remembered in the options, not the save. moment: where the game asks for a tip (edit_units_open: Edit Units opens; map_open: the map shows with nothing over it, after the opening Edit Units, or at the start of a Quick start game; encounter_open: the encounter dialog before a fight shows; town_liberated, tower_liberated: the liberation window for one opens). anchor: the part of the screen the popup points at (recruit_pool: the Recruits list in Edit Units; deploy_button: the toolbar's Deploy Squad; garrison_town: the town Quick start's Garrison holds, on the map, framed with your base first; panel: the liberation window or the encounter dialog). modes: game modes it shows in (single_map, campaign, quick_start); missing means all. {town} in a tip's text is the Garrison's town. Tips are offered in this order.",
+ "_note": "Player tips (ROADMAP M4 session 33). Each tip shows once, the first time its moment comes, while the player's \"Show player tips\" option is on; tips seen are remembered in the options, not the save. moment: where the game asks for a tip (edit_units_open: Edit Units opens; map_open: the map shows with nothing over it, after the opening Edit Units, or at the start of a Quick start game; encounter_open: the encounter dialog before a fight shows; squad_menu_open: a squad's menu opens; battle_over: a battle's results show; town_liberated, tower_liberated: the liberation window for one opens). anchor: the part of the screen the popup points at (recruit_pool: the Recruits list in Edit Units; deploy_button: the toolbar's Deploy Squad; garrison_town: the town Quick start's Garrison holds, on the map, framed with your base first; panel: the liberation window or the encounter dialog; actions: the squad menu's row of buttons; results: the end-of-battle panel). needs: a fact the tip waits for (flyer: the army has a flying unit). modes: game modes it shows in (single_map, campaign, quick_start); missing means all. {town} in a tip's text is the Garrison's town. Tips are offered in this order.",
  "tips": {
   "build_squad": {
    "moment": "edit_units_open",
    "anchor": "recruit_pool",
-   "modes": ["single_map", "quick_start"],
+   "modes": [
+    "single_map",
+    "quick_start"
+   ],
    "text": "To begin creating a new squad, drag a leader into an empty slot. To add to a squad, drag any unit into an active squad slot."
+  },
+  "flyers": {
+   "moment": "edit_units_open",
+   "anchor": "recruit_pool",
+   "needs": "flyer",
+   "text": "You have a flying unit. Flyers can't take buildings: a squad needs at least one unit on foot to liberate a town, tower or temple."
   },
   "march": {
    "moment": "map_open",
    "anchor": "garrison_town",
-   "modes": ["quick_start"],
+   "modes": [
+    "quick_start"
+   ],
    "text": "The enemy's Garrison holds {town}, close to your base. Click your squad at the Player Base to open its menu, choose Move (the footprints), then click {town} twice to send it there. Press Space to start time."
   },
   "deploy": {
@@ -32,6 +43,16 @@
    "moment": "tower_liberated",
    "anchor": "panel",
    "text": "Your reputation will rise if you liberate towers with negatively aligned characters. Towers that you control at the end of the day cycle will provide income to help your armies grow in power. Some towers also feature shops."
+  },
+  "squad_menu": {
+   "moment": "squad_menu_open",
+   "anchor": "actions",
+   "text": "A squad's orders: edit it, heal it (the red cross), shop, move, fire at a nearby enemy, or send it home. Hover over a button to see what it does, or why it's greyed out."
+  },
+  "healing": {
+   "moment": "battle_over",
+   "anchor": "results",
+   "text": "Hurt or fallen units can be healed: open the squad's menu and press Heal (the red cross) to use Herbs and Revival Draughts anywhere, or stand in a temple to pay for healing and reviving there."
   }
  }
 }

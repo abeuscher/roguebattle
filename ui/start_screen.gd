@@ -14,6 +14,9 @@ signal quit
 var _note := UiStyle.label("", 16, Color("#e0604a"))
 
 
+const BUTTON_WIDTH := 270.0  # half the title's width (playtest round 15)
+
+
 func setup(has_save := false) -> void:
 	UiStyle.backdrop(self)
 	var center := CenterContainer.new()
@@ -24,27 +27,30 @@ func setup(has_save := false) -> void:
 	center.add_child(col)
 	var title := UiStyle.game_name(110)
 	col.add_child(title)
-	var go := UiStyle.button("Continue", 300, true)
+	var go := UiStyle.button("Continue", BUTTON_WIDTH, true)
 	go.pressed.connect(func(): continue_game.emit())
 	go.visible = has_save
 	col.add_child(go)
-	var start := UiStyle.button("Start Game", 300, not has_save)
+	var start := UiStyle.button("Start Game", BUTTON_WIDTH, not has_save)
 	start.pressed.connect(func(): start_game.emit())
 	col.add_child(start)
-	var quick := UiStyle.button("Quick Start", 300)
+	var quick := UiStyle.button("Quick Start", BUTTON_WIDTH)
 	quick.tooltip_text = "A small map with your squads ready, straight away."
 	quick.pressed.connect(func(): quick_start.emit())
 	col.add_child(quick)
-	var load := UiStyle.button("Load game", 300)
+	var load := UiStyle.button("Load game", BUTTON_WIDTH)
 	load.pressed.connect(func(): load_game.emit())
 	load.visible = has_save
 	col.add_child(load)
-	var opts := UiStyle.button("Options", 300)
+	var opts := UiStyle.button("Options", BUTTON_WIDTH)
 	opts.pressed.connect(func(): options.emit())
 	col.add_child(opts)
-	var leave := UiStyle.button("Quit", 300)
+	var leave := UiStyle.button("Quit", BUTTON_WIDTH)
 	leave.pressed.connect(func(): quit.emit())
 	col.add_child(leave)
+	for b in col.get_children():  # centred under the title, not stretched to its width (playtest round 15)
+		if b is Button:
+			b.size_flags_horizontal = SIZE_SHRINK_CENTER
 	_note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_note.custom_minimum_size.x = 300

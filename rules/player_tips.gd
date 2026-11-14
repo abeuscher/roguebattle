@@ -7,13 +7,13 @@ extends RefCounted
 
 
 ## The id of the first unseen tip for `moment` in game mode `mode`, or "" if none.
-static func due(data: GameData, options: Dictionary, moment: String, mode: String) -> String:
+static func due(data: GameData, options: Dictionary, moment: String, mode: String, facts: Array = []) -> String:
 	if not bool(options.get("show_tips", true)):
 		return ""
 	var seen: Array = options.get("tips_seen", [])
 	for id in data.tips.get("tips", {}):
 		var t: Dictionary = data.tips["tips"][id]
-		if t["moment"] == moment and id not in seen and (not t.has("modes") or mode in t["modes"]):
+		if t["moment"] == moment and id not in seen and (not t.has("modes") or mode in t["modes"]) and (not t.has("needs") or t["needs"] in facts):
 			return id
 	return ""
 

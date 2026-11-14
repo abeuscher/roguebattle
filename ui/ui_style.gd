@@ -81,22 +81,6 @@ static func dont_show_again(options: Dictionary, id: String, text := "Do not sho
 ## buttons at the bottom). `tip` names the key that also closes it.
 ## The close button (playtest round 12): a 34 px square with its own soft background,
 ## lighter on hover, darker and gold when pressed, so it reads as a button.
-## An underlined text link in the accent color.
-static func link(text: String, px: int, tip: String, action: Callable) -> LinkButton:
-	var l := LinkButton.new()
-	l.text = text
-	l.underline = LinkButton.UNDERLINE_MODE_ALWAYS
-	l.add_theme_font_size_override("font_size", px)
-	for c in ["font_color", "font_focus_color", "font_pressed_color"]:
-		l.add_theme_color_override(c, ACCENT)
-	l.add_theme_color_override("font_hover_color", Color.WHITE)
-	l.focus_mode = Control.FOCUS_NONE
-	l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	l.tooltip_text = tip
-	l.pressed.connect(action)
-	return l
-
-
 static func close_x(action: Callable, tip := "Close (Esc)") -> Button:
 	var x := Button.new()
 	x.icon = svg("x", 20)
@@ -119,6 +103,35 @@ static func close_x(action: Callable, tip := "Close (Esc)") -> Button:
 	x.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	x.pressed.connect(action)
 	return x
+
+
+## A subtle question mark in a circle (playtest round 15): the way into the unit glossary,
+## in a window's title bar beside the close X, or beside a unit's name. `px` is its size;
+## `ink` its colour at rest.
+static func help(action: Callable, tip: String, px := 28, ink := Color(0.78, 0.8, 0.85)) -> Button:
+	var b := Button.new()
+	b.text = "?"
+	b.custom_minimum_size = Vector2(px, px)
+	b.add_theme_font_size_override("font_size", roundi(px * 0.6))
+	for state in [["normal", Color(0, 0, 0, 0), Color(ink, 0.55)], ["hover", Color(1, 1, 1, 0.12), ACCENT],
+			["pressed", Color(0, 0, 0, 0.3), ACCENT], ["focus", Color(0, 0, 0, 0), Color(0, 0, 0, 0)]]:
+		var look := StyleBoxFlat.new()
+		look.bg_color = state[1]
+		look.border_color = state[2]
+		look.set_border_width_all(maxi(1, px / 18))
+		look.set_corner_radius_all(px)
+		look.content_margin_bottom = 2
+		b.add_theme_stylebox_override(state[0], look)
+	b.add_theme_color_override("font_color", ink)
+	b.add_theme_color_override("font_hover_color", ACCENT)
+	b.add_theme_color_override("font_pressed_color", ACCENT)
+	b.tooltip_text = tip
+	b.focus_mode = Control.FOCUS_NONE
+	b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	b.pressed.connect(action)
+	return b
 
 
 ## The title font (Cinzel, playtest round 12): carved capitals that set a window's title

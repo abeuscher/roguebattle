@@ -1,12 +1,13 @@
 class_name UnitPeek
 ## What you can learn of an enemy unit by looking (playtest round 14, settled
 ## 2026-11-14): its class icon, class and level, an HP bar with no numbers, the attack
-## it makes from the row it stands in, and a link to its glossary entry. No attribute
+## it makes from the row it stands in, and a ? to its glossary entry. No attribute
 ## numbers. Used in the battle view (an enemy card clicked) and the enemy squad window.
 
 
-## The unit as a small column `width` wide. `glossary` gets the class when the link is
-## pressed; a leader is starred, a fallen unit greyed.
+## The unit as a small column `width` wide. `glossary` gets the class when its ? (beside
+## the class name) is pressed; without one (Callable()) there's no ?, for a window that
+## has it in its title bar. A leader is starred, a fallen unit greyed.
 static func make(data: GameData, u: Unit, glossary: Callable, leader := false, width := 150.0) -> Control:
 	var info := u.info(data)
 	var box := VBoxContainer.new()
@@ -16,10 +17,16 @@ static func make(data: GameData, u: Unit, glossary: Callable, leader := false, w
 	pic.texture = UnitIcons.texture(u.unit_class, 56)
 	pic.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
 	box.add_child(pic)
-	for l in [UiStyle.label("%s%s" % [u.unit_class, " ★" if leader else ""], 15),
-			UiStyle.label("Level %d%s" % [u.level, "" if u.is_alive() else ", fallen"], 14, Color(0.75, 0.78, 0.84))]:
-		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		box.add_child(l)
+	var name_row := HBoxContainer.new()
+	name_row.add_theme_constant_override("separation", 6)
+	name_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	name_row.add_child(UiStyle.label("%s%s" % [u.unit_class, " ★" if leader else ""], 15))
+	if glossary.is_valid():
+		name_row.add_child(UiStyle.help(glossary.bind(u.unit_class), "The %s in the unit glossary" % u.unit_class, 20))
+	box.add_child(name_row)
+	var level := UiStyle.label("Level %d%s" % [u.level, "" if u.is_alive() else ", fallen"], 14, Color(0.75, 0.78, 0.84))
+	level.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(level)
 	box.add_child(_hp_bar(float(u.hp) / maxf(1.0, u.max_hp(data))))
 	var row := u.row
 	var attack := UiStyle.label("%s: %s ×%d" % ["Front" if row == "front" else "Back", info[row + "_attack"], int(info[row + "_count"])], 14)
@@ -28,9 +35,6 @@ static func make(data: GameData, u: Unit, glossary: Callable, leader := false, w
 	attack.tooltip_text = "The attack it makes from the %s row." % row
 	attack.mouse_filter = Control.MOUSE_FILTER_PASS
 	box.add_child(attack)
-	var link := UiStyle.link("About the %s" % u.unit_class, 14, "Its entry in the unit glossary", glossary.bind(u.unit_class))
-	link.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	box.add_child(link)
 	if not u.is_alive():
 		box.modulate = Color(1, 1, 1, 0.45)
 	return box

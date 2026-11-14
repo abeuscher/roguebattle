@@ -550,6 +550,7 @@ func _open_menu() -> void:
 	_menu = SquadMenu.new()
 	_ui.add_child(_menu)
 	_menu.setup(state, _selected)
+	_offer_tip("squad_menu_open", _menu)
 	_menu.move.connect(_start_planning)
 	_menu.fire.connect(_start_firing)
 	_menu.view_destination.connect(func():
@@ -902,6 +903,7 @@ func _open_battle() -> void:
 	_ui.add_child(_battle)
 	_battle.setup(state, state.pending, false, bool(options.get("battle_wait_for_fight", true)))
 	_battle.finished.connect(_close_battle)
+	_battle.results_shown.connect(func(): _offer_tip("battle_over", _battle))
 	_spring_open(_battle, state.pending.sides[0], state.pending.sides[1])
 
 
@@ -937,7 +939,7 @@ func _open_edit(cell := -1) -> void:
 ## Waits while the host is hidden (the encounter dialog, while the camera flies). Once
 ## dismissed it never shows again.
 func _offer_tip(moment: String, host: Control) -> void:
-	var id := PlayerTips.due(data, options, moment, _tip_mode())
+	var id := PlayerTips.due(data, options, moment, _tip_mode(), _tip_facts())
 	if id == "":
 		return
 	await get_tree().process_frame  # let the host lay itself out, so the anchor's rect is real
@@ -973,6 +975,11 @@ func _hex_rect(hex: int) -> Rect2:
 	var r := Vector2.ONE * MapView.HEX_SIZE * 1.6 * camera.zoom.x
 	var at := (MapView.hex_center(state.map, hex) - camera.position) * camera.zoom + get_viewport().get_visible_rect().size / 2.0
 	return Rect2(at - r / 2.0, r)  # from the camera itself: the canvas transform lags a frame behind it
+
+
+## What tips with "needs" can ask for (tips.json): "flyer" while the army has a flying unit.
+func _tip_facts() -> Array:
+	return ["flyer"] if state.army.units().any(func(u: Unit): return u.has_tag(data, "flyer")) else []
 
 
 ## The game mode tips are chosen for (tips.json "modes").

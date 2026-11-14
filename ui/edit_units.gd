@@ -443,6 +443,7 @@ func _show_unit() -> void:
 	names.add_child(_sheet_text("Level %d %s  ·  %s" % [u.level, u.unit_class, where], 17, SHEET_FADED))
 	for t in [["overview", "Character"], ["about", "About the %s" % u.unit_class]]:
 		head.add_child(_sheet_tab(t[1], t[0]))
+	head.add_child(UiStyle.help(_open_glossary.bind(u.unit_class), "The %s in the unit glossary" % u.unit_class, 30, SHEET_GOLD))
 	var x := UiStyle.close_x(_close_unit)
 	x.add_theme_color_override("icon_normal_color", SHEET_GOLD)
 	head.add_child(x)
@@ -638,10 +639,6 @@ func _unit_about(u: Unit) -> Control:
 		for stage in data.lines[line_id]:
 			stages.append(" / ".join(PackedStringArray(stage)))
 		text.add_child(_sheet_wrapped("  >  ".join(stages), 16))
-	var gloss := UiStyle.link("%s in the glossary" % u.unit_class, 17, "What the %s is and does" % u.unit_class, _open_glossary.bind(u.unit_class))
-	gloss.add_theme_color_override("font_color", SHEET_GOLD)
-	gloss.size_flags_horizontal = SIZE_SHRINK_BEGIN
-	text.add_child(gloss)
 	return row
 
 

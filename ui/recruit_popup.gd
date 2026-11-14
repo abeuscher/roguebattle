@@ -36,9 +36,8 @@ func setup(class_name_: String, beaten := false) -> void:
 	_col.custom_minimum_size = Vector2(320, 150)
 	panel.add_child(_col)
 	_title = UiStyle.label(("The %s band is beaten" if beaten else "A band of %s") % class_name_, 22)
-	_title_row = UiStyle.title_row(_title, Callable())
+	_title_row = UiStyle.title_row(_title, Callable(), "", [UiStyle.help(func(): glossary.emit(class_name_), "The %s in the unit glossary" % class_name_)])
 	_col.add_child(_title_row)
-	_col.add_child(UiStyle.link("About the %s" % class_name_, 15, "Their entry in the unit glossary", func(): glossary.emit(class_name_)))
 	var ask := UiStyle.label("Try once more to recruit them? They would join with the HP they have left." if beaten
 			else "Recruit them, sneak past, or fight?", 14, Color(0.7, 0.72, 0.76))
 	ask.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
