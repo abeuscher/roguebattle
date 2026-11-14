@@ -190,4 +190,6 @@ The core goal is met: Ogre Battle's squad play in a roguelike setting. Playteste
 | 9 | **Played tarot cards grow to 500% as they fade** from the board | §13 | Screenshot mid-fade | |
 | 10 | **Title font: UnifrakturMaguntia** for the game's name on the title screen | §5 | Screenshot of the title and Start screens | |
 | 11 | **Single unit view as a character sheet:** D&D-like, its two top buttons become tabs, RPG styling throughout (the user can bring examples) | §5 | Screenshots of each tab | |
+| 12 | **Squad menu: Heal, not Use item** (user, 2026-11-14; whenever it slots in easily). "Item" also means weapons and armor, so the squad menu's Use item becomes **Heal**, its icon a red medical cross. On a temple, the temple's heal and revive show in the same window beside the herbs and revival draughts (under them is fine for now) | §5, §15 | Screenshots: the menu's Heal button; the Heal window in the open and on a temple | |
+| 13 | **"Items" tab becomes "Equipment"** (user, 2026-11-14; with row 12): the tab next to Recruits in Edit Units and Edit Squad | §5, §8 | Screenshot | |
 
