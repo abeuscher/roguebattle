@@ -56,6 +56,7 @@ var _deploying := false  # _selected is a squad from base whose route is being l
 var _building_popup: BuildingPopup
 var _enemy_popup: EnemyPopup
 var _ledger: LedgerPopup
+const BEGIN_NOTE := "Begin game."
 var _awaiting_start := true  # a new map waits, paused, for the player to start time
 var _shop: Control  # the shop screen or the supplies menu
 var _cursor_flag: SquadToken  # while laying a route, the squad's flag replaces the mouse pointer
@@ -1156,6 +1157,8 @@ func _prompt_start() -> void:
 		_awaiting_start = false
 		if hud.banner_text() == START_PROMPT:
 			hud.show_banner("")
+		if not state.notes.any(func(n): return n["text"] == BEGIN_NOTE):
+			_note(BEGIN_NOTE)  # the notifications log's first line, once per game (a loaded game has it)
 	elif hud.banner_text() == "":
 		hud.show_banner(START_PROMPT)
 
