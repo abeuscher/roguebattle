@@ -56,6 +56,36 @@ static func music(cue: String) -> void:
 		_it._music(cue)
 
 
+## Plays a battle action's sound (battle_cue), for the unit `u` doing `kind`.
+static func battle(data: GameData, u: Unit, kind: String) -> void:
+	if _it and u:
+		_it.play(battle_cue(data.audio, u.info(data), kind))
+
+
+## The cue for a battle action (audio.json "battle_sounds"): `info` is the acting unit's
+## class row (units.json), `kind` the action's kind (Melee, Ranged, Magic, Breath, Heal,
+## Buff, ...), or "miss" / "fall". Returns "battle_<sound>".
+static func battle_cue(audio: Dictionary, info: Dictionary, kind: String) -> String:
+	var b: Dictionary = audio.get("battle_sounds", {})
+	var sound := ""
+	if kind in ["miss", "fall"]:
+		sound = str(b.get(kind, kind))
+	elif b.get("kind", {}).has(kind):
+		sound = str(b["kind"][kind])
+	elif kind == "Magic":
+		sound = str(b.get("element", {}).get(str(info.get("element")), b.get("magic", "magic")))
+	else:
+		var ranged := kind == "Ranged"
+		sound = str(b.get("class", {}).get(info.get("class", ""), ""))
+		if sound == "":
+			sound = str(b.get("ranged_hand" if ranged else "melee_hand", {}).get(str(info.get("icon_hand")), ""))
+		if sound == "" and not ranged:
+			sound = str(b.get("base", {}).get(str(info.get("icon_base")), ""))
+		if sound == "":
+			sound = str(b.get("ranged" if ranged else "melee", ""))
+	return "battle_" + sound
+
+
 ## The music cue for a place (audio.json "music": menus, day, night, army, victory,
 ## defeat), or for a battle on `terrain` when `place` is "battle".
 static func music_for(audio: Dictionary, place: String, terrain := "") -> String:

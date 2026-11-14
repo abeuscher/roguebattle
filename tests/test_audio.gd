@@ -105,3 +105,31 @@ func test_a_phrase_never_plays_twice_running() -> void:
 			seen[k] = true
 		check_eq(seen.size(), 10 if last < 0 else 9, "every other phrase can come up")
 	check_eq(Sound.pick_phrase(1, 0, 0.5), 0, "a pool of one plays its one")
+
+
+## Battle sounds (ROADMAP M5 session 6): every unit's attacks name a known cue, chosen
+## by kind, element, weapon and creature.
+func test_every_attack_has_a_battle_sound() -> void:
+	for c in d.units:
+		var info: Dictionary = d.units[c]
+		for a in [info["front_attack"], info["back_attack"]]:
+			var cue := Sound.battle_cue(d.audio, info, str(a).split(" (")[0])
+			check(d.audio["cues"].has(cue), "%s's %s: %s is a cue" % [c, a, cue])
+	for k in ["miss", "fall"]:
+		check(d.audio["cues"].has(Sound.battle_cue(d.audio, {}, k)), "%s has a cue" % k)
+
+
+func test_battle_sounds_fit_the_attacker() -> void:
+	var cases := [["Fighter", "Melee", "battle_sword"], ["Lion", "Melee", "battle_scratch"], ["Wolf", "Melee", "battle_bite"],
+			["Gryphon", "Melee", "battle_scratch"], ["Lancer", "Melee", "battle_lance"], ["Serf", "Melee", "battle_blunt"],
+			["Horse Archer", "Ranged", "battle_bow"], ["Crossbowman", "Ranged", "battle_crossbow"], ["Slinger", "Ranged", "battle_sling"],
+			["Mage", "Magic", "battle_magic"], ["Troll", "Magic", "battle_ice"], ["Basilisk", "Breath", "battle_roar"],
+			["Cleric", "Heal", "battle_heal"]]
+	for t in cases:
+		check_eq(Sound.battle_cue(d.audio, d.units[t[0]], t[1]), t[2], "%s %s" % [t[0], t[1]])
+	var played := 0
+	for cue in d.audio["cues"]:
+		if str(d.audio["cues"][cue]["file"]).begins_with("res://data/audio/battle/"):
+			check(load(d.audio["cues"][cue]["file"]) is AudioStreamWAV, "%s loads" % cue)
+			played += 1
+	check_eq(played, 14, "the 14 sounds supplied so far play")

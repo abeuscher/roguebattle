@@ -499,6 +499,9 @@ func _play(e: Dictionary, animate: bool) -> float:
 			var card: Card = _cards[e["target"]]
 			if animate:
 				_lunge(_cards[e["unit"]], card)
+				Sound.battle(state.data, e["unit"], str(e["kind"]) if e["hit"] else "miss")  # ROADMAP M5 session 6
+				if e.get("killed", false):
+					Sound.battle(state.data, e["target"], "fall")
 			if not e["hit"]:
 				_float(card, "miss", Color(0.8, 0.8, 0.8), animate)
 				return beat
@@ -513,12 +516,15 @@ func _play(e: Dictionary, animate: bool) -> float:
 			_float(card, "+%d" % e["amount"], Color("#7ee08a"), animate)
 			if animate:
 				card.flash(Color(0.3, 1, 0.4))
+				Sound.battle(state.data, e["unit"], "Heal")
 		"status":
 			var card: Card = _cards[e["unit"]]
 			card.hp = clampi(card.hp + int(e.get("amount", 0)), 0, card.max_hp)
 			card.statuses = battle.statuses_of(e["unit"])
 			var word: String = "resisted" if e.get("resisted", false) else str(e["status"]).replace("_up", " up").replace("_", " ")
 			_float(card, word, Color("#d7a6ff"), animate, 18)
+			if animate:
+				Sound.battle(state.data, e["unit"], "Buff")  # every status change: the support sound
 		"move":
 			_layout(animate)
 		"raise":

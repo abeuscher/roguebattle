@@ -6,7 +6,7 @@
 """New Town!""",Voice,One-shot,,,,"Spoken line (Al records). The first time you take a town (it was neutral or the enemy's, never yours).",,Done (recorded; prepared by tools/prepare_voice.py)
 """New Tower!""",Voice,One-shot,,,,Spoken line (Al records). The first time you take a tower.,,"Done (recorded, a thunderclap at the front, loud on purpose)"
 """New Temple!""",Voice,One-shot,,,,Spoken line (Al records). The first time you take a temple.,,Done (recorded; prepared by tools/prepare_voice.py)
-"""Give it back!""",Voice,One-shot,,,,"Spoken line (Al records). Taking back a town, tower or temple the enemy took from you.",,"To record (Al); wired, silent until then"
+"""Give it back!""",Voice,One-shot,,,,"Spoken line (Al records). Taking back a town, tower or temple the enemy took from you.",,"Dropped (user, 2026-11-14)"
 Main map theme (day),Music,Loop,32,112,68.6,"Sunny, bright, fanfare feel. Holds the main motif reused across the score.","Trumpet, French Horn, String Ensemble, Pizzicato Strings, light snare",Done
 Main map theme (night),Music,Loop,32,112,68.6,Variant of the day theme with spookier instrumentation. Same BPM as day so the two can crossfade.,"Harpsichord, Choir Aahs, Goblins pad, Contrabass",Done
 Edit units / army theme,Music,Loop,16,120,32.0,Snare-based military bit. 120 is standard march tempo.,"Snare (drum channel), Brass Section, Piccolo","Done (draft 2: slower, orchestral)"
@@ -27,8 +27,30 @@ End of map: defeat,Music,Loop,8,66,29.1,The motif slow on oboe over strings and 
 Intro music (title screen),Music,Loop,8,192,10.0,The end-of-map victory tune at double tempo.,As the victory tune,Replaced by the title bed (file kept)
 Map phrases (day pool),Music,Pool of one-shots,8 each,60,~32 each,"About 10 sparse piano phrases, silence between (docs/map-ambience.md). Dadd9 C G D; the motif opening rising every third phrase.",Piano (Pianoteq or a VST3 piano when installed),Done (FluidSynth draft; in the game)
 Map phrases (night pool),Music,Pool of one-shots,8 each,54,~36 each,"The day's roots turned minor (Dm C5 Gm Dm), lower and sparser, sometimes an Eb or Ab left hanging.",Piano (softer preset; darker room),Done (FluidSynth draft; in the game)
-Map turns (dusk and dawn),Music,One-shot,4,60/54,~17,"Dusk: the day's progression ending minor. Dawn: the night's ending major.",Piano,Done (FluidSynth draft; in the game)
+Map turns (dusk and dawn),Music,One-shot,4,60/54,~17,Dusk: the day's progression ending minor. Dawn: the night's ending major.,Piano,Done (FluidSynth draft; in the game)
 Title bed,Music,Pool of one-shots,8 each,60,~32 each,"The title screen: 4 piano phrases on the day's skeleton (Dadd9 C G D), the motif opening rising in each, gaps of 3 to 7 s, the first at once.",Piano (the day's),Done (FluidSynth draft; in the game)
 Victory bed,Music,Pool of one-shots,8 each,56,~34 each,"The end-of-map victory screen: as the title bed but broader and fuller: slower, a fifth and octave over each root, the motif in octaves.",Piano (the day's),Done (FluidSynth draft; in the game)
-Map ambience beds (day and night),Ambience,Loop,,,60-120,"Day: wind and grass. Night: crickets and low wind. Very quiet.",(recorded or found: freesound CC0 or Sonniss),To find
+Map ambience beds (day and night),Ambience,Loop,,,60-120,Day: wind and grass. Night: crickets and low wind. Very quiet.,(recorded or found: freesound CC0 or Sonniss),To find
 Map ambience one-shots (day and night),Ambience,One-shot,,,,"Day: songbirds, a distant chapel bell, a stream, far-off hammering, sheep, a banner. Night: an owl, distant wolves, a crow, creaking timber, a gust, the bell an octave down.",(recorded or found: freesound CC0 or Sonniss),To find
+"Blade (swords, daggers)",Battle,One-shot,,,,battle_sword; source data/audio/battle_src/sword.wav,,Done (supplied 2026-11-14; prepared by tools/prepare_battle_sounds.py)
+"Blunt (clubs, picks, anchors, fists)",Battle,One-shot,,,,battle_blunt; source data/audio/battle_src/blunt.wav,,Done (supplied 2026-11-14; prepared by tools/prepare_battle_sounds.py)
+Lance thrust,Battle,One-shot,,,,battle_lance; source data/audio/battle_src/lance.wav,,Done (supplied 2026-11-14; prepared by tools/prepare_battle_sounds.py)
+Claw,Battle,One-shot,,,,battle_scratch; source data/audio/battle_src/scratch.wav,,Done (supplied 2026-11-14; prepared by tools/prepare_battle_sounds.py)
+Bite,Battle,One-shot,,,,battle_bite; source data/audio/battle_src/bite.wav,,Done (supplied 2026-11-14; prepared by tools/prepare_battle_sounds.py)
+Bow,Battle,One-shot,,,,battle_bow; source data/audio/battle_src/bow.wav,,Done (supplied 2026-11-14; prepared by tools/prepare_battle_sounds.py)
+Crossbow,Battle,One-shot,,,,battle_crossbow; source data/audio/battle_src/crossbow.wav,,Done (supplied 2026-11-14; prepared by tools/prepare_battle_sounds.py)
+Sling,Battle,One-shot,,,,battle_sling; source data/audio/battle_src/sling.wav,,Done (supplied 2026-11-14; prepared by tools/prepare_battle_sounds.py)
+Breath: roar and blast,Battle,One-shot,,,,battle_roar; source data/audio/battle_src/roar.wav,,Done (supplied 2026-11-14; prepared by tools/prepare_battle_sounds.py)
+Fire magic,Battle,One-shot,,,,battle_fire; source data/audio/battle_src/fire.wav,,Done (supplied 2026-11-14; prepared by tools/prepare_battle_sounds.py)
+Ice magic,Battle,One-shot,,,,battle_ice; source data/audio/battle_src/ice.wav,,Done (supplied 2026-11-14; prepared by tools/prepare_battle_sounds.py)
+Water magic,Battle,One-shot,,,,battle_water; source data/audio/battle_src/water.wav,,Done (supplied 2026-11-14; prepared by tools/prepare_battle_sounds.py)
+Wind magic,Battle,One-shot,,,,battle_wind; source data/audio/battle_src/wind.wav,,Done (supplied 2026-11-14; prepared by tools/prepare_battle_sounds.py)
+Heal (for now every support skill),Battle,One-shot,,,,battle_heal; source data/audio/battle_src/heal.wav,,Done (supplied 2026-11-14; prepared by tools/prepare_battle_sounds.py)
+Earth magic,Battle,One-shot,,,,battle_earth,,To come (the user); silent until then
+Lightning magic,Battle,One-shot,,,,battle_lightning,,To come (the user); silent until then
+Holy magic,Battle,One-shot,,,,battle_holy,,To come (the user); silent until then
+Dark magic,Battle,One-shot,,,,battle_dark,,To come (the user); silent until then
+Plain magic (no element),Battle,One-shot,,,,battle_magic,,To come (the user); silent until then
+A miss (whoosh),Battle,One-shot,,,,battle_miss,,To come (the user); silent until then
+A unit falling,Battle,One-shot,,,,battle_fall,,To come (the user); silent until then
+"Buff, debuff, ward and dispel sounds (the user will supply)",Battle,One-shot,,,,kind map in audio.json battle_sounds,,To come (the user); silent until then
