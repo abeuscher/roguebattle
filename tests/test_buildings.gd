@@ -246,3 +246,17 @@ func test_towns_get_unique_seeded_names() -> void:
 	check_eq(seen.size(), towers.size(), "no two towers share a name")
 	var other := _of_type(_map("continent", 2), "town").map(func(b): return b["name"])
 	check(other != names, "another seed, other names")
+
+
+## Every map has at least two visible shops, one in a town, however small (playtest
+## round 13; mapgen.json shops_min).
+func test_every_map_has_two_shops_one_in_a_town() -> void:
+	var want: Dictionary = _data.mapgen["shops_min"]
+	for preset in _data.mapgen["presets"]:
+		for size in [[100, 45], [200, 90]]:
+			for seed in [1, 2]:
+				var m := _map(preset, seed, {"width": size[0], "height": size[1], "building_density": "low"})
+				var shops := m.buildings.filter(func(b): return b["shop"] and not b["hidden"])
+				var label := "%s %dx%d seed %d" % [preset, size[0], size[1], seed]
+				check(shops.size() >= int(want["total"]), "%s: %d shops" % [label, shops.size()])
+				check(shops.filter(func(b): return b["type"] == "town").size() >= int(want["town"]), "%s: a shop in a town" % label)

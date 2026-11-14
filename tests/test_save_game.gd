@@ -81,10 +81,11 @@ func test_save_then_load_reproduces_the_state() -> void:
 
 
 func test_the_game_plays_on_identically_after_loading() -> void:
-	var g := _game(77)
+	var g := _game(78)  # a seed whose game is still on at the save (a finished map can't be saved)
 	var st: GameState = g[0]
 	_deploy_some(st)
 	_play(st, 600)
+	check_eq(SaveGame.blocker(st), "", "the game can be saved here")
 	var loaded = SaveGame.from_dict(d, SaveGame.to_dict(st, g[1]), GameLog.new())
 	var back: GameState = loaded["state"]
 	_play(st, 1500)

@@ -39,6 +39,7 @@ static func place_all(m: MapData, game_data: GameData, settings: Dictionary, map
 	p._town_names()
 	p._tower_names()
 	p._temple_gods()
+	p._shops_min()
 
 
 func _setup() -> void:
@@ -687,6 +688,36 @@ func _temple_gods() -> void:
 			var id: String = ids[r.randi() % ids.size()]
 			b["god"] = id
 			b["name"] = "Temple of %s" % data.gods["gods"][id]["name"]
+
+
+## At least mapgen.json shops_min.total visible shops, shops_min.town of them in towns
+## (playtest round 13), however small the map: random towns without one get one, then
+## towers. Its own RNG (map seed + "shops"), so nothing else on the map moves.
+func _shops_min() -> void:
+	var want: Dictionary = cfg["shops_min"]
+	var r := RandomNumberGenerator.new()
+	r.seed = hash([map.seed, "shops"])
+	var shops := map.buildings.filter(func(b): return b["shop"] and not b["hidden"])
+	var towns := shops.filter(func(b): return b["type"] == "town").size()
+	var total := shops.size()
+	for type in ["town", "tower"]:
+		var bare := map.buildings.filter(func(b): return b["type"] == type and not b["shop"] and not b["hidden"])
+		_shuffle_with(bare, r)
+		for b in bare:
+			if total >= int(want["total"]) and (type != "town" or towns >= int(want["town"])):
+				break
+			b["shop"] = true
+			total += 1
+			if type == "town":
+				towns += 1
+
+
+func _shuffle_with(a: Array, r: RandomNumberGenerator) -> void:
+	for i in range(a.size() - 1, 0, -1):
+		var j := r.randi_range(0, i)
+		var t: Variant = a[i]
+		a[i] = a[j]
+		a[j] = t
 
 
 static func town_name(t: Dictionary, r: RandomNumberGenerator) -> String:

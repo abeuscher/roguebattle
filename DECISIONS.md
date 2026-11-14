@@ -921,3 +921,9 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 ## Session 076: Edit Units rows (playtest round 13, item 4)
 
 - **Why only some moves worked:** a move takes the unit out and puts it back, and taking out the leader cleared the squad's leader. Putting it back chose the "best" leader again (living, highest level, then stage), which could be another unit. If the real leader had earned extra slots, the squad lost them and the move was refused as "doesn't fit". Swapping a squadmate onto the leader's spot did the same. A move inside one squad now keeps its leader, so no move between a squad's own slots is ever refused. Rows have as many spots as the squad's slots, so there's always room in either row. The roadmap asked for a screenshot of a refused move with its reason; with nothing left to refuse, the screenshot shows the leader in the back row instead (`logs/leader_back_row.png`).
+
+## Session 077: two shops on every map (playtest round 13, item 5)
+
+- **The rule** (`mapgen.json` `shops_min`: 2 in all, 1 in a town): a last map-generation step gives shops to random towns without one until there's a town shop and two shops in all, then to towers if there still aren't two. Nomad camps count, since they always have a shop. Hidden buildings don't. It has its own random stream (map seed + "shops"), so nothing else on a map moves.
+- **The smallest maps had no towns at all,** so the default `building_min` is now 2 towns (unless density is none; Quick start keeps its own 3). That changes only maps that had fewer than 2 towns, such as the tests' 120×70 one.
+- **A save test changed seed:** on its new map the test army lost before the save point, and a finished map can't be saved in the game ("The map is over."), so the test now uses a seed where the game is still on and checks that it can be saved.
