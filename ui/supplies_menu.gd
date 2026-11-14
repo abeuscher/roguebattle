@@ -1,9 +1,10 @@
 class_name SuppliesMenu
 extends Control
-## Use item (squad menu), anywhere on the map: a Herb for a hurt unit, a Revival
-## Draught for a fallen one. Cure potions are for battle and don't show here. Also
-## opened from the encounter popup, before a battle starts (`battle` set).
-## A modal: 50% dark overlay.
+## Heal (squad menu; "Use item" until playtest round 13), anywhere on the map: a Herb
+## for a hurt unit, a Revival Draught for a fallen one. Standing in a temple the enemy
+## doesn't hold, the paid healing and reviving is underneath. Cure potions are for
+## battle and don't show here. Also opened from the encounter popup, before a battle
+## starts (`battle` set; supplies only). A modal: 50% dark overlay.
 
 signal closed
 
@@ -33,7 +34,7 @@ func setup(game_state: GameState, s: Squad, before: Battle = null) -> void:
 	col.add_theme_constant_override("separation", 10)
 	col.custom_minimum_size.x = 520
 	panel.add_child(col)
-	col.add_child(UiStyle.title_row(UiStyle.label("Use item  ·  %s" % s.name, 24), func(): closed.emit()))
+	col.add_child(UiStyle.title_row(UiStyle.label("Heal  ·  %s" % s.name, 24), func(): closed.emit()))
 	_list.add_theme_constant_override("separation", 8)
 	col.add_child(_list)
 	_refresh()
@@ -69,6 +70,33 @@ func _refresh() -> void:
 			_list.add_child(row)
 	if not any:
 		_list.add_child(UiStyle.label("No one in %s is hurt or fallen." % squad.name, 15, Color(0.6, 0.62, 0.66)))
+	if battle == null and state.heals_here(squad):
+		_services()
+
+
+## The temple's healing: each hurt or fallen unit, healed or revived to full HP for gold.
+func _services() -> void:
+	_list.add_child(UiStyle.section(state.place_label(state.building_at(squad.hex))))
+	var none := true
+	for u in squad.units:
+		var cost := state.heal_cost(u) + state.revive_cost(u)
+		if cost == 0:
+			continue
+		none = false
+		var row := HBoxContainer.new()
+		var l := UiStyle.label("%s (%s): %s" % [u.name, u.unit_class, "fallen" if not u.is_alive() else "HP %d/%d" % [u.hp, u.max_hp(state.data)]], 16)
+		l.size_flags_horizontal = SIZE_EXPAND_FILL
+		row.add_child(l)
+		var b := UiStyle.button("%s  %d g" % ["Revive" if not u.is_alive() else "Heal to full", cost], 150)
+		b.disabled = cost > state.gold
+		b.tooltip_text = "Not enough gold." if b.disabled else ""
+		b.pressed.connect(func():
+			state.restore(u)
+			_refresh())
+		row.add_child(b)
+		_list.add_child(row)
+	if none:
+		_list.add_child(UiStyle.label("Everyone in %s is in good health." % squad.name, 15, Color(0.6, 0.62, 0.66)))
 
 
 func _unhandled_key_input(event: InputEvent) -> void:

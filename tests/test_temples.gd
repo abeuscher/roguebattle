@@ -146,3 +146,16 @@ func test_first_capture_and_retake_are_told_apart() -> void:
 		st.step()
 	check_eq(_temple(st, 10)["owner"], "player", "ours again")
 	check_eq(str(st.liberations[-1].get("taken", "")), "", "taken back from the enemy: no \"New Temple!\" (and no retake line, user 2026-11-14)")
+
+
+## Playtest round 13: a temple's healing is under the squad menu's Heal, not a shop.
+func test_a_temple_heals_under_heal_not_the_shop() -> void:
+	var st := _state()
+	_temple(st, 10)["owner"] = "player"
+	var s := st.add_squad("Ours", _at(st.map, 10, 4), [["Knight", "front"]])
+	check(st.shop_at(s).is_empty(), "a temple is no shop: the Shop button stays grey")
+	check(st.heals_here(s), "its healing is offered in the Heal window")
+	_temple(st, 10)["owner"] = "enemy"
+	check(not st.heals_here(s), "not in an enemy-held temple")
+	var out := st.add_squad("Out", _at(st.map, 15, 4), [["Knight", "front"]])
+	check(not st.heals_here(out), "nor out in the open")

@@ -7,7 +7,7 @@ extends Control
 ## two squads stay in view at its center.
 
 signal go
-signal use_item
+signal heal  # the Heal window, before the fight
 signal edit
 
 var _odds: Label
@@ -15,7 +15,7 @@ var _battle: Battle
 var _panel: PanelContainer
 
 
-## `supplies`: the army's herbs and revivals, for Use item (user's playtest notes, 2026-11-10).
+## `supplies`: the army's herbs and revivals, for Heal ("Use item(s)" until playtest round 13; user's playtest notes, 2026-11-10).
 func setup(b: Battle, state_supplies: Dictionary) -> void:
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	var shade := ColorRect.new()
@@ -51,11 +51,12 @@ func setup(b: Battle, state_supplies: Dictionary) -> void:
 	var herbs := 0
 	for id in state_supplies:
 		herbs += int(state_supplies[id])
-	var items := UiStyle.button("Use item(s)", 160)
+	var items := UiStyle.button("Heal", 160)
+	items.icon = UiStyle.svg("medical-cross", 22)
 	items.disabled = herbs == 0
 	items.tooltip_text = "Heal or revive units of this squad before the fight." if herbs > 0 else "No supplies: buy herbs at a shop."
 	items.focus_mode = FOCUS_NONE
-	items.pressed.connect(func(): use_item.emit())
+	items.pressed.connect(func(): heal.emit())
 	row.add_child(items)
 	var squad := UiStyle.button("Edit Squad", 160)
 	squad.tooltip_text = "Change the formation before the fight."
@@ -70,6 +71,6 @@ func anchor(name: String) -> Rect2:
 	return _panel.get_global_rect() if name == "panel" else Rect2()
 
 
-## How the enemy looks, again after Use item changed the squad.
+## How the enemy looks, again after Heal changed the squad.
 func refresh() -> void:
 	_odds.text = "%s  ·  they look %s" % [_battle.sides[1].name, _battle.odds.to_lower()]

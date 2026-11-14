@@ -1130,12 +1130,12 @@ func sell_squad(s: Squad) -> bool:
 
 
 ## The shop a squad can use where it stands: a building with a shop that the enemy
-## doesn't hold, or a temple's services. {} if none.
+## doesn't hold. {} if none. (A temple's healing is under Heal, playtest round 13.)
 func shop_at(s: Squad) -> Dictionary:
 	if s.is_moving():
 		return {}
 	var b := building_at(s.hex)
-	if b.is_empty() or b["owner"] == "enemy" or not (b.get("shop", false) or b["type"] == "temple"):
+	if b.is_empty() or b["owner"] == "enemy" or not b.get("shop", false):
 		return {}
 	return b
 
@@ -1463,6 +1463,13 @@ func _leave_map(s: Squad) -> void:
 func at_base(u: Unit) -> bool:
 	var s := army.squad_of(u)
 	return s == null or s not in squads
+
+
+## Whether a squad on the map stands still in a temple the enemy doesn't hold, where its
+## units can be healed and revived for gold (the Heal window, playtest round 13).
+func heals_here(s: Squad) -> bool:
+	var b := building_at(s.hex)
+	return not s.is_moving() and b.get("type", "") == "temple" and b["owner"] != "enemy"
 
 
 ## Healing and revival can be bought at base, or by a squad standing in a temple (§6.5).

@@ -4,7 +4,7 @@ extends Control
 ## pool in a gutter on the right; click a card for the squad detail (front and back rows).
 ## Click any unit, in a squad or the pool, for its detail panel over the screen: stats,
 ## leader, promotion and items, and an About tab for the unit type. Drag units between squads, rows and the
-## pool. The gutter's Items tab lists every item the army owns, worn ones greyed with
+## pool. The gutter's Equipment tab lists every item the army owns, worn ones greyed with
 ## who has them; drag a free item onto a unit or an item slot, and drag a worn one back
 ## to the list to take it off, on any squad wherever it is. A squad out in the field can
 ## be rearranged but takes or gives up units only at the Player Base. The Player Base's services live here too: deploy a squad waiting at
@@ -239,7 +239,7 @@ func _refresh() -> void:
 	else:
 		_main.add_child(_overview())
 	_tabs["recruits"].text = "Recruits (%d)" % army.pool.size()
-	_tabs["items"].text = "Items (%d)" % army.items.size()
+	_tabs["items"].text = "Equipment (%d)" % army.items.size()  # "Items" until playtest round 13
 	for t in _tabs:
 		_tabs[t].set_pressed_no_signal(t == _tab)
 	_pool_tools.visible = _tab == "recruits"
@@ -884,7 +884,7 @@ func _item_picker(u: Unit, slot: String) -> Control:
 	return line
 
 
-## The gutter's Items tab: every item by slot, free ones first.
+## The gutter's Equipment tab: every item by slot, free ones first.
 func _item_list() -> void:
 	var carried := PackedStringArray()
 	for id in data.items["consumables"]:

@@ -7,14 +7,14 @@ extends Control
 ## the items nobody wears and the supplies you carry, for half their base price. Pick
 ## a line and the panel on the right says what it does, who in the squad can use it
 ## and how it compares to what they hold, with a quantity, your gold before and after,
-## and the Buy or Sell button. In a temple, Healing heals or revives the squad. Prices
-## follow reputation and the squad's Smuggler or Fence (§10).
+## and the Buy or Sell button. (A temple's healing is in the squad menu's Heal window,
+## playtest round 13.) Prices follow reputation and the squad's Smuggler or Fence (§10).
 ## A modal: 50% dark overlay.
 
 signal closed
 
 const KIND_COLORS := {"weapon": Color("#8a4a3a"), "armor": Color("#56657a"), "jewelry": Color("#7a4f8a"),
-		"supply": Color("#3f7a4a"), "serf": Color("#8a7346"), "service": Color("#3d6a8a")}
+		"supply": Color("#3f7a4a"), "serf": Color("#8a7346")}
 const MUTED := Color(0.62, 0.65, 0.7)
 const LIST_WIDTH := 540.0
 const DETAIL_WIDTH := 360.0
@@ -22,7 +22,7 @@ const DETAIL_WIDTH := 360.0
 var state: GameState
 var squad: Squad
 var building: Dictionary
-var _tab := ""  # "buy", "sell" or "heal"
+var _tab := "buy"  # "buy" or "sell"
 var _picked := ""  # the key of the line picked (see _lines), kept across refreshes
 var _qty := 1
 var _gold := UiStyle.label("", 18, UiStyle.ACCENT)
@@ -74,7 +74,6 @@ func setup(game_state: GameState, s: Squad, b: Dictionary) -> void:
 	body.add_child(side)
 	_detail.add_theme_constant_override("separation", 10)
 	side.add_child(_detail)
-	_tab = "buy" if b.get("shop", false) else "heal"
 	_refresh()
 
 
@@ -99,8 +98,7 @@ func _keeper() -> Control:
 	var words := VBoxContainer.new()
 	words.add_theme_constant_override("separation", 2)
 	words.size_flags_vertical = SIZE_SHRINK_CENTER
-	var role := "keeper of the temple" if building["type"] == "temple" else "shopkeeper"
-	words.add_child(UiStyle.label("%s, %s" % [k["name"], role], 17, UiStyle.TITLE))
+	words.add_child(UiStyle.label("%s, shopkeeper" % k["name"], 17, UiStyle.TITLE))
 	var says := UiStyle.label("“%s”" % k["greeting"], 16, MUTED)
 	says.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	says.custom_minimum_size.x = LIST_WIDTH + DETAIL_WIDTH - 80
@@ -113,12 +111,7 @@ func _refresh() -> void:
 	_gold.text = "Gold %d" % state.gold
 	for c in _tabs.get_children():
 		c.queue_free()
-	var tabs := []
-	if building["type"] == "temple":
-		tabs.append(["heal", "Healing"])
-	if building.get("shop", false):
-		tabs.append_array([["buy", "Buy"], ["sell", "Sell"]])
-	for t in tabs:
+	for t in [["buy", "Buy"], ["sell", "Sell"]]:
 		_tabs.add_child(_tab_button(t[0], t[1]))
 	for c in _list.get_children():
 		_list.remove_child(c)  # at once, for the same reason as in _show_detail
@@ -161,16 +154,6 @@ func _lines() -> Array:
 	var data := state.data
 	var out := []
 	match _tab:
-		"heal":
-			out.append({"heading": "Healing"})
-			for u in squad.units:
-				var cost := state.heal_cost(u) + state.revive_cost(u)
-				if cost > 0:
-					out.append({"key": "heal:%d" % squad.units.find(u), "kind": "service", "name": "%s %s" % ["Revive" if not u.is_alive() else "Heal", u.name],
-							"info": "%s · HP %d/%d" % [u.unit_class, u.hp, u.max_hp(data)], "price": cost, "max": 1, "unit": u,
-							"act": func(_n: int): state.restore(u)})
-			if out.size() == 1:
-				out.append({"note": "Everyone in %s is in good health." % squad.name})
 		"buy":
 			var stock := state.shop_stock(building)
 			if state.sells_serfs(building):
@@ -303,7 +286,7 @@ func _show_detail(picked: Array) -> void:
 		_detail.remove_child(c)  # at once: kept a frame beside the new one, it stretched the window and cut the list's scroll short
 		c.queue_free()
 	if picked.is_empty():
-		var n := UiStyle.label("Pick something on the left." if _tab != "heal" else "Nothing to do here.", 15, MUTED)
+		var n := UiStyle.label("Pick something on the left.", 15, MUTED)
 		_detail.add_child(n)
 		return
 	var l: Dictionary = picked[0]
@@ -339,7 +322,7 @@ func _show_detail(picked: Array) -> void:
 	var after := state.gold + total if selling else state.gold - total
 	var sums := UiStyle.label("Gold %d  →  %d" % [state.gold, after], 17, UiStyle.ACCENT if after >= 0 else Color("#e0604a"))
 	_detail.add_child(sums)
-	var verb: String = {"buy": "Buy", "sell": "Sell", "heal": "Pay"}[_tab]
+	var verb: String = {"buy": "Buy", "sell": "Sell"}[_tab]
 	var go := UiStyle.button("%s  %d g" % [verb, total], DETAIL_WIDTH - 32, true)
 	go.disabled = most < 1 or (not selling and (total > state.gold or int(l.get("left", 1)) == 0))
 	go.tooltip_text = "Sold out until noon." if int(l.get("left", 1)) == 0 else ("Not enough gold." if go.disabled and not selling else "")
@@ -381,11 +364,9 @@ func _about(l: Dictionary) -> String:
 	match l["kind"]:
 		"serf":
 			return "A Serf to train up: joins the recruit pool at the Player Base, ready for Edit Units."
-		"service":
-			return "%s. Back to full HP." % l["info"]
 		"supply":
 			var c: Dictionary = data.items["consumables"][l["id"]]
-			return "%s Used %s." % [c["text"], "in battle (the Items button)" if c["where"] == "battle" else "anywhere on the map (the squad menu)"]
+			return "%s Used %s." % [c["text"], "in battle (the Items button)" if c["where"] == "battle" else "anywhere on the map (the squad menu's Heal)"]
 	var it: Dictionary = data.items["items"][l["id"]]
 	var who: String = {"melee": "Units with a melee attack can use it.", "archer": "Archers can use it."}.get(it["use"], "Anyone can use it.")
 	return "%s, worn as %s. %s%s" % [_stats_text(it["stats"]), it["slot"], who, "  Very rare: only one on the map." if it.get("rare", false) else ""]

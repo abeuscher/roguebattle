@@ -570,7 +570,7 @@ func _open_menu() -> void:
 		screen.setup(state, s, state.shop_at(s))
 		_open_shop(screen)
 		screen.closed.connect(_back_to_menu.bind(s)))
-	_menu.use_item.connect(func():
+	_menu.heal.connect(func():
 		var s := _selected
 		_end_selection()
 		var screen := SuppliesMenu.new()
@@ -587,7 +587,7 @@ func _open_menu() -> void:
 	_menu.closed.connect(_end_selection)
 
 
-## Leaving the shop, Use item or Edit squad goes back to the squad's menu, as backing out
+## Leaving the shop, Heal or Edit squad goes back to the squad's menu, as backing out
 ## of a move, a ranged attack or a portal does (user, 2026-11-13), if the squad is still
 ## on the map and nothing else has opened meanwhile.
 func _back_to_menu(s: Squad) -> void:
@@ -840,7 +840,7 @@ func _open_encounter() -> void:
 	_encounter.setup(b, state.army.supplies)
 	_fly_to_meeting(b.sides[0], b.sides[1], _encounter)
 	_offer_tip("encounter_open", _encounter)
-	_encounter.use_item.connect(func():  # herbs and revivals before the fight
+	_encounter.heal.connect(func():  # herbs and revivals before the fight
 		var screen := SuppliesMenu.new()
 		_ui.add_child(screen)
 		screen.setup(state, b.sides[0], b)

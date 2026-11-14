@@ -8,7 +8,7 @@ signal fire
 signal return_to_base
 signal edit
 signal shop
-signal use_item
+signal heal  # the Heal window (supplies, and a temple's healing)
 signal view_destination
 signal portal
 signal closed
@@ -76,10 +76,13 @@ func setup(state: GameState, s: Squad) -> void:
 	var herbs := 0
 	for id in state.army.supplies:
 		herbs += int(state.army.supplies[id])
-	_button(actions, "flask-conical", "Use item", herbs > 0, "Give a herb to a hurt unit." if herbs > 0 else "No supplies: buy herbs at a shop.") 			.pressed.connect(func(): use_item.emit())
+	var paid := state.heals_here(s)  # in a temple: healing for gold
+	var heal_tip := "Herbs and Revival Draughts%s." % (", and healing here for gold" if paid else "") if herbs > 0 or paid else "No supplies: buy herbs at a shop, or stand in a temple."
+	var heal_button := _button(actions, "medical-cross", "Heal", herbs > 0 or paid, heal_tip)
+	heal_button.add_theme_color_override("icon_disabled_color", Color(1, 1, 1, 0.35))
+	heal_button.pressed.connect(func(): heal.emit())
 	var place := state.shop_at(s)
-	var shop_name := "Temple services" if place.get("type", "") == "temple" else "Shop"
-	_button(actions, "hand-coins", shop_name, not place.is_empty(), "Buy here." if not place.is_empty() else "Stand still in a building with a shop (not enemy-held) or a temple.") 			.pressed.connect(func(): shop.emit())
+	_button(actions, "hand-coins", "Shop", not place.is_empty(), "Buy here." if not place.is_empty() else "Stand still in a building with a shop (not enemy-held).") 			.pressed.connect(func(): shop.emit())
 	_button(actions, "footprints", "Move", true, "Click hexes to lay rally points.").pressed.connect(func(): move.emit())
 	var here := state.building_at(s.hex)
 	if here.get("type", "") == "temple" and not s.is_moving():  # session 059
