@@ -43,6 +43,7 @@ func test_every_building_you_take_has_a_riff_event() -> void:
 	for type in ["town", "tower", "temple"]:
 		check(d.audio["events"].has("taken_" + type), "taking a %s has its event (played when its window opens)" % type)
 	check(d.audio["events"]["taken_tower"].is_empty(), "a tower plays no riff, just its voice line (user, 2026-11-14)")
+	check_eq(d.audio["events"]["battle_lost"], ["defeat"], "a lost battle: just \"Defeat!\", no riff (user, 2026-11-14)")
 	check(d.audio["events"].has("building_lost"), "and losing one (played when the lost window opens)")
 
 

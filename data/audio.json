@@ -99,7 +99,7 @@
   "click": ["click"],
   "battle_fight": ["fight"],
   "battle_won": ["victory_riff", {"cue": "victory", "after": 0.5}],
-  "battle_lost": ["loss_riff", {"cue": "defeat", "after": 0.5}],
+  "battle_lost": ["defeat"],
   "site_found": ["hidden_location"],
   "site_claimed": ["hidden_item"],
   "taken_town": ["town_riff"],
