@@ -13,13 +13,14 @@ const INK := Color("#1f140a")
 static var _art := {}  # card id -> Texture2D, or null when there's no drawing
 
 
-## A played card leaves the board (playtest round 13): a copy of `tile` (a card made by
-## make) over it in `host` grows and fades out, then is gone. The tile itself can go at
-## once. How large and how long are in cards.json's "played_fade".
+## A card played from the map's cards window leaves (playtest round 13): a copy of
+## `tile` (a card made by make) over it in `host` grows and fades out, then is gone. The
+## tile itself can go at once. How large and how long are in cards.json's "played_fade".
+## (In battle, the card flashed mid-field grows as it fades: BattleView.)
 static func fade_away(host: Control, tile: Control, data: GameData, id: String) -> void:
 	var look: Dictionary = data.cards["played_fade"]
 	var copy := make(data, id)
-	_ignore_mouse(copy)
+	ignore_mouse(copy)
 	copy.z_index = 100
 	host.add_child(copy)
 	copy.size = copy.get_combined_minimum_size()
@@ -31,11 +32,11 @@ static func fade_away(host: Control, tile: Control, data: GameData, id: String) 
 	t.chain().tween_callback(copy.queue_free)
 
 
-static func _ignore_mouse(c: Control) -> void:
+static func ignore_mouse(c: Control) -> void:
 	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for k in c.get_children():
 		if k is Control:
-			_ignore_mouse(k)
+			ignore_mouse(k)
 
 
 ## `scale`: the card larger or smaller than SIZE (the liberation window's is 1.2).

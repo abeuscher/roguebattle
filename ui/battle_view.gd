@@ -372,7 +372,6 @@ func _card_tile(id: String, count: int) -> Control:
 	var play := UiStyle.button("Play", 188, true)
 	var tile := CardFace.make(state.data, id, count, play)
 	play.pressed.connect(func():
-		CardFace.fade_away(self, tile, state.data, id)
 		_close_picker()
 		_now(func(): return state.play_battle_card(battle, id))
 		_update_cards())
@@ -526,14 +525,22 @@ func _play(e: Dictionary, animate: bool) -> float:
 			_add_card(e["target"], battle.side_of(e["target"]))
 			_layout(animate)
 		"card":
-			var l := CardFace.make(state.data, str(e["card"]))  # the card itself, flashed mid-field (round 12)
-			l.mouse_filter = MOUSE_FILTER_IGNORE
-			l.position = (FIELD - CardFace.SIZE) / 2.0
-			_field.add_child(l)
+			# The card itself, flashed mid-field (round 12), then growing as it fades (round
+			# 13; how large in cards.json's "played_fade"). Over the whole view, not in the
+			# field, so the field's edge doesn't cut it off.
+			var l := CardFace.make(state.data, str(e["card"]))
+			CardFace.ignore_mouse(l)
+			l.z_index = 100
+			add_child(l)
+			l.size = l.get_combined_minimum_size()
+			l.global_position = _field.global_position + (FIELD - CardFace.SIZE) / 2.0
+			l.pivot_offset = CardFace.SIZE / 2.0
 			if animate:
-				var t := l.create_tween()
-				t.tween_property(l, "modulate:a", 0.0, beat * 2.0 / _speed_now()).set_delay(beat * 0.6 / _speed_now())
-				t.tween_callback(l.queue_free)
+				var fade := beat * 2.0 / _speed_now()
+				var t := l.create_tween().set_parallel().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+				t.tween_property(l, "modulate:a", 0.0, fade).set_delay(beat * 0.6 / _speed_now())
+				t.tween_property(l, "scale", Vector2.ONE * float(state.data.cards["played_fade"]["scale"]), fade) 						.set_delay(beat * 0.6 / _speed_now())
+				t.chain().tween_callback(l.queue_free)
 			else:
 				l.queue_free()
 			return beat * 1.2

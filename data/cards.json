@@ -1,6 +1,6 @@
 {
  "_note": "Cards (SPEC §13). All strengths are placeholders. where: battle or map. Stat boosts last for the rest of the battle (§11.7). weight: how likely a card is drawn against the others (1 if missing; rare cards less, round 9). Attack cards hit every enemy: damage = power - the target's PDEF (physical) or MDEF (magic), times the element multiplier, with the usual spread, at least 1.",
- "played_fade": {"scale": 5.0, "seconds": 0.8, "_note": "A played card grows to this many times its size as it fades from the board, over this many seconds (playtest round 13)."},
+ "played_fade": {"scale": 5.0, "seconds": 0.8, "_note": "A played card grows to this many times its size as it fades from the board, over this many seconds (playtest round 13). In battle the fade keeps the battle's own pace (and speed); the seconds are for the map's cards window."},
  "art_text_box": {"rect": [0.16, 0.645, 0.84, 0.885], "_note": "Where a card's text goes on its picture (data/card_art/<id>.jpg), as fractions of the picture: left, top, right, bottom. The blank parchment panel under the name banner."},
  "start": 3,
  "choose": {"Seer": 2, "Oracle": 3},
