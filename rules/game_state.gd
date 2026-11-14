@@ -1698,7 +1698,10 @@ func _run_enemy_ai() -> void:
 			_revive_at_enemy_base(s)
 		else:
 			s.revive_at = -1  # the revival clock only runs while the squad stands on a refuge
-			if s.marching_home and (not s.is_moving() or not _is_refuge(s.refuge, s)):  # stopped on the way, or its refuge fell: set off again
+			# Stopped on the way, or its refuge fell: set off again. The Enemy Base is the last
+			# resort, never given up: with your squad on it, the squad keeps coming and fights
+			# there (re-ordering every tick froze it beside the base, user 2026-11-14).
+			if s.marching_home and (not s.is_moving() or (s.refuge != map.enemy_base and not _is_refuge(s.refuge, s))):
 				_fall_back(s)
 			elif not s.marching_home and _fallen(s) > 0 and _fallen(s) >= s.units.size() * float(data.ai["go_home_fallen_share"]):
 				s.marching_home = true

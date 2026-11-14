@@ -77,3 +77,24 @@ func test_losing_heart() -> void:
 	for i in int(cfg["window_ticks"]):
 		st.clock.step()
 	check(not st.is_broken(t), "it recovers once the losses are a day old")
+
+
+## The last stand (user, 2026-11-14): your squad on the Enemy Base, a leaderless guard
+## marching home goes straight at it rather than freezing beside it.
+func test_a_squad_heads_home_even_with_your_squad_on_the_base() -> void:
+	var st := _state()
+	st.map.buildings[1]["owner"] = "neutral"  # no town to fall back to
+	var ours := st.add_squad("Ours", st.map.enemy_base, [["Knight", "front"], ["Fighter", "front"]])
+	ours.capture_wait = 1000000  # (it would take the base and win before they meet)
+	var s := _battered(st, 30)
+	s.role = "base_guard"
+	s.leader.hp = 0
+	s.marching_home = true
+	st.step()
+	var start := Hex.distance(st.map.hex_at(s.hex), st.map.hex_at(st.map.enemy_base))
+	for i in 300:
+		st.step()
+		if st.pending:
+			break
+	check(st.pending != null or Hex.distance(st.map.hex_at(s.hex), st.map.hex_at(st.map.enemy_base)) < start, "it gets closer and meets your squad (from %d hexes)" % start)
+	check(st.pending != null and ours in st.pending.sides and s in st.pending.sides, "a fight at the base")
