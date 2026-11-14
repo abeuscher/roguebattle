@@ -2051,8 +2051,8 @@ func resolve_recruit(try_recruit: bool) -> Dictionary:
 		var result := {"joined": false, "chance": chance}
 		if rng.get_stream("recruit").randf() < chance:
 			result["joined"] = true
-			result["text"] = "The %s join you. %d %s wait in the recruit pool at the base." % [neutral.name, neutral.living().size(),
-					"unit" if neutral.living().size() == 1 else "units"]
+			result["text"] = "The %s join you. %s in the recruit pool at the Player Base, ready to be put into squads in Edit Units." % [
+					neutral.name, _waiting(neutral.living().size())]
 			for u in neutral.living():
 				u.recruited = true
 				u.loyalty = int(data.rules["starting_loyalty"])
@@ -2072,6 +2072,11 @@ func resolve_recruit(try_recruit: bool) -> Dictionary:
 	return {"joined": false, "chance": 0.0, "text": ""}
 
 
+## "Their 3 units wait" / "It waits", for a recruit's result (playtest round 14).
+static func _waiting(n: int) -> String:
+	return "It waits" if n == 1 else "Their %d units wait" % n
+
+
 func _recruit_beaten(player: Squad, neutral: Squad, try_recruit: bool) -> Dictionary:
 	var result := {"joined": false, "chance": 0.0, "text": ""}
 	var home := str(data.terrains[map.terrain[neutral.hex]]["name"]).to_lower()
@@ -2080,8 +2085,8 @@ func _recruit_beaten(player: Squad, neutral: Squad, try_recruit: bool) -> Dictio
 		result["chance"] = recruit_chance(player, neutral.living().size(), neutral.alignment(), large)
 		if rng.get_stream("recruit").randf() < result["chance"]:
 			result["joined"] = true
-			result["text"] = "The %s join you, hurt as they are. %d %s wait in the recruit pool at the base." % [neutral.name,
-					neutral.living().size(), "unit" if neutral.living().size() == 1 else "units"]
+			result["text"] = "The %s join you, hurt as they are. %s in the recruit pool at the Player Base, ready to be put into squads in Edit Units." % [
+					neutral.name, _waiting(neutral.living().size())]
 			for u in neutral.living():
 				u.recruited = true
 				u.loyalty = int(data.rules["starting_loyalty"])

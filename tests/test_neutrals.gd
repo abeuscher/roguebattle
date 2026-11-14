@@ -168,6 +168,7 @@ func test_recruit_success_joins_the_pool() -> void:
 	st.pending_recruit = {"player": p, "neutral": n, "defender": n}
 	var result := st.resolve_recruit(true)
 	check(result["joined"] and String(result["text"]).contains("join"), "the result says they joined")
+	check(String(result["text"]).contains("recruit pool at the Player Base") and String(result["text"]).contains("Edit Units"), "and where they wait (playtest round 14)")
 	check(st.pending_recruit.is_empty() and st.pending == null, "no battle: it joined")
 	check_eq(st.army.pool.size(), before + n.units.size(), "the neutrals join the recruit pool")
 	check_eq(p.leader.charisma, leader_charisma + 3, "the leader gains charisma")
