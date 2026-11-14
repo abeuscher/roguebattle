@@ -45,6 +45,21 @@
   "victory": "end_victory",
   "defeat": "end_defeat"
  },
+ "map_ambience": {
+  "_note": "The map's ambience (docs/map-ambience.md, ROADMAP M5 map ambience): not played by the game yet. By day or night, a phrase from that state's pool (phrases folder, <state>_NN.wav, from tools/map_phrases.py and tools/build_map_audio.py) plays, never the same one twice running, then gap seconds of silence (a random length in the range); rest_chance of the time it sits a phrase out. At dusk and dawn the phrase playing finishes, then that turn plays, then the other state's pool. Under it, ambience/<state>/bed.wav loops (crossfading over bed_fade seconds at the turn) and the folder's other files are one-shots, one every shot_gap seconds, at a random volume in shot_db, pitched up or down by up to shot_pitch and panned up to shot_pan. Volumes are dB offsets on the Music bus (phrases) and Effects bus (ambience). tools/preview_map_audio.py plays these settings into one file, to hear them before the game does.",
+  "phrases": "res://data/audio/music/map/",
+  "turns": {"dusk": "dusk.wav", "dawn": "dawn.wav"},
+  "gap": [20, 50],
+  "rest_chance": 0.15,
+  "phrase_db": -4.0,
+  "ambience": "res://data/audio/ambience/",
+  "bed_db": -10.0,
+  "bed_fade": 8.0,
+  "shot_gap": [6, 25],
+  "shot_db": [-14.0, -6.0],
+  "shot_pitch": 0.08,
+  "shot_pan": 0.7
+ },
  "events": {
   "_note": "new_<type>: after the riff, the first time you take that building; retaken: after the riff, when you take back one the enemy took from you. taken_<type>: you take a town, tower or temple (the enemy taking a neutral one plays nothing); building_lost: the enemy takes one of yours; firework_burst: each burst of the fireworks over a liberated building.",
   "click": ["click"],
