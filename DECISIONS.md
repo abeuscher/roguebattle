@@ -842,6 +842,8 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 
 ## Session 070 (2026-11-13): windows (playtest round 12, session 1)
 
+- **The game's name in UnifrakturMaguntia** (playtest round 13, session 082; Google Fonts, OFL, `ui/fonts/UnifrakturMaguntia-Book.ttf` with its licence) replaces Fleur De Leah, whose files are removed. Still only `UiStyle.game_name()`: the title and Start screens.
+- **Voice lines after the riffs (session 082):** a cue with `"wait": true` in `audio.json` is never dropped from the stinger queue, so New Town/Tower/Temple play right after their 4–7 s riff (the 2 s `max_wait` had dropped them every time). "Give it back!" is gone (user, 2026-11-14), and with it the "retaken" tag on a liberation.
 - **Title font: Cinzel** (Google Fonts, OFL, `ui/fonts/Cinzel.ttf` with `OFL-Cinzel.txt`), carved capitals at weight 650 (a variable font; the weight is set by its OpenType tag, a "wght" string key didn't take). Window titles only; Sen stays the body font and Fleur De Leah the game's name.
 - **One title bar for every window** (`UiStyle.title_row`): the title on its own soft band (white at 4.5%, rounded), in Cinzel and a warm white unless the caller gave it a color, extras (gold, squad markers, tech points) before the close button, a 1 px gold rule under it. Windows that need an answer (battle start, recruit, a card choice, the end screen) pass `Callable()` and get the bar without a close button. The shop, squad menu and Tech window moved their own headers onto it.
 - **Close button** (`UiStyle.close_x`): 34 px square, rounded, a faint fill; lighter with a light border on hover; darker with a gold border and a gold X when pressed; vertically centred in the bar.

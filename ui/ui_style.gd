@@ -185,10 +185,10 @@ static func section(text: String) -> Label:
 	return l
 
 
-## The game's name in the title font (Fleur De Leah, trial pick 2026-11-12), centred.
+## The game's name in the title font (UnifrakturMaguntia, playtest round 13), centred.
 static func game_name(font_size: int) -> Label:
 	var l := label("Rogue Empire", font_size, Color("#f4ead2"))
-	l.add_theme_font_override("font", load("res://ui/fonts/FleurDeLeah-Regular.ttf"))
+	l.add_theme_font_override("font", load("res://ui/fonts/UnifrakturMaguntia-Book.ttf"))
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	return l
 

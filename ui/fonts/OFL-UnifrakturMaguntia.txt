@@ -1,4 +1,5 @@
-Copyright 2008-2021 The Fleur De Leah Project Authors (https://github.com/googlefonts/fleurdeleah)
+Copyright (c) 2010, j. 'mach' wust, with Reserved Font Name UnifrakturMaguntia.
+Copyright (c) 2009, Peter Wiegel.
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:

@@ -2,13 +2,13 @@
 
 importer="font_data_dynamic"
 type="FontFile"
-uid="uid://pjtqgw3nucw2"
-path="res://.godot/imported/FleurDeLeah-Regular.ttf-409738fc7c7cb2d417dc3a7de53efbd7.fontdata"
+uid="uid://kepitvto6esu"
+path="res://.godot/imported/UnifrakturMaguntia-Book.ttf-1b16c7545c17c65ce2ca744b8079848e.fontdata"
 
 [deps]
 
-source_file="res://ui/fonts/FleurDeLeah-Regular.ttf"
-dest_files=["res://.godot/imported/FleurDeLeah-Regular.ttf-409738fc7c7cb2d417dc3a7de53efbd7.fontdata"]
+source_file="res://ui/fonts/UnifrakturMaguntia-Book.ttf"
+dest_files=["res://.godot/imported/UnifrakturMaguntia-Book.ttf-1b16c7545c17c65ce2ca744b8079848e.fontdata"]
 
 [params]
 
