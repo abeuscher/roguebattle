@@ -1057,11 +1057,18 @@ func _open_recruit_popup() -> void:
 	_recruit_popup.setup(state.recruit_class(), state.pending_recruit.get("beaten", false))
 	_fly_to_meeting(state.pending_recruit["player"], state.pending_recruit["neutral"], _recruit_popup)
 	_recruit_popup.recruit.connect(func():
+		var beaten: bool = state.pending_recruit.get("beaten", false)
 		var result := state.resolve_recruit(true)
 		_announced = state.pending  # the result panel already announced any fight (null if none)
 		if result["joined"]:
 			Sound.event("recruit_joined")
-		_recruit_popup.show_result(result["joined"], result["text"]))
+		_recruit_popup.show_result("Recruitment successful!" if result["joined"] else "They refuse", result["text"],
+				"Continue" if result["joined"] or beaten else "To battle"))  # "They join you!" until playtest round 14
+	_recruit_popup.sneak.connect(func():
+		var result := state.sneak_past()
+		_announced = state.pending  # the result panel already announced any fight (null if none)
+		_recruit_popup.show_result("You slip past" if result["sneaked"] else "Spotted!", result["text"],
+				"Continue" if result["sneaked"] else "To battle"))
 	_recruit_popup.done.connect(_close_recruit_popup)
 	_recruit_popup.glossary.connect(func(unit_class: String):  # over the popup, which waits under it
 		var g := UnitGlossary.new()

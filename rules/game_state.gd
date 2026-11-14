@@ -1005,6 +1005,48 @@ func price(base: int, s: Squad = null) -> int:
 	return maxi(1, roundi(base * f * (1.0 + off)))
 
 
+## The chance to sneak past a neutral band (playtest round 14): (your squad's average AGI
+## minus the band's) × per_agi, between min and max (neutrals.json "sneak").
+func sneak_chance(s: Squad, neutral: Squad) -> float:
+	var c: Dictionary = data.neutrals["sneak"]
+	var gap := _average_agi(s) - _average_agi(neutral)
+	return clampf(gap * float(c["per_agi"]), float(c["min"]), float(c["max"]))
+
+
+func _average_agi(s: Squad) -> float:
+	var alive := s.living()
+	if alive.is_empty():
+		return 0.0
+	var total := 0
+	for u in alive:
+		total += u.stat(data, "AGI")
+	return float(total) / alive.size()
+
+
+## Sneak past the band in a pending Recruit-or-Fight choice (playtest round 14). On
+## success the two pass each other and don't meet again for a while; on failure the band
+## spots you and strikes first, as after a refused recruit (beating it still offers the
+## recruit chance). Returns {sneaked, chance, text}, for the popup to show.
+func sneak_past() -> Dictionary:
+	var enc := pending_recruit
+	pending_recruit = {}
+	var player: Squad = enc["player"]
+	var neutral: Squad = enc["neutral"]
+	var chance := sneak_chance(player, neutral)
+	var result := {"sneaked": false, "chance": chance}
+	if rng.get_stream("sneak").randf() < chance:
+		result["sneaked"] = true
+		_contact_until[_pair(player, neutral)] = clock.tick + int(data.neutrals["sneak"]["safe_ticks"])
+		result["text"] = "%s slips past the %s unseen (a %d%% chance)." % [player.name, neutral.name, roundi(chance * 100)]
+		log.add(clock.tick, "map", "%s sneaks past the %s." % [player.name, neutral.name], player.id)
+		return result
+	result["text"] = "The %s spot %s (a %d%% chance to sneak past) and strike first." % [neutral.name, player.name, roundi(chance * 100)]
+	log.add(clock.tick, "map", "The %s spot %s sneaking past." % [neutral.name, player.name], player.id)
+	pending = start_battle(player, neutral, neutral)
+	pending.first_side = 1
+	return result
+
+
 ## A neutral squad's chance to join you (§16): 0.60 × (10 − units)/9 × (1 − alignment
 ## gap/100) × (0.5 + reputation/100). The gap is from your squad's alignment (leader twice).
 func recruit_chance(s: Squad, neutral_units: int, neutral_alignment: float, large := false) -> float:

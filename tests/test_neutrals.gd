@@ -199,3 +199,59 @@ func test_roamer_wanders_within_its_patrol_radius_when_nothing_is_near() -> void
 	for i in 500:
 		st.step()
 		check(Hex.distance(st.map.hex_at(n.hex), st.map.hex_at(lair)) <= radius, "never strays past the patrol radius")
+
+
+## Sneak past (playtest round 14, settled 2026-11-14): (your average AGI - theirs) x 10%,
+## at least 10%, at most 100%.
+func test_sneak_chance_from_the_two_averages() -> void:
+	var st := _state()
+	var p := _squad(st, 5, 4, "player", 2)
+	var n := _squad(st, 6, 4, "neutral")
+	var set_agi := func(s: Squad, values: Array):
+		for i in values.size():
+			s.units[i].stats["AGI"] = values[i] - (s.units[i].stat(d, "AGI") - int(s.units[i].stats["AGI"]))  # so stat() reads the value
+	set_agi.call(p, [14, 18])
+	set_agi.call(n, [12])
+	check(is_equal_approx(st.sneak_chance(p, n), 0.4), "16 against 12: 40%% (%.2f)" % st.sneak_chance(p, n))
+	set_agi.call(n, [30])
+	check(is_equal_approx(st.sneak_chance(p, n), 0.1), "a faster band still leaves 10%")
+	set_agi.call(n, [1])
+	check(is_equal_approx(st.sneak_chance(p, n), 1.0), "much slower: a sure thing, never more")
+
+
+func test_sneaking_past_avoids_the_fight() -> void:
+	var st := _state()
+	var p := _squad(st, 5, 4, "player")
+	var n := _squad(st, 6, 4, "neutral")
+	p.units[0].stats["AGI"] = 99  # a sure thing
+	n.units[0].stats["AGI"] = 1
+	st.pending_recruit = {"player": p, "neutral": n, "defender": n}
+	var result := st.sneak_past()
+	check(result["sneaked"], "slipped past")
+	check(st.pending == null and st.pending_recruit.is_empty(), "no fight, no question")
+	check(n in st.squads, "the band stays on the map")
+	for i in 10:
+		st.step()
+	check(st.pending_recruit.is_empty() and st.pending == null, "and they don't meet again at once, side by side")
+
+
+func test_a_failed_sneak_fights_with_the_band_first_and_still_offers_recruiting() -> void:
+	var st := _state()
+	var p := _squad(st, 5, 4, "player", 3)
+	var n := _squad(st, 6, 4, "neutral")
+	for u in p.units:
+		u.stats["AGI"] = 1
+	n.units[0].stats["AGI"] = 99  # 10%: the floor
+	var spotted := false
+	for i in 40:  # at 10%, find a roll that fails (the recruit stream is seeded)
+		st.pending_recruit = {"player": p, "neutral": n, "defender": n}
+		var result := st.sneak_past()
+		if not result["sneaked"]:
+			spotted = true
+			break
+		st._contact_until.clear()
+	check(spotted, "spotted at some point at 10%")
+	check(st.pending != null and st.pending.first_side == 1, "the band strikes first")
+	st.pending.retreated = 1  # they run: beaten, not wiped out
+	st.resolve_pending()
+	check(st.pending_recruit.get("beaten", false), "beating them still offers the recruit chance")

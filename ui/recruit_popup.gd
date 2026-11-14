@@ -1,12 +1,13 @@
 class_name RecruitPopup
 extends Control
 ## A neutral squad met on the map (SPEC §16): shown the class, not the count, and
-## asked to Recruit or Fight. After Recruit, the same panel shows how it went before
+## asked to Recruit, Sneak past (playtest round 14) or Fight. After Recruit, the same panel shows how it went before
 ## any battle starts. A modal: 50% dark overlay. After a won fight ("beaten", round 9)
 ## it asks once more: Recruit, or Let them go (the fight signal).
 
 signal recruit
 signal fight
+signal sneak  # try to slip past (playtest round 14); only at the first meeting
 signal done  # the result was read
 signal glossary(unit_class: String)  # "What are they?": the class's glossary entry
 
@@ -39,28 +40,35 @@ func setup(class_name_: String, beaten := false) -> void:
 	_col.add_child(_title_row)
 	_col.add_child(UiStyle.link("About the %s" % class_name_, 15, "Their entry in the unit glossary", func(): glossary.emit(class_name_)))
 	var ask := UiStyle.label("Try once more to recruit them? They would join with the HP they have left." if beaten
-			else "Recruit them, or fight?", 14, Color(0.7, 0.72, 0.76))
+			else "Recruit them, sneak past, or fight?", 14, Color(0.7, 0.72, 0.76))
 	ask.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	ask.custom_minimum_size.x = 280
 	_col.add_child(ask)
 	var recruit_button := UiStyle.button("Recruit", 280)
 	recruit_button.pressed.connect(func(): recruit.emit())
 	_col.add_child(recruit_button)
+	if not beaten:
+		var sneak_button := UiStyle.button("Sneak past", 280)
+		sneak_button.tooltip_text = "Slip by unseen: the better your squad's agility against theirs, the likelier.
+Spotted, they strike first."
+		sneak_button.pressed.connect(func(): sneak.emit())
+		_col.add_child(sneak_button)
 	var fight_button := UiStyle.button("Let them go" if beaten else "Fight", 280)
 	fight_button.pressed.connect(func(): fight.emit())
 	_col.add_child(fight_button)
 
 
-## Swaps the question for the outcome, in the same panel.
-func show_result(joined: bool, text: String) -> void:
+## Swaps the question for the outcome, in the same panel: `title` over `text`, and a
+## button that reads `button`.
+func show_result(title: String, text: String, button: String) -> void:
 	for c in _col.get_children():
 		if c != _title_row:
 			c.queue_free()
-	_title.text = "Recruitment successful!" if joined else "They refuse"  # "They join you!" until playtest round 14
+	_title.text = title
 	var body := UiStyle.label(text, 16, Color(0.85, 0.87, 0.9))
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	body.custom_minimum_size.x = 320
 	_col.add_child(body)
-	var ok := UiStyle.button("Continue" if joined or _beaten else "To battle", 280, true)
+	var ok := UiStyle.button(button, 280, true)
 	ok.pressed.connect(func(): done.emit())
 	_col.add_child(ok)
