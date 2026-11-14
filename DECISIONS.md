@@ -882,3 +882,13 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **Settings in data:** `audio.json` `map_ambience` (gaps 20-50 s, rest chance 15%, volumes, shot spacing, pitch and pan), read by `tools/preview_map_audio.py` now and by the game later. The preview of the first drafts sounds music about 41% of the time.
 - **Rendered phrases wait for the user's ear,** as with the rest of the score: the MIDI sources are committed, the WAVs not yet.
 - **Title and victory beds** (user, 2026-11-13: apply the map's approach to the intro and victory music, leave battle and army alone, keep the stingers): each a small pool (about 4 phrases) of the same piano on the day's skeleton, played by the map's phrase player with short gaps and the first phrase at once, since these screens are seen briefly; no ambience bed. The menus play the day pool, settling the question ROADMAP M5 session 10 left open. Not mentioned, so unchanged: the defeat loop. ROADMAP M5 session 11.
+
+## Session 072: the map's phrase player (M5 session 10)
+
+- **Pools are cues** (`audio.json`): `map_day` and `map_night` keep their names (the map and menus ask for them as before) but carry `"pool"` instead of a file; `map_ambience.pools` gives each pool's file prefix, the turn leading into it and its ambience folder. A pool may set its own `gap` (for the title and victory beds, session 11). The old funk loops' WAVs stay in the repo, unplayed, in case they're wanted back; the "sync" (day and night in step) is gone with them.
+- **Phrases are found by listing the folder** (`ResourceLoader.list_directory`, which works in an exported game too), so a new render with a different count needs no data change.
+- **Coming back to the map starts a phrase at once** (after a battle or Edit Units, and from the menus), rather than a gap first; leaving fades the phrase out over the usual 2 s.
+- **A rest** (rest_chance) waits the length of the phrase it skipped, then draws again, as the preview does.
+- **The ambience bed** loops by setting the WAV's loop at runtime (the files come from `prepare_ambience.py` already seamless). One-shots aren't panned yet (`shot_pan`): a plain AudioStreamPlayer has no pan; it can come with the sounds (session 9) if wanted.
+- **The FluidSynth drafts are in** (user, 2026-11-14: "sounds good, plug it in"): the rendered phrases and turns are committed; a better piano can replace them by re-rendering.
+

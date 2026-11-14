@@ -30,9 +30,9 @@ The same roots, two bars each, in both: **D, C, G, D**.
 - **The bell turned:** the day's chapel bell, an octave down with a long tail, struck once at night. The holy sound made sinister, as the music is.
 - **Later, maybe:** sounds tied to map features (birds near forests, water near rivers, bells near temples), so the soundscape changes as the camera moves.
 
-## In the game (not built yet; ROADMAP M5, map ambience)
+## In the game (ROADMAP M5 session 10)
 
-- The `Sound` node plays the map in this mode instead of the `map_day`/`map_night` loops: pick a phrase, play it, wait, repeat; at a turn, finish, play the turn, switch pools. The bed and one-shots run alongside on the Effects bus.
+- The `Sound` node plays the `map_day` and `map_night` cues as pools (`audio.json` `map_ambience.pools`): pick a phrase, play it, wait, repeat; at a turn, finish, play the turn, switch pools. The bed and one-shots run alongside on the Effects bus, once there are sounds in `data/audio/ambience/<day,night>/`. The menus play the day pool. Leaving the map for a battle or Edit Units fades the phrase out; coming back starts a new one.
 - The numbers (gaps, rest chance, volumes, shot spacing, pitch and pan) are `data/audio.json` `map_ambience`.
 - It keeps playing while the game is paused (the map sits paused a lot).
 - Stingers and voice lines still dip the music, as now.

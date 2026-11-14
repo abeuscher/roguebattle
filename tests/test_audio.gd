@@ -51,6 +51,8 @@ func test_every_place_has_music_that_loops() -> void:
 		var cue := Sound.music_for(d.audio, place)
 		check(cues.has(cue), "%s plays %s, a known cue" % [place, cue])
 		check(cues[cue]["bus"] == "Music", "%s is on the Music bus" % cue)
+		if cues[cue].has("pool"):
+			continue  # phrases, not a loop: test_map_phrase_pools
 		var stream := load(cues[cue]["file"]) as AudioStreamWAV
 		check(stream != null and stream.loop_mode == AudioStreamWAV.LOOP_FORWARD, "%s loops" % cue)
 	for t in d.terrains:
@@ -58,10 +60,6 @@ func test_every_place_has_music_that_loops() -> void:
 		check(cues.has(cue) and (load(cues[cue]["file"]) as AudioStreamWAV).loop_mode == AudioStreamWAV.LOOP_FORWARD, "a battle on %s plays %s, a loop" % [t["key"], cue])
 	check_eq(Sound.music_for(d.audio, "battle", "forest"), "battle_forest", "forest has its own")
 	check_eq(Sound.music_for(d.audio, "battle", "deep"), "battle_plains", "anything else borrows plains")
-	var day: Dictionary = cues[Sound.music_for(d.audio, "day")]
-	var night: Dictionary = cues[Sound.music_for(d.audio, "night")]
-	check(day.get("sync", "") != "" and day["sync"] == night.get("sync", ""), "day and night stay in step")
-	check(absf((load(day["file"]) as AudioStreamWAV).get_length() - (load(night["file"]) as AudioStreamWAV).get_length()) < 0.01, "and are the same length")
 
 
 ## Stingers and voice lines take turns (ROADMAP M5 session 5).
@@ -72,3 +70,29 @@ func test_stingers_take_turns() -> void:
 	check_eq(float(d.audio["queue"]["max_wait"]), 2.0, "the wait limit is data")
 	for id in ["new_town", "new_tower", "new_temple", "retaken"]:
 		check(d.audio["events"].has(id), "the %s voice line has its event" % id)
+
+
+func test_map_phrase_pools() -> void:
+	var amb: Dictionary = d.audio["map_ambience"]
+	for place in ["day", "night", "menus"]:
+		var cue: Dictionary = d.audio["cues"][Sound.music_for(d.audio, place)]
+		check(amb["pools"].has(cue.get("pool", "")), "%s plays a phrase pool" % place)
+	for pool in amb["pools"]:
+		var cfg: Dictionary = amb["pools"][pool]
+		var files := Array(ResourceLoader.list_directory(amb["phrases"])).filter(func(f: String): return f.begins_with(cfg["prefix"]) and f.ends_with(".wav"))
+		check(files.size() >= 2, "the %s pool has phrases (%d)" % [pool, files.size()])
+		for f in files:
+			var w := load(amb["phrases"] + f) as AudioStreamWAV
+			check(w != null and w.loop_mode == AudioStreamWAV.LOOP_DISABLED, "%s plays once, not looped" % f)
+		check(ResourceLoader.exists(amb["phrases"] + amb["turns"][cfg["turn_in"]]), "the turn into %s is there" % pool)
+
+
+func test_a_phrase_never_plays_twice_running() -> void:
+	for last in [-1, 0, 4, 9]:
+		var seen := {}
+		for i in 200:
+			var k := Sound.pick_phrase(10, last, i / 200.0)
+			check(k >= 0 and k < 10 and k != last, "pick %d after %d" % [k, last])
+			seen[k] = true
+		check_eq(seen.size(), 10 if last < 0 else 9, "every other phrase can come up")
+	check_eq(Sound.pick_phrase(1, 0, 0.5), 0, "a pool of one plays its one")

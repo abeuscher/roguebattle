@@ -19,7 +19,16 @@ var _dip_tween: Tween
 var music_cue := ""  # what's playing (or fading in)
 var _music_player: AudioStreamPlayer
 var _fade := 2.0
-var _left_at := {}  # sync group -> where its music was when it last faded out
+var amb := {}  # audio.json map_ambience: the phrase pools and the map's environmental sound
+var _pool := ""  # the phrase pool playing, or "" for a plain music cue
+var _pool_gen := 0  # changes with the music, so a pending gap for older music does nothing
+var _pool_files := {}  # pool -> its phrase files
+var _last_phrase := -1
+var _turn_next := false  # the dusk or dawn turn plays when the phrase playing ends
+var _amb_state := ""
+var _amb_gen := 0
+var _bed: AudioStreamPlayer
+var _rng := RandomNumberGenerator.new()  # the sound player's own, apart from the game's seeded streams
 var queue := {}  # audio.json "queue"
 var _queue_free_at := 0.0  # when the last queued stinger or voice line ends (seconds, engine time)
 var _sounding := {}  # cue -> true while it plays or waits its turn
@@ -70,6 +79,8 @@ func _setup(audio: Dictionary, options: Dictionary) -> void:
 	duck = audio.get("duck", {})
 	queue = audio.get("queue", {})
 	_fade = float(audio.get("music", {}).get("fade_seconds", 2.0))
+	amb = audio.get("map_ambience", {})
+	_rng.randomize()
 	for bus in audio.get("buses", []):
 		if AudioServer.get_bus_index(bus) < 0:
 			AudioServer.add_bus()
@@ -151,25 +162,36 @@ func _start(cue: String, c: Dictionary, stream: AudioStream) -> void:
 		_duck()
 
 
-## The old music fades out as the new fades in. A cue with a "sync" group (day and night)
-## starts where that group's music last was: at dawn and dusk the other arrangement takes
-## over in step, and after Edit Units or a battle the map's tune carries on.
+## The old music fades out as the new fades in. A cue with a "pool" plays phrases from
+## that pool instead of one loop (audio.json map_ambience); between two pools that turn
+## (day and night), the phrase playing finishes and the turn plays instead of a crossfade.
 func _music(cue: String) -> void:
 	if cue == music_cue:
 		return
-	var old := _music_player
 	var c: Dictionary = cues.get(cue, {})
-	var left := str(cues.get(music_cue, {}).get("sync", ""))
-	if old and left != "":
-		_left_at[left] = old.get_playback_position()
-	var sync := str(c.get("sync", ""))
-	var from: float = _left_at.get(sync, 0.0) if sync != "" else 0.0
+	var pool := str(c.get("pool", ""))
+	var turn := _pool != "" and pool != "" and _pool_cfg(_pool).has("turn_in") and _pool_cfg(pool).has("turn_in")
 	music_cue = cue
+	_pool = pool
+	_pool_gen += 1
+	_ambience(str(_pool_cfg(pool).get("ambience", "")))
+	if turn:
+		if _music_player and _music_player.playing:
+			_turn_next = true  # when the phrase playing ends
+		else:
+			_turn()
+		return
+	_turn_next = false
+	_last_phrase = -1
+	var old := _music_player
 	_music_player = null
 	if old:
 		var out := old.create_tween()
 		out.tween_property(old, "volume_db", -60.0, _fade)
 		out.tween_callback(old.queue_free)
+	if pool != "":
+		_phrase()
+		return
 	var stream := _stream(str(c.get("file", "")))
 	if stream == null:
 		return
@@ -178,10 +200,158 @@ func _music(cue: String) -> void:
 	p.bus = str(c.get("bus", "Music"))
 	p.volume_db = -60.0 if old else float(c.get("db", 0.0))
 	add_child(p)
-	p.play(from)
+	p.play()
 	if old:
 		p.create_tween().tween_property(p, "volume_db", float(c.get("db", 0.0)), _fade).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	_music_player = p
+
+
+func _pool_cfg(pool: String) -> Dictionary:
+	return amb.get("pools", {}).get(pool, {})
+
+
+## A pool's phrase files: <prefix>NN.wav in the phrases folder, sorted.
+func _phrases(pool: String) -> Array:
+	if not _pool_files.has(pool):
+		var dir := str(amb.get("phrases", ""))
+		var prefix := str(_pool_cfg(pool).get("prefix", pool + "_"))
+		var files := []
+		if DirAccess.dir_exists_absolute(dir):
+			for f in ResourceLoader.list_directory(dir):
+				if f.begins_with(prefix) and f.get_extension() == "wav":
+					files.append(dir + f)
+		files.sort()
+		_pool_files[pool] = files
+	return _pool_files[pool]
+
+
+## The next phrase: any but the last one (pick_phrase); now and then one is sat out.
+func _phrase() -> void:
+	var files := _phrases(_pool)
+	if files.is_empty():
+		return
+	var k := pick_phrase(files.size(), _last_phrase, _rng.randf())
+	var stream := _stream(files[k])
+	if _rng.randf() < float(amb.get("rest_chance", 0.0)):
+		_wait(stream.get_length(), _phrase)
+		return
+	_last_phrase = k
+	_play_phrase(stream)
+
+
+## Plays one phrase or turn on the Music bus; when it ends: the turn if one is due, else
+## a gap of silence, then the next phrase.
+func _play_phrase(stream: AudioStream) -> void:
+	var p := AudioStreamPlayer.new()
+	p.stream = stream
+	p.bus = "Music"
+	p.volume_db = float(amb.get("phrase_db", 0.0))
+	add_child(p)
+	p.finished.connect(func():
+		p.queue_free()
+		if p != _music_player:
+			return  # faded out for other music
+		_music_player = null
+		if _turn_next:
+			_turn()
+		else:
+			_wait(_gap(), _phrase))
+	p.play()
+	_music_player = p
+
+
+## The turn into the pool now playing (dusk into night, dawn into day), then on with it.
+func _turn() -> void:
+	_turn_next = false
+	_last_phrase = -1
+	var stream := _stream(str(amb.get("phrases", "")) + str(amb.get("turns", {}).get(_pool_cfg(_pool).get("turn_in", ""), "")))
+	if stream:
+		_play_phrase(stream)
+	else:
+		_phrase()
+
+
+## A random gap length from the pool's "gap" (or map_ambience's), in seconds.
+func _gap() -> float:
+	var g: Array = _pool_cfg(_pool).get("gap", amb.get("gap", [0, 0]))
+	return _rng.randf_range(float(g[0]), float(g[1]))
+
+
+## Calls `then` after `seconds`, unless the music has changed since (paused or not).
+func _wait(seconds: float, then: Callable) -> void:
+	var gen := _pool_gen
+	get_tree().create_timer(seconds).timeout.connect(func():
+		if gen == _pool_gen:
+			then.call())
+
+
+## Which phrase of `count` plays next for a random `r` in [0, 1): any but `last`.
+static func pick_phrase(count: int, last: int, r: float) -> int:
+	if count <= 1:
+		return 0
+	if last < 0:
+		return mini(int(r * count), count - 1)
+	var k := mini(int(r * (count - 1)), count - 2)
+	return k + 1 if k >= last else k
+
+
+## The map's environmental sound for `state` (day, night; "" for none): its bed loops,
+## crossfading over bed_fade when the state changes, and the other files are one-shots
+## at random spacing, volume, pitch and pan, on the Effects bus.
+func _ambience(state: String) -> void:
+	if state == _amb_state:
+		return
+	_amb_state = state
+	_amb_gen += 1
+	var fade := float(amb.get("bed_fade", 8.0))
+	if _bed:
+		var old := _bed
+		var out := old.create_tween()
+		out.tween_property(old, "volume_db", -60.0, fade)
+		out.tween_callback(old.queue_free)
+		_bed = null
+	if state == "":
+		return
+	var dir := str(amb.get("ambience", "")) + state + "/"
+	var shots := []
+	if DirAccess.dir_exists_absolute(dir):
+		for f in ResourceLoader.list_directory(dir):
+			if f.get_extension() != "wav":
+				continue
+			if f.begins_with("bed") and _bed == null:
+				var bed := _stream(dir + f) as AudioStreamWAV
+				bed.loop_mode = AudioStreamWAV.LOOP_FORWARD
+				bed.loop_begin = 0
+				bed.loop_end = int(bed.get_length() * bed.mix_rate)
+				_bed = AudioStreamPlayer.new()
+				_bed.stream = bed
+				_bed.bus = "Effects"
+				_bed.volume_db = -60.0
+				add_child(_bed)
+				_bed.play()
+				_bed.create_tween().tween_property(_bed, "volume_db", float(amb.get("bed_db", 0.0)), fade)
+			elif not f.begins_with("bed"):
+				shots.append(dir + f)
+	if not shots.is_empty():
+		_shot(shots, _amb_gen)
+
+
+func _shot(shots: Array, gen: int) -> void:
+	var g: Array = amb.get("shot_gap", [6, 25])
+	get_tree().create_timer(_rng.randf_range(float(g[0]), float(g[1]))).timeout.connect(func():
+		if gen != _amb_gen:
+			return
+		var p := AudioStreamPlayer.new()
+		p.stream = _stream(shots[_rng.randi() % shots.size()])
+		p.bus = "Effects"
+		var v: Array = amb.get("shot_db", [-10, -10])
+		p.volume_db = _rng.randf_range(float(v[0]), float(v[1]))
+		var pitch := float(amb.get("shot_pitch", 0.0))
+		p.pitch_scale = 1.0 + _rng.randf_range(-pitch, pitch)
+		add_child(p)
+		p.finished.connect(p.queue_free)
+		p.play()
+		_shot(shots, gen))
 
 
 func _stream(file: String) -> AudioStream:

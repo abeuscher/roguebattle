@@ -4,8 +4,8 @@
  "duck": {"db": -9, "seconds": 2.0, "_note": "Music dips this much while a stinger or voice line plays, for about this long, then comes back."},
  "queue": {"max_wait": 2.0, "_note": "Cues that duck the music (stingers and voice lines) take turns: one starts when the last ends; one that would wait longer than max_wait seconds is dropped. No cue plays over itself. Clicks and fireworks aren't queued."},
  "cues": {
-  "map_day": {"file": "res://data/audio/music/map_day.wav", "bus": "Music", "sync": "map"},
-  "map_night": {"file": "res://data/audio/music/map_night.wav", "bus": "Music", "sync": "map"},
+  "map_day": {"file": "", "pool": "day", "bus": "Music", "_note": "Phrases from map_ambience's day pool, not one loop."},
+  "map_night": {"file": "", "pool": "night", "bus": "Music"},
   "army": {"file": "res://data/audio/music/army.wav", "bus": "Music"},
   "battle_plains": {"file": "res://data/audio/music/battle_plains.wav", "bus": "Music"},
   "battle_forest": {"file": "res://data/audio/music/battle_forest.wav", "bus": "Music"},
@@ -34,7 +34,7 @@
   "firework": {"file": "res://data/audio/effects/firework.wav", "bus": "Effects", "db": -6.0, "_note": "One burst: a pop or crackle. Plays with each of the fireworks show's 5 bursts (0.35 s apart), separate from the building's riff."}
  },
  "music": {
-  "_note": "Which music plays where. Music cues crossfade over fade_seconds; cues with the same sync (day and night, same tempo and length) pick up where the other was, so dawn and dusk change the arrangement, not the place in the tune. The title screen plays intro_music; the other menus play the day theme, so it carries on into a map that starts by day. battle: by the battle hex's terrain, anything not listed plays _default.",
+  "_note": "Which music plays where. Music cues crossfade over fade_seconds; a cue with a pool plays phrases (map_ambience), and day and night turn into each other instead (the phrase finishes, then the dusk or dawn turn). The title screen plays intro_music; the other menus play the day pool, so it carries on into a map that starts by day. battle: by the battle hex's terrain, anything not listed plays _default.",
   "fade_seconds": 2.0,
   "title": "intro_music",
   "menus": "map_day",
@@ -46,9 +46,10 @@
   "defeat": "end_defeat"
  },
  "map_ambience": {
-  "_note": "The map's ambience (docs/map-ambience.md, ROADMAP M5 map ambience): not played by the game yet. By day or night, a phrase from that state's pool (phrases folder, <state>_NN.wav, from tools/map_phrases.py and tools/build_map_audio.py) plays, never the same one twice running, then gap seconds of silence (a random length in the range); rest_chance of the time it sits a phrase out. At dusk and dawn the phrase playing finishes, then that turn plays, then the other state's pool. Under it, ambience/<state>/bed.wav loops (crossfading over bed_fade seconds at the turn) and the folder's other files are one-shots, one every shot_gap seconds, at a random volume in shot_db, pitched up or down by up to shot_pitch and panned up to shot_pan. Volumes are dB offsets on the Music bus (phrases) and Effects bus (ambience). tools/preview_map_audio.py plays these settings into one file, to hear them before the game does.",
+  "_note": "The map's ambience (docs/map-ambience.md, ROADMAP M5 map ambience), played by Sound for the cues with a pool (map_day, map_night). pools: each one's files (<prefix>NN.wav), the turn that leads into it, and its ambience folder; a pool may set its own gap. By day or night, a phrase from that state's pool (phrases folder, <state>_NN.wav, from tools/map_phrases.py and tools/build_map_audio.py) plays, never the same one twice running, then gap seconds of silence (a random length in the range); rest_chance of the time it sits a phrase out. At dusk and dawn the phrase playing finishes, then that turn plays, then the other state's pool. Under it, ambience/<state>/bed.wav loops (crossfading over bed_fade seconds at the turn) and the folder's other files are one-shots, one every shot_gap seconds, at a random volume in shot_db, pitched up or down by up to shot_pitch and panned up to shot_pan. Volumes are dB offsets on the Music bus (phrases) and Effects bus (ambience). tools/preview_map_audio.py plays these settings into one file, to hear them before the game does.",
   "phrases": "res://data/audio/music/map/",
   "turns": {"dusk": "dusk.wav", "dawn": "dawn.wav"},
+  "pools": {"day": {"prefix": "day_", "turn_in": "dawn", "ambience": "day"}, "night": {"prefix": "night_", "turn_in": "dusk", "ambience": "night"}},
   "gap": [20, 50],
   "rest_chance": 0.15,
   "phrase_db": -4.0,
