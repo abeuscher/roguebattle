@@ -14,6 +14,7 @@ signal cards_pressed
 signal tech_pressed
 signal speed_chosen(index: int)  # -1 to pause
 signal place_pressed(hex: int)  # a place named in the banner was clicked
+signal notes_pressed  # the book beside the gold: the notifications log
 
 const GOLD := Color("#f2c94c")
 const DAY := Color("#f6e7a8")
@@ -31,6 +32,7 @@ var _clock_panel := PanelContainer.new()  # under the minimap, at its width
 var _speed := Label.new()  # shown only while a menu holds the game
 var _speed_pick := OptionButton.new()  # Paused, then the game speeds; Space, PgUp and PgDn change it too
 var _money_panel := PanelContainer.new()
+var _book_panel := PanelContainer.new()  # the notifications log's book, in its own space left of the gold
 var _gold := Label.new()
 var _reputation := ProgressBar.new()
 var _drawer := Panel.new()  # not a container, so the rows (full width) never widen it: its width is the slide
@@ -100,6 +102,16 @@ func _ready() -> void:
 
 ## Top right: a coin and the gold, then the reputation meter between a sad and a happy face.
 func _build_money() -> void:
+	_book_panel.add_theme_stylebox_override("panel", _glass(4))
+	add_child(_book_panel)
+	var book := Button.new()
+	book.flat = true
+	book.focus_mode = FOCUS_NONE
+	book.icon = UiStyle.svg("book-open", 22, GOLD)
+	book.tooltip_text = "Notifications (N)"
+	book.mouse_default_cursor_shape = CURSOR_POINTING_HAND
+	book.pressed.connect(func(): notes_pressed.emit())
+	_book_panel.add_child(book)
 	_money_panel.add_theme_stylebox_override("panel", _glass(10))
 	add_child(_money_panel)
 	var row := HBoxContainer.new()
@@ -375,6 +387,7 @@ func refresh(state: GameState) -> void:
 		_gold.text = money
 		_money_panel.reset_size()
 		_money_panel.position.x = size.x - _money_panel.size.x - 16
+		_place_book()
 	_gold.add_theme_color_override("font_color", Color("#ff6b5a") if state.in_debt() else GOLD)
 	for b in _drawer_rows.get_children():
 		var s: Squad = b.get_meta("squad")
@@ -418,9 +431,17 @@ func anchor(name: String) -> Rect2:
 	return _deploy_button.get_global_rect() if name == "deploy_button" else Rect2()
 
 
+## The book sits just left of the gold, as tall as its panel.
+func _place_book() -> void:
+	_book_panel.reset_size()
+	_book_panel.size = Vector2(_money_panel.size.y, _money_panel.size.y)
+	_book_panel.position = Vector2(_money_panel.position.x - _book_panel.size.x - 8, _money_panel.position.y)
+
+
 func place() -> void:
 	_money_panel.reset_size()
 	_money_panel.position = Vector2(size.x - _money_panel.size.x - 16, 16)
+	_place_book()
 	_drawer_col.reset_size()
 	_drawer.size.y = _drawer_col.size.y + 12
 	_drawer.position = Vector2(0, (size.y - _drawer.size.y) / 2.0)

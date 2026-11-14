@@ -18,7 +18,7 @@ static var dir := "user://saves/"  # tests point this elsewhere
 const STATE_FIELDS := ["settings", "gold", "reputation", "enemy_start_squads", "_warbands", "revealed", "_contact_until",
 		"noon_report", "ledger", "cards", "next_card", "card_offer", "tech", "tech_points", "debt_noons",
 		"enemy_squads_defeated", "debug_reveal", "debug_freeze_ai", "debug_force", "debug_fairness", "intel",
-		"_towns_held_since", "_rare_declined"]
+		"_towns_held_since", "_rare_declined", "notes"]
 # Squad fields that hold objects, handled by hand.
 const SQUAD_REFS := ["units", "leader", "follow", "bonded_pairs", "tech", "bond_battles"]
 
@@ -271,6 +271,8 @@ static func from_dict(data: GameData, d: Dictionary, game_log: GameLog) -> Varia
 	state._rare_units = _map_values(d["rare_units"], func(i: int): return units[i])
 	# Everything else.
 	for f in STATE_FIELDS:
+		if not d["state"].has(f):
+			continue  # a save from before the field existed (the notifications log): keep the new game's value
 		var v = d["state"][f]
 		var cur = state.get(f)
 		if cur is Array:

@@ -31,6 +31,7 @@ var hud := Hud.new()
 var night := CanvasModulate.new()
 var _ui := CanvasLayer.new()
 var _log_panel: LogPanel
+var _notes_log: NotesLog
 var _debug_panel: DebugPanel
 var _recruit_popup: RecruitPopup
 var _rare_popup: RareRecruitPopup
@@ -126,6 +127,9 @@ func _setup(game_data: GameData, game_log: GameLog, game_config: GameConfig) -> 
 			_select(found[0]))
 	hud.speed_chosen.connect(_on_speed_chosen)
 	hud.place_pressed.connect(func(hex: int): camera.center_on(MapView.hex_center(state.map, hex)))
+	hud.notes_pressed.connect(func():
+		if _free():
+			_open_notes())
 	hud.edit_pressed.connect(func():
 		if _free():
 			_open_edit())
@@ -199,8 +203,11 @@ func _process(delta: float) -> void:
 	if not state.notices.is_empty():
 		var news := "  ·  ".join(state.notices)
 		hud.show_banner_links(news, 4.0, _place_links(news))
+		for n in state.notices:
+			_note(n)
 		state.notices.clear()
 	if not state.daily_ledger.is_empty() and _free():
+		_note(state.noon_report)
 		if bool(options.get("show_daily_ledger", true)):
 			_open_ledger(state.daily_ledger)
 		else:
@@ -221,6 +228,34 @@ func _process(delta: float) -> void:
 
 
 ## Named places mentioned in a message, name -> hex, for links in the banner.
+## Shows a notice in the banner (its place names as links) and records it in the
+## notifications log.
+func _notify(text: String, seconds: float) -> void:
+	hud.show_banner_links(text, seconds, _place_links(text))
+	_note(text)
+
+
+## Records a notice in the notifications log, stamped with the game's day and time.
+func _note(text: String) -> void:
+	if text != "":
+		state.notes.append({"when": state.clock.time_text(), "text": text, "links": _place_links(text)})
+
+
+func _open_notes() -> void:
+	_notes_log = NotesLog.new()
+	_ui.add_child(_notes_log)
+	_notes_log.setup(state.notes)
+	_notes_log.closed.connect(_close_notes)
+	_notes_log.place_pressed.connect(func(hex: int):  # a place named in an entry: close, and show it
+		_close_notes()
+		camera.center_on(MapView.hex_center(state.map, hex)))
+
+
+func _close_notes() -> void:
+	_notes_log.queue_free()
+	_notes_log = null
+
+
 func _place_links(text: String) -> Dictionary:
 	var out := {}
 	for b in state.map.buildings:
@@ -239,7 +274,7 @@ static func darkness(minute: int) -> float:
 
 
 func _update_help() -> void:
-	var text := _info + "\nClick a squad to give orders  ·  1-9: find squad  ·  F8: test squad's travel type  ·  Space: pause  ·  PgUp/PgDn: speed  ·  L: log  ·  Esc: menu" \
+	var text := _info + "\nClick a squad to give orders  ·  1-9: find squad  ·  F8: test squad's travel type  ·  Space: pause  ·  PgUp/PgDn: speed  ·  L: log  ·  N: notifications  ·  Esc: menu" \
 			+ "\nWheel: zoom  ·  Drag: pan  ·  F: fit  ·  H: hidden sites and lairs  ·  G: grid  ·  O: overlay (%s)" % MapOverlay.NAMES[view.overlay]
 	var legend := MapOverlay.legend(view.overlay, state.map)
 	if legend != "":
@@ -599,7 +634,7 @@ func _step_through(s: Squad, hex: int, from: String) -> void:
 	_end_selection()
 	_sync_tokens()
 	camera.fly_to(MapView.hex_center(state.map, hex), 0.15, 0.6)
-	hud.show_banner("%s steps through the portal from %s to %s." % [s.name, from, state.where(hex)], 4.0)
+	_notify("%s steps through the portal from %s to %s." % [s.name, from, state.where(hex)], 4.0)
 
 
 func _clear_glow() -> void:
@@ -875,7 +910,7 @@ func _spring_open(view: Control, a: Squad, b: Squad) -> void:
 func _close_battle(text: String) -> void:
 	_battle.queue_free()
 	_battle = null
-	hud.show_banner(text, 5.0)
+	_notify(text, 5.0)
 	_sync_tokens()
 
 
@@ -1237,7 +1272,7 @@ func _on_speed_chosen(index: int) -> void:
 ## No menu, popup or dialog is open (a squad order may be under way: its menu, or laying
 ## a route or picking a target, which take map clicks).
 func _can_open() -> bool:
-	return not (_flying_to_fight or _log_panel or _debug_panel or _menu or _main_menu or _battle or _encounter or _rare_popup or _edit or _deploy_menu or _confirm or _building_popup or _enemy_popup \
+	return not (_flying_to_fight or _log_panel or _notes_log or _debug_panel or _menu or _main_menu or _battle or _encounter or _rare_popup or _edit or _deploy_menu or _confirm or _building_popup or _enemy_popup \
 			or _shop or _recruit_popup or _liberation_popup or _end_screen or _chooser or _ledger or _lost_popup)
 
 
@@ -1325,6 +1360,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			state.set_speed_index(state.clock.speed_index - 1)
 		KEY_L:
 			_open_log()
+		KEY_N:
+			_open_notes()
 		KEY_U:
 			_open_edit()
 		KEY_D:

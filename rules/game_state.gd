@@ -30,6 +30,7 @@ var _contact_until := {}  # "player id:enemy id" -> tick before which the pair w
 var _moved := {}  # squads that entered a new hex this tick
 var _building_at := {}  # hex -> index in map.buildings
 var notices: Array[String] = []  # short news for the HUD banner, oldest first (a squad of yours stopped)
+var notes := []  # the notifications log: every notice shown, oldest first ({when, text, links}); the map screen fills it
 var noon_report := ""  # the last noon's ledger in one line, for the HUD banner
 var ledger: Array = []  # [what, gold +/-] for every gold change since the last noon
 var daily_ledger := {}  # set at noon for the UI to show once: {day, lines: [[what, amount]], gold, debt_noons, defeat_noons}

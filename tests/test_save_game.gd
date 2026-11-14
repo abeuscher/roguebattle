@@ -143,3 +143,18 @@ func test_not_mid_battle() -> void:
 	st.pending = st.start_battle(ours, foe, foe)
 	check(SaveGame.blocker(st) != "", "no saving with a battle waiting")
 	check(SaveGame.write(1, st, g[1]) != "", "write refuses too")
+
+
+## The notifications log (playtest round 13) is saved with the game; a save from before
+## it existed loads with an empty one.
+func test_the_notifications_log_is_saved() -> void:
+	var g := _game()
+	var st: GameState = g[0]
+	st.notes.append({"when": "Day 1 · 09:00", "text": "Ashford is liberated!", "links": {"Ashford": 12}})
+	var saved := SaveGame.to_dict(st, g[1])
+	var back: GameState = SaveGame.from_dict(d, saved, GameLog.new())["state"]
+	check_eq(back.notes.size(), 1, "the entry comes back")
+	check_eq(str(back.notes[0]["text"]), "Ashford is liberated!", "as it was")
+	saved["state"].erase("notes")
+	var old: GameState = SaveGame.from_dict(d, saved, GameLog.new())["state"]
+	check(old.notes.is_empty(), "an older save loads with an empty log")
