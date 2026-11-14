@@ -58,6 +58,27 @@ func test_rows_and_positions_within_a_squad() -> void:
 	check_eq(s.units.size(), 3, "nobody is lost")
 
 
+
+## Any unit can change rows inside its squad (playtest round 13): moving the leader, or
+## swapping with it, keeps it the leader, so the squad keeps the slots it earned.
+func test_the_leader_changes_rows_and_stays_leader() -> void:
+	var a := _army([["Knight", "front"], ["Knight", "front"], ["Fighter", "front"], ["Bowman", "back"], ["Bowman", "back"]])
+	var s: Squad = a.cells[0]
+	var lead := s.leader
+	var other: Unit = s.units[1]
+	other.level = lead.level + 3  # a likelier leader by rank, but not the one leading
+	lead.extra_slots = 1
+	check(a.move(_unit("Acolyte"), 0, "back"), "the slot the leader earned holds a sixth unit")
+	check(a.move(lead, 0, "back", 3), "the leader moves to the back row")
+	check(s.leader == lead and lead.row == "back", "and still leads")
+	check(a.move(lead, 0, "front", 1), "it swaps with a squadmate in front")
+	check(s.leader == lead and lead.row == "front", "and still leads")
+	check(a.move(other, 0, "back", 0), "another unit swaps onto a back-row spot")
+	check(a.move(s.at("front", 2), 0, "front", 1), "a squadmate swaps onto the leader's spot")
+	check(s.leader == lead, "the leader is still the leader")
+	check_eq(s.units.size(), 6, "nobody is lost")
+
+
 func test_new_squad_and_leaders() -> void:
 	var a := _army([["Knight", "front"], ["Fighter", "front"], ["Soldier", "front"]], ["Lancer"])
 	var s: Squad = a.cells[0]

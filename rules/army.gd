@@ -41,7 +41,8 @@ func squad_of(u: Unit) -> Squad:
 ## cell forms a new squad. Returns false, changing nothing (and setting `refusal`), if a
 ## squad would go over its slots ("slots") or be left with units but no one who can lead
 ## ("leader"): a new squad starts with a leader, and the last one can't walk out on the
-## rest (user's notes, 2026-11-10).
+## rest (user's notes, 2026-11-10). Moving inside one squad keeps its leader (and the
+## slots the leader earned), whoever moves.
 func move(u: Unit, cell: int, to_row := "front", to_col := -1) -> bool:
 	refusal = ""
 	var from := squad_of(u)
@@ -58,11 +59,15 @@ func move(u: Unit, cell: int, to_row := "front", to_col := -1) -> bool:
 	var snap := _snapshot([from, to], [u, other])
 	var old_row := u.row
 	var old_col := u.col
+	var leader: Unit = from.leader if from and from == to else null  # a change of rows keeps the leader
 	_take(from, u)
 	if other:
 		_take(to, other)
 		_put(from, other, old_row, old_col)
 	_put(to, u, to_row, to_col if to_col >= 0 or to == null else _free_col(to, to_row))
+	if leader:
+		to.leader = leader
+		to.refresh(data)
 	for s in [from, to]:
 		if s and not _fits(s):
 			_restore(snap)
