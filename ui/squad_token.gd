@@ -13,11 +13,13 @@ const PLAYER := Color("#3b6fd6")
 const DISC := Color("#1b2433")
 const RADIUS := 17.0  # the ring of a leaderless squad
 const ICON_PX := 128  # rasterized larger than drawn so it stays sharp when the map zooms in
-const FIGURE := 54.0  # the leader's icon, drawn this many map pixels square
-const BASE := {"Tiny": 12.0, "Small": 15.0, "Large": 22.0}  # the shadow's half-width, by the leader's size
-const DROP := 3.0  # the drop shadow: down and right this far,
+const FIGURE := 65.0  # the leader's icon, drawn this many map pixels square (54 until playtest 2026-11-14: 20% larger)
+const BASE := {"Tiny": 14.0, "Small": 18.0, "Large": 26.0}  # the shadow's half-width, by the leader's size
+const EDGE := 1.2  # a faint dark edge round the figure, this wide, so it stands off the ground,
+const EDGE_SHADE := 0.45  # this dark
+const DROP := 3.5  # the drop shadow: down and right this far,
 const BLUR := 1.5  # this soft (8 faint copies in a ring this wide),
-const SHADE := 0.2  # each copy this dark (they overlap, so its core is darker)
+const SHADE := 0.24  # each copy this dark (they overlap, so its core is darker)
 
 var squad: Squad
 var data: GameData  # for the leader's size
@@ -81,6 +83,8 @@ func _standing(icon: Texture2D, lift: float, label: String, font: Font) -> void:
 	for k in 8:
 		var off := Vector2.ONE * DROP + Vector2.from_angle(TAU * k / 8.0) * BLUR
 		draw_texture_rect(icon, Rect2(at.position + off, at.size), false, Color(0, 0, 0, SHADE))
+	for k in 8:  # the dark edge: the silhouette nudged a little every way, under the figure
+		draw_texture_rect(icon, Rect2(at.position + Vector2.from_angle(TAU * k / 8.0) * EDGE, at.size), false, Color(0, 0, 0, EDGE_SHADE))
 	draw_texture_rect(icon, at, false)
 	_tag(feet + Vector2(base * 0.95, 2), label, font)
 
