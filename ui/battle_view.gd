@@ -370,11 +370,13 @@ func _choose_card() -> void:
 ## One card face (CardFace) with a Play button.
 func _card_tile(id: String, count: int) -> Control:
 	var play := UiStyle.button("Play", 188, true)
+	var tile := CardFace.make(state.data, id, count, play)
 	play.pressed.connect(func():
+		CardFace.fade_away(self, tile, state.data, id)
 		_close_picker()
 		_now(func(): return state.play_battle_card(battle, id))
 		_update_cards())
-	return CardFace.make(state.data, id, count, play)
+	return tile
 
 
 func _close_picker() -> void:

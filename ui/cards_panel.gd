@@ -86,7 +86,7 @@ func _refresh() -> void:
 		var on_map: bool = cards[id]["where"] == "map" and not view_only
 		_row(id, "Play" if on_map else "In battle", on_map, func():
 			state.play_map_card(id)
-			_refresh(), counts[id])
+			_refresh(), counts[id], on_map)
 	_fit()
 
 
@@ -106,7 +106,8 @@ func _fit() -> void:
 
 ## One card face (CardFace) with its button, or a blank space the button's height
 ## for a card that can't be played here.
-func _row(id: String, button: String, enabled: bool, action: Callable, count := 1) -> void:
+## `played`: the card grows and fades away as it's played.
+func _row(id: String, button: String, enabled: bool, action: Callable, count := 1, played := false) -> void:
 	var b := UiStyle.button(button, 188, true)
 	if not enabled:
 		var gap := Control.new()
@@ -114,8 +115,11 @@ func _row(id: String, button: String, enabled: bool, action: Callable, count := 
 		b.free()
 		_tiles.append(CardFace.make(state.data, id, count, gap))
 	else:
+		var tile := CardFace.make(state.data, id, count, b)
+		if played:
+			b.pressed.connect(func(): CardFace.fade_away(self, tile, state.data, id))
 		b.pressed.connect(action)
-		_tiles.append(CardFace.make(state.data, id, count, b))
+		_tiles.append(tile)
 	_list.add_child(_tiles[-1])
 
 

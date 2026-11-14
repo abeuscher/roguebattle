@@ -13,6 +13,31 @@ const INK := Color("#1f140a")
 static var _art := {}  # card id -> Texture2D, or null when there's no drawing
 
 
+## A played card leaves the board (playtest round 13): a copy of `tile` (a card made by
+## make) over it in `host` grows and fades out, then is gone. The tile itself can go at
+## once. How large and how long are in cards.json's "played_fade".
+static func fade_away(host: Control, tile: Control, data: GameData, id: String) -> void:
+	var look: Dictionary = data.cards["played_fade"]
+	var copy := make(data, id)
+	_ignore_mouse(copy)
+	copy.z_index = 100
+	host.add_child(copy)
+	copy.size = copy.get_combined_minimum_size()
+	copy.global_position = tile.global_position
+	copy.pivot_offset = copy.size / 2
+	var t := copy.create_tween().set_parallel().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	t.tween_property(copy, "scale", Vector2.ONE * float(look["scale"]), float(look["seconds"]))
+	t.tween_property(copy, "modulate:a", 0.0, float(look["seconds"]))
+	t.chain().tween_callback(copy.queue_free)
+
+
+static func _ignore_mouse(c: Control) -> void:
+	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for k in c.get_children():
+		if k is Control:
+			_ignore_mouse(k)
+
+
 ## `scale`: the card larger or smaller than SIZE (the liberation window's is 1.2).
 static func make(data: GameData, id: String, count := 1, button: Control = null, scale := 1.0) -> Control:
 	var path := ART_DIR + id + ".jpg"
