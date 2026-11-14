@@ -140,7 +140,7 @@ func _refresh() -> void:
 			_list.add_child(n)
 		else:
 			_list.add_child(_line(l))
-	_show_detail(lines.filter(func(l): return l.get("key", "") == _picked))
+	_show_detail(lines.filter(func(l): return l.has("key") and l["key"] == _picked))  # headings and notes have no key: nothing picked when there are no goods
 
 
 func _tab_button(id: String, text: String) -> Button:
