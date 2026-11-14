@@ -37,6 +37,16 @@ The same roots, two bars each, in both: **D, C, G, D**.
 - It keeps playing while the game is paused (the map sits paused a lot).
 - Stingers and voice lines still dip the music, as now.
 
+## The title and victory beds
+
+Added 2026-11-13 (user): the title screen and the end-of-map victory screen move to the same piano. The battle themes, the army theme, the defeat loop and the stingers stay as they are for now (the stingers should stand out more against the piano).
+
+- **Each a small pool** of about 4 phrases on the day's skeleton (D C G D), the motif opening rising in each; victory broader and fuller than the title.
+- **Short gaps** (a few seconds) and the first phrase at once: these screens are seen briefly, so long silences would greet the player with nothing.
+- **No ambience bed:** that stays the map's.
+- **The menus** play the day pool, so it carries on into a map that starts by day.
+- Rendered with the day's piano and room; played by the same player as the map (ROADMAP M5 session 11).
+
 ## The tools
 
 Each runs on its own; `tools/build_map_audio.py` strings them together.
