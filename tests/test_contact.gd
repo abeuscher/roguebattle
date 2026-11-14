@@ -190,6 +190,26 @@ func test_capture_waits_after_a_battle() -> void:
 	check(t.capture_ticks > before, "then goes on")
 
 
+## User, 2026-11-14: the pause is the enemy's only. Your squad that wins on a town goes
+## straight on liberating it.
+func test_your_capture_goes_on_after_a_battle() -> void:
+	var st := _state()
+	var town := {"type": "town", "hex": _at(st.map, 15, 4), "shop": false, "hint": false, "hidden": false, "kind": "", "road": false, "owner": "enemy", "away": false}
+	st.map.buildings.append(town)
+	st._building_at[town["hex"]] = st.map.buildings.size() - 1
+	var o := _ours(st, 15)
+	for i in 10:
+		st.step()
+	var before := o.capture_ticks
+	check(before > 0.0, "your squad starts liberating the town")
+	var t := _theirs(st, 25)  # far away: a fight set up by hand
+	st.pending = st.start_battle(o, t, t)
+	st.resolve_pending()
+	st.squads.erase(t)
+	st.step()
+	check(o.capture_ticks > before, "and goes on at once after the battle")
+
+
 func test_friendly_squads_share_hexes() -> void:
 	var st := _state()
 	var a := _ours(st, 5)

@@ -2117,8 +2117,9 @@ func resolve_pending() -> Dictionary:
 	var out := end_battle(b)
 	if not b.ranged_only:
 		_contact_until[key] = clock.tick + int(data.enemy["contact_cooldown_ticks"])
-		for s in b.sides:
-			s.capture_wait = clock.tick + int(data.rules["capture"]["after_battle_ticks"])
+		for s in b.sides:  # the enemy waits before taking a town after a fight; you don't (user, 2026-11-13/14)
+			if s.side == "enemy":
+				s.capture_wait = clock.tick + int(data.rules["capture"]["after_battle_ticks"])
 	out["text"] = battle_summary(b, out)
 	return out
 
