@@ -6,6 +6,9 @@ extends Control
 
 signal closed
 
+const CARD_SCALE := 1.2  # the drawn card, larger than elsewhere (playtest round 13)
+const GROW := 1.15  # the window this much bigger than its contents need, so more of its picture shows
+
 var state: GameState
 var _offering := false
 var _panel: PanelContainer
@@ -60,7 +63,7 @@ func setup(game_state: GameState, building: Dictionary, drawn_card: String, opti
 		_temple(left, building)
 	elif drawn_card != "":
 		left.add_child(UiStyle.section("You draw"))
-		var face := CardFace.make(state.data, drawn_card)
+		var face := CardFace.make(state.data, drawn_card, 1, null, CARD_SCALE)
 		face.size_flags_horizontal = SIZE_SHRINK_BEGIN if not recruits.is_empty() else SIZE_SHRINK_CENTER
 		left.add_child(face)
 	elif _offering:
@@ -74,8 +77,6 @@ func setup(game_state: GameState, building: Dictionary, drawn_card: String, opti
 				state.choose_card(id)
 				closed.emit())
 			row.add_child(CardFace.make(state.data, id, 1, take))
-	if rewards:
-		_hand(left, recruits.is_empty())
 	if not recruits.is_empty():  # single map mode's conscription
 		var right := VBoxContainer.new()
 		right.add_theme_constant_override("separation", 10)
@@ -86,8 +87,24 @@ func setup(game_state: GameState, building: Dictionary, drawn_card: String, opti
 		right.add_child(UiStyle.label("They join the recruit pool at the Player Base.", 14, Color(0.7, 0.72, 0.76)))
 		for u in recruits:
 			right.add_child(_conscript(u))
+	var gap := Control.new()  # the extra room (GROW) goes here, keeping the bottom row at the bottom
+	gap.size_flags_vertical = SIZE_EXPAND_FILL
+	col.add_child(gap)
+	var bottom := HBoxContainer.new()
+	col.add_child(bottom)
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = SIZE_EXPAND_FILL
 	if not _offering:
-		col.add_child(UiStyle.dont_show_again(options, "show_liberations"))
+		bottom.add_child(UiStyle.dont_show_again(options, "show_liberations"))
+	bottom.add_child(spacer)
+	if rewards:
+		bottom.add_child(_hand())
+	_grow.call_deferred()
+
+
+## Once laid out, the window grows by GROW (playtest round 13).
+func _grow() -> void:
+	_panel.custom_minimum_size = _panel.size * GROW
 
 
 ## Where a player tip points (PlayerTips): the window itself.
@@ -123,16 +140,21 @@ func _conscript(u: Unit) -> Control:
 
 
 ## "View all cards": the hand as card faces (the Cards window, view-only) over this one.
-func _hand(col: VBoxContainer, centered := false) -> void:
-	var view := UiStyle.button("View all cards (%d)" % state.cards.size(), CardFace.SIZE.x)
-	view.size_flags_horizontal = SIZE_SHRINK_CENTER if centered else SIZE_SHRINK_BEGIN
+## View all cards: a hand of cards with the count, at the bottom right (playtest round 13).
+func _hand() -> Button:
+	var view := UiStyle.button(str(state.cards.size()), 92)
+	view.icon = UiStyle.svg("cards-fan", 34, UiStyle.ACCENT)
+	view.custom_minimum_size.y = 50
+	view.focus_mode = FOCUS_NONE
+	view.tooltip_text = "View all cards (%d)" % state.cards.size()
+	view.mouse_default_cursor_shape = CURSOR_POINTING_HAND
 	view.disabled = state.cards.is_empty()
-	col.add_child(view)
 	view.pressed.connect(func():
 		var hand := CardsPanel.new()
 		add_child(hand)
 		hand.setup(state, false, true)
 		hand.closed.connect(hand.queue_free))
+	return view
 
 
 func _unhandled_key_input(event: InputEvent) -> void:

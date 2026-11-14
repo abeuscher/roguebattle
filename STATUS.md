@@ -151,6 +151,7 @@ Where the project stands, for picking up in a new session or on another machine.
 - **Session 077:** every map has at least 2 towns and 2 shops, one in a town. Next: Playtest round 13 item 6 (the notifications log).
 - **Session 078:** the notifications log: a book left of the gold (or N) opens a ledger of every notice, with links to places; saved with the game. Next: Playtest round 13 item 7 (unit glossary).
 - **Session 079:** the unit glossary (every class's entry from the data; from a neutral band's dialog and a unit's details). Next: Playtest round 13 item 8 (liberation window: cards icon, bigger card and windows).
+- **Session 080:** liberation window: the drawn card 20% larger, View all cards as a hand-of-cards button at the bottom right, the windows 15% bigger. Next: Playtest round 13 item 9 (played cards grow as they fade).
 - **Next (agreed 2026-11-14):** 1) ~~M5 session 11~~ (done, session 073). 2) M5 session 9, map ambience sounds: the user collects them into `data/audio/ambience_src/<day,night>/`; Claude prepares, levels, lists sources and licences, adds pan if wanted. 3) M5 session 6, battle sounds, once the user supplies them. 4) M5 session 7, variant takes. Between audio steps: tips that lead a Quick start player to the Garrison's town and the first battle, then the rest of "Playtest round 13" in `ROADMAP.md`. More window pictures like the liberation ones when the user names the windows. On hold: unit card art (the user's image pipeline), the "Give it back!" line.
 - **M4 sessions 15–20 planned (playtest round 7, 2026-11-10)** in `ROADMAP.md`: battle and rules fixes (cards truly at once, enemy makeup after a fight, items equippable anywhere, fewer neutrals, arrival log line); map generation (100% land, reef-like shallows around islands); HUD layout (clock under the minimap, gold coin, reputation meter, squad drawer, smaller rounded toolbar with icons); squad status icons and flag-free tokens with destination flags; debug panel overhaul; save game (3 slots, prompt to save on quit). The user's answers are in the ROADMAP rows.
 - **M4 milestone check: the first real playtest**, after session 33.
@@ -163,7 +164,7 @@ Where the project stands, for picking up in a new session or on another machine.
 
 ## How the user works
 
-- **One git branch per session,** named `session-NNN` (next: `session-080`), cut from `main`.
+- **One git branch per session,** named `session-NNN` (next: `session-081`), cut from `main`.
 - **Commit locally only:**
   - Never push or merge; the user merges and pushes, then says "continue".
   - Commit messages end with a `Co-Authored-By:` line naming whatever Claude model is doing the session (the harness's own attribution instructions say exactly what to write).

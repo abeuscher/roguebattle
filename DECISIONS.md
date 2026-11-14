@@ -941,3 +941,9 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **One window for all classes** (a searchable A–Z list beside the entry), since "may become part of a wider help system": an entry is reached from where the unit is, and every other class is a click away. "Open on presentation" read as: the layout was the user's to see first.
 - **Entry points:** "About the <class>" under the neutral band dialog's title (Recruit or Fight, and the beaten band's second ask), and "<class> in the glossary" in a unit's details header in Edit Units. It opens over them; closing it returns to them. The Edit Units "About" tab stays as it is (art space for the user's portraits later).
 - **"Begin game."** (user, 2026-11-14) is the notifications log's first line, stamped when the player first starts time on a new map, so the log is never empty. Once per game: a loaded game that has it doesn't add another; an older save without it gets it when play resumes.
+
+## Session 080: the liberation window (playtest round 13, item 8)
+
+- **The drawn card is 1.2× size** (`CardFace.make` takes a scale; its text grows with it). The cards on offer from a Seer or Oracle stay at their usual size, since there are two or three side by side.
+- **View all cards is a button at the bottom right,** opposite "Do not show this window again": a hand of three fanned cards with the count beside it, the tooltip naming it. Lucide has no hand-of-cards icon, so `ui/icons/cards-fan.svg` is drawn for the game in Lucide's line style. With a card choice up (no checkbox) it still sits at the bottom right; temples have no cards, so no button.
+- **The window is 15% bigger than its contents need** (both ways, worked out once it's laid out), the extra room above the bottom row, so more of the building's picture shows around the card and conscripts. The temple's grows the same way (about 370×225 to 425×260).

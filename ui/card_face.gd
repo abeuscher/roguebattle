@@ -13,7 +13,8 @@ const INK := Color("#1f140a")
 static var _art := {}  # card id -> Texture2D, or null when there's no drawing
 
 
-static func make(data: GameData, id: String, count := 1, button: Control = null) -> Control:
+## `scale`: the card larger or smaller than SIZE (the liberation window's is 1.2).
+static func make(data: GameData, id: String, count := 1, button: Control = null, scale := 1.0) -> Control:
 	var path := ART_DIR + id + ".jpg"
 	if not ResourceLoader.exists(path):
 		return _stand_in(data, id, count, button)
@@ -25,7 +26,7 @@ static func make(data: GameData, id: String, count := 1, button: Control = null)
 	pic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	pic.stretch_mode = TextureRect.STRETCH_SCALE
 	pic.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS  # smooth at a quarter of its size
-	pic.custom_minimum_size = SIZE
+	pic.custom_minimum_size = SIZE * scale
 	pic.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	tile.add_child(pic)
 	var box: Array = data.cards["art_text_box"]["rect"]
@@ -39,7 +40,7 @@ static func make(data: GameData, id: String, count := 1, button: Control = null)
 	back.anchor_right = box[2] + 0.03
 	back.anchor_bottom = box[3]
 	pic.add_child(back)
-	var text := UiStyle.label(c["text"], 14, INK)
+	var text := UiStyle.label(c["text"], roundi(14 * scale), INK)
 	text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -57,10 +58,10 @@ static func make(data: GameData, id: String, count := 1, button: Control = null)
 		look.set_corner_radius_all(8)
 		badge.add_theme_stylebox_override("panel", look)
 		badge.add_child(UiStyle.label("×%d" % count, 18, UiStyle.ACCENT))
-		badge.position = Vector2(SIZE.x - 50, 6)
+		badge.position = Vector2(SIZE.x * scale - 50, 6)
 		pic.add_child(badge)
 	if button:
-		button.custom_minimum_size.x = SIZE.x - 22
+		button.custom_minimum_size.x = SIZE.x * scale - 22
 		button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		tile.add_child(button)
 	return tile
