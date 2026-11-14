@@ -1101,11 +1101,8 @@ func _pump_liberations() -> void:
 		return
 	var entry: Dictionary = state.liberations.pop_front()
 	Sound.event("taken_" + str(entry["building"]["type"]))  # the riff goes with the window (or its banner), one at a time
-	match str(entry.get("taken", "")):  # then "New Town!" or "Give it back!" (queued after the riff)
-		"new":
-			Sound.event("new_" + str(entry["building"]["type"]))
-		"retaken":
-			Sound.event("retaken")
+	if entry.get("taken", "") == "new":  # then "New Town!" (or Tower, Temple), after the riff
+		Sound.event("new_" + str(entry["building"]["type"]))
 	var offering: bool = entry["card"] == "" and not state.card_offer.is_empty()
 	if bool(options.get("show_liberations", true)) or offering:
 		_open_liberation_popup(entry)

@@ -128,7 +128,7 @@ func test_catch_up_xp() -> void:
 
 
 ## Each building remembers whether it was ever yours (ROADMAP M5 session 5): the first
-## capture says "New Temple!", taking it back from the enemy says "Give it back!".
+## capture says "New Temple!", taking it back from the enemy says nothing.
 func test_first_capture_and_retake_are_told_apart() -> void:
 	var st := _state()
 	var ours := st.add_squad("Ours", _at(st.map, 10, 4), [["Knight", "front"]])
@@ -145,4 +145,4 @@ func test_first_capture_and_retake_are_told_apart() -> void:
 	for i in int(d.rules["capture"]["ticks"]) + 1:
 		st.step()
 	check_eq(_temple(st, 10)["owner"], "player", "ours again")
-	check_eq(str(st.liberations[-1].get("taken", "")), "retaken", "taken back from the enemy: retaken")
+	check_eq(str(st.liberations[-1].get("taken", "")), "", "taken back from the enemy: no \"New Temple!\" (and no retake line, user 2026-11-14)")

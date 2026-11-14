@@ -308,9 +308,9 @@ func _capture() -> void:
 			s.capture_ticks = 0.0
 			var was: String = b["owner"]
 			b["owner"] = s.side
-			# Each building remembers whether it was ever yours: the UI says "New Town!" the
-			# first time you take one, "Give it back!" when you retake one the enemy took.
-			var taken := "retaken" if b.get("was_yours", false) and was == "enemy" else "" if b.get("was_yours", false) else "new"
+			# Each building remembers whether it was ever yours: "New Town!" plays only the
+			# first time you take one.
+			var taken := "" if b.get("was_yours", false) else "new"
 			if s.side == "player":
 				b["was_yours"] = true
 			var what: String = data.buildings[b["type"]]["name"].to_lower()
@@ -379,7 +379,7 @@ func place_label(b: Dictionary) -> String:
 ## Standing changes for a liberation (§9.5, §9.6, §10): reputation by the squad's
 ## alignment, +5 charisma for a leader whose alignment matches the building, and each
 ## unit's alignment +3 for a town or −3 for a tower. Queues it for the UI (`liberations`;
-## the caller adds "taken": "new", "retaken" or "", for the voice line),
+## the caller adds "taken": "new" or "", for the voice line),
 ## with the card drawn if it went straight into the hand (empty if there was none, or if
 ## it's a Seer/Oracle offer instead, left for the UI to read from `card_offer`).
 func _liberated(s: Squad, b: Dictionary) -> void:

@@ -192,6 +192,7 @@ The core goal is met: Ogre Battle's squad play in a roguelike setting. Playteste
 | 11 | **Single unit view as a character sheet:** D&D-like, its two top buttons become tabs, RPG styling throughout (the user can bring examples) | §5 | Screenshots of each tab | |
 | 12 | **Squad menu: Heal, not Use item** (user, 2026-11-14; whenever it slots in easily). "Item" also means weapons and armor, so the squad menu's Use item becomes **Heal**, its icon a red medical cross. On a temple, the temple's heal and revive show in the same window beside the herbs and revival draughts (under them is fine for now). The encounter dialog's Use item(s) becomes Heal too, to match (user, 2026-11-14) | §5, §15 | Screenshots: the menu's and the encounter dialog's Heal buttons; the Heal window in the open and on a temple | |
 | 13 | **"Items" tab becomes "Equipment"** (user, 2026-11-14; with row 12): the tab next to Recruits in Edit Units and Edit Squad | §5, §8 | Screenshot | |
+| 14 | **Voice lines after the riffs; no "Give it back!"** (user, 2026-11-14). "New Town!", "New Tower!" and "New Temple!" were recorded and wired, but never heard: the sound queue drops a line that would wait more than 2 s, and every building riff runs 4–7 s. They wait their turn now and play right after their building's riff. "Give it back!" is dropped from the plan (no line on a retake) | §24 | Tests: the lines wait out a long riff; no retake line. Run the game: a liberation plays its riff, then the line | |
 
 ## Playtest round 14 (user's notes, 2026-11-14)
 

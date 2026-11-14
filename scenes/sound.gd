@@ -119,7 +119,8 @@ func _event(id: String) -> void:
 
 ## Plays a cue now, or, for one that ducks the music (a stinger or voice line), when the
 ## last of those ends: they take turns, and one that would wait more than the queue's
-## max_wait is dropped. A cue already playing or waiting doesn't play again over itself.
+## max_wait is dropped (unless the cue has "wait": a voice line that follows a long riff).
+## A cue already playing or waiting doesn't play again over itself.
 func play(cue: String) -> void:
 	var c: Dictionary = cues.get(cue, {})
 	var stream := _stream(str(c.get("file", "")))
@@ -129,7 +130,7 @@ func play(cue: String) -> void:
 		_start(cue, c, stream)
 		return
 	var now := Time.get_ticks_msec() / 1000.0
-	var at := queue_slot(now, _queue_free_at, float(queue.get("max_wait", 2.0)))
+	var at := queue_slot(now, _queue_free_at, INF if c.get("wait", false) else float(queue.get("max_wait", 2.0)))
 	if at < 0.0:
 		return
 	_queue_free_at = at + stream.get_length()
