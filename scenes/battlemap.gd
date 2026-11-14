@@ -1061,6 +1061,11 @@ func _open_recruit_popup() -> void:
 			Sound.event("recruit_joined")
 		_recruit_popup.show_result(result["joined"], result["text"]))
 	_recruit_popup.done.connect(_close_recruit_popup)
+	_recruit_popup.glossary.connect(func(unit_class: String):  # over the popup, which waits under it
+		var g := UnitGlossary.new()
+		_ui.add_child(g)
+		g.setup(data, unit_class)
+		g.closed.connect(g.queue_free))
 	_recruit_popup.fight.connect(func():
 		state.resolve_recruit(false)
 		_announced = state.pending  # the recruit popup already announced this fight

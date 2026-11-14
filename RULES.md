@@ -242,6 +242,11 @@ Sound is coming in (ROADMAP M5). In so far:
 - **Recruiting:** a recruit attempt that succeeds, or a rare recruit joining, will have a short welcoming sound (a harp and two horn notes).
 - **Music:** the title screen plays a few soft piano phrases with short pauses between; the other menus play the map's day music, and it carries on into the map. On the map the music is sparse piano phrases with silence between them, never the same phrase twice running: a brighter set by day, a darker, lower one by night. At 18:00 the phrase playing finishes and a short dusk turn leads into the night set; at 06:00 a dawn turn leads back. It keeps playing while the game is paused. Edit Units has a march; a battle has a fast battle theme whose instruments change with the battle hexs terrain (plains, forest, mountain and snow, swamp and desert); a won map's end screen has broader, fuller piano phrases in the same way, a lost one a defeat tune. Each change crossfades over 2 seconds, and after Edit Units or a battle the map music starts a new phrase. Music dips while a fanfare, riff or voice line plays. (These are first drafts; the tunes may change.)
 
+## Unit glossary
+
+- What every unit class is and does, in one window: a searchable list of all the classes on the left, and the chosen one's entry on the right. An entry gives its role, stage, size and alignment lean, its description (where the unit sheet has one), its attacks in each row with what the terms mean (row, pierce, chain, heal...), what makes it strongest, its traits explained, whether it can lead and its aura as leader, its home terrain, speed and slots, and the promotion lines it belongs to.
+- Open it from a neutral band's Recruit or Fight dialog ("About the Rat Pack") or from a unit's details in Edit Units ("Cleric in the glossary"); it opens at that class. X, Esc or a click outside closes it, back to where you were.
+
 ## Player tips
 
 - The first time you reach certain parts of the game, a small tip appears beside the part of the screen it's about, with an arrow and an outline pointing at it. You can carry on using the screen while it's up. **Got it** (or Esc, or the X) dismisses it for good. Untick **Show player tips** on any tip, or in Options, to turn them all off.

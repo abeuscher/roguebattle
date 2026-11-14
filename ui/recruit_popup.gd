@@ -8,6 +8,7 @@ extends Control
 signal recruit
 signal fight
 signal done  # the result was read
+signal glossary(unit_class: String)  # "What are they?": the class's glossary entry
 
 var _col := VBoxContainer.new()
 var _title: Label
@@ -34,6 +35,7 @@ func setup(class_name_: String, beaten := false) -> void:
 	panel.add_child(_col)
 	_title = UiStyle.label(("The %s band is beaten" if beaten else "A band of %s") % class_name_, 22)
 	_col.add_child(UiStyle.title_row(_title, Callable()))
+	_col.add_child(UiStyle.link("About the %s" % class_name_, 15, "Their entry in the unit glossary", func(): glossary.emit(class_name_)))
 	var ask := UiStyle.label("Try once more to recruit them? They would join with the HP they have left." if beaten
 			else "Recruit them, or fight?", 14, Color(0.7, 0.72, 0.76))
 	ask.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

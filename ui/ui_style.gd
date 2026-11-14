@@ -81,6 +81,22 @@ static func dont_show_again(options: Dictionary, id: String, text := "Do not sho
 ## buttons at the bottom). `tip` names the key that also closes it.
 ## The close button (playtest round 12): a 34 px square with its own soft background,
 ## lighter on hover, darker and gold when pressed, so it reads as a button.
+## An underlined text link in the accent color.
+static func link(text: String, px: int, tip: String, action: Callable) -> LinkButton:
+	var l := LinkButton.new()
+	l.text = text
+	l.underline = LinkButton.UNDERLINE_MODE_ALWAYS
+	l.add_theme_font_size_override("font_size", px)
+	for c in ["font_color", "font_focus_color", "font_pressed_color"]:
+		l.add_theme_color_override(c, ACCENT)
+	l.add_theme_color_override("font_hover_color", Color.WHITE)
+	l.focus_mode = Control.FOCUS_NONE
+	l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	l.tooltip_text = tip
+	l.pressed.connect(action)
+	return l
+
+
 static func close_x(action: Callable, tip := "Close (Esc)") -> Button:
 	var x := Button.new()
 	x.icon = svg("x", 20)

@@ -33,6 +33,7 @@ var _cell := -1
 var _unit: Unit  # shown in the unit detail panel, or null
 var _unit_tab := "overview"  # the panel's tab: "overview" or "about"
 var _modal: Control  # the unit detail panel while open
+var _glossary: UnitGlossary  # the unit glossary, over the unit detail panel
 var _title := UiStyle.label("Edit Units", 26)
 var _main := VBoxContainer.new()
 var _pool := VBoxContainer.new()
@@ -440,6 +441,7 @@ func _show_unit() -> void:
 	var sub := UiStyle.label("%s  ·  %s" % [u.unit_class, where], 18, Color(0.75, 0.78, 0.82))
 	sub.size_flags_horizontal = SIZE_EXPAND_FILL
 	head.add_child(sub)
+	head.add_child(UiStyle.link("%s in the glossary" % u.unit_class, 17, "What the %s is and does" % u.unit_class, _open_glossary.bind(u.unit_class)))
 	head.add_child(UiStyle.close_x(_close_unit))
 	var tabs := HBoxContainer.new()
 	tabs.add_theme_constant_override("separation", 6)
@@ -476,6 +478,15 @@ func _page_unit(step: int) -> void:
 	var order := _reading_order(sq)
 	_unit = order[posmod(order.find(_unit) + step, order.size())]
 	_refresh()
+
+
+func _open_glossary(unit_class: String) -> void:
+	_glossary = UnitGlossary.new()
+	add_child(_glossary)
+	_glossary.setup(data, unit_class)
+	_glossary.closed.connect(func():
+		_glossary.queue_free()
+		_glossary = null)
 
 
 func _close_unit() -> void:
