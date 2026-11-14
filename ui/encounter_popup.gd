@@ -51,9 +51,21 @@ func setup(b: Battle, state_supplies: Dictionary) -> void:
 	var herbs := 0
 	for id in state_supplies:
 		herbs += int(state_supplies[id])
-	var items := UiStyle.button("Heal", 160)
-	items.icon = UiStyle.svg("medical-cross", 22)
+	var items := UiStyle.button("", 160)
 	items.disabled = herbs == 0
+	# The red cross beside the word, the two centred together (a Button's own icon sits at its left edge).
+	var face := HBoxContainer.new()
+	face.add_theme_constant_override("separation", 8)
+	face.alignment = BoxContainer.ALIGNMENT_CENTER
+	face.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	face.mouse_filter = MOUSE_FILTER_IGNORE
+	var cross := TextureRect.new()
+	cross.texture = UiStyle.svg("medical-cross", 22)
+	cross.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+	face.add_child(cross)
+	face.add_child(UiStyle.label("Heal", 18, Color.WHITE))
+	face.modulate.a = 0.45 if items.disabled else 1.0
+	items.add_child(face)
 	items.tooltip_text = "Heal or revive units of this squad before the fight." if herbs > 0 else "No supplies: buy herbs at a shop."
 	items.focus_mode = FOCUS_NONE
 	items.pressed.connect(func(): heal.emit())
