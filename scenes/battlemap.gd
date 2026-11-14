@@ -310,6 +310,7 @@ func _sync_tokens() -> void:
 		if not _tokens.has(s.id):
 			var token := SquadToken.new()
 			token.squad = s
+			token.data = data
 			if s.side != "player":
 				token.color = ENEMY
 			token.scale = _token_scale()  # new tokens match the current zoom

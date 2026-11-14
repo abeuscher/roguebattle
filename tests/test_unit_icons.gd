@@ -1,5 +1,6 @@
 extends TestCase
-## Icons from tools/unit_icons.py: one per class, built from the sheet's Icon columns.
+## Unit icons (the user's set, 2026-11-14): one per class in data/unit_icons/svg, drawn by
+## tools/unit_icons_humans.py and tools/unit_icons_creatures.py from the sheet's Icon columns.
 
 var d := GameData.load_dir()
 
@@ -9,7 +10,7 @@ func test_every_class_has_an_icon() -> void:
 		var u: Dictionary = d.units[name]
 		check(u.get("icon_base") is String and u["icon_base"] != "", "%s: no Icon base in the sheet" % name)
 		check(FileAccess.file_exists(UnitIcons.DIR + UnitIcons.file_name(name) + ".svg"),
-				"%s: no icon file (run python tools/unit_icons.py)" % name)
+				"%s: no icon file (tools/unit_icons_humans.py or unit_icons_creatures.py)" % name)
 
 
 func test_icons_rasterize_at_the_asked_size() -> void:
@@ -33,20 +34,24 @@ func test_later_stages_keep_earlier_symbols() -> void:
 						check_eq(u.get(key), before.get(key), "line %s: %s %s" % [line_id, c, key])
 
 
-func test_card_colors_swap() -> void:
-	var light := UnitIcons.texture("Soldier", 32).get_image()
-	var dark := UnitIcons.on_card("Soldier", 32, Color("#5a2626")).get_image()
-	# Just inside the frame, beside the body, is paper: parchment by default, the card color on a card.
-	check_eq(light.get_pixel(4, 16).to_html(false), UnitIcons.PAPER.substr(1), "light icon paper")
-	check_eq(dark.get_pixel(4, 16).to_html(false), "5a2626", "card icon paper")
+func test_icons_are_see_through_round_the_figure() -> void:
+	var img := UnitIcons.texture("Soldier", 64).get_image()
+	check(img.get_pixel(1, 1).a < 0.05, "a corner is see-through")
+	check(img.get_used_rect().size.y > 40, "the figure is there")
 	check_eq(UnitIcons.file_name("Standard-Bearer"), "standard_bearer", "file name")
 
 
-func test_token_icon_has_no_frame() -> void:
-	# On the frame's left edge: the alignment color with the frame, see-through without it.
-	var framed := UnitIcons.texture("Black Dragon", 64).get_image()
-	var token := UnitIcons.on_token("Black Dragon", 64, Color("#1b2433")).get_image()
-	check(framed.get_pixel(2, 32).a > 0.9, "framed icon has its frame")
-	check(token.get_pixel(2, 32).a < 0.1, "token icon has no frame")
-	check(framed.get_pixel(6, 50).a > 0.5, "framed Large icon has its inner frame")
-	check(token.get_pixel(6, 50).a < 0.1, "token icon has no Large inner frame")
+func test_trimmed_icons_fill_their_square() -> void:
+	# Small places (the drawer, compact chips) draw the figure without its margin.
+	for name in ["Serf", "Rat", "Black Dragon"]:
+		var full := UnitIcons.texture(name, 32).get_image().get_used_rect().size
+		var trim := UnitIcons.texture(name, 32, true).get_image().get_used_rect().size
+		check(maxi(trim.x, trim.y) >= 30, "%s: the trimmed figure fills the square (%s)" % [name, trim])
+		check(maxi(trim.x, trim.y) > maxi(full.x, full.y), "%s: larger than in the full icon" % name)
+
+
+func test_feet_are_found() -> void:
+	# The token stands each figure on its shadow by its feet, wherever they are across the art.
+	for name in ["Serf", "Knight", "Wolf", "Rat"]:
+		var x := UnitIcons.feet_x(name)
+		check(x > 0.2 and x < 0.9, "%s: feet at %.2f across" % [name, x])

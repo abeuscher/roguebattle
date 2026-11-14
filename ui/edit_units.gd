@@ -813,7 +813,7 @@ func _promotion(u: Unit, locked: bool) -> Control:
 	box.add_child(row)
 	for c in options:
 		var b := _small("Promote to %s" % c, false, true)
-		b.icon = UnitIcons.texture(c, 28)
+		b.icon = UnitIcons.texture(c, 28, true)
 		b.disabled = locked or not state.at_base(u)
 		b.tooltip_text = "Promote at the Player Base." if b.disabled else _promotion_tip(u, c)
 		b.pressed.connect(func():
@@ -829,7 +829,7 @@ func _class_tag(c: String) -> Control:
 	var tag := HBoxContainer.new()
 	tag.add_theme_constant_override("separation", 6)
 	var pic := TextureRect.new()
-	pic.texture = UnitIcons.texture(c, 32)
+	pic.texture = UnitIcons.texture(c, 32, true)
 	tag.add_child(pic)
 	var text := UiStyle.label(c, 15)
 	text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -1188,12 +1188,11 @@ class Chip extends Control:
 		var ink := Color.WHITE if not dead else Color(0.5, 0.5, 0.52)
 		var share := float(unit.hp) / max_hp
 		var fill := Color("#5fbf5a") if share > 0.5 else (Color("#e0b03a") if share > 0.25 else Color("#d9533f"))
-		var paper := color.darkened(0.55) if not dead else Color(0.12, 0.12, 0.13)
 		# The class icon leads (DECISIONS session 042); the class name is in the tooltip and, on
 		# the larger chips, still written out.
 		match mode:
 			"menu":
-				_icon(Vector2(6, 6), 36, paper, dead)
+				_icon(Vector2(6, 6), 36, dead)
 				draw_string(font, Vector2(48, 20), "Lv %d" % unit.level, HORIZONTAL_ALIGNMENT_LEFT, size.x - (66 if leader else 52), 12, ink.darkened(0.25))
 				if leader:
 					_star(Vector2(size.x - 12, 14), 7.0)
@@ -1201,7 +1200,7 @@ class Chip extends Control:
 				draw_rect(Rect2(8, size.y - 12, size.x - 16, 5), Color(0.05, 0.05, 0.06))
 				draw_rect(Rect2(8, size.y - 12, (size.x - 16) * share, 5), fill)
 			"compact":
-				_icon(Vector2(4, 3), 34, paper, dead)
+				_icon(Vector2(4, 1), 38, dead)
 				if leader:
 					_star(Vector2(size.x - 10, 29), 5.5)
 				if promotable:
@@ -1210,7 +1209,7 @@ class Chip extends Control:
 				draw_rect(Rect2(6, size.y - 8, size.x - 12, 4), Color(0.05, 0.05, 0.06))
 				draw_rect(Rect2(6, size.y - 8, (size.x - 12) * share, 4), fill)
 			"slot":
-				_icon(Vector2(8, 8), 60, paper, dead)
+				_icon(Vector2(8, 8), 60, dead)
 				if leader:
 					_star(Vector2(size.x - 14, 16), 7.5)
 				if promotable:
@@ -1225,7 +1224,7 @@ class Chip extends Control:
 				draw_rect(Rect2(10, size.y - 10, size.x - 20, 5), Color(0.05, 0.05, 0.06))
 				draw_rect(Rect2(10, size.y - 10, (size.x - 20) * share, 5), fill)
 			_:  # wide: the pool
-				_icon(Vector2(8, 6), 46, paper, dead)
+				_icon(Vector2(8, 6), 46, dead)
 				var x := 62.0
 				var w := size.x - x - 10
 				var starred := leader or can_lead
@@ -1242,11 +1241,11 @@ class Chip extends Control:
 				draw_rect(Rect2(x, size.y - 12, size.x - x - 12, 5), Color(0.05, 0.05, 0.06))
 				draw_rect(Rect2(x, size.y - 12, (size.x - x - 12) * share, 5), fill)
 
-	## The unit's class icon on the chip's own color; grayed out once fallen.
-	func _icon(at: Vector2, px: int, paper: Color, dead: bool) -> void:
-		var tex := UnitIcons.texture(unit.unit_class, px, paper, Color(0.5, 0.5, 0.52) if dead else Color(UnitIcons.PAPER))
+	## The unit's class icon, its figure filling the space (trimmed); grayed out once fallen.
+	func _icon(at: Vector2, px: int, dead: bool) -> void:
+		var tex := UnitIcons.texture(unit.unit_class, px, true)
 		if tex:
-			draw_texture_rect(tex, Rect2(at, Vector2(px, px)), false)
+			draw_texture_rect(tex, Rect2(at, Vector2(px, px)), false, Color(0.45, 0.45, 0.47, 0.8) if dead else Color.WHITE)
 
 	## The level as a small number on a folded-corner triangle, top right.
 	func _earmark(font: Font, dead: bool) -> void:

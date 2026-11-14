@@ -396,7 +396,7 @@ func refresh(state: GameState) -> void:
 		var face := "skull" if s.crawling() else (s.leader.unit_class if s.leader else "")  # a skull while it crawls home leaderless (playtest round 9)
 		if lead.get_meta("face", "-") != face:
 			lead.set_meta("face", face)
-			lead.texture = UiStyle.svg("skull", 24, Color(0.92, 0.9, 0.86)) if face == "skull" 					else (UnitIcons.on_token(face, 28, SquadToken.PLAYER) if face != "" else null)
+			lead.texture = UiStyle.svg("skull", 24, Color(0.92, 0.9, 0.86)) if face == "skull" 					else (UnitIcons.texture(face, 28, true) if face != "" else null)
 		var marks: Control = b.get_node("Row/Markers")
 		var key := "%s|%d|%s" % [s.travel_name(), s.speed_tier, s.alignment_band(state.data)]
 		if marks.get_meta("key", "") != key:

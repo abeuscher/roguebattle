@@ -91,7 +91,7 @@ func _fill_list() -> void:
 		var b := UiStyle.button(n, 230, n == _shown)
 		b.focus_mode = FOCUS_NONE
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		b.icon = UnitIcons.texture(n, 24)
+		b.icon = UnitIcons.texture(n, 24, true)
 		for c in ["icon_normal_color", "icon_hover_color", "icon_pressed_color", "icon_focus_color"]:
 			b.add_theme_color_override(c, Color.WHITE)  # the icon as drawn, on the picked button too
 		b.pressed.connect(show_class.bind(n))

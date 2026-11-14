@@ -1,49 +1,70 @@
 class_name UnitIcons
-## Unit icons: data/unit_icons/<class>.svg, drawn by tools/unit_icons.py from the sheet's
-## Icon base / hand / head / crest columns (DECISIONS session 041).
-## Each icon uses two colors, ink and paper. The defaults are dark ink on parchment; for a
-## colored card pass the card's color as paper and parchment as ink (UnitIcons.on_card).
+## Unit icons: data/unit_icons/svg/<class>.svg, full-colour figures (folk) and heads
+## (monsters) on a transparent 256 × 256 square, feet on a common baseline at 95% of the
+## height. Drawn by tools/unit_icons_humans.py and tools/unit_icons_creatures.py from the
+## sheet's Icon columns (user's set, 2026-11-14).
 
-const DIR := "res://data/unit_icons/"
-const INK := "#1d1b1a"     # must match INK in tools/unit_icons.py
-const PAPER := "#f4efe4"   # must match PAPER in tools/unit_icons.py
-# The tile's frame(s), as tools/unit_icons.py writes them: the outer one, and the inner one on Large units.
-const FRAME := "<rect x=\"(2|6\\.5)\" y=\"(2|6\\.5)\"[^>]*/>"
+const DIR := "res://data/unit_icons/svg/"
+const ART := 256.0  # the icons' own size
+const FEET := 0.95  # the baseline, down the icon
 
-static var _cache := {}  # "class|px|paper|ink|frame" -> Texture2D, or null when there's no icon
+static var _cache := {}  # "class|px|trim" -> Texture2D, or null when there's no icon
+static var _feet := {}  # class -> where its feet stand across the icon, 0..1
 
 
-## The icon at px × px. Rasterized once per size and colors. Without the frame, the figure
-## sits on paper alone (map tokens draw their own ring). Mipmapped so a zoomed-out map stays smooth.
-static func texture(unit_class: String, px: int, paper := Color(PAPER), ink := Color(INK), frame := true) -> Texture2D:
-	var key := "%s|%d|%s|%s|%s" % [unit_class, px, paper.to_html(false), ink.to_html(false), frame]
+## The icon at px × px, rasterized once per size and mipmapped so a zoomed-out map stays
+## smooth. `trim`: the empty margin cut away and the figure fitted to the square, for small
+## places (a 28 px drawer row, a list) where the full square would leave it tiny.
+static func texture(unit_class: String, px: int, trim := false) -> Texture2D:
+	var key := "%s|%d|%s" % [unit_class, px, trim]
 	if not _cache.has(key):
 		_cache[key] = null
 		var path := DIR + file_name(unit_class) + ".svg"
 		if FileAccess.file_exists(path):
-			var svg := FileAccess.get_file_as_string(path)
-			if not frame:
-				svg = RegEx.create_from_string(FRAME).sub(svg, "", true)
-			# Through a placeholder so swapping ink and paper doesn't undo itself.
-			svg = svg.replace(INK, "#INK__").replace(PAPER, "#" + paper.to_html(false)).replace("#INK__", "#" + ink.to_html(false))
 			var img := Image.new()
-			if img.load_svg_from_string(svg, px / 64.0) == OK:
+			var draw_px := px * 2 if trim else px  # trimmed: drawn larger, then cut and shrunk
+			if img.load_svg_from_string(FileAccess.get_file_as_string(path), draw_px / ART) == OK:
+				if trim:
+					img = _trimmed(img, px)
 				img.generate_mipmaps()
 				_cache[key] = ImageTexture.create_from_image(img)
 	return _cache[key]
 
 
-## Light-on-dark version for a unit card of the given color.
-static func on_card(unit_class: String, px: int, card: Color) -> Texture2D:
-	return texture(unit_class, px, card, Color(PAPER))
+## The figure without its empty margin, centred in a square px wide.
+static func _trimmed(img: Image, px: int) -> Image:
+	var used := img.get_used_rect()
+	if used.size.x <= 0:
+		return img
+	var side := maxi(used.size.x, used.size.y)
+	var square := Image.create_empty(side, side, false, Image.FORMAT_RGBA8)
+	img.convert(Image.FORMAT_RGBA8)
+	square.blit_rect(img, used, Vector2i(Vector2(Vector2i(side, side) - used.size) / 2.0))
+	square.resize(px, px, Image.INTERPOLATE_LANCZOS)
+	return square
 
 
-## For a map token: parchment figure on the token's own color, no frame.
-static func on_token(unit_class: String, px: int, disc: Color) -> Texture2D:
-	return texture(unit_class, px, disc, Color(PAPER), false)
+## How far across the icon the figure's feet stand (0.5 is the middle), from the solid
+## pixels just above its baseline: the art doesn't centre every figure on its feet.
+static func feet_x(unit_class: String) -> float:
+	if not _feet.has(unit_class):
+		_feet[unit_class] = 0.5
+		var tex := texture(unit_class, 128)
+		if tex:
+			var img := tex.get_image()
+			var sum := 0.0
+			var n := 0
+			for y in range(114, 122):
+				for x in 128:
+					if img.get_pixel(x, y).a > 0.5:
+						sum += x
+						n += 1
+			if n > 0:
+				_feet[unit_class] = sum / n / 128.0
+	return _feet[unit_class]
 
 
-## "Standard-Bearer" -> "standard_bearer", as the generator names the files.
+## "Standard-Bearer" -> "standard_bearer", as the generators name the files.
 static func file_name(unit_class: String) -> String:
 	var re := RegEx.create_from_string("[^a-z0-9]+")
 	return re.sub(unit_class.to_lower(), "_", true).lstrip("_").rstrip("_")
