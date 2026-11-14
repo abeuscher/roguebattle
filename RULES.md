@@ -272,5 +272,6 @@ Outside the panel: O cycles overlays, G the grid, H hidden sites, F8 a squad's t
 These are named in the design but not working yet — don't expect them when testing. See `ROADMAP.md` for the plan and `STATUS.md` for current session.
 
 - **In-battle AI tactics and retreat.** The enemy side always fights with the default "Best" tactic and never retreats mid-battle. A retreat threshold and per-role tactic weighting are planned but not scheduled to a specific session yet.
+- **Enemy ranged attacks on the map.** Only you can order a ranged attack from a distance; enemy and neutral squads with archers or casters fight only when they make contact.
 - **Morale and loyalty portraits.** Both are fully working and logged (see "Units" above), but the spec's visual signs — a leader's portrait shifting from confident to shaken, an uneasy portrait at low loyalty — have no portraits to shift yet.
 - **Maps 2 and 3, the campaign layer, difficulty settings, and final art** are all explicitly out of scope for this build (`SPEC.md` §2).

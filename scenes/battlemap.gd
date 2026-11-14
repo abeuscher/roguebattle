@@ -44,7 +44,10 @@ var _encounter: EncounterPopup
 var _tip: TipPopup  # the player tip showing, if any (one at a time)
 var _tip_hex := -1  # the map hex it points at, for a tip anchored on the map; else -1
 var _flying_to_fight := false  # a ranged attack's battle waits while the camera glides to it
-var _announced := false  # the pending battle needs no encounter popup (already announced, or a recruit refused)
+## A battle the recruit popup already announced (refused, or Fight), which opens with no
+## encounter popup. Tied to that battle, so a recruit that ends in no fight can't make
+## the next enemy contact skip its popup.
+var _announced: Battle
 var _edit: EditUnits
 var _deploy_menu: DeployMenu
 var _confirm: ConfirmDialog
@@ -178,7 +181,7 @@ func _process(delta: float) -> void:
 	if state.pending and _free():
 		if state.pending.ranged_only:
 			_fly_to_ranged_attack()
-		elif _announced:
+		elif _announced == state.pending:
 			_open_battle()
 		else:
 			_open_encounter()
@@ -851,7 +854,7 @@ func _fly_to_meeting(a: Squad, b: Squad, popup: Control) -> void:
 
 
 func _open_battle() -> void:
-	_announced = false
+	_announced = null
 	_battle = BattleView.new()
 	_battle.options = options
 	_ui.add_child(_battle)
@@ -1018,14 +1021,14 @@ func _open_recruit_popup() -> void:
 	_fly_to_meeting(state.pending_recruit["player"], state.pending_recruit["neutral"], _recruit_popup)
 	_recruit_popup.recruit.connect(func():
 		var result := state.resolve_recruit(true)
-		_announced = true  # the result panel already announced any fight
+		_announced = state.pending  # the result panel already announced any fight (null if none)
 		if result["joined"]:
 			Sound.event("recruit_joined")
 		_recruit_popup.show_result(result["joined"], result["text"]))
 	_recruit_popup.done.connect(_close_recruit_popup)
 	_recruit_popup.fight.connect(func():
-		_announced = true  # the recruit popup already announced this fight
 		state.resolve_recruit(false)
+		_announced = state.pending  # the recruit popup already announced this fight
 		_close_recruit_popup())
 
 
