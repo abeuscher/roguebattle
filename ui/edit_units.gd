@@ -674,7 +674,7 @@ func _unit_overview(u: Unit, sq: Squad, locked: bool) -> Control:
 	row.add_child(_sheet_rule(true))
 	# The attributes
 	var stats := VBoxContainer.new()
-	stats.add_theme_constant_override("separation", 20)
+	stats.add_theme_constant_override("separation", 40)
 	stats.custom_minimum_size.x = 190
 	row.add_child(stats)
 	for s in Unit.STATS:
@@ -690,9 +690,9 @@ func _unit_overview(u: Unit, sq: Squad, locked: bool) -> Control:
 	who.columns = 4
 	who.add_theme_constant_override("h_separation", 10)
 	who.add_theme_constant_override("v_separation", 12)
-	for cell in [["Alignment", "%d %s" % [u.alignment, u.alignment_band(data)]], ["Charisma", str(u.charisma)], ["Role", c["role"]],
-			["Leader", "Y" if c["can_lead"] else "N"], ["Home terrain", c["terrain"]], ["Size", c["size"]], ["Speed tier", str(int(c["speed_tier"]))]]:
-		who.add_child(_sheet_cell(cell[0], str(cell[1])))
+	for cell in [["Alignment", u.alignment_band(data).capitalize(), "(%d)" % u.alignment], ["Charisma", str(u.charisma)], ["Role", c["role"]],
+			["Leader?", "Yes" if c["can_lead"] else "No"], ["Home terrain", c["terrain"]], ["Size", c["size"]], ["Speed tier", str(int(c["speed_tier"]))]]:
+		who.add_child(_sheet_cell(cell[0], str(cell[1]), cell[2] if cell.size() > 2 else ""))
 	mid.add_child(who)
 	if sq and sq.leader != u and c["can_lead"] and not locked:
 		var lead := UiStyle.button("Make leader", 180)
@@ -724,42 +724,48 @@ func _unit_overview(u: Unit, sq: Squad, locked: bool) -> Control:
 	return row
 
 
-## One attribute: its short name, its value in the title font (what items and auras add, in
-## green), and its name under it.
+## One attribute: its short name and its value in the title font (what items and auras add,
+## in green); its full name shows when the pointer is over it.
 func _attribute(u: Unit, s: String) -> Control:
 	var line := HBoxContainer.new()
 	line.add_theme_constant_override("separation", 12)
-	line.tooltip_text = "%s (%s)" % [STAT_LOOK[s][1], s]
+	line.mouse_filter = MOUSE_FILTER_STOP
+	line.tooltip_text = STAT_LOOK[s][1]
 	var short := _sheet_text(STAT_LOOK[s][0], 30, SHEET_GOLD, true)
 	short.custom_minimum_size.x = 76
 	line.add_child(short)
-	var words := VBoxContainer.new()
-	words.add_theme_constant_override("separation", -4)
-	line.add_child(words)
 	var value := HBoxContainer.new()
 	value.add_theme_constant_override("separation", 6)
-	words.add_child(value)
+	line.add_child(value)
 	var bonus := u.stat(data, s) - int(u.stats[s])
 	value.add_child(_sheet_text(str(u.stat(data, s)), 30, SHEET_INK, true))
 	if bonus != 0:
 		var b := _sheet_text("%+d" % bonus, 15, Color("#9fe09a") if bonus > 0 else Color("#e0908a"))
 		b.size_flags_vertical = SIZE_SHRINK_CENTER
 		value.add_child(b)
-	words.add_child(_sheet_text(STAT_LOOK[s][1], 14, SHEET_FADED))
 	return line
 
 
 ## What it is over its value, centred, for the Unit Details grid: the name in thin
-## small capitals (the title font, light), gold like the attributes' names.
-func _sheet_cell(what: String, value: String) -> Control:
+## small capitals (the title font, light), gold like the attributes' names. `aside`, if
+## any, follows the value in smaller type ("Holy (90)").
+func _sheet_cell(what: String, value: String, aside := "") -> Control:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 0)
 	box.size_flags_horizontal = SIZE_EXPAND_FILL
 	var name_label := _sheet_text(what, 16, SHEET_GOLD)
 	name_label.add_theme_font_override("font", UiStyle.title_font(400))
-	for l in [name_label, _sheet_text(value, 21, SHEET_INK, true)]:
-		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		box.add_child(l)
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(name_label)
+	var line := HBoxContainer.new()
+	line.add_theme_constant_override("separation", 6)
+	line.alignment = BoxContainer.ALIGNMENT_CENTER
+	line.add_child(_sheet_text(value, 21, SHEET_INK, true))
+	if aside != "":
+		var small := _sheet_text(aside, 15, SHEET_INK)
+		small.size_flags_vertical = SIZE_SHRINK_CENTER
+		line.add_child(small)
+	box.add_child(line)
 	return box
 
 
