@@ -901,4 +901,5 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **Rendered with the day's settings** as one group (`build_map_audio.py`'s `beds`), so victory sits above the title. The title came out about 3 dB under the day pool, so its pool has `db` +2. A pool can now set its own `db` and `rest_chance` as well as `gap`.
 - **Gaps of 3 to 7 s and never a rest**, so the first phrase starts at once and the screen is never silent for long.
 - **The old cues stay:** `intro_music` and `end_victory` keep their WAVs and cue entries, unplayed, in case they're wanted back (as with the funk loops). Pointing `music.title` or `music.victory` back at them restores them.
+- **Approved as drawn** (user, 2026-11-14: "no changes"); the WAVs are committed.
 - **The preview tool** plays them too: `python tools/preview_map_audio.py --state title` (or `victory`).
