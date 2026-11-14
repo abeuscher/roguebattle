@@ -123,10 +123,10 @@ static func close_x(action: Callable, tip := "Close (Esc)") -> Button:
 
 ## The title font (Cinzel, playtest round 12): carved capitals that set a window's title
 ## apart from its content.
-static func title_font() -> Font:
+static func title_font(weight := 650) -> Font:
 	var f := FontVariation.new()
 	f.base_font = load("res://ui/fonts/Cinzel.ttf")
-	f.variation_opentype = {TextServerManager.get_primary_interface().name_to_tag("wght"): 650}
+	f.variation_opentype = {TextServerManager.get_primary_interface().name_to_tag("wght"): weight}
 	return f
 
 
