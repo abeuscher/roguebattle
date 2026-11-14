@@ -246,10 +246,12 @@ Sound is coming in (ROADMAP M5). In so far:
 
 - The first time you reach certain parts of the game, a small tip appears beside the part of the screen it's about, with an arrow and an outline pointing at it. You can carry on using the screen while it's up. **Got it** (or Esc, or the X) dismisses it for good. Untick **Show player tips** on any tip, or in Options, to turn them all off.
 - **So far:**
-  - When Edit Units opens at the start of a single map game, a tip points at the Recruits list: "To begin creating a new squad, drag a leader into an empty slot. To add to a squad, drag any unit into an active squad slot."
+  - When Edit Units first opens in a single map game (or a Quick start one), a tip points at the Recruits list: "To begin creating a new squad, drag a leader into an empty slot. To add to a squad, drag any unit into an active squad slot."
   - When you first reach the map (after that opening Edit Units), a tip points at Deploy Squad: "Use the deploy button to send your squads out into the field of battle after composing them in the edit units screen. Conquering buildings will provide bonuses and abilities."
+  - **Quick start** opens with the map pulling back to show your base and the town the Garrison holds, and a tip points at that town: it names it and says how to send your squad there (click the squad, Move, click the town twice) and to press Space. The tip follows the town if you move the map.
+  - The first time the encounter dialog opens before a fight (any game mode), a tip beside it explains Edit Squad (the front row takes melee blows with 20% less damage, the back row is safe from melee until the front falls), Use item(s), and that Begin Battle opens the battle, where you pick a tactic and press Fight.
   - The first time a town's liberation window opens, a tip beside it explains reputation from liberating towns, town income at the end of the day, and the shop sign on a town's roof; the first tower's does the same for towers (reputation from negatively aligned characters, income for your armies).
-  - A tip counts as seen once it's gone, even if you close the window it was beside first.
+  - A tip counts as seen once it's gone, even if you close the window it was beside first. Only one tip shows at a time: a new one replaces the last.
 
 ## Testing tools (debug panel)
 

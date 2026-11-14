@@ -41,6 +41,8 @@ var _menu: SquadMenu
 var _main_menu: MainMenu
 var _battle: BattleView
 var _encounter: EncounterPopup
+var _tip: TipPopup  # the player tip showing, if any (one at a time)
+var _tip_hex := -1  # the map hex it points at, for a tip anchored on the map; else -1
 var _flying_to_fight := false  # a ranged attack's battle waits while the camera glides to it
 var _announced := false  # the pending battle needs no encounter popup (already announced, or a recruit refused)
 var _edit: EditUnits
@@ -88,6 +90,8 @@ func start(game_data: GameData, game_log: GameLog, game_config: GameConfig, map:
 	_show_state()
 	if state.single_map() and not state.quick_start():  # build the squads from the pool first (user's design, 2026-11-10)
 		_open_edit.call_deferred()
+	elif state.quick_start():
+		_quick_start_tip.call_deferred()
 	print("Battlemap ready in %d ms" % (Time.get_ticks_msec() - started))
 
 
@@ -242,6 +246,8 @@ func _update_help() -> void:
 
 func _on_view_changed() -> void:
 	view.set_zoom(camera.zoom.x)
+	if is_instance_valid(_tip) and _tip_hex >= 0:
+		_tip.retarget(_hex_rect(_tip_hex))
 	hud.minimap.set_view(camera.visible_rect())
 	for token in _tokens.values():
 		token.scale = _token_scale()
@@ -793,6 +799,7 @@ func _open_encounter() -> void:
 	_ui.add_child(_encounter)
 	_encounter.setup(b, state.army.supplies)
 	_fly_to_meeting(b.sides[0], b.sides[1], _encounter)
+	_offer_tip("encounter_open", _encounter)
 	_encounter.use_item.connect(func():  # herbs and revivals before the fight
 		var screen := SuppliesMenu.new()
 		_ui.add_child(screen)
@@ -881,21 +888,72 @@ func _open_edit(cell := -1) -> void:
 
 
 ## Shows the player tip due at `moment` (PlayerTips), if any, over `host`, pointing at
-## the part of it the tip names. Once dismissed it never shows again.
+## the part of it the tip names (or, for "garrison_town", at that town on the map).
+## Waits while the host is hidden (the encounter dialog, while the camera flies). Once
+## dismissed it never shows again.
 func _offer_tip(moment: String, host: Control) -> void:
-	var id := PlayerTips.due(data, options, moment, "single_map" if state.single_map() else "campaign")
+	var id := PlayerTips.due(data, options, moment, _tip_mode())
 	if id == "":
 		return
 	await get_tree().process_frame  # let the host lay itself out, so the anchor's rect is real
 	await get_tree().process_frame
+	while is_instance_valid(host) and not host.is_visible_in_tree():
+		await get_tree().process_frame
 	if not is_instance_valid(host):
 		return
 	var t: Dictionary = data.tips["tips"][id]
+	var town := _garrison_town()
+	var at: Rect2 = host.anchor(t["anchor"])
+	var hex := -1
+	if t["anchor"] == "garrison_town":
+		if town.is_empty():
+			return
+		hex = town["hex"]
+		at = _hex_rect(hex)
+		if not get_viewport().get_visible_rect().encloses(at):
+			return  # off screen (the map was moved): left for the next time the map opens
+	if is_instance_valid(_tip):
+		_tip.queue_free()  # a newer tip replaces it (it counts as seen)
 	var tip := TipPopup.new()
+	_tip = tip
+	_tip_hex = hex
 	host.add_child(tip)
-	tip.setup(t["text"], host.anchor(t["anchor"]), options)
+	tip.setup(str(t["text"]).format({"town": town.get("name", "the town")}), at, options)
 	tip.closed.connect(tip.queue_free)
 	tip.tree_exiting.connect(func(): PlayerTips.mark_seen(options, id))  # seen, even if its window closes first
+
+
+## A hex's place on screen (a box a little larger than the hex), for a tip pointing at it.
+func _hex_rect(hex: int) -> Rect2:
+	var r := Vector2.ONE * MapView.HEX_SIZE * 1.6 * camera.zoom.x
+	var at := (MapView.hex_center(state.map, hex) - camera.position) * camera.zoom + get_viewport().get_visible_rect().size / 2.0
+	return Rect2(at - r / 2.0, r)  # from the camera itself: the canvas transform lags a frame behind it
+
+
+## The game mode tips are chosen for (tips.json "modes").
+func _tip_mode() -> String:
+	if state.quick_start():
+		return "quick_start"
+	return "single_map" if state.single_map() else "campaign"
+
+
+## The town Quick start's Garrison holds, or {} (no garrison, or it has moved on).
+func _garrison_town() -> Dictionary:
+	for s in state.squads:
+		if s.role == "garrison" and s.hex == s.post:
+			return state.building_at(s.post)
+	return {}
+
+
+## Quick start's first tip: the map pulls back to show your base and the Garrison's
+## town, then the tip points at the town.
+func _quick_start_tip() -> void:
+	var town := _garrison_town()
+	if town.is_empty() or PlayerTips.due(data, options, "map_open", _tip_mode()) == "":
+		return
+	var area := Rect2(MapView.hex_center(state.map, state.map.player_base), Vector2.ZERO).expand(MapView.hex_center(state.map, town["hex"]))
+	await camera.frame(area, 0.8).finished
+	_offer_tip("map_open", hud)
 
 
 func _close_edit() -> void:

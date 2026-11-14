@@ -41,3 +41,17 @@ func test_every_tip_is_complete() -> void:
 	for id in d.tips["tips"]:
 		var t: Dictionary = d.tips["tips"][id]
 		check(t.has("moment") and t.has("anchor") and str(t.get("text", "")) != "", "%s has a moment, an anchor and text" % id)
+
+
+## Quick start tips (playtest round 13): to the Garrison's town, then the first battle.
+func test_quick_start_tips_lead_to_the_garrison_and_the_first_battle() -> void:
+	var o := _options()
+	check_eq(PlayerTips.due(d, o, "map_open", "quick_start"), "march", "Quick start opens on the march to the Garrison")
+	check_eq(d.tips["tips"]["march"]["anchor"], "garrison_town", "pointing at its town")
+	check(str(d.tips["tips"]["march"]["text"]).contains("{town}"), "named in the text")
+	check_eq(PlayerTips.due(d, o, "map_open", "single_map"), "deploy", "a single map still gets the deploy tip there")
+	PlayerTips.mark_seen(o, "march", false)
+	check_eq(PlayerTips.due(d, o, "map_open", "quick_start"), "deploy", "and Quick start gets it after the march")
+	for mode in ["single_map", "campaign", "quick_start"]:
+		check_eq(PlayerTips.due(d, o, "encounter_open", mode), "first_battle", "the first battle tip in %s" % mode)
+	check_eq(PlayerTips.due(d, o, "edit_units_open", "quick_start"), "build_squad", "building squads in Quick start too")

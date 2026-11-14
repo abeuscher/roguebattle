@@ -54,12 +54,19 @@ func setup(text: String, target: Rect2, options: Dictionary) -> void:
 	_place.call_deferred()
 
 
+## Points at a new place (a tip on the map, after the map moved).
+func retarget(target: Rect2) -> void:
+	_target = target
+	_place()
+
+
 func _place() -> void:
 	_panel.reset_size()
 	var screen := get_viewport_rect().size
 	var x := _target.position.x - GAP - _panel.size.x
 	if x < 16:
 		x = _target.end.x + GAP
+	x = clampf(x, 16, screen.x - _panel.size.x - 16)
 	var y := clampf(_target.get_center().y - _panel.size.y / 2.0, 16, screen.y - _panel.size.y - 16)
 	_panel.global_position = Vector2(x, y)
 	queue_redraw()

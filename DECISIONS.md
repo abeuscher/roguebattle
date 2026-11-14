@@ -903,3 +903,10 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **The old cues stay:** `intro_music` and `end_victory` keep their WAVs and cue entries, unplayed, in case they're wanted back (as with the funk loops). Pointing `music.title` or `music.victory` back at them restores them.
 - **Approved as drawn** (user, 2026-11-14: "no changes"); the WAVs are committed.
 - **The preview tool** plays them too: `python tools/preview_map_audio.py --state title` (or `victory`).
+
+## Session 074: Quick start tips (playtest round 13, item 2)
+
+- **Two new tips:** `march` (Quick start only, when the map first shows) points at the Garrison's town and says how to send a squad there; `first_battle` (every mode, the first encounter dialog) explains Edit Squad, Use item(s) and Begin Battle. After that the existing first-town tip covers the Garrison's town and its shop. Not asked for: making the battle tip show in every mode, since every mode's first fight goes through that dialog.
+- **Quick start is a tip mode of its own** (`quick_start` in `tips.json` `modes`); the Edit Units tip lists it too. `march` comes before `deploy` in the file, so Quick start gets the march first and the deploy tip the next time the map opens after Edit Units.
+- **A tip can point at the map:** anchor `garrison_town`. At the start the camera frames the base and the town over 0.8 s, then the tip appears. It follows the town when the map pans or zooms, working out where the town is from the camera because the canvas transform lags a frame. If the town is off screen when the moment comes, the tip waits for the next one. `{town}` in a tip's text is the Garrison's town.
+- **One tip at a time:** a new tip replaces any still showing (it counts as seen). A tip over a hidden window (the encounter dialog while the camera flies) waits until it shows.

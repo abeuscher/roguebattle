@@ -1,16 +1,27 @@
 {
- "_note": "Player tips (ROADMAP M4 session 33). Each tip shows once, the first time its moment comes, while the player's \"Show player tips\" option is on; tips seen are remembered in the options, not the save. moment: where the game asks for a tip (edit_units_open: Edit Units opens; map_open: the map shows with nothing over it, after the opening Edit Units; town_liberated, tower_liberated: the liberation window for one opens). anchor: the part of the screen the popup points at (recruit_pool: the Recruits list in Edit Units; deploy_button: the toolbar's Deploy Squad; panel: the liberation window). modes: game modes it shows in (single_map, campaign); missing means all. Tips are offered in this order.",
+ "_note": "Player tips (ROADMAP M4 session 33). Each tip shows once, the first time its moment comes, while the player's \"Show player tips\" option is on; tips seen are remembered in the options, not the save. moment: where the game asks for a tip (edit_units_open: Edit Units opens; map_open: the map shows with nothing over it, after the opening Edit Units, or at the start of a Quick start game; encounter_open: the encounter dialog before a fight shows; town_liberated, tower_liberated: the liberation window for one opens). anchor: the part of the screen the popup points at (recruit_pool: the Recruits list in Edit Units; deploy_button: the toolbar's Deploy Squad; garrison_town: the town Quick start's Garrison holds, on the map, framed with your base first; panel: the liberation window or the encounter dialog). modes: game modes it shows in (single_map, campaign, quick_start); missing means all. {town} in a tip's text is the Garrison's town. Tips are offered in this order.",
  "tips": {
   "build_squad": {
    "moment": "edit_units_open",
    "anchor": "recruit_pool",
-   "modes": ["single_map"],
+   "modes": ["single_map", "quick_start"],
    "text": "To begin creating a new squad, drag a leader into an empty slot. To add to a squad, drag any unit into an active squad slot."
+  },
+  "march": {
+   "moment": "map_open",
+   "anchor": "garrison_town",
+   "modes": ["quick_start"],
+   "text": "The enemy's Garrison holds {town}, close to your base. Click your squad at the Player Base to open its menu, choose Move (the footprints), then click {town} twice to send it there. Press Space to start time."
   },
   "deploy": {
    "moment": "map_open",
    "anchor": "deploy_button",
    "text": "Use the deploy button to send your squads out into the field of battle after composing them in the edit units screen. Conquering buildings will provide bonuses and abilities."
+  },
+  "first_battle": {
+   "moment": "encounter_open",
+   "anchor": "panel",
+   "text": "A fight is about to begin. Edit Squad lets you change your formation first: the front row takes melee blows with 20% less damage, and the back row is safe from melee until the front falls. Use item(s) heals with herbs from a shop. Begin Battle opens the battle, where you choose a tactic and press Fight."
   },
   "first_town": {
    "moment": "town_liberated",

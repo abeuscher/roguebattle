@@ -12,6 +12,7 @@ signal edit
 
 var _odds: Label
 var _battle: Battle
+var _panel: PanelContainer
 
 
 ## `supplies`: the army's herbs and revivals, for Use item (user's playtest notes, 2026-11-10).
@@ -27,6 +28,7 @@ func setup(b: Battle, state_supplies: Dictionary) -> void:
 	center.anchor_bottom = 0.9
 	add_child(center)
 	var panel := PanelContainer.new()
+	_panel = panel
 	panel.add_theme_stylebox_override("panel", UiStyle.box(UiStyle.PANEL, 22))
 	center.add_child(panel)
 	var col := VBoxContainer.new()
@@ -61,6 +63,11 @@ func setup(b: Battle, state_supplies: Dictionary) -> void:
 	squad.pressed.connect(func(): edit.emit())
 	row.add_child(squad)
 	button.grab_focus.call_deferred()
+
+
+## Where a player tip points (Battlemap._offer_tip): "panel", the dialog.
+func anchor(name: String) -> Rect2:
+	return _panel.get_global_rect() if name == "panel" else Rect2()
 
 
 ## How the enemy looks, again after Use item changed the squad.

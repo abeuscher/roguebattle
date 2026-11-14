@@ -145,6 +145,7 @@ Where the project stands, for picking up in a new session or on another machine.
 - **Map ambience (2026-11-13, between sessions):** the map's music becomes sparse piano phrase pools over environmental sound (`docs/map-ambience.md`). The tools are in (`tools/build_map_audio.py` runs them all); the first phrase drafts await the user's ear (`python tools/preview_map_audio.py`). Next for it: ROADMAP M5 sessions 9 (the sounds), 10 (the player) and 11 (the title and victory screens move to the same piano).
 - **Session 072:** the map plays the piano phrase pools (day, night, the dusk and dawn turns; the menus the day pool), from the FluidSynth drafts. The title and victory beds are planned (ROADMAP M5 session 11).
 - **Session 073, M5 session 11:** the title screen and a won map play their own small piano pools (4 phrases each, short gaps). Approved by the user (2026-11-14) and committed; preview with `python tools/preview_map_audio.py --state title` (or `victory`) or in the game.
+- **Session 074:** Quick start tips: the map opens framing your base and the Garrison's town with a tip pointing at it; the first encounter dialog gets a battle tip (every mode). Next: the rest of "Playtest round 13" (item 3, enemy ranged attacks and the battle start).
 - **Next (agreed 2026-11-14):** 1) ~~M5 session 11~~ (done, session 073). 2) M5 session 9, map ambience sounds: the user collects them into `data/audio/ambience_src/<day,night>/`; Claude prepares, levels, lists sources and licences, adds pan if wanted. 3) M5 session 6, battle sounds, once the user supplies them. 4) M5 session 7, variant takes. Between audio steps: tips that lead a Quick start player to the Garrison's town and the first battle, then the rest of "Playtest round 13" in `ROADMAP.md`. More window pictures like the liberation ones when the user names the windows. On hold: unit card art (the user's image pipeline), the "Give it back!" line.
 - **M4 sessions 15–20 planned (playtest round 7, 2026-11-10)** in `ROADMAP.md`: battle and rules fixes (cards truly at once, enemy makeup after a fight, items equippable anywhere, fewer neutrals, arrival log line); map generation (100% land, reef-like shallows around islands); HUD layout (clock under the minimap, gold coin, reputation meter, squad drawer, smaller rounded toolbar with icons); squad status icons and flag-free tokens with destination flags; debug panel overhaul; save game (3 slots, prompt to save on quit). The user's answers are in the ROADMAP rows.
 - **M4 milestone check: the first real playtest**, after session 33.
@@ -157,7 +158,7 @@ Where the project stands, for picking up in a new session or on another machine.
 
 ## How the user works
 
-- **One git branch per session,** named `session-NNN` (next: `session-074`), cut from `main`.
+- **One git branch per session,** named `session-NNN` (next: `session-075`), cut from `main`.
 - **Commit locally only:**
   - Never push or merge; the user merges and pushes, then says "continue".
   - Commit messages end with a `Co-Authored-By:` line naming whatever Claude model is doing the session (the harness's own attribution instructions say exactly what to write).

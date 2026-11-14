@@ -180,7 +180,7 @@ The core goal is met: Ogre Battle's squad play in a roguelike setting. Playteste
 | # | Session | Spec | Verify | Status |
 | --- | --- | --- | --- | --- |
 | 1 | **Quick start.** A Start screen button: a small map (about 100×50 or under, 50% land, 0 islands), the player's units seeded at random from basic units, an enemy in a nearby town with a shop. "A near priority": it makes playtesting easy for friends | §4, §18 | Tests: settings, buildings, ready squads, the garrison; screenshots | Done (session 071) |
-| 2 | **Quick start tips** that draw the player to the Garrison's town and the first battle (user: tomorrow) | §5 | Screenshots of each tip in order | Next |
+| 2 | **Quick start tips** that draw the player to the Garrison's town and the first battle (user: tomorrow) | §5 | Screenshots of each tip in order | Done (session 074) |
 | 3 | **Enemy ranged attacks open the battle start.** When an enemy starts any attack, the player always gets the chance to edit the squad and use items; the user believes an enemy's ranged attack skips this | §11, §12 | A test or probe of an enemy ranged attack; screenshot of the battle start | |
 | 4 | **Edit Units: front and back rows.** Let any unit move between the rows inside Edit Units; today it works only for some units in some cases. If the limit is about losing the leader, add the check and make the UI say so | §8 | Tests: row moves; screenshot of a refused move with its reason | |
 | 5 | **Every map has at least two shops, one of them in a town**, however small the map | §6.5, §15 | Map tests across sizes and presets | |
