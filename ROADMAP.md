@@ -194,6 +194,12 @@ The core goal is met: Ogre Battle's squad play in a roguelike setting. Playteste
 | 13 | **"Items" tab becomes "Equipment"** (user, 2026-11-14; with row 12): the tab next to Recruits in Edit Units and Edit Squad | §5, §8 | Screenshot | |
 | 14 | **Voice lines after the riffs; no "Give it back!"** (user, 2026-11-14). "New Town!", "New Tower!" and "New Temple!" were recorded and wired, but never heard: the sound queue drops a line that would wait more than 2 s, and every building riff runs 4–7 s. They wait their turn now and play right after their building's riff. "Give it back!" is dropped from the plan (no line on a retake) | §24 | Tests: the lines wait out a long riff; no retake line. Run the game: a liberation plays its riff, then the line | Done (session 082) |
 
+## Unit icons (user, 2026-11-14)
+
+| # | Session | Spec | Verify | Status |
+| --- | --- | --- | --- | --- |
+| 1 | **Switch to the new unit icons** (`data/unit_icons_new/`, all 190, full-colour: folk as whole figures, monsters as heads; made with the user's generators). They replace `data/unit_icons/`, drawn as they are (no ink/paper recolouring; frames drawn in code). **On the map** the leader stands on the map, half as large again as in today's ring, with no ring: a soft shadow edged in the side's colour under it (wider for Large units), and a soft drop shadow down and right (the third of the three tried, user's pick); flyers float as now. Previewed on the `icon-preview` branch. **Small places** (the squad drawer, Edit Units' compact chips) draw the figure larger in its space. Move `unit_icons_humans.py` and `unit_icons_creatures.py` to `tools/`, drop `unit_icons_mannequin.py` and `tools/unit_icons.py`, retire the sheet's Icon columns, update CLAUDE.md. Minor art notes for later: bats and ghosts low in contrast on dark or snowy ground; a few lines alike at small sizes (Drakeling / Wyrm / Dragon, Snow Snake / Snow Serpent / Kuraokami, Goat / Battle Goat); 116 icons not centred on their feet (the game finds them) | §5 | Screenshots: map at three zooms, the drawer, Edit Units, the glossary, the character sheet; tests: every class has an icon, kept for export | |
+
 ## Playtest round 14 (user's notes, 2026-11-14)
 
 Whenever each fits.

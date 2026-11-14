@@ -5,7 +5,7 @@ extends TestCase
 
 
 func test_raw_svgs_are_kept_for_export() -> void:
-	for dir in ["res://data/unit_icons/", "res://ui/icons/", "res://data/card_art/"]:
+	for dir in ["res://data/unit_icons/", "res://data/unit_icons_new/svg/", "res://ui/icons/", "res://data/card_art/"]:
 		for f in DirAccess.get_files_at(dir):
 			if f.ends_with(".svg"):
 				var imp := FileAccess.get_file_as_string(dir + f + ".import")
