@@ -193,3 +193,13 @@ The core goal is met: Ogre Battle's squad play in a roguelike setting. Playteste
 | 12 | **Squad menu: Heal, not Use item** (user, 2026-11-14; whenever it slots in easily). "Item" also means weapons and armor, so the squad menu's Use item becomes **Heal**, its icon a red medical cross. On a temple, the temple's heal and revive show in the same window beside the herbs and revival draughts (under them is fine for now). The encounter dialog's Use item(s) becomes Heal too, to match (user, 2026-11-14) | §5, §15 | Screenshots: the menu's and the encounter dialog's Heal buttons; the Heal window in the open and on a temple | |
 | 13 | **"Items" tab becomes "Equipment"** (user, 2026-11-14; with row 12): the tab next to Recruits in Edit Units and Edit Squad | §5, §8 | Screenshot | |
 
+## Playtest round 14 (user's notes, 2026-11-14)
+
+Whenever each fits.
+
+| # | Session | Spec | Verify | Status |
+| --- | --- | --- | --- | --- |
+| 1 | **Recruitment successful!** When a band joins, the recruit window's title reads "Recruitment successful!" (today "They join you!") and the text says plainly that they wait in the recruit pool at the Player Base, ready to be put into squads in Edit Units | §16 | Screenshot | |
+| 2 | **Attempt to sneak past** a neutral band: a third choice beside Recruit and Fight, its chance from the squad's AGI against the band's INT. To settle before building: whose AGI (the squad's average, or its best?) and whose INT, the formula and its limits, and what a failure means (the fight starts, the band striking first as after a refused recruit?) | §16 | Tests: the chance rises with AGI and falls with INT; a failure fights. Screenshot of the dialog | |
+| 3 | **Learn the enemy:** inspect enemy units during a battle, and squads and units already met afterwards (on the map, from the encounter). Exact attribute numbers can stay hidden; what matters is learning each unit, its strengths and weaknesses, so the player can improve (the unit glossary entry is a natural link). To settle: which numbers stay hidden (today a Scout-line unit shows them in battle), and where "already met" squads are inspected | §11, §17 | Screenshots: an enemy unit mid-battle; a met squad on the map | |
+
