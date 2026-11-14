@@ -24,6 +24,16 @@ const KEY := [["Melee", "Melee"], ["Ranged", "Ranged"], ["Magic", "Magic"], ["He
 const SORTS := [["leader", "Leader"], ["class", "Class"], ["level", "Level"], ["name", "Name"]]
 const INSET := 40  # px between the window and the screen's edges, on every side
 const SUPPORT := ["Heal", "Buff", "Debuff", "Ward", "Ranged", "Magic", "Dispel"]
+# The unit's character sheet (playtest round 13): its colours, the cards' shape, and each
+# attribute's icon (ui/icons) and name.
+const SHEET_LEATHER := Color("#1b1510")
+const SHEET_GOLD := Color("#c9a24f")
+const SHEET_GOLD_DIM := Color("#6e5a32")
+const SHEET_INK := Color("#efe3c6")
+const SHEET_FADED := Color("#a8987a")
+const CARD_ASPECT := 768.0 / 1376.0  # the unit cards in data/unit_art
+const STAT_LOOK := {"STR": ["sword", "Strength"], "CON": ["heart", "Constitution"], "INT": ["brain", "Intellect"],
+		"SPD": ["zap", "Speed"], "AGI": ["wind", "Agility"], "PDEF": ["shield", "Physical defence"], "MDEF": ["sparkles", "Magic defence"]}
 
 var state: GameState
 var army: Army
@@ -420,44 +430,160 @@ func _show_unit() -> void:
 			pager.name = "Previous" if step < 0 else "Next"
 			pager.pressed.connect(_page_unit.bind(step))
 			_modal.add_child(pager)
-	var panel := PanelContainer.new()
-	var style := UiStyle.box(UiStyle.PANEL, 24)
-	style.set_border_width_all(2)
-	style.border_color = UiStyle.OUTLINE
-	panel.add_theme_stylebox_override("panel", style)
-	panel.custom_minimum_size = Vector2(1700, 900)
-	center.add_child(panel)
-	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 14)
-	panel.add_child(col)
+	var col := _sheet_frame(center)
 	var head := HBoxContainer.new()
-	head.add_theme_constant_override("separation", 16)
+	head.add_theme_constant_override("separation", 22)
 	col.add_child(head)
-	var pic := TextureRect.new()
-	pic.texture = UnitIcons.texture(u.unit_class, 72)
-	head.add_child(pic)
-	head.add_child(UiStyle.label(u.name, 30))
+	var names := VBoxContainer.new()
+	names.add_theme_constant_override("separation", 2)
+	names.size_flags_horizontal = SIZE_EXPAND_FILL
+	head.add_child(names)
+	names.add_child(_sheet_text(u.name, 34, SHEET_INK, true))
 	var where := "%s of #%d %s" % ["Leader" if sq.leader == u else "In", sq.id, sq.name] if sq else "In the recruit pool"
-	var sub := UiStyle.label("%s  ·  %s" % [u.unit_class, where], 18, Color(0.75, 0.78, 0.82))
-	sub.size_flags_horizontal = SIZE_EXPAND_FILL
-	head.add_child(sub)
-	head.add_child(UiStyle.link("%s in the glossary" % u.unit_class, 17, "What the %s is and does" % u.unit_class, _open_glossary.bind(u.unit_class)))
-	head.add_child(UiStyle.close_x(_close_unit))
-	var tabs := HBoxContainer.new()
-	tabs.add_theme_constant_override("separation", 6)
-	col.add_child(tabs)
-	for t in [["overview", "Overview"], ["about", "About the %s" % u.unit_class]]:
-		var b := UiStyle.button(t[1], 200)
-		b.toggle_mode = true
-		b.set_pressed_no_signal(_unit_tab == t[0])
-		b.pressed.connect(func():
-			_unit_tab = t[0]
-			_refresh())
-		tabs.add_child(b)
+	names.add_child(_sheet_text("Level %d %s  ·  %s" % [u.level, u.unit_class, where], 17, SHEET_FADED))
+	for t in [["overview", "Character"], ["about", "About the %s" % u.unit_class]]:
+		head.add_child(_sheet_tab(t[1], t[0]))
+	var gloss := UiStyle.link("%s in the glossary" % u.unit_class, 17, "What the %s is and does" % u.unit_class, _open_glossary.bind(u.unit_class))
+	gloss.add_theme_color_override("font_color", SHEET_GOLD)
+	head.add_child(gloss)
+	var x := UiStyle.close_x(_close_unit)
+	x.add_theme_color_override("icon_normal_color", SHEET_GOLD)
+	head.add_child(x)
+	col.add_child(_sheet_rule())
 	var body: Control = _unit_overview(u, sq, locked) if _unit_tab == "overview" else _unit_about(u)
 	body.size_flags_vertical = SIZE_EXPAND_FILL
 	col.add_child(body)
 	col.add_child(UiStyle.label(_status.text, 16, UiStyle.ACCENT))
+
+
+## The character sheet's frame (playtest round 13): dark leather in a gold double border,
+## the size the unit panel always had. Returns the column the sheet fills.
+func _sheet_frame(center: Control) -> VBoxContainer:
+	var outer := PanelContainer.new()
+	var leather := UiStyle.box(SHEET_LEATHER, 8)
+	leather.set_border_width_all(3)
+	leather.border_color = SHEET_GOLD
+	leather.set_corner_radius_all(6)
+	leather.shadow_color = Color(0, 0, 0, 0.6)
+	leather.shadow_size = 18
+	outer.add_theme_stylebox_override("panel", leather)
+	outer.custom_minimum_size = Vector2(1700, 900)
+	center.add_child(outer)
+	var inner := PanelContainer.new()
+	var line := UiStyle.box(SHEET_LEATHER.lightened(0.03), 22)
+	line.set_border_width_all(1)
+	line.border_color = SHEET_GOLD_DIM
+	line.set_corner_radius_all(3)
+	inner.add_theme_stylebox_override("panel", line)
+	outer.add_child(inner)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 14)
+	inner.add_child(col)
+	return col
+
+
+## A tab of the sheet: its name in the title font, underlined in gold while it's open.
+func _sheet_tab(text: String, tab: String) -> Control:
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 2)
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	var b := Button.new()
+	b.text = text
+	b.flat = true
+	b.focus_mode = FOCUS_NONE
+	b.add_theme_font_override("font", UiStyle.title_font())
+	b.add_theme_font_size_override("font_size", 22)
+	var open := _unit_tab == tab
+	for c in ["font_color", "font_focus_color", "font_pressed_color"]:
+		b.add_theme_color_override(c, SHEET_INK if open else SHEET_FADED)
+	b.add_theme_color_override("font_hover_color", SHEET_INK)
+	b.pressed.connect(func():
+		_unit_tab = tab
+		_refresh())
+	box.add_child(b)
+	var under := ColorRect.new()
+	under.color = SHEET_GOLD if open else Color.TRANSPARENT
+	under.custom_minimum_size.y = 2
+	box.add_child(under)
+	return box
+
+
+func _sheet_text(text: String, px: int, color: Color, title := false) -> Label:
+	var l := UiStyle.label(text, px, color)
+	if title:
+		l.add_theme_font_override("font", UiStyle.title_font())
+	return l
+
+
+## A gold line across (or, `down`, a line down between columns).
+func _sheet_rule(down := false) -> ColorRect:
+	var r := ColorRect.new()
+	r.color = SHEET_GOLD_DIM
+	r.custom_minimum_size = Vector2(1, 0) if down else Vector2(0, 1)
+	return r
+
+
+## A heading in the sheet: gold title-font words over a thin line.
+func _sheet_section(text: String) -> Control:
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 4)
+	box.add_child(_sheet_text(text, 19, SHEET_GOLD, true))
+	box.add_child(_sheet_rule())
+	return box
+
+
+## The unit's card (data/unit_art/<class>.jpg) in a thin gold frame, `height` px tall;
+## a class without its card yet shows its icon on the card's shape.
+func _unit_card(unit_class: String, height: float) -> Control:
+	var frame := PanelContainer.new()
+	var look := UiStyle.box(Color("#efe3c6"), 0)
+	look.set_border_width_all(2)
+	look.border_color = SHEET_GOLD_DIM
+	frame.add_theme_stylebox_override("panel", look)
+	frame.size_flags_horizontal = SIZE_SHRINK_CENTER
+	frame.size_flags_vertical = SIZE_SHRINK_BEGIN
+	var card_size := Vector2(height * CARD_ASPECT, height)
+	var path := "res://data/unit_art/%s.jpg" % UnitIcons.file_name(unit_class)
+	var pic := TextureRect.new()
+	pic.custom_minimum_size = card_size
+	pic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	if ResourceLoader.exists(path):
+		pic.texture = load(path)
+		pic.stretch_mode = TextureRect.STRETCH_SCALE
+		pic.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	else:
+		pic.texture = UnitIcons.texture(unit_class, int(card_size.x * 0.6))
+		pic.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+	frame.add_child(pic)
+	return frame
+
+
+## A meter under the card: a coloured bar in a gold edge, its name left and value right.
+func _sheet_bar(what: String, value: float, top: float, fill: Color, text: String) -> Control:
+	var bar := ProgressBar.new()
+	bar.max_value = maxf(top, 1.0)
+	bar.value = value
+	bar.show_percentage = false
+	bar.custom_minimum_size = Vector2(0, 28)
+	var back := UiStyle.box(Color("#0e0b08"), 0)
+	back.set_border_width_all(1)
+	back.border_color = SHEET_GOLD_DIM
+	bar.add_theme_stylebox_override("background", back)
+	bar.add_theme_stylebox_override("fill", UiStyle.box(fill, 0))
+	var words := HBoxContainer.new()
+	words.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	words.offset_left = 8
+	words.offset_right = -8
+	var left := _sheet_text(what, 15, SHEET_INK, true)
+	left.size_flags_horizontal = SIZE_EXPAND_FILL
+	words.add_child(left)
+	words.add_child(_sheet_text(text, 15, SHEET_INK))
+	for l in words.get_children():
+		l.add_theme_constant_override("outline_size", 4)
+		l.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
+		l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	bar.add_child(words)
+	return bar
 
 
 ## The squad's units in reading order: front row left to right, then the back row.
@@ -495,66 +621,46 @@ func _close_unit() -> void:
 	_refresh()
 
 
-## The About tab: room for the unit type's art and description, with what the sheet says.
+## The About tab: the unit's card large, beside what the sheet says about its class.
 func _unit_about(u: Unit) -> Control:
 	var c: Dictionary = u.info(data)
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 40)
-	var art := PanelContainer.new()
-	var frame := UiStyle.box(Color(0.07, 0.08, 0.1), 0)
-	frame.set_border_width_all(2)
-	frame.border_color = Color(0.25, 0.27, 0.32)
-	art.add_theme_stylebox_override("panel", frame)
-	art.custom_minimum_size = Vector2(420, 420)
-	art.size_flags_vertical = SIZE_SHRINK_BEGIN
-	var art_note := UiStyle.label("Art coming later", 16, Color(0.4, 0.42, 0.47))
-	art_note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	art_note.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	art.add_child(art_note)
-	row.add_child(art)
+	row.add_theme_constant_override("separation", 44)
+	row.add_child(_unit_card(u.unit_class, 690))
 	var text := VBoxContainer.new()
-	text.add_theme_constant_override("separation", 10)
+	text.add_theme_constant_override("separation", 12)
+	text.size_flags_horizontal = SIZE_EXPAND_FILL
 	row.add_child(text)
-	text.add_child(UiStyle.label(u.unit_class, 26))
-	text.add_child(UiStyle.label("%s  ·  stage %d  ·  %s  ·  %s  ·  leans %s" % [c["role"], int(c["stage"]), c["size"], c["terrain"],
-			str(c["alignment_lean"]).to_lower()], 17, Color(0.8, 0.82, 0.86)))
-	text.add_child(_wrapped("No description of the %s yet." % u.unit_class if c.get("notes") == null else str(c["notes"]), 17))
-	text.add_child(UiStyle.label("Lines", 18, Color(0.65, 0.68, 0.72)))
+	text.add_child(_sheet_text(u.unit_class, 30, SHEET_INK, true))
+	text.add_child(_sheet_text("%s  ·  stage %d  ·  %s  ·  %s  ·  leans %s" % [c["role"], int(c["stage"]), c["size"], c["terrain"],
+			str(c["alignment_lean"]).to_lower()], 17, SHEET_FADED))
+	text.add_child(_sheet_wrapped("No description of the %s yet." % u.unit_class if c.get("notes") == null else str(c["notes"]), 18))
+	text.add_child(_sheet_section("Promotion lines"))
 	for line_id in c["lines"]:
 		var stages := PackedStringArray()
 		for stage in data.lines[line_id]:
 			stages.append(" / ".join(PackedStringArray(stage)))
-		text.add_child(_wrapped("  >  ".join(stages), 16))
+		text.add_child(_sheet_wrapped("  >  ".join(stages), 16))
 	return row
 
 
-## The Overview tab: who it is and its stats, what it does and its promotion, and its items.
+## The Character tab, a character sheet (playtest round 13): the card with HP and XP
+## under it; the attributes; who it is, how it fights, leads and promotes; its equipment.
 func _unit_overview(u: Unit, sq: Squad, locked: bool) -> Control:
 	var c: Dictionary = u.info(data)
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 48)
-	# Who it is and its stats
-	var who := VBoxContainer.new()
-	who.add_theme_constant_override("separation", 8)
-	who.custom_minimum_size.x = 440
-	row.add_child(who)
-	who.add_child(UiStyle.label("%s  ·  stage %d  ·  level %d  ·  XP %d / %d" % [u.unit_class, int(c["stage"]), u.level, u.xp,
-			Progression.level_cost(data, u)], 17, Color(0.8, 0.82, 0.86)))
-	if sq and sq.leader == u:
-		who.add_child(UiStyle.label("Leads %s" % sq.name, 16, Color(1, 0.88, 0.5)))
-	elif sq and c["can_lead"] and not locked:
-		var lead := UiStyle.button("Make leader", 180)
-		lead.pressed.connect(func():
-			if not army.set_leader(u):
-				_status.text = "%s can't lead %s: the squad would have too few slots." % [u.name, sq.name]
-			_refresh())
-		who.add_child(lead)
-	elif not c["can_lead"]:
-		who.add_child(UiStyle.label("Can't lead", 14, Color(0.6, 0.62, 0.66)))
-	var hp_line := HBoxContainer.new()
-	hp_line.add_theme_constant_override("separation", 12)
-	who.add_child(hp_line)
-	hp_line.add_child(UiStyle.label("HP %d / %d" % [u.hp, u.max_hp(data)] + ("  (fallen)" if not u.is_alive() else ""), 16))
+	row.add_theme_constant_override("separation", 26)
+	# The card, HP and XP
+	var card := VBoxContainer.new()
+	card.add_theme_constant_override("separation", 10)
+	card.custom_minimum_size.x = 340
+	row.add_child(card)
+	card.add_child(_unit_card(u.unit_class, 600))
+	var hp := u.max_hp(data)
+	card.add_child(_sheet_bar("HP", u.hp, hp, Color("#4f9a3c") if u.is_alive() else Color("#7a2a1e"),
+			"%d / %d" % [u.hp, hp] if u.is_alive() else "Fallen"))
+	var xp_cost := Progression.level_cost(data, u)
+	card.add_child(_sheet_bar("Level %d" % u.level, u.xp, xp_cost, Color("#8a6a2a"), "%d / %d XP" % [u.xp, xp_cost]))
 	var cost := state.heal_cost(u) + state.revive_cost(u)
 	if cost > 0:
 		var fix := _small("%s (%d g)" % ["Revive" if not u.is_alive() else "Heal to full", cost], false)
@@ -563,38 +669,120 @@ func _unit_overview(u: Unit, sq: Squad, locked: bool) -> Control:
 		fix.pressed.connect(func():
 			state.restore(u)
 			_refresh())
-		hp_line.add_child(fix)
-	who.add_child(UiStyle.label("Alignment %d (%s)  ·  Charisma %d" % [u.alignment, u.alignment_band(data), u.charisma], 16))
-	var grid := GridContainer.new()
-	grid.columns = 4
-	grid.add_theme_constant_override("h_separation", 24)
+		card.add_child(fix)
+	row.add_child(_sheet_rule(true))
+	# The attributes
+	var stats := VBoxContainer.new()
+	stats.add_theme_constant_override("separation", 20)
+	stats.custom_minimum_size.x = 190
+	row.add_child(stats)
 	for s in Unit.STATS:
-		var bonus := u.stat(data, s) - int(u.stats[s])
-		grid.add_child(UiStyle.label(s, 15, Color(0.65, 0.68, 0.72)))
-		grid.add_child(UiStyle.label("%d%s" % [u.stat(data, s), " (%+d)" % bonus if bonus != 0 else ""], 15, Color("#9fe09a") if bonus > 0 else Color.WHITE))
-	who.add_child(grid)
-	# What it does
-	var does := VBoxContainer.new()
-	does.add_theme_constant_override("separation", 8)
-	does.custom_minimum_size.x = 480
-	row.add_child(does)
-	does.add_child(UiStyle.label("Front row: %s ×%d" % [c["front_attack"], int(c["front_count"])], 16))
-	does.add_child(UiStyle.label("Back row: %s ×%d" % [c["back_attack"], int(c["back_count"])], 16))
-	does.add_child(UiStyle.label("%s  ·  %s  ·  speed tier %d%s" % [c["terrain"], c["size"], int(c["speed_tier"]),
-			"  ·  " + str(c["element"]) if c["element"] != null else ""], 15, Color(0.8, 0.82, 0.86)))
+		stats.add_child(_attribute(u, s))
+	row.add_child(_sheet_rule(true))
+	# Who it is, how it fights, leads and promotes
+	var mid := VBoxContainer.new()
+	mid.add_theme_constant_override("separation", 12)
+	mid.size_flags_horizontal = SIZE_EXPAND_FILL
+	row.add_child(mid)
+	var who := GridContainer.new()
+	who.columns = 3
+	who.add_theme_constant_override("h_separation", 10)
+	who.add_theme_constant_override("v_separation", 12)
+	for cell in [[str(u.alignment), "Alignment · " + u.alignment_band(data)], [str(u.charisma), "Charisma"], [c["role"], "Role"],
+			[c["terrain"], "Home terrain"], [c["size"], "Size"], [str(int(c["speed_tier"])), "Speed tier"]]:
+		who.add_child(_sheet_cell(str(cell[0]), cell[1]))
+	mid.add_child(who)
+	mid.add_child(_sheet_section("In battle"))
+	mid.add_child(_sheet_pair("Front row", "%s ×%d" % [c["front_attack"], int(c["front_count"])]))
+	mid.add_child(_sheet_pair("Back row", "%s ×%d" % [c["back_attack"], int(c["back_count"])]))
+	if c["element"] != null:
+		mid.add_child(_sheet_pair("Element", str(c["element"])))
 	if not c["traits"].is_empty():
-		does.add_child(_wrapped("Traits: " + ", ".join(c["traits"]), 15))
+		mid.add_child(_sheet_pair("Traits", ", ".join(c["traits"])))
+	mid.add_child(_sheet_section("Leading"))
+	if sq and sq.leader == u:
+		mid.add_child(_sheet_text("Leads %s" % sq.name, 16, SHEET_GOLD))
+	elif sq and c["can_lead"] and not locked:
+		var lead := UiStyle.button("Make leader", 180)
+		lead.size_flags_horizontal = SIZE_SHRINK_BEGIN
+		lead.pressed.connect(func():
+			if not army.set_leader(u):
+				_status.text = "%s can't lead %s: the squad would have too few slots." % [u.name, sq.name]
+			_refresh())
+		mid.add_child(lead)
+	else:
+		mid.add_child(_sheet_text("Can lead a squad" if c["can_lead"] else "Can't lead a squad", 16, SHEET_FADED))
 	if c["leader_aura"] != null:
-		does.add_child(_wrapped("Leader aura: %s. %s" % [c["leader_aura"], c.get("leader_aura_text", "")], 15))
-	does.add_child(_promotion(u, locked))
-	# Items
+		mid.add_child(_sheet_pair("Aura", "%s%s" % [c["leader_aura"], ": " + str(c["leader_aura_text"]) if c.get("leader_aura_text") else ""]))
+	mid.add_child(_sheet_section("Promotion"))
+	mid.add_child(_promotion(u, locked))
+	row.add_child(_sheet_rule(true))
+	# Equipment
 	var gear := VBoxContainer.new()
-	gear.add_theme_constant_override("separation", 8)
+	gear.add_theme_constant_override("separation", 12)
 	row.add_child(gear)
-	gear.add_child(UiStyle.label("Items", 18))
+	gear.add_child(_sheet_section("Equipment"))
 	for slot in data.items["slots"]:
 		gear.add_child(_item_picker(u, slot))
 	return row
+
+
+## One attribute: its icon, its value in the title font (what items and auras add, in
+## green), and its name under it.
+func _attribute(u: Unit, s: String) -> Control:
+	var line := HBoxContainer.new()
+	line.add_theme_constant_override("separation", 12)
+	line.tooltip_text = "%s (%s)" % [STAT_LOOK[s][1], s]
+	var pic := TextureRect.new()
+	pic.texture = UiStyle.svg(STAT_LOOK[s][0], 34, SHEET_GOLD)
+	pic.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+	pic.custom_minimum_size = Vector2(34, 0)
+	line.add_child(pic)
+	var words := VBoxContainer.new()
+	words.add_theme_constant_override("separation", -4)
+	line.add_child(words)
+	var value := HBoxContainer.new()
+	value.add_theme_constant_override("separation", 6)
+	words.add_child(value)
+	var bonus := u.stat(data, s) - int(u.stats[s])
+	value.add_child(_sheet_text(str(u.stat(data, s)), 30, SHEET_INK, true))
+	if bonus != 0:
+		var b := _sheet_text("%+d" % bonus, 15, Color("#9fe09a") if bonus > 0 else Color("#e0908a"))
+		b.size_flags_vertical = SIZE_SHRINK_CENTER
+		value.add_child(b)
+	words.add_child(_sheet_text(STAT_LOOK[s][1], 14, SHEET_FADED))
+	return line
+
+
+## A value over what it is, centred, for the sheet's top grid.
+func _sheet_cell(value: String, what: String) -> Control:
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 0)
+	box.size_flags_horizontal = SIZE_EXPAND_FILL
+	for l in [_sheet_text(value, 21, SHEET_INK, true), _sheet_text(what, 13, SHEET_FADED)]:
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		box.add_child(l)
+	return box
+
+
+## What it is and its value on one line ("Front row   Melee ×3"), the value wrapping.
+func _sheet_pair(what: String, value: String) -> Control:
+	var line := HBoxContainer.new()
+	line.add_theme_constant_override("separation", 14)
+	var n := _sheet_text(what, 15, SHEET_FADED)
+	n.custom_minimum_size.x = 90
+	n.size_flags_vertical = SIZE_SHRINK_BEGIN
+	line.add_child(n)
+	var v := _sheet_wrapped(value, 16)
+	v.size_flags_horizontal = SIZE_EXPAND_FILL
+	line.add_child(v)
+	return line
+
+
+func _sheet_wrapped(text: String, px: int) -> Label:
+	var l := _wrapped(text, px)
+	l.add_theme_color_override("font_color", SHEET_INK)
+	return l
 
 
 ## Promotion (§9.4): a button per class the unit can become now, or when it can next promote.
