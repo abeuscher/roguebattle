@@ -18,6 +18,41 @@ static func box(color: Color, margin: int) -> StyleBoxFlat:
 	return b
 
 
+## A picture filling its parent, scaled to cover and pinned to the bottom right (the top
+## and left crop first), under the window color laid on from the top left: `fade` is
+## [[where 0-1 along the diagonal, opacity], ...].
+static func picture_behind(texture: Texture2D, fade: Array) -> Control:
+	var box := Control.new()
+	box.clip_contents = true
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var pic := TextureRect.new()
+	pic.texture = texture
+	pic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	pic.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(pic)
+	var g := Gradient.new()
+	g.offsets = PackedFloat32Array()
+	g.colors = PackedColorArray()
+	for p in fade:
+		g.add_point(float(p[0]), Color(PANEL, float(p[1])))
+	var shade := TextureRect.new()
+	var gt := GradientTexture2D.new()
+	gt.gradient = g
+	gt.fill_from = Vector2.ZERO
+	gt.fill_to = Vector2.ONE
+	shade.texture = gt
+	shade.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(shade)
+	box.resized.connect(func():
+		var t := texture.get_size()
+		var s := maxf(box.size.x / t.x, box.size.y / t.y)
+		pic.size = t * s
+		pic.position = box.size - pic.size)
+	return box
+
+
 ## Click-off-to-close for a modal: a left click on its shade (outside the popup) runs
 ## `action`. The full-screen container that centers the popup lets clicks through to it.
 static func close_on_click(shade: Control, center: Control, action: Callable) -> void:
