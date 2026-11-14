@@ -121,6 +121,7 @@ func _refresh() -> void:
 	for t in tabs:
 		_tabs.add_child(_tab_button(t[0], t[1]))
 	for c in _list.get_children():
+		_list.remove_child(c)  # at once, for the same reason as in _show_detail
 		c.queue_free()
 	var lines := _lines()
 	if _picked == "" or not lines.any(func(l): return l.get("key", "") == _picked):
@@ -149,6 +150,7 @@ func _tab_button(id: String, text: String) -> Button:
 		if _tab != id:
 			_tab = id
 			_picked = ""
+			(_list.get_parent() as ScrollContainer).scroll_vertical = 0  # a new tab starts at the top
 			_refresh())
 	return b
 
@@ -298,6 +300,7 @@ func _swatch(kind: String, title: String, px: int) -> Control:
 ## the gold before and after, and the button.
 func _show_detail(picked: Array) -> void:
 	for c in _detail.get_children():
+		_detail.remove_child(c)  # at once: kept a frame beside the new one, it stretched the window and cut the list's scroll short
 		c.queue_free()
 	if picked.is_empty():
 		var n := UiStyle.label("Pick something on the left." if _tab != "heal" else "Nothing to do here.", 15, MUTED)
