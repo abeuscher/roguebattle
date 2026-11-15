@@ -5,8 +5,26 @@ extends TestCase
 var d := GameData.load_dir()
 
 
+## The defaults, with the Edit Units introduction already seen (most tests are about the tips after it).
 func _options() -> Dictionary:
+	var o := _fresh()
+	PlayerTips.mark_seen(o, "edit_units_intro", false)
+	return o
+
+
+func _fresh() -> Dictionary:
 	return PlayerOptions.load_values(d, "user://no_such_options.json")  # the defaults
+
+
+## Playtest round 17: Edit Units introduces itself first, centred (the user's words);
+## the drag-a-leader tip follows the next time it opens.
+func test_edit_units_introduces_itself_first() -> void:
+	var o := _fresh()
+	check_eq(PlayerTips.due(d, o, "edit_units_open", "single_map"), "edit_units_intro", "first on Edit Units")
+	check_eq(d.tips["tips"]["edit_units_intro"]["anchor"], "center", "in the middle of the screen")
+	check(str(d.tips["tips"]["edit_units_intro"]["text"]).begins_with("This is the Edit Units screen."), "with the user's text")
+	PlayerTips.mark_seen(o, "edit_units_intro", false)
+	check_eq(PlayerTips.due(d, o, "edit_units_open", "single_map"), "build_squad", "then building squads")
 
 
 func test_the_first_tip_is_due_on_the_opening_edit_units() -> void:
@@ -96,7 +114,7 @@ func test_reset_shows_every_tip_again() -> void:
 	check_eq(PlayerTips.due(d, o, "edit_units_open", "single_map"), "", "seen: not due")
 	PlayerTips.reset(o, false)
 	check((o["tips_seen"] as Array).is_empty(), "nothing seen after a reset")
-	check_eq(PlayerTips.due(d, o, "edit_units_open", "single_map"), "build_squad", "due again")
+	check_eq(PlayerTips.due(d, o, "edit_units_open", "single_map"), "edit_units_intro", "due again, from the first")
 	check_eq(PlayerTips.due(d, o, "time_started", "single_map"), "time_controls", "every one")
 
 

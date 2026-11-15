@@ -63,6 +63,10 @@ func retarget(target: Rect2) -> void:
 func _place() -> void:
 	_panel.reset_size()
 	var screen := get_viewport_rect().size
+	if _target.size == Vector2.ZERO:  # anchor "center": mid-screen, no arrow
+		_panel.global_position = (screen - _panel.size) / 2.0
+		queue_redraw()
+		return
 	var x := _target.position.x - GAP - _panel.size.x
 	if x < 16:
 		x = _target.end.x + GAP
@@ -75,6 +79,8 @@ func _place() -> void:
 ## The arrow: a wedge from the panel's near edge to the target's edge, and an outline
 ## round the target so it's clear what the tip means.
 func _draw() -> void:
+	if _target.size == Vector2.ZERO:
+		return
 	var p := Rect2(_panel.global_position - global_position, _panel.size)
 	var t := Rect2(_target.position - global_position, _target.size)
 	var left := p.position.x > t.position.x  # panel to the right of the target
