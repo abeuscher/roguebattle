@@ -126,3 +126,16 @@ func test_the_neutral_band_tip() -> void:
 	check(str(d.tips["tips"]["neutral_met"]["text"]).begins_with("In the course of your travels"), "with the user's text")
 	check_eq(d.tips["tips"]["neutral_met"]["anchor"], "panel", "beside the band's window")
 
+
+## Round 17: the Opinion Leader's squad, straight after the Edit Units introduction, and the
+## home base once it's on screen (the user's words), each only while that defeat is on.
+func test_the_opinion_leader_and_home_base_tips() -> void:
+	var o := _options()
+	check_eq(PlayerTips.due(d, o, "after:edit_units_intro", "single_map", ["defeat_leader"]), "opinion_leader", "after the introduction")
+	check_eq(PlayerTips.due(d, o, "after:edit_units_intro", "single_map"), "", "not when losing the leader doesn't lose the map")
+	check(str(d.tips["tips"]["opinion_leader"]["text"]).contains("{leader}"), "it names the leader")
+	check_eq(d.tips["tips"]["opinion_leader"]["anchor"], "leader_squad", "pointing at the squad's card")
+	check_eq(PlayerTips.due(d, o, "base_in_view", "single_map", ["defeat_base"]), "home_base", "the home base")
+	check_eq(PlayerTips.due(d, o, "base_in_view", "single_map"), "", "not when losing the base doesn't lose the map")
+	check_eq(d.tips["tips"]["home_base"]["anchor"], "player_base", "pointing at the base")
+

@@ -46,6 +46,7 @@ var _modal: Control  # the unit detail panel while open
 var _glossary: UnitGlossary  # the unit glossary, over the unit detail panel
 var _title := UiStyle.label("Edit Units", 26)
 var _main := VBoxContainer.new()
+var _cards := {}  # army cell -> its card in the army view (for a tip pointing at one)
 var _pool := VBoxContainer.new()
 var _gutter_box: Control  # the recruit pool's panel, which a player tip points at
 var _tab := "recruits"  # the gutter shows "recruits" or "items"
@@ -201,6 +202,10 @@ func anchor(name: String) -> Rect2:
 	match name:
 		"recruit_pool":
 			return _gutter_box.get_global_rect()
+		"leader_squad":  # the Opinion Leader's squad card in the army view
+			var cell := army.cells.find(state.opinion_leader_squad())
+			if _cards.has(cell) and is_instance_valid(_cards[cell]) and _cards[cell].is_visible_in_tree():
+				return _cards[cell].get_global_rect()
 	return Rect2()
 
 
@@ -257,13 +262,15 @@ func _refresh() -> void:
 # --- Overview -----------------------------------------------------------------------
 
 func _overview() -> Control:
+	_cards.clear()
 	var grid := GridContainer.new()
 	grid.columns = 4
 	grid.size_flags_horizontal = SIZE_EXPAND_FILL
 	grid.add_theme_constant_override("h_separation", 12)
 	grid.add_theme_constant_override("v_separation", 12)
 	for i in army.cells.size():
-		grid.add_child(_card(i))
+		_cards[i] = _card(i)
+		grid.add_child(_cards[i])
 	if army.cells.size() <= 16:
 		return grid
 	var scroll := ScrollContainer.new()  # a big map's army runs past four rows (round 16)

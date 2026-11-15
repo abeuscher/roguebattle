@@ -44,6 +44,7 @@ var _battle: BattleView
 var _encounter: EncounterPopup
 var _tip: TipPopup  # the player tip showing, if any (one at a time)
 var _tip_hex := -1  # the map hex it points at, for a tip anchored on the map; else -1
+var _base_tip_asked := false  # the home base tip has been offered this session
 var _flying_to_fight := false  # a ranged attack's battle waits while the camera glides to it
 ## A battle the recruit popup already announced (refused, or Fight), which opens with no
 ## encounter popup. Tied to that battle, so a recruit that ends in no fight can't make
@@ -212,6 +213,7 @@ func _process(delta: float) -> void:
 	if state.game_over != "" and _free():
 		_open_end_screen()
 	_hold_clock()
+	_base_tip()
 	if not state.notices.is_empty():
 		var news := "  ·  ".join(state.notices)
 		hud.show_banner_links(news, 4.0, _place_links(news))
@@ -1015,10 +1017,10 @@ func _offer_tip(moment: String, host: Control) -> void:
 	var town := _garrison_town()
 	var at: Rect2 = host.anchor(t["anchor"])
 	var hex := -1
-	if t["anchor"] == "garrison_town":
-		if town.is_empty():
+	if t["anchor"] in ["garrison_town", "player_base"]:
+		if t["anchor"] == "garrison_town" and town.is_empty():
 			return
-		hex = town["hex"]
+		hex = town["hex"] if t["anchor"] == "garrison_town" else state.map.player_base
 		at = _hex_rect(hex)
 		if not get_viewport().get_visible_rect().encloses(at):
 			return  # off screen (the map was moved): left for the next time the map opens
@@ -1028,8 +1030,12 @@ func _offer_tip(moment: String, host: Control) -> void:
 	_tip = tip
 	_tip_hex = hex
 	host.add_child(tip)
-	tip.setup(str(t["text"]).format({"town": town.get("name", "the town")}), at, options)
+	var leader := state.opinion_leader.name if state.opinion_leader else "your leader"
+	tip.setup(str(t["text"]).format({"town": town.get("name", "the town"), "leader": leader}), at, options)
 	tip.closed.connect(tip.queue_free)
+	tip.closed.connect(func():  # a tip that follows on from this one (tips.json moment "after:<id>")
+		if is_instance_valid(host):
+			_offer_tip("after:" + id, host))
 	tip.tree_exiting.connect(func(): PlayerTips.mark_seen(options, id))  # seen, even if its window closes first
 
 
@@ -1044,6 +1050,9 @@ func _hex_rect(hex: int) -> Rect2:
 ## "enemy:<class>" for each class in the enemy squad of the battle under way.
 func _tip_facts() -> Array:
 	var facts := ["flyer"] if state.army.units().any(func(u: Unit): return u.has_tag(data, "flyer")) else []
+	for k in ["defeat_leader", "defeat_base"]:
+		if state.settings.get(k, false):
+			facts.append(k)
 	if state.pending:
 		for u in state.pending.sides[1].units:
 			facts.append("enemy:" + u.unit_class)
@@ -1233,6 +1242,17 @@ func _open_ledger(entry: Dictionary) -> void:
 	_ledger.closed.connect(func():
 		_ledger.queue_free()
 		_ledger = null)
+
+
+## The home base tip (round 17): once time runs, the first moment the Player Base is on
+## screen with nothing else open or showing. Asked once a session.
+func _base_tip() -> void:
+	if _base_tip_asked or _awaiting_start or state.clock.paused or is_instance_valid(_tip) or not _free():
+		return
+	if not get_viewport().get_visible_rect().encloses(_hex_rect(state.map.player_base)):
+		return
+	_base_tip_asked = true
+	_offer_tip("base_in_view", hud)
 
 
 ## The time controls tip (user, 2026-11-14), the first time time runs: after any tip

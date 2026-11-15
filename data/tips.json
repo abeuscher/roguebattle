@@ -1,10 +1,16 @@
 {
- "_note": "Player tips (ROADMAP M4 session 33). Each tip shows once, the first time its moment comes, while the player's \"Show player tips\" option is on; tips seen are remembered in the options, not the save. moment: where the game asks for a tip (edit_units_open: Edit Units opens; map_open: the map shows with nothing over it, after the opening Edit Units, or at the start of a Quick start game; encounter_open: the encounter dialog before a fight shows; squad_menu_open: a squad's menu opens; time_started: time first runs in a game (the player unpauses); battle_over: a battle's results show; fight_started: a battle begins playing (the tip pauses it, its controls showing); town_liberated, tower_liberated: the liberation window for one opens; neutral_met: the window for meeting a neutral band opens, Recruit, Fight or Sneak past). anchor: the part of the screen the popup points at (center: none, the tip sits in the middle of the screen with no arrow; recruit_pool: the Recruits list in Edit Units; deploy_button: the toolbar's Deploy Squad; garrison_town: the town Quick start's Garrison holds, on the map, framed with your base first; panel: the liberation window, the encounter dialog or the neutral band's window; actions: the squad menu's row of buttons; results: the end-of-battle panel; tactic: the battle's Tactic menu; speed: the game speed menu under the minimap). needs: a fact the tip waits for (flyer: the army has a flying unit; enemy:<class>: that class is in the enemy squad of the battle under way). modes: game modes it shows in (single_map, campaign, quick_start); missing means all. {town} in a tip's text is the Garrison's town. Tips are offered in this order.",
+ "_note": "Player tips (ROADMAP M4 session 33). Each tip shows once, the first time its moment comes, while the player's \"Show player tips\" option is on; tips seen are remembered in the options, not the save. moment: where the game asks for a tip (edit_units_open: Edit Units opens; map_open: the map shows with nothing over it, after the opening Edit Units, or at the start of a Quick start game; encounter_open: the encounter dialog before a fight shows; squad_menu_open: a squad's menu opens; time_started: time first runs in a game (the player unpauses); battle_over: a battle's results show; fight_started: a battle begins playing (the tip pauses it, its controls showing); town_liberated, tower_liberated: the liberation window for one opens; neutral_met: the window for meeting a neutral band opens, Recruit, Fight or Sneak past; base_in_view: time is running and the Player Base is on screen; after:<id>: the tip <id> has just been closed, the next tip following on from it). anchor: the part of the screen the popup points at (center: none, the tip sits in the middle of the screen with no arrow; recruit_pool: the Recruits list in Edit Units; deploy_button: the toolbar's Deploy Squad; garrison_town: the town Quick start's Garrison holds, on the map, framed with your base first; panel: the liberation window, the encounter dialog or the neutral band's window; actions: the squad menu's row of buttons; results: the end-of-battle panel; tactic: the battle's Tactic menu; speed: the game speed menu under the minimap; leader_squad: the Opinion Leader's squad card in Edit Units; player_base: the Player Base, on the map). needs: a fact the tip waits for (flyer: the army has a flying unit; enemy:<class>: that class is in the enemy squad of the battle under way; defeat_leader, defeat_base: that defeat is on for this map). modes: game modes it shows in (single_map, campaign, quick_start); missing means all. {town} in a tip's text is the Garrison's town; {leader} is the Opinion Leader's name. Tips are offered in this order.",
  "tips": {
   "edit_units_intro": {
    "moment": "edit_units_open",
    "anchor": "center",
    "text": "This is the Edit Units screen. Here you can arrange your squads prior to their deployment. By default, your initial squads are assembled for you but feel free to optimize them as you see fit. When you are ready, click the Done button in the top right to return to the main map view."
+  },
+  "opinion_leader": {
+   "moment": "after:edit_units_intro",
+   "anchor": "leader_squad",
+   "needs": "defeat_leader",
+   "text": "This is your Opinion Leader's squad. If your Opinion Leader, {leader}, falls, you lose this engagement."
   },
   "build_squad": {
    "moment": "edit_units_open",
@@ -74,6 +80,12 @@
    "moment": "neutral_met",
    "anchor": "panel",
    "text": "In the course of your travels, you will encounter unallied units. These groups might be persuaded to join your cause, or they might prove violent. It is up to you whether to try and engage or to do your best to avoid them. Be warned - neutral parties can vary in power greatly, and can prove to be a great asset or a source of great pain to your army."
+  },
+  "home_base": {
+   "moment": "base_in_view",
+   "anchor": "player_base",
+   "needs": "defeat_base",
+   "text": "This is your home base. Defend it with your strongest soldiers, for if it falls, you lose this engagement."
   }
  }
 }
