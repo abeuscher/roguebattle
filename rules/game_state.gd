@@ -29,6 +29,7 @@ var revealed := {}  # building index -> true for hidden sites and lairs a squad 
 var _contact_until := {}  # "player id:enemy id" -> tick before which the pair won't fight again
 var _moved := {}  # squads that entered a new hex this tick
 var _building_at := {}  # hex -> index in map.buildings
+var _river_hexes := {}  # hex -> true for every river hex, built on first use (ambience_facts)
 var notices: Array[String] = []  # short news for the HUD banner, oldest first (a squad of yours stopped)
 var notes := []  # the notifications log: every notice shown, oldest first ({when, text, links}); the map screen fills it
 var noon_report := ""  # the last noon's ledger in one line, for the HUD banner
@@ -2831,6 +2832,46 @@ func set_speed_index(index: int) -> void:
 	clock.set_speed_index(index)
 	if clock.speed_index != before:
 		log.add(clock.tick, "system", "Game speed: %s (x%s)." % [speed_name(), clock.speed()])
+
+
+## What's true on the map for the conditional ambience (audio.json map_ambience
+## shot_needs; user 2026-11-14): "mounted_moving" while a squad in sight is on the move
+## with a Mounted unit, "near_ocean" while a squad of yours is within 2 hexes of the sea,
+## "near_river" while one stands on or beside a river.
+func ambience_facts() -> Array:
+	var facts := []
+	for s in squads:
+		if s.is_moving() and is_visible(s) and s.living().any(func(u: Unit): return u.has_trait(data, "Mounted")):
+			facts.append("mounted_moving")
+			break
+	if _river_hexes.is_empty():
+		for r in map.rivers:
+			for i in r:
+				_river_hexes[i] = true
+	var sea := [data.terrain_ids["shallow"], data.terrain_ids["deep"]]
+	for s in player_squads():
+		if "near_river" not in facts and _within(s.hex, 1, func(i: int): return _river_hexes.has(i)):
+			facts.append("near_river")
+		if "near_ocean" not in facts and _within(s.hex, 2, func(i: int): return map.terrain[i] in sea):
+			facts.append("near_ocean")
+	return facts
+
+
+## Whether any hex within `radius` of `hex` (itself included) passes `test`.
+func _within(hex: int, radius: int, test: Callable) -> bool:
+	var seen := {hex: true}
+	var ring := [hex]
+	for step in radius + 1:
+		var next := []
+		for i in ring:
+			if test.call(i):
+				return true
+			for n in map.neighbor_indices(i):
+				if not seen.has(n):
+					seen[n] = true
+					next.append(n)
+		ring = next
+	return false
 
 
 ## Skip to action (playtest round 15): why it can't be offered now, or "" if it can. Only

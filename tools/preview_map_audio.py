@@ -83,6 +83,9 @@ def phrases(mix: np.ndarray, cfg: dict, plan: list, rng: random.Random) -> float
     return sounding / (len(mix) / RATE)
 
 
+FACTS = []  # the conditional one-shots' facts that hold in this preview (--facts)
+
+
 def ambience(mix: np.ndarray, cfg: dict, plan: list, rng: random.Random) -> None:
     folder = res(cfg["ambience"])
     fade = cfg["bed_fade"]
@@ -91,7 +94,10 @@ def ambience(mix: np.ndarray, cfg: dict, plan: list, rng: random.Random) -> None
             continue
         files = sorted(glob.glob(os.path.join(folder, cfg["pools"][state]["ambience"], "*.wav")))
         beds = [f for f in files if os.path.basename(f).lower().startswith("bed")]
-        shots = [load(f) for f in files if f not in beds]
+        anywhere = sorted(glob.glob(os.path.join(folder, cfg.get("anywhere", "any"), "*.wav")))
+        needs = cfg.get("shot_needs", {})
+        allowed = lambda f: all(not os.path.basename(f).startswith(k) or v in FACTS for k, v in needs.items())
+        shots = [load(f) for f in files + anywhere if f not in beds and allowed(f)]
         if beds:
             bed = load(beds[0])
             a, b = round(max(0, start - fade / 2) * RATE), round(min(len(mix) / RATE, end + fade / 2) * RATE)
@@ -120,9 +126,11 @@ if __name__ == "__main__":
     ap.add_argument("--state", choices=["day", "night", "cycle", "title", "victory"], default="cycle")
     ap.add_argument("--minutes", type=float, default=6.0)
     ap.add_argument("--seed", type=int, default=1)
+    ap.add_argument("--facts", default="", help="conditional one-shots to include, e.g. mounted_moving,near_river,near_ocean")
     ap.add_argument("--out", default="", help="default: logs/map_preview_<state>.wav")
     a = ap.parse_args()
     cfg = json.load(open(os.path.join(ROOT, "data", "audio.json"), encoding="utf-8"))["map_ambience"]
+    FACTS.extend(f for f in a.facts.split(",") if f)
     seconds = a.minutes * 60
     plan = [("day", 0, seconds / 2), ("night", seconds / 2, seconds)] if a.state == "cycle" else [(a.state, 0, seconds)]
     rng = random.Random(a.seed)

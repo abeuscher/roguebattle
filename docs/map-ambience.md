@@ -26,9 +26,10 @@ The same roots, two bars each, in both: **D, C, G, D**.
 ## The ambience
 
 - **Bed:** a 1 to 2 minute loop per state, very quiet: wind and grass by day, crickets and low wind by night. It crossfades over 8 s at dusk and dawn.
-- **One-shots:** one every 6 to 25 s, at a random volume, pitched a little up or down, panned at random. Day: songbirds, a distant chapel bell, a stream, far-off hammering, sheep, a banner flapping. Night: an owl, distant wolves, a crow, creaking timber, a gust.
-- **The bell turned:** the day's chapel bell, an octave down with a long tail, struck once at night. The holy sound made sinister, as the music is.
-- **Later, maybe:** sounds tied to map features (birds near forests, water near rivers, bells near temples), so the soundscape changes as the camera moves.
+- **One-shots:** one every 60 to 100 s for now, a little less often than the piano's phrases (user, 2026-11-14; to tune by ear), at a random volume, pitched a little up or down. Day: songbirds, a banner flapping, a gust. Night: an owl, a crow, creaking timber, a gust.
+- **Conditional one-shots** (user, 2026-11-14), day or night, in the same random draw as the rest but only while their condition holds: hooves (a mounted unit on the move in sight), waves (a squad of yours near the sea), a river (one beside a river). More conditions are welcome, but no bells, and nothing a unit in the game could make (no wolves, sheep or frogs), so the ambience never sounds like a squad that isn't there.
+- **Only on the map:** the menus play the day's phrases without the ambience; Edit Units and battles have their own music.
+- **Drafts:** `tools/draft_ambience.py` synthesizes a first version of every sound into `ambience_src/`; the user replaces any with recordings or open-licence sounds.
 
 ## In the game (ROADMAP M5 session 10)
 

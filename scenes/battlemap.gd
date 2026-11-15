@@ -68,6 +68,7 @@ var _selected: Squad  # the squad whose menu or move order is open (the game is 
 var _planning := false  # laying rally points for _selected
 var _firing := false  # choosing a ranged-attack target for _selected
 var _skipping := false  # skip to action running (playtest round 15)
+var _amb_clock := 0.0  # seconds to the next update of the ambience's facts
 var _portaling := false  # choosing a glowing temple for _selected to step to (user's notes, 2026-11-11)
 var _glow: PortalGlow
 var _shown_sites := {}  # building index -> true once its icon is revealed
@@ -180,6 +181,10 @@ func _process(delta: float) -> void:
 	if state == null:
 		return
 	_hold_clock()  # whatever input opened since last frame stops time before it moves on
+	_amb_clock -= delta  # the conditional ambience's facts, once a second (cheap enough, not every frame)
+	if _amb_clock <= 0.0:
+		_amb_clock = 1.0
+		Sound.ambience_facts(state.ambience_facts())
 	if _skipping:
 		_skip_frame()
 	else:

@@ -1,6 +1,6 @@
 """Get environmental sounds ready for the map's ambience (docs/map-ambience.md).
 
-data/audio/ambience_src/<day|night>/<name>.<wav, or anything ffmpeg reads> (downloads
+data/audio/ambience_src/<day|night|any>/<name>.<wav, or anything ffmpeg reads> (downloads
 and recordings as they came, never changed; Godot ignores that folder) ->
 data/audio/ambience/<day|night>/<name>.wav (what the game plays):
 
@@ -33,7 +33,7 @@ import render_audio as ra
 ROOT = ra.ROOT
 SOURCE = os.path.join(ROOT, "data", "audio", "ambience_src")
 OUT = os.path.join(ROOT, "data", "audio", "ambience")
-STATES = ["day", "night"]
+STATES = ["day", "night", "any"]  # any: one-shots for day and night alike, some only when their condition holds
 PEAK = 10 ** (-1 / 20)
 BED_LOUDNESS = 10 ** (-24 / 20)
 SHOT_LOUDNESS = 10 ** (-20 / 20)

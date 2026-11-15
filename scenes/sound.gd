@@ -28,6 +28,7 @@ var _turn_next := false  # the dusk or dawn turn plays when the phrase playing e
 var _amb_state := ""
 var _amb_gen := 0
 var _bed: AudioStreamPlayer
+var _facts: Array = []  # what's true on the map now, for the conditional one-shots (GameState.ambience_facts)
 var _rng := RandomNumberGenerator.new()  # the sound player's own, apart from the game's seeded streams
 var queue := {}  # audio.json "queue"
 var _queue_free_at := 0.0  # when the last queued stinger or voice line ends (seconds, engine time)
@@ -84,6 +85,13 @@ static func battle_cue(audio: Dictionary, info: Dictionary, kind: String) -> Str
 		if sound == "":
 			sound = str(b.get("ranged" if ranged else "melee", ""))
 	return "battle_" + sound
+
+
+## What's true on the map now (GameState.ambience_facts), for the one-shots that only play
+## under a condition (audio.json map_ambience shot_needs).
+static func ambience_facts(facts: Array) -> void:
+	if _it:
+		_it._facts = facts
 
 
 ## The music cue for a place (audio.json "music": menus, day, night, army, victory,
@@ -344,13 +352,17 @@ func _ambience(state: String) -> void:
 		_bed = null
 	if state == "":
 		return
-	var dir := str(amb.get("ambience", "")) + state + "/"
 	var shots := []
-	if DirAccess.dir_exists_absolute(dir):
+	for folder in [state, str(amb.get("anywhere", ""))]:  # the state's sounds, and those for any time
+		var dir: String = str(amb.get("ambience", "")) + folder + "/"
+		if folder == "" or not DirAccess.dir_exists_absolute(dir):
+			continue
 		for f in ResourceLoader.list_directory(dir):
 			if f.get_extension() != "wav":
 				continue
-			if f.begins_with("bed") and _bed == null:
+			if not f.begins_with("bed"):
+				shots.append(dir + f)
+			elif _bed == null and folder == state:
 				var bed := _stream(dir + f) as AudioStreamWAV
 				bed.loop_mode = AudioStreamWAV.LOOP_FORWARD
 				bed.loop_begin = 0
@@ -362,28 +374,41 @@ func _ambience(state: String) -> void:
 				add_child(_bed)
 				_bed.play()
 				_bed.create_tween().tween_property(_bed, "volume_db", float(amb.get("bed_db", 0.0)), fade)
-			elif not f.begins_with("bed"):
-				shots.append(dir + f)
 	if not shots.is_empty():
 		_shot(shots, _amb_gen)
 
 
+## The next one-shot, after a random gap: one of `shots` whose condition holds (a file
+## named for a key in shot_needs plays only while that fact is true); none this time if
+## none does.
 func _shot(shots: Array, gen: int) -> void:
 	var g: Array = amb.get("shot_gap", [6, 25])
 	get_tree().create_timer(_rng.randf_range(float(g[0]), float(g[1]))).timeout.connect(func():
 		if gen != _amb_gen:
 			return
-		var p := AudioStreamPlayer.new()
-		p.stream = _stream(shots[_rng.randi() % shots.size()])
-		p.bus = "Effects"
-		var v: Array = amb.get("shot_db", [-10, -10])
-		p.volume_db = _rng.randf_range(float(v[0]), float(v[1]))
-		var pitch := float(amb.get("shot_pitch", 0.0))
-		p.pitch_scale = 1.0 + _rng.randf_range(-pitch, pitch)
-		add_child(p)
-		p.finished.connect(p.queue_free)
-		p.play()
+		var ready := shots.filter(func(f: String): return Sound.shot_allowed(amb, f.get_file(), _facts))
+		if not ready.is_empty():
+			var p := AudioStreamPlayer.new()
+			p.stream = _stream(ready[_rng.randi() % ready.size()])
+			p.bus = "Effects"
+			var v: Array = amb.get("shot_db", [-10, -10])
+			p.volume_db = _rng.randf_range(float(v[0]), float(v[1]))
+			var pitch := float(amb.get("shot_pitch", 0.0))
+			p.pitch_scale = 1.0 + _rng.randf_range(-pitch, pitch)
+			add_child(p)
+			p.finished.connect(p.queue_free)
+			p.play()
 		_shot(shots, gen))
+
+
+## Whether the one-shot `file` may play given `facts`: always, unless its name starts with
+## a key of map_ambience shot_needs whose fact isn't among them.
+static func shot_allowed(ambience: Dictionary, file: String, facts: Array) -> bool:
+	var needs: Dictionary = ambience.get("shot_needs", {})
+	for key in needs:
+		if file.begins_with(key):
+			return needs[key] in facts
+	return true
 
 
 func _stream(file: String) -> AudioStream:
