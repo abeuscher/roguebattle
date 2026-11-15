@@ -266,27 +266,35 @@ func test_tactics() -> void:
 	check_eq(b.pick_target(a, "Melee", targets, "leader").name, "Lead", "Leader focuses the leader")
 	check_eq(b.pick_target(a, "Melee", targets, "strong").name, "Lead", "Strong focuses the highest stat total")
 	var best := b.pick_target(a, "Melee", targets, "best")
-	for t in targets:
-		check(minf(b.expected_damage(a, best, "Melee"), best.hp) >= minf(b.expected_damage(a, t, "Melee"), t.hp), "Best takes off the most HP")
+	check_eq(best.name, "Weak", "Best finishes off the unit at 5 HP")
 
 
-## Round 19: Best counts only the HP a hit can actually take off. A unit with 2 HP left
-## is worth 2 to it, however hard the hit would land, so a full-health unit that loses
-## more to the same hit comes first; and between two hits that each finish a unit off, the
-## bigger kill.
-func test_best_counts_only_hp_left() -> void:
+## Round 19: Best finishes units off. Removing a unit cuts the damage coming back, so a hit
+## expected to kill beats a bigger one that doesn't; between kills, the more dangerous unit;
+## with no kill, the most HP actually taken off.
+func test_best_finishes_units_off() -> void:
 	var nearly := _unit("Bowman", "front", "Nearly")
-	var fresh := _unit("Bowman", "front", "Fresh")
+	var fresh := _unit("Knight", "front", "Fresh")
 	var a := _unit("Fighter")
 	var b := _battle([a], [nearly, fresh])
-	var hit := b.expected_damage(a, fresh, "Melee")
-	nearly.hp = 2
-	nearly.stats["PDEF"] = 0  # the bigger hit lands on the nearly dead one, but most of it is wasted
 	var targets := b.reachable(a, "Melee", b.sides[1])
-	check(b.expected_damage(a, nearly, "Melee") > hit and hit > 2, "the bigger number is on the nearly dead one")
-	check_eq(b.pick_target(a, "Melee", targets, "best").name, "Fresh", "Best takes the hit that takes off more HP")
-	fresh.hp = 3
-	check_eq(b.pick_target(a, "Melee", targets, "best").name, "Fresh", "both finished off: the bigger kill")
+	var on_fresh := b.expected_damage(a, fresh, "Melee")
+	nearly.hp = 2
+	fresh.stats["PDEF"] = 0  # the bigger hit lands on the fresh Knight, but doesn't kill it
+	on_fresh = b.expected_damage(a, fresh, "Melee")
+	check(on_fresh > 2 and on_fresh < fresh.hp, "a bigger hit on the fresh one, not a kill")
+	check_eq(b.pick_target(a, "Melee", targets, "best").name, "Nearly", "Best takes the kill")
+	fresh.hp = 1
+	check(Threat.unit(d, fresh) > Threat.unit(d, nearly), "the Knight is the more dangerous")
+	check_eq(b.pick_target(a, "Melee", targets, "best").name, "Fresh", "both killable: the more dangerous")
+	nearly.hp = nearly.max_hp(d)
+	fresh.hp = fresh.max_hp(d)
+	nearly.stats["PDEF"] = 0
+	nearly.stats["CON"] = 99
+	nearly.hp = nearly.max_hp(d)
+	var pick := b.pick_target(a, "Melee", targets, "best")
+	var other := fresh if pick == nearly else nearly
+	check(minf(b.expected_damage(a, pick, "Melee"), pick.hp) >= minf(b.expected_damage(a, other, "Melee"), other.hp), "no kill: the most HP taken off")
 
 
 func test_battle_runs_to_an_end() -> void:

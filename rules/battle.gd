@@ -1108,12 +1108,22 @@ func pick_target(u: Unit, base: String, targets: Array[Unit], tactic: String) ->
 			"weak":
 				if t.hp < best.hp:
 					best = t
-			_:  # Best: the most HP actually taken off, so damage past a unit's last HP counts for nothing (round 19)
-				var d := minf(expected_damage(u, t, base), t.hp)
-				var bd := minf(expected_damage(u, best, base), best.hp)
-				if d > bd or (d == bd and t.hp < best.hp):
+			_:  # Best (round 19): finish a unit off if a hit can, else take off the most real HP
+				if _best_score(u, t, base) > _best_score(u, best, base):
 					best = t
 	return best
+
+
+## How much Best wants to hit `t` (round 19): removing a unit cuts the damage coming back,
+## so a hit expected to finish a unit off beats any that doesn't, and among those the most
+## dangerous unit (Threat.unit, as Strong uses) goes first. Otherwise the HP a hit actually
+## takes off, damage past a unit's last HP counting for nothing; equal, the more hurt unit.
+## Returns [kills, worth, tiebreak] for comparing in order.
+func _best_score(u: Unit, t: Unit, base: String) -> Array:
+	var d := expected_damage(u, t, base)
+	if d >= t.hp:
+		return [1, Threat.unit(data, t), -t.hp]
+	return [0, d, -t.hp]
 
 
 # --- Damage (§11.4) and modifiers (§11.5) -------------------------------------------
