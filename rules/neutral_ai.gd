@@ -1,7 +1,8 @@
 class_name NeutralAI
 extends RefCounted
 ## Neutral map AI (SPEC §6.7): a roamer patrols a radius around its lair and
-## chases the nearest living squad, player or enemy, that comes within it;
+## chases the nearest living squad it would fight (GameState.hostile: the player's, and
+## the enemy's only when the game lets neutrals fight them) that comes within it;
 ## otherwise it wanders inside that radius. Contact (GameState._check_contact)
 ## handles the actual fight once it catches up.
 
@@ -16,13 +17,13 @@ static func target_hex(state: GameState, s: Squad) -> int:
 	return _wander(state, s, lair, radius)
 
 
-## The closest non-neutral living squad within `radius` of the lair, or -1.
+## The closest living squad within `radius` of the lair that the roamer would fight, or -1.
 static func _nearest_in_range(state: GameState, s: Squad, lair: Vector2i, radius: int) -> int:
 	var from := state.map.hex_at(s.hex)
 	var best := -1
 	var best_dist := -1
 	for o in state.squads:
-		if o.side == "neutral" or o.living().is_empty():
+		if not state.hostile(s, o) or o.living().is_empty():
 			continue
 		var at := state.map.hex_at(o.hex)
 		if Hex.distance(lair, at) > radius:

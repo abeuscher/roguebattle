@@ -22,6 +22,7 @@
  {"key": "neutral_density", "group": "Neutrals", "label": "Density", "target": "map", "options": ["none", "low", "medium", "high"]},
  {"key": "neutral_danger", "group": "Neutrals", "label": "Danger", "target": "map", "options": ["low", "medium", "high"]},
  {"key": "roamer_aggression", "group": "Neutrals", "label": "Roamer aggression", "target": "map", "options": ["low", "medium", "high"]},
+ {"key": "neutrals_ignore_enemy", "group": "Neutrals", "label": "Neutrals ignore the enemy", "target": "game", "options": [false, true], "default": true, "_note": "User, 2026-11-14: on, neutral bands only fight your squads; off, they fight the enemy's too, but never at either base (a band wiped out the Warlord at his base and handed a Quick start the win)."},
  {"key": "spawn_side", "group": "Bases and goal", "label": "Your base", "target": "map", "options": ["west", "east", "north", "south"]},
  {"key": "victory_leader", "group": "Victory", "label": "Defeat the enemy leader", "target": "game", "options": [false, true], "default": true},
  {"key": "victory_goal", "group": "Victory", "label": "Reach the goal", "target": "game", "options": [false, true], "default": false},

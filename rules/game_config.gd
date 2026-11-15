@@ -5,7 +5,7 @@ extends RefCounted
 ## (victory, defeat, squad cap, fairness) feed the game. Settings and seed
 ## pack into a short share code.
 
-const CODE_VERSION := 5  # 2: "size" became "width"/"height" (§6.1); 3: Land % to 100 and the No Ocean preset; 4: game mode and XP rate; 5: Quick start mode, heights from 45
+const CODE_VERSION := 6  # 6: Neutrals ignore the enemy; 2: "size" became "width"/"height" (§6.1); 3: Land % to 100 and the No Ocean preset; 4: game mode and XP rate; 5: Quick start mode, heights from 45
 const ALPHABET := "0123456789ABCDEFGHJKMNPQRSTVWXYZ"  # 32 symbols, no I, L, O or U
 
 var data: GameData

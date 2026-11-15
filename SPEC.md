@@ -214,7 +214,7 @@ Nomad camps count as towns.
 - **Lairs** sit in their natives' home terrain, away from roads and both bases.
 - **Roamers** patrol a radius around their lair and attack anything that enters it.
 - **Danger** (level and stage) rises with distance from the Player Base.
-- Neutrals fight both the player and the enemy.
+- Neutrals fight the player. Whether they also fight the enemy is a configurator setting, "Neutrals ignore the enemy" (on by default: they don't); with it off they fight the enemy too, but never while either side stands in a base (user, 2026-11-14).
 - Recruitment rules are in §16.
 
 ### 6.8 Victory and defeat

@@ -1731,8 +1731,23 @@ func player_squads() -> Array[Squad]:
 
 
 ## Neutrals fight both sides (§6.7); only same-side squads never fight.
+## Whether two squads fight when they meet. Neutral bands and enemy squads leave each other
+## alone while the game's "Neutrals ignore the enemy" is on (the configurator's default;
+## off in a GameState built without settings, as in most tests); with it off they fight,
+## but never while either stands in a base (user, 2026-11-14: a band wiped out the
+## Warlord at his base and handed the player the win).
 func hostile(a: Squad, b: Squad) -> bool:
-	return a.side != b.side
+	if a.side == b.side:
+		return false
+	if "neutral" in [a.side, b.side] and "enemy" in [a.side, b.side]:
+		if settings.get("neutrals_ignore_enemy", false):
+			return false
+		return not (_in_base(a) or _in_base(b))
+	return true
+
+
+func _in_base(s: Squad) -> bool:
+	return s.hex == map.player_base or s.hex == map.enemy_base
 
 
 # --- Enemy squads (SPEC §17, §12.3 AI) -----------------------------------------------

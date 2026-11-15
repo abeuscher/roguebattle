@@ -255,3 +255,33 @@ func test_a_failed_sneak_fights_with_the_band_first_and_still_offers_recruiting(
 	st.pending.retreated = 1  # they run: beaten, not wiped out
 	st.resolve_pending()
 	check(st.pending_recruit.get("beaten", false), "beating them still offers the recruit chance")
+
+
+## User, 2026-11-14: "Neutrals ignore the enemy" (on by default, and in Quick start): bands
+## only fight you. Off, they fight the enemy too, but never at either base.
+func test_neutrals_ignore_the_enemy_by_default() -> void:
+	check(bool(GameConfig.quick(d, 3).game_settings().get("neutrals_ignore_enemy", false)), "on in Quick start")
+	check(bool(GameConfig.create(d, 3).game_settings().get("neutrals_ignore_enemy", false)), "on by default in the configurator")
+	var st := _state()
+	st.settings["neutrals_ignore_enemy"] = true
+	var e := _squad(st, 8, 4, "enemy")
+	var n := _squad(st, 9, 4, "neutral")
+	var p := _squad(st, 4, 4, "player")
+	check(not st.hostile(e, n) and not st.hostile(n, e), "enemy and neutral leave each other alone")
+	check(st.hostile(p, n) and st.hostile(p, e), "both still fight you")
+	check_eq(NeutralAI._nearest_in_range(st, n, st.map.hex_at(n.hex), 6), p.hex, "a roamer chases you, not the nearer enemy")
+	for i in 30:
+		st.step()
+	check(e in st.squads and n in st.squads and st.pending == null, "side by side, no fight")
+
+
+func test_with_the_setting_off_neutrals_leave_the_bases_alone() -> void:
+	var st := _state()
+	st.settings["neutrals_ignore_enemy"] = false
+	var lord := _squad(st, 18, 4, "enemy")
+	check_eq(lord.hex, st.map.enemy_base, "the Warlord at his base")
+	var n := _squad(st, 17, 4, "neutral")
+	check(not st.hostile(lord, n), "a band doesn't fight a squad in its base")
+	check_eq(NeutralAI._nearest_in_range(st, n, st.map.hex_at(n.hex), 4), -1, "nor chase it there")
+	var out := _squad(st, 12, 4, "enemy")
+	check(st.hostile(out, n), "but fights the enemy out in the field")
