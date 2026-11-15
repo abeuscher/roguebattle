@@ -52,6 +52,27 @@ func setup(game_data: GameData, option_values: Dictionary) -> void:
 			col.add_child(HSeparator.new())
 		if o.has("tip"):
 			col.add_child(UiStyle.label(o["tip"], 14, Color(0.65, 0.68, 0.72)))
+		if id == "show_tips":
+			col.add_child(_reset_tips())
+
+
+## Reset player tips (user, 2026-11-14), after a yes/no question: every tip shows again.
+func _reset_tips() -> Button:
+	var b := UiStyle.button("Reset player tips", 220)
+	b.size_flags_horizontal = SIZE_SHRINK_BEGIN
+	b.tooltip_text = "Show every player tip again, each the next time its moment comes."
+	b.disabled = (values.get("tips_seen", []) as Array).is_empty()
+	b.pressed.connect(func():
+		var ask := ConfirmDialog.new()
+		add_child(ask)
+		ask.setup("Reset player tips? Every tip will show again, the next time its moment comes.", "Reset", "Cancel")
+		ask.confirmed.connect(func():
+			PlayerTips.reset(values)
+			b.text = "Player tips reset"
+			b.disabled = true
+			ask.queue_free())
+		ask.cancelled.connect(ask.queue_free))
+	return b
 
 
 ## A volume: its name, a 0-100 slider and the number.

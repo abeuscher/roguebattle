@@ -86,3 +86,15 @@ func test_the_time_controls_tip() -> void:
 	check_eq(d.tips["tips"]["time_controls"]["anchor"], "speed", "pointing at the speed menu")
 	var text := str(d.tips["tips"]["time_controls"]["text"])
 	check(text.begins_with("You can use this menu to adjust the speed of the game") and text.contains("PgUp") and text.contains("skip to action"), "with the user's words")
+
+
+## User, 2026-11-14: Reset player tips (Options) shows every tip again.
+func test_reset_shows_every_tip_again() -> void:
+	var o := _options()
+	PlayerTips.mark_seen(o, "build_squad", false)
+	PlayerTips.mark_seen(o, "time_controls", false)
+	check_eq(PlayerTips.due(d, o, "edit_units_open", "single_map"), "", "seen: not due")
+	PlayerTips.reset(o, false)
+	check((o["tips_seen"] as Array).is_empty(), "nothing seen after a reset")
+	check_eq(PlayerTips.due(d, o, "edit_units_open", "single_map"), "build_squad", "due again")
+	check_eq(PlayerTips.due(d, o, "time_started", "single_map"), "time_controls", "every one")

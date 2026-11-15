@@ -18,6 +18,14 @@ static func due(data: GameData, options: Dictionary, moment: String, mode: Strin
 	return ""
 
 
+## Forgets every tip seen, so each shows again at its moment (the Options screen's Reset
+## player tips, user 2026-11-14). `save`: write the options file.
+static func reset(options: Dictionary, save := true) -> void:
+	options["tips_seen"] = []
+	if save:
+		PlayerOptions.save_values(options)
+
+
 ## Remembers that a tip was shown, so it never shows again. `save`: write the options file.
 static func mark_seen(options: Dictionary, id: String, save := true) -> void:
 	var seen: Array = options.get("tips_seen", []).duplicate()

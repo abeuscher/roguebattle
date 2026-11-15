@@ -264,6 +264,7 @@ Sound is coming in (ROADMAP M5). In so far:
   - The first time a battle's results show, a tip beside them explains healing: Heal (the red cross) in the squad menu uses Herbs and Revival Draughts anywhere, and a temple heals and revives for gold.
   - The first time a battle against a squad with a Spearman starts, the battle pauses with its controls open and a tip points at the Tactic menu: some squads need different tactics; try Leader (focus the enemy leader).
   - The first time Edit Units opens while your army has a flying unit, a tip says flyers can't take buildings: a squad needs a unit on foot.
+  - **Reset player tips** (on the Options screen, under Show player tips) asks first, then makes every tip show again the next time its moment comes. It's greyed out while no tip has been seen.
   - A tip counts as seen once it's gone, even if you close the window it was beside first. Only one tip shows at a time: a new one replaces the last.
 
 ## Testing tools (debug panel)
