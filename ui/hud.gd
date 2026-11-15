@@ -32,8 +32,10 @@ var _clock := Label.new()
 var _calendar := TextureRect.new()  # tinted like the clock text (day or night)
 var _clock_panel := PanelContainer.new()  # under the minimap, at its width
 var _speed := Label.new()  # shown only while a menu holds the game
-var _skip := Button.new()  # skip to action (playtest round 15), in its own space left of the clock
-var _skip_panel := PanelContainer.new()
+var _skip := Button.new()  # skip to action (playtest round 15), right of the speed menu
+var _phase := TextureRect.new()  # day, night, dawn or dusk as an icon, after the time
+var _phase_icons := {}  # phase -> its texture
+const PHASE_ICONS := {"day": "sun", "night": "moon", "dawn": "sunrise", "dusk": "sunset"}
 var _speed_pick := OptionButton.new()  # Paused, then the game speeds; Space, PgUp and PgDn change it too
 var _money_panel := PanelContainer.new()
 var _book_panel := PanelContainer.new()  # the notifications log's book, in its own space left of the gold
@@ -182,15 +184,23 @@ func _build_clock() -> void:
 	_clock_panel.add_theme_stylebox_override("panel", _glass(8))
 	add_child(_clock_panel)
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 10)
+	row.add_theme_constant_override("separation", 8)
 	_clock_panel.add_child(row)
 	_calendar.texture = UiStyle.icon("calendar")
 	_calendar.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
 	_calendar.size_flags_vertical = SIZE_SHRINK_CENTER
 	row.add_child(_calendar)
 	_clock.add_theme_font_size_override("font_size", 17)
-	_clock.size_flags_horizontal = SIZE_EXPAND_FILL
 	row.add_child(_clock)
+	for p in PHASE_ICONS:
+		_phase_icons[p] = UiStyle.svg(PHASE_ICONS[p], 20)
+	_phase.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+	_phase.size_flags_vertical = SIZE_SHRINK_CENTER
+	_phase.mouse_filter = MOUSE_FILTER_PASS
+	row.add_child(_phase)
+	var gap := Control.new()
+	gap.size_flags_horizontal = SIZE_EXPAND_FILL
+	row.add_child(gap)
 	_speed.add_theme_font_size_override("font_size", 16)
 	row.add_child(_speed)
 	_speed_pick.add_theme_font_size_override("font_size", 15)
@@ -205,9 +215,7 @@ func _build_clock() -> void:
 	_skip.add_theme_color_override("icon_disabled_color", Color(1, 1, 1, 0.25))
 	_skip.add_theme_color_override("icon_hover_color", UiStyle.ACCENT)
 	_skip.pressed.connect(skip_pressed.emit)
-	_skip_panel.add_theme_stylebox_override("panel", _glass(4))
-	add_child(_skip_panel)
-	_skip_panel.add_child(_skip)
+	row.add_child(_skip)  # right of the speed menu (user, 2026-11-15), in the room "Day" or "Night" took
 
 
 ## Bottom centre: small rounded, see-through buttons, an icon left of each label.
@@ -378,7 +386,12 @@ func set_help(text: String) -> void:
 
 func refresh(state: GameState) -> void:
 	var tint := DAY if state.clock.is_day() else NIGHT
-	_clock.text = "%s  ·  %s" % [state.clock.time_text(), "Day" if state.clock.is_day() else "Night"]
+	_clock.text = state.clock.time_text()
+	var phase := GameClock.phase(state.clock.minute_of_day())
+	_phase.texture = _phase_icons[phase]
+	_phase.tooltip_text = phase.capitalize()
+	_phase.modulate = tint
+	_clock_panel.position.x = size.x - _clock_panel.size.x - 16  # it grows with its text: keep its right edge put
 	_clock.add_theme_color_override("font_color", tint)
 	_calendar.modulate = tint
 	if _speed_pick.item_count == 0:
@@ -470,11 +483,9 @@ func place() -> void:
 	_drawer.position = Vector2(0, (size.y - _drawer.size.y) / 2.0)
 	_clock_panel.custom_minimum_size.x = minimap.size.x
 	_clock_panel.reset_size()
-	_clock_panel.position = Vector2(size.x - minimap.size.x - 16, size.y - _clock_panel.size.y - BOTTOM)
-	minimap.position = Vector2(_clock_panel.position.x, _clock_panel.position.y - minimap.size.y - 6)
-	_skip_panel.reset_size()
-	_skip_panel.size = Vector2(_clock_panel.size.y, _clock_panel.size.y)
-	_skip_panel.position = Vector2(_clock_panel.position.x - _skip_panel.size.x - 8, _clock_panel.position.y)
+	# Right-aligned with the minimap: if the row needs more than its width, the extra goes left.
+	_clock_panel.position = Vector2(size.x - _clock_panel.size.x - 16, size.y - _clock_panel.size.y - BOTTOM)
+	minimap.position = Vector2(size.x - minimap.size.x - 16, _clock_panel.position.y - minimap.size.y - 6)
 	_toolbar.reset_size()
 	_toolbar.position = Vector2((size.x - _toolbar.size.x) / 2.0, size.y - _toolbar.size.y - BOTTOM)
 	_info.reset_size()

@@ -80,3 +80,10 @@ func test_state_logs_days_and_speed() -> void:
 		s.step()
 	check_eq(log.filtered("system").filter(func(e): return e["text"] == "Day 2 begins.").size(), 1, "day change logged once")
 	check(log.filtered("system").any(func(e): return e["text"].begins_with("Game speed: Fast")), "speed change logged")
+
+
+## The clock's time-of-day icon (user, 2026-11-15): dawn the hour before 06:00, dusk the hour after 18:00.
+func test_phase_of_the_day() -> void:
+	check_eq([GameClock.phase(4 * 60 + 59), GameClock.phase(5 * 60), GameClock.phase(6 * 60), GameClock.phase(17 * 60 + 59),
+			GameClock.phase(18 * 60), GameClock.phase(18 * 60 + 59), GameClock.phase(19 * 60), GameClock.phase(0)],
+			["night", "dawn", "day", "day", "dusk", "dusk", "night", "night"], "night, dawn, day, dusk, night")

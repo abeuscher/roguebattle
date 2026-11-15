@@ -96,6 +96,18 @@ func minute_of_day() -> int:
 	return (tick + _frozen_offset) % TICKS_PER_DAY
 
 
+## The time of day as the map shows it: "dawn" the hour before DAWN, "day", "dusk" the hour
+## after DUSK, "night" (the same hours the map lightens and darkens; Battlemap.darkness).
+static func phase(minute: int) -> String:
+	if minute >= DAWN and minute < DUSK:
+		return "day"
+	if minute >= DUSK and minute < DUSK + 60:
+		return "dusk"
+	if minute >= DAWN - 60 and minute < DAWN:
+		return "dawn"
+	return "night"
+
+
 func is_day() -> bool:
 	return minute_of_day() >= DAWN and minute_of_day() < DUSK
 
