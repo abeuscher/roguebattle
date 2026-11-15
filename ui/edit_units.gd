@@ -875,7 +875,7 @@ func _item_picker(u: Unit, slot: String) -> Control:
 	var worn: Dictionary = u.items.get(slot, {})
 	if worn:
 		choices.append(worn)
-		pick.add_item(_item_label(worn["id"]))
+		pick.add_icon_item(ItemIcons.item(worn["id"], 28), _item_label(worn["id"]))
 		pick.select(1)
 	var free := {}  # item id -> free items of that kind that fit
 	for item in army.items:
@@ -883,7 +883,7 @@ func _item_picker(u: Unit, slot: String) -> Control:
 			free[item["id"]] = free.get(item["id"], []) + [item]
 	for id in free:
 		choices.append(free[id][0])
-		pick.add_item(_item_label(id) + ("  (×%d)" % free[id].size() if free[id].size() > 1 else ""))
+		pick.add_icon_item(ItemIcons.item(id, 28), _item_label(id) + ("  (×%d)" % free[id].size() if free[id].size() > 1 else ""))
 	pick.tooltip_text = "No free %s fits this unit." % slot if free.is_empty() else ""
 	pick.item_selected.connect(func(i: int):
 		if choices[i].is_empty():
@@ -897,12 +897,21 @@ func _item_picker(u: Unit, slot: String) -> Control:
 
 ## The gutter's Equipment tab: every item by slot, free ones first.
 func _item_list() -> void:
-	var carried := PackedStringArray()
+	_pool.add_child(UiStyle.label("SUPPLIES", 13, Color(0.6, 0.62, 0.66)))
+	var supplies := HFlowContainer.new()  # each supply's icon and count (round 18)
+	supplies.add_theme_constant_override("h_separation", 12)
+	supplies.add_theme_constant_override("v_separation", 6)
 	for id in data.items["consumables"]:
 		if int(army.supplies.get(id, 0)) > 0:
-			carried.append("%s ×%d" % [data.items["consumables"][id]["name"], int(army.supplies[id])])
-	var supplies := UiStyle.label("Supplies: %s" % (", ".join(carried) if not carried.is_empty() else "none"), 15, UiStyle.ACCENT)
-	supplies.autowrap_mode = TextServer.AUTOWRAP_WORD
+			var chip := HBoxContainer.new()
+			chip.add_theme_constant_override("separation", 4)
+			chip.tooltip_text = "%s: %s" % [data.items["consumables"][id]["name"], data.items["consumables"][id]["text"]]
+			chip.mouse_filter = MOUSE_FILTER_PASS
+			chip.add_child(ItemIcons.rect(id, 28))
+			chip.add_child(UiStyle.label("×%d" % int(army.supplies[id]), 15, UiStyle.ACCENT))
+			supplies.add_child(chip)
+	if supplies.get_child_count() == 0:
+		supplies.add_child(UiStyle.label("None", 15, Color(0.6, 0.62, 0.66)))
 	_pool.add_child(supplies)
 	if army.items.is_empty():
 		_pool.add_child(UiStyle.label("No items yet. Shops and hidden sites will have some.", 14, Color(0.6, 0.62, 0.66)))
@@ -927,10 +936,18 @@ func _item_row(item: Dictionary) -> Control:
 	style.set_border_width_all(1)
 	style.border_color = UiStyle.OUTLINE if who == null else Color(0.22, 0.24, 0.28)
 	row.add_theme_stylebox_override("panel", style)
+	var line := HBoxContainer.new()  # the item's icon beside its name (round 18)
+	line.mouse_filter = MOUSE_FILTER_IGNORE
+	line.add_theme_constant_override("separation", 8)
+	row.add_child(line)
+	var pic := ItemIcons.rect(item["id"], 32)
+	if who != null:
+		pic.modulate.a = 0.5
+	line.add_child(pic)
 	var col := VBoxContainer.new()
 	col.mouse_filter = MOUSE_FILTER_IGNORE
 	col.add_theme_constant_override("separation", 0)
-	row.add_child(col)
+	line.add_child(col)
 	col.add_child(_quiet(UiStyle.label(_item_label(item["id"]), 15, Color.WHITE if who == null else Color(0.5, 0.52, 0.56))))
 	if who == null:
 		row.mouse_default_cursor_shape = CURSOR_DRAG
@@ -1021,8 +1038,13 @@ func _drag(_at: Vector2, u: Unit) -> Variant:
 
 
 func _drag_item(_at: Vector2, item: Dictionary, from: Unit) -> Variant:
-	var preview := UiStyle.label(data.items["items"][item["id"]]["name"], 16)
-	preview.add_theme_stylebox_override("normal", UiStyle.box(Color(0.15, 0.17, 0.21, 0.9), 8))
+	var preview := PanelContainer.new()
+	preview.add_theme_stylebox_override("panel", UiStyle.box(Color(0.15, 0.17, 0.21, 0.9), 8))
+	var inside := HBoxContainer.new()
+	inside.add_theme_constant_override("separation", 8)
+	preview.add_child(inside)
+	inside.add_child(ItemIcons.rect(item["id"], 28))
+	inside.add_child(UiStyle.label(data.items["items"][item["id"]]["name"], 16))
 	set_drag_preview(preview)
 	var slot: String = data.items["items"][item["id"]]["slot"]
 	for t in _targets:

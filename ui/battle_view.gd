@@ -472,7 +472,7 @@ func _choose_item() -> void:
 	var uses := state.battle_supply_uses(battle)
 	for i in uses.size():
 		var item: Dictionary = state.data.items["consumables"][uses[i][0]]
-		menu.add_item("%s on %s (%s)  ·  you have %d" % [item["name"], uses[i][1].name, item["cures"],
+		menu.add_icon_item(ItemIcons.item(uses[i][0], 28), "%s on %s (%s)  ·  you have %d" % [item["name"], uses[i][1].name, item["cures"],
 				int(state.army.supplies.get(uses[i][0], 0))], i)
 	menu.id_pressed.connect(func(i: int):
 		_now(func(): return state.use_battle_supply(battle, uses[i][0], uses[i][1]))

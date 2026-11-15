@@ -49,7 +49,11 @@ func _refresh() -> void:
 		if item["where"] != "map":
 			continue
 		var have := int(state.army.supplies.get(id, 0))
-		_list.add_child(UiStyle.label("%s: %s  You have %d." % [item["name"], item["text"], have], 16, UiStyle.ACCENT))
+		var head := HBoxContainer.new()
+		head.add_theme_constant_override("separation", 10)
+		head.add_child(ItemIcons.rect(id, 32))
+		head.add_child(UiStyle.label("%s: %s  You have %d." % [item["name"], item["text"], have], 16, UiStyle.ACCENT))
+		_list.add_child(head)
 		for u in squad.units:
 			if not state.supply_helps(u, id):
 				continue

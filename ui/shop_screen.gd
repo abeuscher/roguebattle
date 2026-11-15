@@ -237,7 +237,7 @@ func _line(l: Dictionary) -> Control:
 	row.offset_right = -12
 	row.mouse_filter = MOUSE_FILTER_IGNORE
 	b.add_child(row)
-	row.add_child(_swatch(l["kind"], l["name"], 34))
+	row.add_child(_swatch(l["kind"], l["name"], 34, l.get("id", "")))
 	var words := VBoxContainer.new()
 	words.add_theme_constant_override("separation", 0)
 	words.size_flags_horizontal = SIZE_EXPAND_FILL
@@ -264,13 +264,17 @@ func _line(l: Dictionary) -> Control:
 
 
 ## A rounded swatch in the kind's color with the good's first letter (until there's art).
-func _swatch(kind: String, title: String, px: int) -> Control:
+func _swatch(kind: String, title: String, px: int, id := "") -> Control:
 	var frame := PanelContainer.new()
 	var look := UiStyle.box(KIND_COLORS.get(kind, Color.GRAY), 0)
 	look.set_corner_radius_all(int(px / 4.0))
 	frame.add_theme_stylebox_override("panel", look)
 	frame.custom_minimum_size = Vector2(px, px)
 	frame.size_flags_vertical = SIZE_SHRINK_CENTER
+	if id != "" and ItemIcons.item(id, px) != null:  # the item's own icon (round 18), on its kind's colour
+		look.bg_color = KIND_COLORS.get(kind, Color.GRAY).darkened(0.55)
+		frame.add_child(ItemIcons.rect(id, int(px * 0.85)))
+		return frame
 	var letter := UiStyle.label(title.left(1), int(px * 0.5), Color(1, 1, 1, 0.9))
 	letter.add_theme_font_override("font", UiStyle.title_font())
 	letter.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -292,7 +296,7 @@ func _show_detail(picked: Array) -> void:
 	var l: Dictionary = picked[0]
 	var head := HBoxContainer.new()
 	head.add_theme_constant_override("separation", 12)
-	head.add_child(_swatch(l["kind"], l["name"], 48))
+	head.add_child(_swatch(l["kind"], l["name"], 48, l.get("id", "")))
 	var title := UiStyle.label(l["name"], 22, UiStyle.TITLE)
 	title.add_theme_font_override("font", UiStyle.title_font())
 	title.size_flags_vertical = SIZE_SHRINK_CENTER
