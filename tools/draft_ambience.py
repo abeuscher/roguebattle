@@ -39,7 +39,7 @@ def band(x: np.ndarray, lo: float, hi: float, tilt: float = 0.0) -> np.ndarray:
     gain = ((f >= lo) & (f <= hi)).astype(float)
     edge = 0.25  # soft edges, a quarter octave
     gain += np.where(f < lo, np.exp(-((np.log2(np.maximum(f, 1) / lo)) / edge) ** 2), 0)
-    gain += np.where(f > hi, np.exp(-((np.log2(f / hi)) / edge) ** 2), 0)
+    gain += np.where(f > hi, np.exp(-((np.log2(np.maximum(f, 1) / hi)) / edge) ** 2), 0)
     if tilt:
         gain *= (np.maximum(f, 20) / 1000) ** (tilt / 6.02)
     return np.fft.irfft(spec * gain, len(x))
@@ -92,12 +92,12 @@ def night_bed(rng):
     for k in range(5):  # crickets: groups of short 4-5 kHz pulses, each at its own pace
         f = rng.uniform(4200, 5200)
         period = rng.uniform(0.7, 1.4)
-        pulse = np.sin(2 * np.pi * f * t(0.018)) * env(int(0.018 * RATE), 0.003, 0.008)
+        pulse = np.sin(2 * np.pi * f * t(0.012)) * env(int(0.012 * RATE), 0.002, 0.006)  # short chirps (user, 2026-11-14)
         level = rng.uniform(0.15, 0.4)
         at = rng.uniform(0, period)
         while at < s - 0.2:
-            for p in range(rng.integers(2, 5)):
-                place(out, pulse * level, at + p * 0.035)
+            for p in range(rng.integers(1, 4)):
+                place(out, pulse * level, at + p * 0.03)
             at += period * rng.uniform(0.85, 1.15)
     return norm(out)
 

@@ -29,6 +29,7 @@ var _amb_state := ""
 var _amb_gen := 0
 var _bed: AudioStreamPlayer
 var _facts: Array = []  # what's true on the map now, for the conditional one-shots (GameState.ambience_facts)
+var _pans: Array[String] = []  # the ambience's panned buses, left to right (_pan_buses)
 var _rng := RandomNumberGenerator.new()  # the sound player's own, apart from the game's seeded streams
 var queue := {}  # audio.json "queue"
 var _queue_free_at := 0.0  # when the last queued stinger or voice line ends (seconds, engine time)
@@ -124,7 +125,28 @@ func _setup(audio: Dictionary, options: Dictionary) -> void:
 			AudioServer.add_bus()
 			AudioServer.set_bus_name(AudioServer.bus_count - 1, bus)
 			AudioServer.set_bus_send(AudioServer.bus_count - 1, "Master")
+	_pan_buses()
 	_apply(options)
+
+
+## Buses that place an ambience one-shot left or right (user, 2026-11-14: a little
+## panning for depth): map_ambience pan_steps of them, evenly from -shot_pan to +shot_pan,
+## each an AudioEffectPanner feeding the Effects bus. A one-shot goes through one at random.
+func _pan_buses() -> void:
+	var steps := int(amb.get("pan_steps", 0))
+	var width := float(amb.get("shot_pan", 0.0))
+	for k in steps:
+		var bus := "Ambience pan %d" % k
+		_pans.append(bus)
+		if AudioServer.get_bus_index(bus) >= 0:
+			continue
+		AudioServer.add_bus()
+		var i := AudioServer.bus_count - 1
+		AudioServer.set_bus_name(i, bus)
+		AudioServer.set_bus_send(i, "Effects")
+		var panner := AudioEffectPanner.new()
+		panner.pan = lerpf(-width, width, k / float(maxi(1, steps - 1)))
+		AudioServer.add_bus_effect(i, panner)
 
 
 ## Sets every bus from the options: master_volume, <bus>_volume (0-100) and mute.
@@ -390,7 +412,7 @@ func _shot(shots: Array, gen: int) -> void:
 		if not ready.is_empty():
 			var p := AudioStreamPlayer.new()
 			p.stream = _stream(ready[_rng.randi() % ready.size()])
-			p.bus = "Effects"
+			p.bus = _pans[_rng.randi() % _pans.size()] if not _pans.is_empty() else "Effects"
 			var v: Array = amb.get("shot_db", [-10, -10])
 			p.volume_db = _rng.randf_range(float(v[0]), float(v[1]))
 			var pitch := float(amb.get("shot_pitch", 0.0))

@@ -58,3 +58,10 @@ func test_the_draft_sounds_are_in() -> void:
 		check(load(root + f + ".wav") is AudioStreamWAV, "%s loads" % f)
 	for f in ["day/chapel", "night/wolves", "night/bell"]:
 		check(not ResourceLoader.exists(root + f + ".wav"), "no %s (user, 2026-11-14)" % f)
+
+
+## User, 2026-11-14: a little panning for depth: one-shots spread across panned buses.
+func test_one_shots_are_panned() -> void:
+	var amb: Dictionary = d.audio["map_ambience"]
+	check(int(amb.get("pan_steps", 0)) >= 3, "several panned buses")
+	check(float(amb["shot_pan"]) > 0.3 and float(amb["shot_pan"]) <= 1.0, "spread left and right, not to the very edges")
