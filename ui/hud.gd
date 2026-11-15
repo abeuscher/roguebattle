@@ -445,7 +445,12 @@ func refresh(state: GameState) -> void:
 ## (above the toolbar if they'd overlap). Call after the map or text changes.
 ## Where a player tip points (PlayerTips).
 func anchor(name: String) -> Rect2:
-	return _deploy_button.get_global_rect() if name == "deploy_button" else Rect2()
+	match name:
+		"deploy_button":
+			return _deploy_button.get_global_rect()
+		"speed":
+			return _speed_pick.get_global_rect()
+	return Rect2()
 
 
 ## The book sits just left of the gold, as tall as its panel.

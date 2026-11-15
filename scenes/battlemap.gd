@@ -1222,6 +1222,14 @@ func _open_ledger(entry: Dictionary) -> void:
 		_ledger = null)
 
 
+## The time controls tip (user, 2026-11-14), the first time time runs: after any tip
+## already showing (the map's own) has been read.
+func _time_tip() -> void:
+	while is_instance_valid(_tip):
+		await get_tree().process_frame
+	_offer_tip("time_started", hud)
+
+
 ## Until the player first starts time, the banner asks them to; then never again.
 func _prompt_start() -> void:
 	if not _awaiting_start:
@@ -1232,6 +1240,7 @@ func _prompt_start() -> void:
 			hud.show_banner("")
 		if not state.notes.any(func(n): return n["text"] == BEGIN_NOTE):
 			_note(BEGIN_NOTE)  # the notifications log's first line, once per game (a loaded game has it)
+		_time_tip()  # the time controls, the first time ever
 	elif hud.banner_text() == "":
 		hud.show_banner(START_PROMPT)
 

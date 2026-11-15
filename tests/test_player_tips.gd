@@ -77,3 +77,12 @@ func test_the_spearman_tactics_tip() -> void:
 	check_eq(PlayerTips.due(d, o, "fight_started", "single_map", ["enemy:Spearman"]), "tactics", "a Spearman in the enemy squad: the tip")
 	check_eq(d.tips["tips"]["tactics"]["anchor"], "tactic", "pointing at the Tactic menu")
 	check(str(d.tips["tips"]["tactics"]["text"]).begins_with("Note: Some squads require different tactics"), "with the user's words")
+
+
+## User, 2026-11-14: the first time time runs, a tip at the speed menu.
+func test_the_time_controls_tip() -> void:
+	var o := _options()
+	check_eq(PlayerTips.due(d, o, "time_started", "single_map"), "time_controls", "due when time first runs")
+	check_eq(d.tips["tips"]["time_controls"]["anchor"], "speed", "pointing at the speed menu")
+	var text := str(d.tips["tips"]["time_controls"]["text"])
+	check(text.begins_with("You can use this menu to adjust the speed of the game") and text.contains("PgUp") and text.contains("skip to action"), "with the user's words")
