@@ -68,3 +68,12 @@ func test_round_15_tips() -> void:
 	check_eq(PlayerTips.due(d, o, "edit_units_open", "single_map"), "", "no flyer, no flyer tip")
 	check_eq(PlayerTips.due(d, o, "edit_units_open", "single_map", ["flyer"]), "flyers", "a flyer in the army: the tip")
 	check(str(d.tips["tips"]["flyers"]["text"]).contains("can't take buildings"), "flyers can't take buildings")
+
+
+## User, 2026-11-14: the first fight against a Spearman points at the battle's tactics.
+func test_the_spearman_tactics_tip() -> void:
+	var o := _options()
+	check_eq(PlayerTips.due(d, o, "fight_started", "single_map", ["enemy:Fighter"]), "", "no Spearman, no tip")
+	check_eq(PlayerTips.due(d, o, "fight_started", "single_map", ["enemy:Spearman"]), "tactics", "a Spearman in the enemy squad: the tip")
+	check_eq(d.tips["tips"]["tactics"]["anchor"], "tactic", "pointing at the Tactic menu")
+	check(str(d.tips["tips"]["tactics"]["text"]).begins_with("Note: Some squads require different tactics"), "with the user's words")

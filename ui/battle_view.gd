@@ -8,6 +8,7 @@ extends Control
 
 signal finished(text: String)
 signal results_shown  # the end-of-battle panel is up (for a player tip)
+signal fight_started  # the battle has begun playing (for a player tip)
 
 const FIELD := Vector2(1400, 600)
 const CARD := Vector2(200, 104)
@@ -381,9 +382,21 @@ func _card_tile(id: String, count: int) -> Control:
 	return tile
 
 
-## Where a player tip points (Battlemap._offer_tip): "results", the end-of-battle panel.
+## Where a player tip points (Battlemap._offer_tip): "results", the end-of-battle panel;
+## "tactic", the Tactic menu under the field.
 func anchor(name: String) -> Rect2:
-	return _results.get_global_rect() if name == "results" and _results else Rect2()
+	match name:
+		"results":
+			return _results.get_global_rect() if _results else Rect2()
+		"tactic":
+			return _tactic.get_global_rect()
+	return Rect2()
+
+
+## Pauses the battle with its controls showing (for a tip about them).
+func pause_with_controls() -> void:
+	if not _paused:
+		_toggle_pause()
 
 
 ## An enemy unit up close (playtest round 14): UnitPeek in a small window, and the
@@ -506,6 +519,9 @@ func _process(delta: float) -> void:
 	if not _fight_called:  # the battle starts playing: "Fight!"
 		_fight_called = true
 		Sound.event("battle_fight")
+		fight_started.emit()
+		if _paused:  # a tip paused it at once (the Spearman tip)
+			return
 	_wait -= delta * float(_view["speeds"][_speed])
 	if _wait > 0.0:
 		return

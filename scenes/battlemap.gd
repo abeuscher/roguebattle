@@ -904,7 +904,22 @@ func _open_battle() -> void:
 	_battle.setup(state, state.pending, false, bool(options.get("battle_wait_for_fight", true)))
 	_battle.finished.connect(_close_battle)
 	_battle.results_shown.connect(func(): _offer_tip("battle_over", _battle))
+	_battle.fight_started.connect(_tactics_tip)
 	_spring_open(_battle, state.pending.sides[0], state.pending.sides[1])
+
+
+## The first fight against a Spearman (user, 2026-11-14): the battle pauses with its
+## controls open and a tip points at the Tactic menu, once the view has finished springing
+## open (so the menu is where it'll stay).
+func _tactics_tip() -> void:
+	if PlayerTips.due(data, options, "fight_started", _tip_mode(), _tip_facts()) == "":
+		return
+	var view := _battle
+	view.pause_with_controls()
+	while is_instance_valid(view) and view.scale != Vector2.ONE:
+		await get_tree().process_frame
+	if is_instance_valid(view):
+		_offer_tip("fight_started", view)
 
 
 ## Round 10 experiment: the battle view grows from a point at the fight's place on the
@@ -977,9 +992,14 @@ func _hex_rect(hex: int) -> Rect2:
 	return Rect2(at - r / 2.0, r)  # from the camera itself: the canvas transform lags a frame behind it
 
 
-## What tips with "needs" can ask for (tips.json): "flyer" while the army has a flying unit.
+## What tips with "needs" can ask for (tips.json): "flyer" while the army has a flying unit;
+## "enemy:<class>" for each class in the enemy squad of the battle under way.
 func _tip_facts() -> Array:
-	return ["flyer"] if state.army.units().any(func(u: Unit): return u.has_tag(data, "flyer")) else []
+	var facts := ["flyer"] if state.army.units().any(func(u: Unit): return u.has_tag(data, "flyer")) else []
+	if state.pending:
+		for u in state.pending.sides[1].units:
+			facts.append("enemy:" + u.unit_class)
+	return facts
 
 
 ## The game mode tips are chosen for (tips.json "modes").
