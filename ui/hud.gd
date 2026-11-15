@@ -24,6 +24,7 @@ const GLASS := Color(0.07, 0.09, 0.11, 0.8)  # the panels' see-through dark
 const DRAWER_SHUT := 104.0  # the drawer's width, collapsed: number and leader icon
 const DRAWER_OPEN := 340.0  # expanded: markers and the squad's name too
 const DRAWER_TIME := 0.2  # seconds to slide
+const BOTTOM := 60.0  # gap under everything along the bottom edge (16 until a playtester's screen hid the toolbar; user 2026-11-15)
 const TOOL_HEIGHT := 32.0  # toolbar buttons, about half the old size
 
 var minimap := Minimap.new()
@@ -469,15 +470,15 @@ func place() -> void:
 	_drawer.position = Vector2(0, (size.y - _drawer.size.y) / 2.0)
 	_clock_panel.custom_minimum_size.x = minimap.size.x
 	_clock_panel.reset_size()
-	_clock_panel.position = Vector2(size.x - minimap.size.x - 16, size.y - _clock_panel.size.y - 16)
+	_clock_panel.position = Vector2(size.x - minimap.size.x - 16, size.y - _clock_panel.size.y - BOTTOM)
 	minimap.position = Vector2(_clock_panel.position.x, _clock_panel.position.y - minimap.size.y - 6)
 	_skip_panel.reset_size()
 	_skip_panel.size = Vector2(_clock_panel.size.y, _clock_panel.size.y)
 	_skip_panel.position = Vector2(_clock_panel.position.x - _skip_panel.size.x - 8, _clock_panel.position.y)
 	_toolbar.reset_size()
-	_toolbar.position = Vector2((size.x - _toolbar.size.x) / 2.0, size.y - _toolbar.size.y - 16)
+	_toolbar.position = Vector2((size.x - _toolbar.size.x) / 2.0, size.y - _toolbar.size.y - BOTTOM)
 	_info.reset_size()
-	_info.position = Vector2(16, size.y - _info.size.y - 16)
+	_info.position = Vector2(16, size.y - _info.size.y - BOTTOM)
 	_pause_mark.reset_size()
 	_pause_mark.position = Vector2(16, 16)
 	_help.reset_size()
