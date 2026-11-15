@@ -46,6 +46,7 @@ static func build_single(data: GameData, rng: RandomNumberGenerator, squad_cap: 
 	for i in leader_count:
 		var options: Array = by_terrain[terrains[i]] if i < terrains.size() else all_leaders
 		leaders.append(options[rng.randi() % options.size()])
+	var large := _pick_large(data, rng, leaders, n["large"])
 	var stage2_count: int = n["stage2"]
 	var stage2 := _stage2_classes(data)
 	var front_stage2 := stage2.filter(func(c): return _is_front_line(data, c))
@@ -57,9 +58,7 @@ static func build_single(data: GameData, rng: RandomNumberGenerator, squad_cap: 
 		picks.append(healer_stage2[rng.randi() % healer_stage2.size()])
 	while picks.size() < stage2_count:
 		picks.append(stage2[rng.randi() % stage2.size()])
-	var large := large_stage1_classes(data)
-	_shuffle(large, rng)
-	var pool: Array = leaders.slice(1) + picks + large.slice(0, n["large"])
+	var pool: Array = leaders.slice(1) + picks + large
 	for i in n["serfs"]:
 		pool.append(data.lines[_serf_line_ids(data)[0]][0][0])
 	return {"leader": leaders[0], "pool": pool}
@@ -137,12 +136,33 @@ static func extra_members(data: GameData, rng: RandomNumberGenerator, n: int) ->
 ## the total, with front-line and healer minimums.
 static func pool_counts(data: GameData, squad_cap: int) -> Dictionary:
 	var cfg: Dictionary = data.rules["single_map"]["pool"]
-	var k := float(cfg["scale"])
-	var n := {"total": roundi(float(cfg["total"]) * k), "leaders": roundi((squad_cap + int(cfg["leaders_over_cap"])) * k),
-			"large": roundi(float(cfg["large"]) * k), "serfs": roundi(float(cfg["serfs"]) * k),
-			"front_min": roundi(float(cfg["front_min"]) * k), "healer_min": roundi(float(cfg["healer_min"]) * k)}
-	n["stage2"] = maxi(0, n["total"] - n["leaders"] - n["large"] - n["serfs"])
+	var squads := squad_cap + 1
+	var slots := int(data.rules["single_map"]["base_slots"])
+	var n := {"squads": squads, "leaders": squads + int(cfg["spare_leaders"]),
+			"large": roundi(squads * float(cfg["large_per_squad"])), "serfs": roundi(squads * float(cfg["serfs_per_squad"])),
+			"front_min": squads, "healer_min": squads}
+	n["stage2"] = maxi(0, squads * (slots - 1) - 2 * n["large"] + int(cfg["spare_stage2"]))
+	n["total"] = n["leaders"] + n["large"] + n["stage2"] + n["serfs"]
 	return n
+
+
+## `n` stage 1 Large classes: first one native to each leader's terrain (not Plains)
+## where there is one, then distinct ones at random, repeating only once all are used.
+static func _pick_large(data: GameData, rng: RandomNumberGenerator, leaders: Array, n: int) -> Array:
+	var all := large_stage1_classes(data)
+	var out := []
+	for c in leaders:
+		var t: String = data.units[c]["terrain"]
+		var native := all.filter(func(m): return data.units[m]["terrain"] == t)
+		if out.size() < n and t != "Plains" and not native.is_empty():
+			out.append(native[rng.randi() % native.size()])
+	var left := []
+	while out.size() < n:
+		if left.is_empty():
+			left = all.filter(func(m): return m not in out) if out.size() < all.size() else all.duplicate()
+			_shuffle(left, rng)
+		out.append(left.pop_back())
+	return out
 
 
 ## Distinct stage 1 Large classes from the race lines, leaving out those native to

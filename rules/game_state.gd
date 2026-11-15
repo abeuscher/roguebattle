@@ -67,6 +67,8 @@ func _init(game_data: GameData, game_map: MapData, game_log: GameLog, game_setti
 	reputation = int(data.rules["starting_reputation"])
 	army = Army.new(data)
 	army.tech = tech
+	if army.cells.size() < squad_cap() + 1:  # room for every squad the cap allows, and one more (round 16)
+		army.cells.resize(squad_cap() + 1)
 	tech_points = int(data.tech["start_points"])
 	for i in map.buildings.size():
 		var b: Dictionary = map.buildings[i]
@@ -193,8 +195,10 @@ func _setup_single_map() -> void:
 		var u := Unit.roll(data, c, rng.get_stream("recruit"), names)
 		army.pool.append(u)
 		log.add(clock.tick, "progression", "%s the %s joins the recruit pool." % [u.name, u.unit_class], -1,
-				{"stats": u.stats, "alignment": u.alignment, "charisma": u.charisma, "growth": u.growth,
+				{"stats": u.stats.duplicate(), "alignment": u.alignment, "charisma": u.charisma, "growth": u.growth.duplicate(),
 				"talent": u.talent, "luck": u.luck})
+	if settings.get("auto_army", false):  # sorted into squads as a starting point (round 16)
+		AutoArmy.pick(data, army, squad_cap() + 1)
 	for i in int(data.cards["start"]):
 		draw_card(null)
 	_starting_kit()
@@ -1596,7 +1600,7 @@ func _form(number: int, squad_name: String, at_hex: int, members: Array, side: S
 		s.refresh(data)
 	for u in joined:
 		log.add(clock.tick, "progression", "%s the %s joins %s." % [u.name, u.unit_class, s.name], s.id,
-				{"stats": u.stats, "alignment": u.alignment, "charisma": u.charisma, "growth": u.growth,
+				{"stats": u.stats.duplicate(), "alignment": u.alignment, "charisma": u.charisma, "growth": u.growth.duplicate(),
 				"talent": u.talent, "luck": u.luck})
 	s.morale = int(data.rules["starting_morale"])
 	log.add(clock.tick, "map", "%s forms: travels as %s, speed tier %d." % [s.name, s.travel_name(), s.speed_tier], s.id)

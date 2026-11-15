@@ -259,11 +259,18 @@ func _refresh() -> void:
 func _overview() -> Control:
 	var grid := GridContainer.new()
 	grid.columns = 4
+	grid.size_flags_horizontal = SIZE_EXPAND_FILL
 	grid.add_theme_constant_override("h_separation", 12)
 	grid.add_theme_constant_override("v_separation", 12)
 	for i in army.cells.size():
 		grid.add_child(_card(i))
-	return grid
+	if army.cells.size() <= 16:
+		return grid
+	var scroll := ScrollContainer.new()  # a big map's army runs past four rows (round 16)
+	scroll.size_flags_vertical = SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.add_child(grid)
+	return scroll
 
 
 func _card(cell: int) -> Control:

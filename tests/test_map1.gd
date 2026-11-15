@@ -182,9 +182,8 @@ func test_single_map_starts_with_the_opinion_leader_alone_and_a_pool() -> void:
 		var cap: int = [6, 8, 10][seed_ % 3]
 		var st := _single(seed_, cap)
 		var n := Map1Setup.pool_counts(d, cap)
-		var k := float(cfg["scale"])
-		check_eq(int(n["leaders"]), roundi((cap + 1) * k), "leaders: the squad cap + 1, scaled (seed %d)" % seed_)
-		check_eq(int(n["total"]), roundi(30 * k), "30 units, scaled (seed %d)" % seed_)
+		check_eq(int(n["leaders"]), cap + 1 + int(cfg["spare_leaders"]), "leaders: the squad cap + 1, and spares (seed %d)" % seed_)
+		check_eq(int(n["stage2"]) + 2 * int(n["large"]), (cap + 1) * 5 + int(cfg["spare_stage2"]), "enough to fill cap + 1 squads, and spares (seed %d)" % seed_)
 		var n_leaders: int = n["leaders"]
 		var n_stage2: int = n["stage2"]
 		check_eq(st.army.squads().size(), 1, "one squad in the army (seed %d)" % seed_)
@@ -200,14 +199,49 @@ func test_single_map_starts_with_the_opinion_leader_alone_and_a_pool() -> void:
 		for c in leaders:
 			terrains[d.units[c]["terrain"]] = true
 		check_eq(terrains.size(), mini(n_leaders, Map1Setup.TERRAINS.size()), "every terrain covered (seed %d)" % seed_)
-		check_eq(count.call(func(u: Unit): return int(u.info(d)["stage"]) == 2), n_stage2, "stage 2 units fill the rest of the 30 (seed %d)" % seed_)
+		check_eq(count.call(func(u: Unit): return int(u.info(d)["stage"]) == 2), n_stage2, "the stage 2 units (seed %d)" % seed_)
 		check_eq(count.call(func(u: Unit): return u.unit_class == "Serf"), int(n["serfs"]), "the Serfs (seed %d)" % seed_)
 		var large: Array = st.army.pool.filter(func(u: Unit): return u.info(d)["size"] == "Large").map(func(u: Unit): return u.unit_class)
 		check_eq(large.size(), int(n["large"]), "the Large units (seed %d)" % seed_)
 		for c in large:
-			check(int(d.units[c]["stage"]) == 1 and d.units[c]["terrain"] != "Water" and large.count(c) == 1, "%s: stage 1, not a sea creature, no repeats (seed %d)" % [c, seed_])
+			check(int(d.units[c]["stage"]) == 1 and d.units[c]["terrain"] != "Water", "%s: stage 1, not a sea creature (seed %d)" % [c, seed_])
 		check(count.call(func(u: Unit): return int(u.info(d)["stage"]) == 2 and _is_front_line(u.unit_class)) >= mini(int(n["front_min"]), n_stage2 / 2), "enough front-line units (seed %d)" % seed_)
 		check(count.call(func(u: Unit): return int(u.info(d)["stage"]) == 2 and _is_healer_or_support(u.unit_class)) >= mini(int(n["healer_min"]), n_stage2 / 2), "enough healers or support (seed %d)" % seed_)
+
+
+## Auto pick army (round 16, user 2026-11-15): the pool sorted into cap + 1 squads.
+func test_auto_pick_army() -> void:
+	for seed_ in range(SEEDS):
+		var cap: int = [6, 12, 20][seed_ % 3]
+		var st := _single(seed_, cap)
+		st.settings["auto_army"] = true
+		st.army = Army.new(d)
+		st.army.cells.resize(cap + 1)
+		st.squads.clear()
+		st.setup_army()
+		var army: Array = st.army.squads()
+		check_eq(army.size(), cap + 1, "cap + 1 squads (cap %d, seed %d)" % [cap, seed_])
+		check_eq(st.opinion_leader_squad(), st.army.cells[0], "the Opinion Leader's is squad 1 (seed %d)" % seed_)
+		check(st.opinion_leader_squad() in st.player_squads(), "and it alone is on the map (seed %d)" % seed_)
+		check_eq(st.player_squads().size(), 1, "the rest wait at the Player Base (seed %d)" % seed_)
+		var terrains := {}
+		for s: Squad in army:
+			check(s.leader != null and s.leader.info(d)["can_lead"], "%s has a leader (seed %d)" % [s.name, seed_])
+			check(Squad.slots_filled(d, s.units) <= s.capacity(d), "%s within its slots (seed %d)" % [s.name, seed_])
+			check(Squad.slots_filled(d, s.units) >= s.capacity(d) - 1, "%s about full: %.1f of %d (seed %d)" % [s.name, Squad.slots_filled(d, s.units), s.capacity(d), seed_])
+			check(s.units.any(func(u: Unit): return _is_healer_or_support(u.unit_class)), "%s has a healer or support (seed %d)" % [s.name, seed_])
+			check(s.units.any(func(u: Unit): return _is_front_line(u.unit_class)), "%s has a front-liner (seed %d)" % [s.name, seed_])
+			check(absi(s.row("front").size() - s.row("back").size()) <= 1, "%s rows balanced (seed %d)" % [s.name, seed_])
+			terrains[s.travel_type] = true
+		var large := army.filter(func(s: Squad): return s.units.any(func(u: Unit): return u.info(d)["size"] == "Large")).size()
+		check(large >= int(Map1Setup.pool_counts(d, cap)["large"]) - 1, "the monsters spread one to a squad (%d squads, seed %d)" % [large, seed_])
+		check(terrains.size() >= 2, "not every squad goes Plains: %s (seed %d)" % [terrains.keys(), seed_])
+		check(st.army.pool.all(func(u: Unit): return u.unit_class == "Serf" or u.info(d)["can_lead"] or int(u.info(d)["stage"]) == 2), "spares left in the pool (seed %d)" % seed_)
+
+
+func test_auto_pick_off_leaves_everyone_in_the_pool() -> void:
+	var st := _single(2)
+	check_eq(st.army.squads().size(), 1, "off (the tests' default): only the Opinion Leader's squad")
 
 
 func test_single_map_squads_hold_six_and_start_with_a_leader() -> void:
