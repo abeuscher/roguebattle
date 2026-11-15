@@ -790,6 +790,11 @@ func has_status(u: Unit, s: String) -> bool:
 
 
 ## The unit's statuses for display, e.g. ["poison", "pdef up"].
+## The statuses a unit has, as their ids (battle.json), for their icons.
+func status_ids(u: Unit) -> Array:
+	return _status.get(u, {}).keys()
+
+
 func statuses_of(u: Unit) -> Array:
 	return _status.get(u, {}).keys().map(func(s: String): return s.replace("_up", " up").replace("_", " "))
 

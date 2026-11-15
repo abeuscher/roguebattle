@@ -11,7 +11,7 @@ signal results_shown  # the end-of-battle panel is up (for a player tip)
 signal fight_started  # the battle has begun playing (for a player tip)
 
 const FIELD := Vector2(1400, 600)
-const CARD := Vector2(200, 104)
+const CARD := Vector2(240, 104)  # 200 until round 18 made room for the unit's icon
 const GAP := 10.0
 const HEX := 34.0  # the backdrop's hex size
 const PANEL_MARGIN := 16
@@ -595,7 +595,7 @@ func _play(e: Dictionary, animate: bool) -> float:
 		"status":
 			var card: Card = _cards[e["unit"]]
 			card.hp = clampi(card.hp + int(e.get("amount", 0)), 0, card.max_hp)
-			card.statuses = battle.statuses_of(e["unit"])
+			card.statuses = battle.status_ids(e["unit"])
 			var word: String = "resisted" if e.get("resisted", false) else str(e["status"]).replace("_up", " up").replace("_", " ")
 			_float(card, word, Color("#d7a6ff"), animate, 18)
 			if animate:
@@ -894,6 +894,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 ## One unit on the field: class, name, attack, HP bar and statuses.
 class Card extends Control:
+	const ICON := 84  # the unit's icon, px (trimmed to fill it)
 	var unit: Unit
 	var color := Color.WHITE
 	var leader := false
@@ -928,19 +929,30 @@ class Card extends Control:
 		draw_rect(Rect2(0, 0, 6, size.y), color if not dead else color.darkened(0.6))
 		draw_rect(r, Color(1, 0.88, 0.5) if leader and not dead else Color(0.35, 0.38, 0.44), false, 2.0)
 		var ink := Color.WHITE if not dead else Color(0.45, 0.45, 0.48)
-		draw_string(font, Vector2(16, 24), title, HORIZONTAL_ALIGNMENT_LEFT, size.x - 70, 17, ink)
+		# The unit's icon at the left (round 18), standing on the card's floor; greyed when fallen.
+		var pic := UnitIcons.texture(unit.unit_class, ICON, true) if unit else null  # trimmed: the figure fills its space
+		if pic:
+			draw_texture_rect(pic, Rect2(Vector2(8, (size.y - ICON) / 2.0), Vector2(ICON, ICON)), false,
+					Color(1, 1, 1) if not dead else Color(0.4, 0.4, 0.42, 0.7))
+		var x := 8.0 + ICON + 6.0
+		var w := size.x - x - 10.0
+		draw_string(font, Vector2(x, 24), title, HORIZONTAL_ALIGNMENT_LEFT, w - (46 if leader else 0), 17, ink)
 		if leader:
-			draw_string(font, Vector2(size.x - 62, 22), "Leader", HORIZONTAL_ALIGNMENT_RIGHT, 52, 12, Color(1, 0.88, 0.5))
-		draw_string(font, Vector2(16, 42), subtitle, HORIZONTAL_ALIGNMENT_LEFT, size.x - 24, 13, ink.darkened(0.3))
-		var line3 := ", ".join(statuses) if not statuses.is_empty() else ("" if concealed else attack)
-		draw_string(font, Vector2(16, 60), line3, HORIZONTAL_ALIGNMENT_LEFT, size.x - 24, 13,
-				Color("#d7a6ff") if not statuses.is_empty() else ink.darkened(0.2))
-		var bar := Rect2(16, 70, size.x - 32, 14)
+			draw_string(font, Vector2(size.x - 56, 22), "Leader", HORIZONTAL_ALIGNMENT_RIGHT, 46, 12, Color(1, 0.88, 0.5))
+		draw_string(font, Vector2(x, 42), subtitle, HORIZONTAL_ALIGNMENT_LEFT, w, 13, ink.darkened(0.3))
+		if not statuses.is_empty():  # a row of status icons in place of the attack
+			for i in statuses.size():
+				var tex := ItemIcons.status(str(statuses[i]), 20)
+				if tex and x + i * 23 + 20 <= size.x - 6:
+					draw_texture(tex, Vector2(x + i * 23, 46))
+		elif not concealed:
+			draw_string(font, Vector2(x, 60), attack, HORIZONTAL_ALIGNMENT_LEFT, w, 13, ink.darkened(0.2))
+		var bar := Rect2(x, 70, w, 14)
 		draw_rect(bar, Color(0.05, 0.05, 0.06))
 		var share := minf(1.0, float(hp) / max_hp)
 		var fill := Color("#5fbf5a") if share > 0.5 else (Color("#e0b03a") if share > 0.25 else Color("#d9533f"))
 		draw_rect(Rect2(bar.position, Vector2(bar.size.x * share, bar.size.y)), fill)
 		if dead or not concealed:
-			draw_string(font, Vector2(16, 98), "Fallen" if dead else "%d / %d HP" % [hp, max_hp], HORIZONTAL_ALIGNMENT_LEFT, -1, 13, ink)
+			draw_string(font, Vector2(x, 98), "Fallen" if dead else "%d / %d HP" % [hp, max_hp], HORIZONTAL_ALIGNMENT_LEFT, -1, 13, ink)
 		if _flash.a > 0.0:
 			draw_rect(r, _flash)

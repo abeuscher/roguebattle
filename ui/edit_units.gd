@@ -31,7 +31,7 @@ const SHEET_GOLD := Color("#c9a24f")
 const SHEET_GOLD_DIM := Color("#6e5a32")
 const SHEET_INK := Color("#efe3c6")
 const SHEET_FADED := Color("#a8987a")
-const CARD_ASPECT := 768.0 / 1376.0  # the unit cards in data/unit_art
+const PORTRAIT := 300  # the framed icon on a unit's Character and About pages (round 18)
 const STAT_LOOK := {"STR": ["STR", "Strength"], "CON": ["CON", "Constitution"], "INT": ["INT", "Intellect"],
 		"SPD": ["SPD", "Speed"], "AGI": ["AGI", "Agility"], "PDEF": ["PDF", "Physical defence"], "MDEF": ["MDF", "Magic defence"]}
 
@@ -544,29 +544,30 @@ func _sheet_section(text: String) -> Control:
 	return box
 
 
-## The unit's card (data/unit_art/<class>.jpg) in a thin gold frame, `height` px tall;
-## a class without its card yet shows its icon on the card's shape.
-func _unit_card(unit_class: String, height: float) -> Control:
+## The unit's icon in a frame (playtest round 18: icons replace the unit card pictures),
+## PORTRAIT px square, at the same place on the Character and About pages: a gold edge
+## round a parchment inset, the figure standing on its floor.
+func _unit_portrait(unit_class: String) -> Control:
 	var frame := PanelContainer.new()
-	var look := UiStyle.box(Color("#efe3c6"), 0)
-	look.set_border_width_all(2)
-	look.border_color = SHEET_GOLD_DIM
+	var look := UiStyle.box(Color("#2a2118"), 6)
+	look.set_border_width_all(3)
+	look.border_color = SHEET_GOLD
+	look.set_corner_radius_all(6)
 	frame.add_theme_stylebox_override("panel", look)
-	frame.size_flags_horizontal = SIZE_SHRINK_CENTER
+	frame.size_flags_horizontal = SIZE_SHRINK_BEGIN
 	frame.size_flags_vertical = SIZE_SHRINK_BEGIN
-	var card_size := Vector2(height * CARD_ASPECT, height)
-	var path := "res://data/unit_art/%s.jpg" % UnitIcons.file_name(unit_class)
+	var inset := PanelContainer.new()
+	var paper := UiStyle.box(Color("#efe3c6"), 0)
+	paper.set_border_width_all(1)
+	paper.border_color = SHEET_GOLD_DIM
+	paper.set_corner_radius_all(3)
+	inset.add_theme_stylebox_override("panel", paper)
+	frame.add_child(inset)
 	var pic := TextureRect.new()
-	pic.custom_minimum_size = card_size
-	pic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	if ResourceLoader.exists(path):
-		pic.texture = load(path)
-		pic.stretch_mode = TextureRect.STRETCH_SCALE
-		pic.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-	else:
-		pic.texture = UnitIcons.texture(unit_class, int(card_size.x * 0.6))
-		pic.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
-	frame.add_child(pic)
+	pic.custom_minimum_size = Vector2(PORTRAIT, PORTRAIT)
+	pic.texture = UnitIcons.texture(unit_class, PORTRAIT)
+	pic.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+	inset.add_child(pic)
 	return frame
 
 
@@ -633,12 +634,13 @@ func _close_unit() -> void:
 	_refresh()
 
 
-## The About tab: the unit's card large, beside what the sheet says about its class.
+## The About tab: the unit's framed icon, in the same place as on the Character tab, beside
+## what the sheet says about its class.
 func _unit_about(u: Unit) -> Control:
 	var c: Dictionary = u.info(data)
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 44)
-	row.add_child(_unit_card(u.unit_class, 690))
+	row.add_theme_constant_override("separation", 26)  # as the Character tab, so the icon doesn't move
+	row.add_child(_unit_portrait(u.unit_class))
 	var text := VBoxContainer.new()
 	text.add_theme_constant_override("separation", 12)
 	text.size_flags_horizontal = SIZE_EXPAND_FILL
@@ -665,9 +667,9 @@ func _unit_overview(u: Unit, sq: Squad, locked: bool) -> Control:
 	# The card, HP and XP
 	var card := VBoxContainer.new()
 	card.add_theme_constant_override("separation", 10)
-	card.custom_minimum_size.x = 340
+	card.size_flags_horizontal = SIZE_SHRINK_BEGIN  # as wide as the framed icon, the bars under it too
 	row.add_child(card)
-	card.add_child(_unit_card(u.unit_class, 600))
+	card.add_child(_unit_portrait(u.unit_class))
 	var hp := u.max_hp(data)
 	card.add_child(_sheet_bar("HP", u.hp, hp, Color("#4f9a3c") if u.is_alive() else Color("#7a2a1e"),
 			"%d / %d" % [u.hp, hp] if u.is_alive() else "Fallen"))
