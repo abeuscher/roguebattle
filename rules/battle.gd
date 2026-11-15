@@ -706,6 +706,9 @@ func play_card(id: String, side := 0) -> bool:
 		"extra_attack":
 			for u in own.living():
 				_attacks[u] += 1
+		"escape":  # Gazelle (round 18): a retreat that can't fail
+			retreated = side
+			_record({"type": "retreat", "side": side, "success": true, "text": "The squad escapes."})
 		"revive":  # Phoenix (round 9): every fallen unit stands again at a share of its max HP
 			for u in own.living(false):
 				if u in _skeletons:

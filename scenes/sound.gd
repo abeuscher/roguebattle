@@ -46,6 +46,13 @@ static func start(parent: Node, audio: Dictionary, options: Dictionary) -> void:
 
 
 ## Plays an event's cues (audio.json "events").
+## Seconds until the stingers and voice lines already asked for have all played (0 when quiet).
+static func quiet_in() -> float:
+	if _it == null:
+		return 0.0
+	return maxf(0.0, _it._queue_free_at - Time.get_ticks_msec() / 1000.0)
+
+
 static func event(id: String) -> void:
 	if _it:
 		_it._event(id)

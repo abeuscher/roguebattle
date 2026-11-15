@@ -751,11 +751,10 @@ func _finish() -> void:
 	center.add_child(box)
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 16)
-	col.custom_minimum_size.x = 620
+	col.custom_minimum_size.x = 700
 	box.add_child(col)
-	var title := UiStyle.label(RESULT_WORDS[result], 40, RESULT_COLORS[result])
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	col.add_child(title)
+	var title := UiStyle.label(RESULT_WORDS[result], 26, RESULT_COLORS[result])
+	col.add_child(UiStyle.title_row(title, Callable()))  # a title bar like every other window's (round 18)
 	var line := GameState.neutral_line(battle, out)
 	if replay:
 		line = ("Replay. " + line).strip_edges()
@@ -764,15 +763,21 @@ func _finish() -> void:
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		col.add_child(l)
 	var sides := HBoxContainer.new()
-	sides.add_theme_constant_override("separation", 24)
+	sides.add_theme_constant_override("separation", 14)
 	col.add_child(sides)
-	for side in 2:
-		sides.add_child(_side_stats(side, out))
+	sides.add_child(_side_stats(0, out))
+	var vs := UiStyle.label("vs.", 26, UiStyle.ACCENT)
+	vs.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	sides.add_child(vs)
+	sides.add_child(_side_stats(1, out))
 	if not out.get("xp", {}).is_empty():
 		var amounts: Array = out["xp"].values()
-		col.add_child(UiStyle.label("XP: +%d each" % amounts[0] if amounts.min() == amounts.max() else "XP: +%d to +%d" % [amounts.min(), amounts.max()], 17))
-	for level_up in out.get("level_ups", []):
-		col.add_child(UiStyle.label(level_up, 17, Color("#7ee08a")))
+		var xp := UiStyle.label("XP: +%d each" % amounts[0] if amounts.min() == amounts.max() else "XP: +%d to +%d" % [amounts.min(), amounts.max()], 18)
+		xp.add_theme_font_override("font", UiStyle.bold_font())
+		xp.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		col.add_child(xp)
+	if not out.get("ups", []).is_empty():
+		col.add_child(_level_ups(out["ups"]))
 	var note := UiStyle.label("", 17, UiStyle.ACCENT)
 	note.visible = false
 	var buttons := HBoxContainer.new()
@@ -797,8 +802,9 @@ func _finish() -> void:
 			var amounts: Array = gained["xp"].values()
 			note.text = "The enemy flees the map." + ("" if amounts.is_empty() else "  XP: +%d each." % amounts.max() if amounts.min() == amounts.max()
 					else "  XP: +%d to +%d." % [amounts.min(), amounts.max()])
-			for up in gained["level_ups"]:
-				note.text += "\n" + up)
+			if not gained.get("ups", []).is_empty():
+				col.add_child(_level_ups(gained["ups"]))
+				col.move_child(col.get_child(col.get_child_count() - 1), note.get_index() + 1))
 		buttons.add_child(drive)
 	col.add_child(note)
 	var go := UiStyle.button("Continue", 200, true)
@@ -841,12 +847,59 @@ func _side_stats(side: int, out: Dictionary) -> Control:
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 6)
 	box.add_child(col)
-	col.add_child(UiStyle.label(s.name if side == 0 else "Enemy", 20, Color(LOG_COLORS[side])))
+	var head := HBoxContainer.new()  # the leader's icon beside the side's name (round 18)
+	head.add_theme_constant_override("separation", 10)
+	col.add_child(head)
+	var lead: Unit = s.leader if s.leader else (battle.fought[side][0] if not battle.fought[side].is_empty() else null)
+	if lead:
+		var pic := TextureRect.new()
+		pic.texture = UnitIcons.texture(lead.unit_class, 60)
+		pic.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+		pic.tooltip_text = "%s, the %s" % [lead.name, lead.unit_class] if side == 0 else lead.unit_class
+		head.add_child(pic)
+	var name_label := UiStyle.label(s.name if side == 0 else "Enemy", 20, Color(LOG_COLORS[side]))
+	name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	head.add_child(name_label)
 	var fought: Array = battle.fought[side]  # alive when the battle began
 	col.add_child(UiStyle.label("Units lost: %d of %d" % [fought.filter(func(u: Unit): return not u.is_alive()).size(), fought.size()], 17))
 	if out["leader_dead"][side] and not out["wiped"][side] and side == 0:
 		col.add_child(UiStyle.label("Leader fell: marching home", 15, Color(0.8, 0.82, 0.86)))
 	return box
+
+
+## The units that levelled up (round 18): a tile each, two to a row, with the unit's icon,
+## its name and new level, and what it gained (and a leader's new slots).
+func _level_ups(ups: Array) -> Control:
+	var grid := GridContainer.new()
+	grid.columns = 2 if ups.size() > 1 else 1
+	grid.add_theme_constant_override("h_separation", 10)
+	grid.add_theme_constant_override("v_separation", 10)
+	for up: Dictionary in ups:
+		var u: Unit = up["unit"]
+		var tile := PanelContainer.new()
+		tile.add_theme_stylebox_override("panel", UiStyle.box(Color(0.3, 0.75, 0.4, 0.12), 10))
+		tile.size_flags_horizontal = SIZE_EXPAND_FILL
+		grid.add_child(tile)
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 10)
+		tile.add_child(row)
+		var pic := TextureRect.new()
+		pic.texture = UnitIcons.texture(u.unit_class, 52)
+		pic.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+		row.add_child(pic)
+		var text := VBoxContainer.new()
+		text.add_theme_constant_override("separation", 2)
+		text.size_flags_horizontal = SIZE_EXPAND_FILL
+		row.add_child(text)
+		var who := UiStyle.label("%s reaches level %d" % [u.name.get_slice(" ", 0), int(up["level"])], 16, Color("#7ee08a"))
+		who.add_theme_font_override("font", UiStyle.bold_font())
+		text.add_child(who)
+		var gains := UiStyle.label(("A prodigy shines! " if up["prodigy"] else "") + str(up["gains"]), 14, Color(0.82, 0.85, 0.9))
+		gains.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		text.add_child(gains)
+		if int(up["slots"]) > 0:
+			text.add_child(UiStyle.label("Can now lead %d slots" % int(up["slots"]), 14, UiStyle.ACCENT))
+	return grid
 
 
 func _unhandled_key_input(event: InputEvent) -> void:

@@ -2782,8 +2782,12 @@ func _give_xp(s: Squad, u: Unit, amount: int, out: Dictionary) -> void:
 		for gains in Progression.gain_xp(data, u, amount, rng.get_stream("progression")):
 			var line := "%s%s reaches level %d: %s." % ["A prodigy shines! " if u.talent == "prodigy" else "", u.name, u.level, Progression.gains_text(gains)]
 			out["level_ups"].append(line)
+			if not out.has("ups"):
+				out["ups"] = []  # the same, for the result window to lay out (round 18)
+			out["ups"].append({"unit": u, "level": u.level, "gains": Progression.gains_text(gains), "prodigy": u.talent == "prodigy", "slots": 0})
 			log.add(clock.tick, "progression", line, s.id, {"growth": u.growth, "talent": u.talent})
 			if u == s.leader and s.check_slot_growth(data):
+				out["ups"][-1]["slots"] = s.capacity(data)
 				out["level_ups"].append("%s can now lead %d slots." % [u.name, s.capacity(data)])
 				log.add(clock.tick, "progression", out["level_ups"][-1], s.id)
 

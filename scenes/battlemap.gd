@@ -44,6 +44,7 @@ var _battle: BattleView
 var _encounter: EncounterPopup
 var _tip: TipPopup  # the player tip showing, if any (one at a time)
 var _tip_hex := -1  # the map hex it points at, for a tip anchored on the map; else -1
+var _next_liberation := 0  # msec before which the next queued liberation waits (a beat between two)
 var _base_tip_asked := false  # the home base tip has been offered this session
 var _flying_to_fight := false  # a ranged attack's battle waits while the camera glides to it
 ## A battle the recruit popup already announced (refused, or Fight), which opens with no
@@ -1197,6 +1198,8 @@ func _close_recruit_popup() -> void:
 func _pump_liberations() -> void:
 	if state.liberations.is_empty() or not _free():
 		return
+	if Time.get_ticks_msec() < _next_liberation or Sound.quiet_in() > 0.0:
+		return  # a beat after the last one, its sound finished, so each plays with its own window (round 18)
 	var entry: Dictionary = state.liberations.pop_front()
 	Sound.event("taken_" + str(entry["building"]["type"]))  # the riff goes with the window (or its banner), one at a time
 	if entry.get("taken", "") == "new":  # then "New Town!" (or Tower, Temple), after the riff
@@ -1209,6 +1212,12 @@ func _pump_liberations() -> void:
 		var won: String = "taken" if not state.data.buildings[entry["building"]["type"]].get("liberation", true) else "liberated"
 		state.notices.append("%s %s!%s" % [state.where(entry["building"]["hex"]), won, " %d conscripts join the recruit pool." % joined if joined > 0 else ""])
 		_fireworks(entry["building"]["hex"])
+		_liberation_beat()
+
+
+## The next liberation waits a beat (rules.json liberation_beat) after this one.
+func _liberation_beat() -> void:
+	_next_liberation = Time.get_ticks_msec() + roundi(float(data.rules["liberation_beat"]["seconds"]) * 1000.0)
 
 
 ## A building of yours the enemy retook: a modal over the place (playtest round 9).
@@ -1287,7 +1296,8 @@ func _open_liberation_popup(entry: Dictionary) -> void:
 	var hex: int = entry["building"]["hex"]
 	_liberation_popup.closed.connect(func():
 		_close_liberation_popup()
-		_fireworks(hex))
+		_fireworks(hex)
+		_liberation_beat())
 
 
 func _close_liberation_popup() -> void:

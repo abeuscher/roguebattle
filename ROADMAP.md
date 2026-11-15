@@ -254,3 +254,13 @@ Rows marked **Discuss first** need a conversation with the user before the named
 | 4 | **A tip introducing Edit Units** (the user's text), centred on the screen the first time it opens; the drag-a-leader tip moves to its next opening | §19 | Test: due first on Edit Units, centred, then the build tip | Done (session 100) |
 | 5 | **Tips: the Opinion Leader's squad and the home base** (the user's text). Straight after the Edit Units introduction is closed, a tip points at the Opinion Leader's squad card, naming them; once the game has started, the first time the Player Base is on screen, a tip points at it. Each only while that defeat is on | §19 | Test: due at their moments, only with the defeat on | Done (session 100) |
 
+## Playtest round 18 (user's notes, 2026-11-15)
+
+| # | Session | Spec | Verify | Status |
+|---|---|---|---|---|
+| 1 | **Gazelle, a card for instant escape.** The user's picture is in `data/card_art/gazelle.jpg`. Played in battle, your squad gets away at once: a retreat that can't fail | §13 | Test: playing it ends the battle as your retreat | Done (session 101) |
+| 2 | **The battle result window, tidied.** The title (Won, Lost, ...) in a title bar like every other window's; each side's box shows its leader's icon, with "vs." between the two boxes; the XP line bold and centred; level-ups as a composed block, each with the unit's icon (side by side if that reads better), instead of lines of text | §11 | Screenshot of a won battle with level-ups | Done (session 101) |
+| 3 | **A beat between liberations.** When two liberations come back to back, a pause between the end of one and the start of the next, and each one's riff and voice line play with its own window (or banner) and camera move, never late or dropped | §6.5, M5 | Test or headless check: the second waits for the first's sound and a beat | Done (session 101): checked headless that the sound queue reports a town's riff and voice line (about 7 s) |
+| 4 | **Icons for items:** Herbs (a green five-pointed leaf), Revival Draught (a potion bottle), and icons for the rest: equipment, the cure potions, buffs and debuffs (statuses), and anything else sold in shops | §10, §14 | Screenshots: the shop, Heal, Equipment, a battle with statuses | |
+| 5 | **Unit display: icons replace the unit cards.** (a) The unit card pictures leave the game (the files stay in the repo until the user is sure); (b) each unit slot in the battle view shows the unit's icon, laid out to fit properly; (c) in a unit's details, the Character page and the About page show the icon at a good size, in the same place on both (only the other content changes), perhaps in a frame | §5, §11 | Screenshots: a battle, a unit's Character and About pages | |
+

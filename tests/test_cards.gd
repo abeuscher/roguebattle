@@ -205,3 +205,13 @@ func test_card_xp_goes_to_the_opinion_leader() -> void:
 	var out := st.end_battle(b)
 	check(out["xp"][fighting.units[1]] < full, "the fighting squad gets less than the full %d" % full)
 	check(ol.units[1].xp > ol_xp, "the Opinion Leader's squad gets the card share")
+
+
+## Gazelle (playtest round 18): your squad gets away at once, a retreat that can't fail.
+func test_gazelle_escapes_at_once() -> void:
+	var b := _battle([_unit("Fighter"), _unit("Acolyte", "back")], [_unit("Knight"), _unit("Soldier")])
+	check(b.play_card("gazelle"), "played")
+	check(b.is_over() and b.retreated == 0, "the battle ends: your squad got away")
+	check(b.finish()["retreated"] == 0, "as a retreat")
+	check(FileAccess.file_exists("res://data/card_art/gazelle.jpg"), "the user's picture")
+

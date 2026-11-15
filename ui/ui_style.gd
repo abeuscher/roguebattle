@@ -136,6 +136,14 @@ static func help(action: Callable, tip: String, px := 28, ink := Color(0.78, 0.8
 
 ## The title font (Cinzel, playtest round 12): carved capitals that set a window's title
 ## apart from its content.
+## The body font (Sen) in bold, for emphasis in running text.
+static func bold_font(weight := 700) -> Font:
+	var f := FontVariation.new()
+	f.base_font = load("res://ui/fonts/Sen.ttf")
+	f.variation_opentype = {TextServerManager.get_primary_interface().name_to_tag("wght"): weight}
+	return f
+
+
 static func title_font(weight := 650) -> Font:
 	var f := FontVariation.new()
 	f.base_font = load("res://ui/fonts/Cinzel.ttf")

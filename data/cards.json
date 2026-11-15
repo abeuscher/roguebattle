@@ -1,33 +1,238 @@
 {
  "_note": "Cards (SPEC §13). All strengths are placeholders. where: battle or map. Stat boosts last for the rest of the battle (§11.7). weight: how likely a card is drawn against the others (1 if missing; rare cards less, round 9). Attack cards hit every enemy: damage = power - the target's PDEF (physical) or MDEF (magic), times the element multiplier, with the usual spread, at least 1.",
- "played_fade": {"scale": 5.0, "seconds": 0.8, "_note": "A played card grows to this many times its size as it fades from the board, over this many seconds (playtest round 13). In battle the fade keeps the battle's own pace (and speed); the seconds are for the map's cards window."},
- "art_text_box": {"rect": [0.16, 0.645, 0.84, 0.885], "_note": "Where a card's text goes on its picture (data/card_art/<id>.jpg), as fractions of the picture: left, top, right, bottom. The blank parchment panel under the name banner."},
+ "played_fade": {
+  "scale": 5.0,
+  "seconds": 0.8,
+  "_note": "A played card grows to this many times its size as it fades from the board, over this many seconds (playtest round 13). In battle the fade keeps the battle's own pace (and speed); the seconds are for the map's cards window."
+ },
+ "art_text_box": {
+  "rect": [
+   0.16,
+   0.645,
+   0.84,
+   0.885
+  ],
+  "_note": "Where a card's text goes on its picture (data/card_art/<id>.jpg), as fractions of the picture: left, top, right, bottom. The blank parchment panel under the name banner."
+ },
  "start": 3,
- "choose": {"Seer": 2, "Oracle": 3},
+ "choose": {
+  "Seer": 2,
+  "Oracle": 3
+ },
  "cards": {
-  "panther":    {"name": "Panther",    "group": "Stat boost",  "where": "battle", "effect": "buff", "stat": "STR",  "mult": 1.3, "text": "+30% STR for your squad for the rest of the battle."},
-  "elephant":   {"name": "Elephant",   "group": "Stat boost",  "where": "battle", "effect": "overheal", "share": 0.3, "text": "Each of your units gains 30% of its max HP, even above full, for this battle."},
-  "owl":        {"name": "Owl",        "group": "Stat boost",  "where": "battle", "effect": "buff", "stat": "INT",  "mult": 1.3, "text": "+30% INT for your squad for the rest of the battle."},
-  "cheetah":    {"name": "Cheetah",    "group": "Stat boost",  "where": "battle", "effect": "buff", "stat": "SPD",  "mult": 1.5, "text": "Haste: +50% SPD for your squad for the rest of the battle."},
-  "raccoon":    {"name": "Raccoon",    "group": "Stat boost",  "where": "battle", "effect": "buff", "stat": "AGI",  "mult": 1.3, "text": "+30% AGI for your squad for the rest of the battle."},
-  "turtle":     {"name": "Turtle",     "group": "Stat boost",  "where": "battle", "effect": "buff", "stat": "PDEF", "mult": 1.3, "text": "+30% PDEF for your squad for the rest of the battle."},
-  "hippo":      {"name": "Hippo",      "group": "Stat boost",  "where": "battle", "effect": "buff", "stat": "MDEF", "mult": 1.3, "text": "+30% MDEF for your squad for the rest of the battle."},
-  "dolphin":    {"name": "Dolphin",    "group": "Heal",        "where": "battle", "effect": "heal", "amount": 50, "text": "+50 HP to all your units."},
-  "whale":      {"name": "Whale",      "group": "Heal",        "where": "battle", "effect": "heal_full", "text": "All your units healed to full."},
-  "narwhal":    {"name": "Narwhal",    "group": "Heal",        "where": "battle", "effect": "narwhal", "casts": 2, "per_level": 10, "text": "A narwhal healer at your squad's average level heals everyone twice."},
-  "walrus":     {"name": "Walrus",     "group": "Heal",        "where": "battle", "effect": "cleanse", "text": "Cleanses all harmful statuses from your squad."},
-  "tiger":      {"name": "Tiger",      "group": "Attack",      "where": "battle", "effect": "attack", "kind": "physical", "power": 18, "text": "A physical attack on the whole enemy squad."},
-  "crocodile":  {"name": "Crocodile",  "group": "Attack",      "where": "battle", "effect": "attack", "kind": "magic", "element": "Water", "power": 16, "text": "A water magic attack on the whole enemy squad."},
-  "rhino":      {"name": "Rhino",      "group": "Attack",      "where": "battle", "effect": "attack", "kind": "magic", "element": "Earth", "power": 16, "text": "An earth magic attack on the whole enemy squad."},
-  "condor":     {"name": "Condor",     "group": "Attack",      "where": "battle", "effect": "attack", "kind": "magic", "element": "Wind", "power": 16, "text": "A wind attack on the whole enemy squad."},
-  "angelfish":  {"name": "Angelfish",  "group": "Attack",      "where": "battle", "effect": "attack", "kind": "magic", "element": "Lightning", "power": 14, "status": "shock", "text": "A lightning attack on the whole enemy squad that shocks them."},
-  "mouse":      {"name": "Mouse",      "group": "Attack",      "where": "battle", "effect": "status", "status": "weak_physical", "text": "The enemy squad becomes weak to physical attacks."},
-  "mink":       {"name": "Mink",       "group": "Attack",      "where": "battle", "effect": "status", "status": "weak_magic", "text": "The enemy squad becomes weak to magic."},
-  "rooster":    {"name": "Rooster",    "group": "Environment", "where": "map",    "effect": "time", "minute": 720, "text": "Time jumps to noon."},
-  "fox":        {"name": "Fox",        "group": "Environment", "where": "map",    "effect": "time", "minute": 0, "text": "Time jumps to midnight."},
-  "chameleon":  {"name": "Chameleon",  "group": "Environment", "where": "battle", "effect": "home_terrain", "text": "This battle plays as if on your squad's home terrain."},
-  "sloth":      {"name": "Sloth",      "group": "Environment", "where": "battle", "effect": "enemy_loses_turn", "text": "The enemy squad loses its next action."},
-  "unicorn":    {"name": "Unicorn",    "group": "Environment", "where": "battle", "effect": "extra_attack", "text": "Each of your units gets one extra attack this battle."},
-  "phoenix":    {"name": "Phoenix",    "group": "Heal",        "where": "battle", "effect": "revive", "share": 0.5, "weight": 0.25, "text": "Every fallen unit in your squad rises again with half its max HP."}
+  "panther": {
+   "name": "Panther",
+   "group": "Stat boost",
+   "where": "battle",
+   "effect": "buff",
+   "stat": "STR",
+   "mult": 1.3,
+   "text": "+30% STR for your squad for the rest of the battle."
+  },
+  "elephant": {
+   "name": "Elephant",
+   "group": "Stat boost",
+   "where": "battle",
+   "effect": "overheal",
+   "share": 0.3,
+   "text": "Each of your units gains 30% of its max HP, even above full, for this battle."
+  },
+  "owl": {
+   "name": "Owl",
+   "group": "Stat boost",
+   "where": "battle",
+   "effect": "buff",
+   "stat": "INT",
+   "mult": 1.3,
+   "text": "+30% INT for your squad for the rest of the battle."
+  },
+  "cheetah": {
+   "name": "Cheetah",
+   "group": "Stat boost",
+   "where": "battle",
+   "effect": "buff",
+   "stat": "SPD",
+   "mult": 1.5,
+   "text": "Haste: +50% SPD for your squad for the rest of the battle."
+  },
+  "raccoon": {
+   "name": "Raccoon",
+   "group": "Stat boost",
+   "where": "battle",
+   "effect": "buff",
+   "stat": "AGI",
+   "mult": 1.3,
+   "text": "+30% AGI for your squad for the rest of the battle."
+  },
+  "turtle": {
+   "name": "Turtle",
+   "group": "Stat boost",
+   "where": "battle",
+   "effect": "buff",
+   "stat": "PDEF",
+   "mult": 1.3,
+   "text": "+30% PDEF for your squad for the rest of the battle."
+  },
+  "hippo": {
+   "name": "Hippo",
+   "group": "Stat boost",
+   "where": "battle",
+   "effect": "buff",
+   "stat": "MDEF",
+   "mult": 1.3,
+   "text": "+30% MDEF for your squad for the rest of the battle."
+  },
+  "dolphin": {
+   "name": "Dolphin",
+   "group": "Heal",
+   "where": "battle",
+   "effect": "heal",
+   "amount": 50,
+   "text": "+50 HP to all your units."
+  },
+  "whale": {
+   "name": "Whale",
+   "group": "Heal",
+   "where": "battle",
+   "effect": "heal_full",
+   "text": "All your units healed to full."
+  },
+  "narwhal": {
+   "name": "Narwhal",
+   "group": "Heal",
+   "where": "battle",
+   "effect": "narwhal",
+   "casts": 2,
+   "per_level": 10,
+   "text": "A narwhal healer at your squad's average level heals everyone twice."
+  },
+  "walrus": {
+   "name": "Walrus",
+   "group": "Heal",
+   "where": "battle",
+   "effect": "cleanse",
+   "text": "Cleanses all harmful statuses from your squad."
+  },
+  "tiger": {
+   "name": "Tiger",
+   "group": "Attack",
+   "where": "battle",
+   "effect": "attack",
+   "kind": "physical",
+   "power": 18,
+   "text": "A physical attack on the whole enemy squad."
+  },
+  "crocodile": {
+   "name": "Crocodile",
+   "group": "Attack",
+   "where": "battle",
+   "effect": "attack",
+   "kind": "magic",
+   "element": "Water",
+   "power": 16,
+   "text": "A water magic attack on the whole enemy squad."
+  },
+  "rhino": {
+   "name": "Rhino",
+   "group": "Attack",
+   "where": "battle",
+   "effect": "attack",
+   "kind": "magic",
+   "element": "Earth",
+   "power": 16,
+   "text": "An earth magic attack on the whole enemy squad."
+  },
+  "condor": {
+   "name": "Condor",
+   "group": "Attack",
+   "where": "battle",
+   "effect": "attack",
+   "kind": "magic",
+   "element": "Wind",
+   "power": 16,
+   "text": "A wind attack on the whole enemy squad."
+  },
+  "angelfish": {
+   "name": "Angelfish",
+   "group": "Attack",
+   "where": "battle",
+   "effect": "attack",
+   "kind": "magic",
+   "element": "Lightning",
+   "power": 14,
+   "status": "shock",
+   "text": "A lightning attack on the whole enemy squad that shocks them."
+  },
+  "mouse": {
+   "name": "Mouse",
+   "group": "Attack",
+   "where": "battle",
+   "effect": "status",
+   "status": "weak_physical",
+   "text": "The enemy squad becomes weak to physical attacks."
+  },
+  "mink": {
+   "name": "Mink",
+   "group": "Attack",
+   "where": "battle",
+   "effect": "status",
+   "status": "weak_magic",
+   "text": "The enemy squad becomes weak to magic."
+  },
+  "rooster": {
+   "name": "Rooster",
+   "group": "Environment",
+   "where": "map",
+   "effect": "time",
+   "minute": 720,
+   "text": "Time jumps to noon."
+  },
+  "fox": {
+   "name": "Fox",
+   "group": "Environment",
+   "where": "map",
+   "effect": "time",
+   "minute": 0,
+   "text": "Time jumps to midnight."
+  },
+  "chameleon": {
+   "name": "Chameleon",
+   "group": "Environment",
+   "where": "battle",
+   "effect": "home_terrain",
+   "text": "This battle plays as if on your squad's home terrain."
+  },
+  "sloth": {
+   "name": "Sloth",
+   "group": "Environment",
+   "where": "battle",
+   "effect": "enemy_loses_turn",
+   "text": "The enemy squad loses its next action."
+  },
+  "unicorn": {
+   "name": "Unicorn",
+   "group": "Environment",
+   "where": "battle",
+   "effect": "extra_attack",
+   "text": "Each of your units gets one extra attack this battle."
+  },
+  "phoenix": {
+   "name": "Phoenix",
+   "group": "Heal",
+   "where": "battle",
+   "effect": "revive",
+   "share": 0.5,
+   "weight": 0.25,
+   "text": "Every fallen unit in your squad rises again with half its max HP."
+  },
+  "gazelle": {
+   "name": "Gazelle",
+   "group": "Environment",
+   "where": "battle",
+   "effect": "escape",
+   "weight": 0.5,
+   "text": "Your squad escapes the battle at once, as a retreat that can't fail.",
+   "_note": "Playtest round 18 (user, 2026-11-15): instant escape. The same as a successful retreat in every way (pushed back a hex, the leader's charisma, a lost battle toward losing heart), only certain. Half as likely as most cards."
+  }
  }
 }

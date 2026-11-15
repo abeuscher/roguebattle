@@ -5,6 +5,7 @@ Real-time squad strategy game in Godot 4.7.2 (GDScript). The design is `SPEC.md`
 ## How to work
 
 - **Communicate plainly and briefly.** Say what changed and how to try it, not how it was done.
+- **Name things; don't cite them.** When talking to the user, always say what an item is ("the enemy dodging your squads", "the Spearman tactics tip"), never refer to it by a number, row, round, session or section ("row 7", "round 16", "§11.1", "session 099"). The user doesn't know the docs that literally. Numbers are fine inside the docs themselves.
 - **Prefer a smaller codebase.** No speculative abstractions, plugins or frameworks. Write the simplest thing that meets the spec.
 - **The spec is the design.** Don't redesign. If the spec is unclear, contradictory, or would make the code much bigger, stop and ask, citing the section number. For small gaps, pick the simplest reading, log it in `DECISIONS.md`, and continue.
 - **Godot docs for the installed version (4.7.2).** Don't guess at APIs. Dump the exact reference with `godot --headless --doctool <dir>` and grep `<dir>/doc/classes/*.xml`, or use docs.godotengine.org/en/4.7.
