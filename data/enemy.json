@@ -1,7 +1,5 @@
 {
- "_about": "Enemy squads (SPEC §17). Every enemy squad starts on the Enemy Base. How many: squads_per_town × the map's towns (rounded), at least min_squads. Roles in placement order: a number, or \"rest\" for whatever is left of that total. Leader and base guard hold the base; field squads march out to take buildings (EnemyAI, weights in ai.json). Builds are 4 units with no healers: a stage 3 leader and three stage 2 Serf-line units; [class, row], the first unit able to lead leads.",
- "squads_per_town": 0.5,
- "min_squads": 3,
+ "_about": "Enemy squads (SPEC §17). Every enemy squad starts on the Enemy Base. How many: the squads that hold the base (roles with a number) plus as many field squads as the player may have on the map (rules.json board_scale; playtest round 16). Roles in placement order: a number, or \"rest\" for whatever is left of that total. Leader and base guard hold the base; field squads march out to take buildings (EnemyAI, weights in ai.json). Builds are 4 units with no healers: a stage 3 leader and three stage 2 Serf-line units; [class, row], the first unit able to lead leads.",
  "roles": [
   {"role": "leader", "count": 1},
   {"role": "base_guard", "count": 1},

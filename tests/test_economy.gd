@@ -30,7 +30,7 @@ func _state() -> GameState:
 	m.buildings[-1]["shop"] = true
 	m.buildings.append(_b("tower", _at(m, 12, 3)))
 	m.buildings.append(_b("temple", _at(m, 16, 3)))
-	var st := GameState.new(d, m, GameLog.new())
+	var st := GameState.new(d, m, GameLog.new(), {"squad_cap": 6})  # the hand-worked numbers below assume 6 (Auto would scale it with this tiny map)
 	st.army.cells[0] = st._form(1, "", m.player_base, [["Knight", "front"], ["Fighter", "front"], ["Fighter", "front"], ["Bowman", "back"], ["Acolyte", "back"]], "player")
 	st.squads.append(st.army.cells[0])
 	st.army.cells[1] = st._form(2, "", -1, [["Lancer", "front"], ["Squire", "front"], ["Squire", "front"], ["Slinger", "back"], ["Acolyte", "back"]], "player")

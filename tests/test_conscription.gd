@@ -37,7 +37,7 @@ func _ours(st: GameState, col: int) -> Squad:
 
 
 func _take(st: GameState) -> void:
-	for i in int(d.rules["capture"]["ticks"]):
+	for i in roundi(d.rules["capture"]["ticks"] * float(d.rules["capture"]["held_resist"])):  # long enough for the enemy too, who takes yours slower (round 16)
 		st.step()
 
 

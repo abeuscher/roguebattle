@@ -10,7 +10,6 @@ func _game(seed := 31) -> Array:
 	var config := GameConfig.create(d, seed)
 	config.values["width"] = 120
 	config.values["height"] = 70
-	config.fit_squad_cap()
 	var map := MapGen.generate(d, config.seed, config.map_overrides())
 	var st := GameState.new(d, map, GameLog.new(), config.game_settings())
 	st.setup_army()

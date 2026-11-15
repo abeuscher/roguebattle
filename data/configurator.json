@@ -35,6 +35,6 @@
  {"key": "victory_timer_days", "group": "Victory", "label": "Timer, days", "target": "game", "options": [3, 5, 7, 10, 14], "default": 7},
  {"key": "defeat_leader", "group": "Defeat", "label": "Opinion Leader dies", "target": "game", "options": [false, true], "default": true},
  {"key": "defeat_base", "group": "Defeat", "label": "Player Base is captured", "target": "game", "options": [false, true], "default": true},
- {"key": "squad_cap", "group": "Army", "label": "Squads on the map at once", "target": "game", "range": [1, 10, 1], "default": 6},
+ {"key": "squad_cap", "group": "Army", "label": "Squads on the map at once", "target": "game", "options": ["auto", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], "labels": ["Auto (from the map)", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"], "default": "auto", "_note": "Auto: both sides field a force that scales with the map (rules.json board_scale; playtest round 16)."},
  {"key": "fairness", "group": "Army", "label": "Fairer dice apply to", "target": "game", "options": ["both", "player"], "labels": ["Both sides", "Player only"], "default": "both"}
 ]

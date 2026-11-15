@@ -305,7 +305,8 @@ func _capture() -> void:
 			continue
 		var sapper := s.living().any(func(u: Unit): return u.has_tag(data, "sapper"))
 		s.capture_ticks += float(c["sapper_speed"]) if sapper else 1.0
-		if s.capture_ticks >= float(c["ticks"]):
+		var need := float(c["ticks"]) * (float(c["held_resist"]) if b["owner"] == "player" and s.side == "enemy" else 1.0)  # yours resist (round 16)
+		if s.capture_ticks >= need:
 			s.capture_ticks = 0.0
 			var was: String = b["owner"]
 			b["owner"] = s.side
@@ -1404,12 +1405,16 @@ func use_battle_supply(b: Battle, id: String, u: Unit) -> bool:
 
 ## Squads on the map at once, from the configurator (default 5).
 func squad_cap() -> int:
-	if settings.has("squad_cap"):
-		return int(settings["squad_cap"])
-	for f in data.config_fields:
-		if f["key"] == "squad_cap":
-			return int(f["default"])
-	return 5
+	var cap: Variant = settings.get("squad_cap", "auto")
+	return board_squads() if str(cap) == "auto" else int(cap)
+
+
+## How many squads each side fields on this map when the cap is on Auto (playtest round 16):
+## its towns, towers and temples / board_scale.places_per_squad, within min and max.
+func board_squads() -> int:
+	var c: Dictionary = data.rules["board_scale"]
+	var places := map.buildings.filter(func(b): return b["type"] in ["town", "tower", "temple"]).size()
+	return clampi(roundi(places / float(c["places_per_squad"])), int(c["min_squads"]), int(c["max_squads"]))
 
 
 ## Upkeep per day for the squad's units (§15.1): by stage, Large ×2, Tiny ×½, then
@@ -1843,8 +1848,11 @@ func _revive_at_enemy_base(s: Squad) -> void:
 ## How many squads the enemy fields (user's playtest notes, 2026-11-10): half as many
 ## as the map has towns, at least a few, so it scales with the map.
 func enemy_squad_count() -> int:
-	var towns := map.buildings.filter(func(b): return b["type"] == "town").size()
-	return maxi(int(data.enemy["min_squads"]), roundi(towns * float(data.enemy["squads_per_town"])))
+	var home := 0  # the squads that hold the base: roles with a number (leader, base guard)
+	for entry in data.enemy["roles"]:
+		if str(entry["count"]) != "rest":
+			home += int(entry["count"])
+	return home + squad_cap()
 
 
 ## Places every enemy squad on the Enemy Base (§17, changed 2026-11-10): the Warlord

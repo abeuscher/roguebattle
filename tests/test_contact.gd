@@ -33,8 +33,7 @@ func test_enemy_placement() -> void:
 	var st := GameState.new(d, m, GameLog.new())
 	st.place_enemies()
 	var enemies := st.squads.filter(func(s: Squad): return s.side == "enemy")
-	var towns := m.buildings.filter(func(b): return b["type"] == "town").size()
-	check_eq(enemies.size(), maxi(3, roundi(towns * 0.5)), "half as many squads as towns (%d)" % towns)
+	check_eq(enemies.size(), 2 + st.board_squads(), "the base's two plus as many field squads as you may field (round 16)")
 	var roles := {}
 	for s in enemies:
 		roles[s.role] = roles.get(s.role, 0) + 1
@@ -52,7 +51,7 @@ func test_enemy_placement() -> void:
 	var bare := MapData.new(10, 10)
 	bare.settings = {"preset": "continent", "size": "small"}
 	var few := GameState.new(d, bare, GameLog.new())
-	check_eq(few.enemy_squad_count(), 3, "at least 3 squads with no towns")
+	check_eq(few.enemy_squad_count(), 2 + int(d.rules["board_scale"]["min_squads"]), "with no towns: the base's two plus the minimum field force")
 
 
 func test_adjacency_triggers_battle() -> void:

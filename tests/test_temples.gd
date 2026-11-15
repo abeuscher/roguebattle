@@ -49,7 +49,7 @@ func test_losing_a_temple_costs_no_reputation() -> void:
 	_temple(st, 10)["owner"] = "player"
 	st.add_squad("Foe", _at(st.map, 10, 4), [["Soldier", "front"]], "enemy")
 	var rep := st.reputation
-	for i in int(d.rules["capture"]["ticks"]) + 1:
+	for i in roundi(d.rules["capture"]["ticks"] * float(d.rules["capture"]["held_resist"])) + 1:
 		st.step()
 	check_eq(_temple(st, 10)["owner"], "enemy", "the enemy takes it")
 	check_eq(st.reputation, rep, "no reputation lost")
@@ -137,7 +137,7 @@ func test_first_capture_and_retake_are_told_apart() -> void:
 	check_eq(str(st.liberations[-1].get("taken", "")), "new", "the first time it's ours: new")
 	ours.hex = _at(st.map, 2, 4)  # step away (far from the enemy, so no fight)
 	var foe := st.add_squad("Foe", _at(st.map, 10, 4), [["Soldier", "front"]], "enemy")
-	for i in int(d.rules["capture"]["ticks"]) + 1:
+	for i in roundi(d.rules["capture"]["ticks"] * float(d.rules["capture"]["held_resist"])) + 1:
 		st.step()
 	check_eq(_temple(st, 10)["owner"], "enemy", "the enemy takes it")
 	foe.hex = _at(st.map, 38, 1)
