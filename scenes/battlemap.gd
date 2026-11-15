@@ -197,7 +197,7 @@ func _process(delta: float) -> void:
 				break
 	# What the world brings up opens only on the free map, one at a time; until then it waits.
 	if state.pending and _free() and not (_set_aside == state.pending and state.clock.paused):
-		if state.pending.ranged_only:
+		if not state.pending.warns():  # a ranged attack you ordered
 			_fly_to_ranged_attack()
 		elif _announced == state.pending:
 			_open_battle()
@@ -1204,7 +1204,7 @@ func _pump_liberations() -> void:
 	Sound.event("taken_" + str(entry["building"]["type"]))  # the riff goes with the window (or its banner), one at a time
 	if entry.get("taken", "") == "new":  # then "New Town!" (or Tower, Temple), after the riff
 		Sound.event("new_" + str(entry["building"]["type"]))
-	var offering: bool = entry["card"] == "" and not state.card_offer.is_empty()
+	var offering: bool = entry.get("offer", false) and not state.card_offer.is_empty()
 	if bool(options.get("show_liberations", true)) or offering:
 		_open_liberation_popup(entry)
 	else:  # the player turned the window off: a banner, and the fireworks show where
@@ -1291,7 +1291,7 @@ func _open_liberation_popup(entry: Dictionary) -> void:
 	camera.center_on(MapView.hex_center(state.map, entry["building"]["hex"]))
 	_liberation_popup = LiberationPopup.new()
 	_ui.add_child(_liberation_popup)
-	_liberation_popup.setup(state, entry["building"], entry["card"], options, entry.get("recruits", []))
+	_liberation_popup.setup(state, entry["building"], entry["card"], options, entry.get("recruits", []), entry.get("offer", false))
 	_offer_tip(str(entry["building"]["type"]) + "_liberated", _liberation_popup)
 	var hex: int = entry["building"]["hex"]
 	_liberation_popup.closed.connect(func():

@@ -288,6 +288,14 @@ func _battle_tab() -> Control:
 			replay.emit()
 		else:
 			_status.text = "No battle yet.")]))
+	var report := _section(tab, "Battle report")
+	report.add_child(_row("", [_button("Copy battle report", func():
+		var b: Battle = state.pending if state.pending and state.pending.recording else state.last_battle.get("battle")
+		if b == null:
+			_status.text = "No battle yet."
+			return
+		DisplayServer.clipboard_set(DebugTools.battle_report(b))
+		_status.text = "Copied the %s battle (%s against %s): paste it to Claude." % ["current" if b == state.pending else "last", b.sides[0].name, b.sides[1].name])]))
 	var shown := _section(tab, "Display")
 	shown.add_child(_check("Show hidden numbers (log and battle view)", state.log.show_hidden, func(on: bool): state.log.show_hidden = on))
 	var fair := _section(tab, "Fairness rules (§12.1)")

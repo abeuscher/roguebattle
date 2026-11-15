@@ -39,7 +39,8 @@ func setup(b: Battle, state_supplies: Dictionary) -> void:
 	panel.add_child(col)
 	var ours := b.sides[0]
 	var who := ours.leader.name.get_slice(" ", 0) if ours.leader else ours.name
-	col.add_child(UiStyle.title_row(UiStyle.label("%s's party has encountered the enemy" % who, 22), Callable()))
+	var title := "%s's party is under fire" % who if b.ranged_only else "%s's party has encountered the enemy" % who
+	col.add_child(UiStyle.title_row(UiStyle.label(title, 22), Callable()))
 	_battle = b
 	_odds = UiStyle.label("", 17, Color(0.8, 0.82, 0.86))
 	col.add_child(_odds)
@@ -87,4 +88,5 @@ func anchor(name: String) -> Rect2:
 
 ## How the enemy looks, again after Heal changed the squad.
 func refresh() -> void:
-	_odds.text = "%s  ·  they look %s" % [_battle.sides[1].name, _battle.odds.to_lower()]
+	var lead := "%s fires from range" % _battle.sides[1].name if _battle.ranged_only else _battle.sides[1].name
+	_odds.text = "%s  ·  they look %s" % [lead, _battle.odds.to_lower()]

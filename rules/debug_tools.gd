@@ -155,36 +155,167 @@ static func force(b: Battle, kind: String) -> void:
 			b.halted = true
 
 
-## Both squads as they were, and the battle stream's position, just before a battle.
-static func snapshot(player: Squad, enemy: Squad, stream: RandomNumberGenerator) -> Dictionary:
-	return {"squads": [copy_squad(player), copy_squad(enemy)], "seed": stream.seed, "state": stream.state}
-
-
 ## The last player battle again from the same start and the same rolls, on copies
-## (nothing on the map changes). Tactic changes and cards played the first time
-## aren't replayed, so a battle that used them can come out differently.
+## (nothing on the map changes). Cards and tactic changes from the first time aren't
+## replayed (the view lets you play it anew); replay_inputs() does that.
 static func replay(state: GameState) -> Battle:
-	if state.last_battle.is_empty() or not state.last_battle.has("battle"):
+	if state.last_battle.is_empty() or state.last_battle["battle"].start.is_empty():
 		return null
-	var was: Battle = state.last_battle["battle"]
-	var r := RandomNumberGenerator.new()
-	r.seed = state.last_battle["seed"]
-	r.state = state.last_battle["state"]
-	var sides: Array = state.last_battle["squads"]
-	var b := Battle.new(state.data, copy_squad(sides[0]), copy_squad(sides[1]), was.terrain["key"], was.daytime, r)
-	b.fair = was.fair.duplicate()
-	b.fairness_rules = was.fairness_rules.duplicate()
-	b.attacker = was.attacker
-	b.defense = was.defense.duplicate()
-	b.odds = was.odds
-	b.tech = was.tech.duplicate(true)
-	b.first_side = was.first_side
-	if was.ranged_only:
-		b.ranged_only = true
-		for side in 2:
-			for u in b.sides[side].living():
-				b._join(u)
+	return rebuild(state.data, state.last_battle["battle"].start)
+
+
+# --- The battle report (playtest round 19) --------------------------------------------
+
+## How a battle stands before its first action (Battle._mark_start): both squads as plain
+## values (as a save holds them), the per-unit draws its setup made, and the dice's place.
+static func battle_start(b: Battle) -> Dictionary:
+	var squads := []
+	for side in 2:
+		var s := b.sides[side]
+		var sq := SaveGame._props(s, SaveGame.SQUAD_REFS)
+		sq["units"] = s.units.map(func(u: Unit): return SaveGame._props(u, []))
+		sq["leader"] = s.units.find(s.leader)
+		sq["bonded_pairs"] = s.bonded_pairs.map(func(p: Array): return [s.units.find(p[0]), s.units.find(p[1])])
+		sq["tech"] = s.tech.duplicate(true)
+		sq["draws"] = s.units.map(func(u: Unit): return [b._tiebreak.get(u, -1.0), b._attacks.get(u, -1)])
+		squads.append(sq)
+	return {"squads": squads, "terrain": b.terrain["key"], "daytime": b.daytime, "attacker": b.attacker,
+			"fair": b.fair.duplicate(), "fairness_rules": b.fairness_rules.duplicate(), "defense": b.defense.duplicate(),
+			"broken": b.broken.duplicate(), "tactics": b.tactics.duplicate(), "first_side": b.first_side,
+			"ranged_only": b.ranged_only, "odds": b.odds, "tech": b.tech.duplicate(true),
+			"rng_seed": b.rng.seed, "rng_state": b.rng.state, "derived": _derived(b)}
+
+
+## What the rules make of each unit at the start (for reading, not for the replay).
+static func _derived(b: Battle) -> Array:
+	var out := []
+	for side in 2:
+		var s := b.sides[side]
+		var units := []
+		for u in s.units:
+			var stats := {}
+			for k in Unit.STATS:
+				stats[k] = snappedf(b.stat(u, k), 0.01)
+			var info := u.info(b.data)
+			var kind := b.attack_kind(u)
+			units.append({"name": u.name, "class": u.unit_class, "level": u.level, "row": u.row, "col": u.col,
+					"hp": u.hp, "max_hp": u.max_hp(b.data), "leader": u == s.leader, "stats": stats,
+					"attack": kind, "attacks": b.attack_count(u), "element": b.element(u),
+					"traits": info.get("traits", []), "leader_aura": info.get("leader_aura", ""), "terrain": u.terrain(b.data),
+					"crit": snappedf(b.crit_chance(u), 0.001), "statuses": b.status_ids(u),
+					"equipment": u.items.values().map(func(it: Dictionary): return it["id"])})
+		out.append({"squad": s.name, "side": s.side, "role": s.role, "morale": s.morale, "speed_tier": s.speed_tier,
+				"aura": SaveGame._plain(b._auras[side]), "units": units})
+	return out
+
+
+## A battle's report for the clipboard (the debug panel): the start, every input and every
+## event with its hidden numbers, as JSON, plus `replay`, the start as Godot text (exact:
+## 64-bit dice, typed values) for rebuilding it. Meant for Claude, not for people.
+static func battle_report(b: Battle) -> String:
+	var start := b.start if not b.start.is_empty() else battle_start(b)  # not begun yet: as it stands now
+	var events := []
+	for e in b.events:
+		var x := {}
+		for k in e:
+			x[k] = _named(b, e[k])
+		events.append(x)
+	var report := {"report": "landwar battle", "version": 1, "context": SaveGame._plain(b.context),
+			"start": _readable(start), "inputs": b.inputs.duplicate(true), "events": events,
+			"over": b.is_over(), "retreated": b.retreated, "hp_lost_share": [b.hp_lost_share(0), b.hp_lost_share(1)],
+			"replay": var_to_str({"start": start, "inputs": b.inputs})}
+	return JSON.stringify(report, " ", false)
+
+
+## The start without its replay-only parts.
+static func _readable(start: Dictionary) -> Dictionary:
+	var out := start.duplicate(true)
+	for k in ["squads", "rng_seed", "rng_state"]:
+		out.erase(k)
+	return out
+
+
+## A value for the report, units as "side.index Name".
+static func _named(b: Battle, v: Variant) -> Variant:
+	if v is Unit:
+		var side := b.side_of(v)
+		return "%d.%d %s" % [side, b.sides[side].units.find(v), v.name]
+	if v is Dictionary:
+		var d := {}
+		for k in v:
+			d[k] = _named(b, v[k])
+		return d
+	if v is Array:
+		return v.map(func(x): return _named(b, x))
+	return SaveGame._plain(v)
+
+
+## A battle report pasted back: the battle at its start, ready to step (its inputs in
+## `inputs`, for replay_inputs). Null if the text isn't a report.
+static func from_report(data: GameData, text: String) -> Battle:
+	if not text.strip_edges().begins_with("{"):
+		return null
+	var j: Variant = JSON.parse_string(text)
+	if not (j is Dictionary and j.has("replay")):
+		return null
+	var r: Variant = str_to_var(str(j["replay"]))
+	if not (r is Dictionary):
+		return null
+	var b := rebuild(data, r["start"])
+	b.set_meta("inputs", r["inputs"])
 	return b
+
+
+## A battle as `start` describes it (battle_start), on fresh copies of its units.
+static func rebuild(data: GameData, start: Dictionary) -> Battle:
+	var squads: Array[Squad] = []
+	for sq in start["squads"]:
+		var s := Squad.new(0, "", -1)
+		SaveGame._apply(s, sq, SaveGame.SQUAD_REFS + ["draws"])
+		var units: Array[Unit] = []
+		for ud in sq["units"]:
+			var u := Unit.new()
+			SaveGame._apply(u, ud, [])
+			units.append(u)
+		s.units = units
+		s.leader = units[sq["leader"]] if int(sq["leader"]) >= 0 else null
+		s.bonded_pairs = sq["bonded_pairs"].map(func(p: Array): return [units[p[0]], units[p[1]]])
+		s.tech = sq["tech"].duplicate(true)
+		squads.append(s)
+	var r := RandomNumberGenerator.new()
+	var b := Battle.new(data, squads[0], squads[1], start["terrain"], start["daytime"], r)
+	for k in ["attacker", "first_side", "ranged_only", "odds"]:
+		b.set(k, start[k])
+	for k in ["fair", "fairness_rules", "defense", "broken", "tactics", "tech"]:
+		b.set(k, start[k].duplicate(true))
+	for side in 2:
+		var draws: Array = start["squads"][side]["draws"]
+		for i in draws.size():
+			var u := squads[side].units[i]
+			if float(draws[i][0]) >= 0.0:
+				if not b._attacks.has(u):
+					b._join(u)
+				b._tiebreak[u] = draws[i][0]
+				b._attacks[u] = draws[i][1]
+	r.seed = start["rng_seed"]
+	r.state = start["rng_state"]
+	return b
+
+
+## Plays a rebuilt battle to its end, making each recorded input before the step it came before.
+static func replay_inputs(b: Battle, inputs: Array) -> void:
+	var i := 0
+	while true:
+		while i < inputs.size() and int(inputs[i]["at"]) <= b.steps:
+			var x: Dictionary = inputs[i]
+			match x["kind"]:
+				"card": b.play_card(x["card"], x["side"])
+				"tactic": b.set_tactic(x["side"], x["tactic"])
+				"retreat": b.retreat(x["side"])
+				"cure": b.cure(b.sides[x["side"]].units[x["unit"]], x["status"], x["potion"])
+			i += 1
+		if not b.step():
+			break
 
 
 static func copy_squad(s: Squad) -> Squad:

@@ -49,6 +49,40 @@ var _lose_turn := [false, false]  # a failed retreat costs the side its next act
 var _skeletons: Array[Unit] = []
 var _prd_cache := {}  # crit chance -> ramp step
 var _last_roll := 0  # the last hit roll, for the log's hidden values (0 = streak breaker)
+# The battle report (debug panel, playtest round 19): with `recording` on, the battle keeps
+# how it stood before its first action (`start`, DebugTools.battle_start) and every input
+# (card, tactic, retreat, cure) with the step it came before, so it can be played again exactly.
+var recording := false
+var start := {}
+var inputs: Array = []  # {at: steps taken before it, kind, side, ...}
+var steps := 0
+var context := {}  # where and when, for the report (GameState.start_battle)
+
+
+## Whether the player is warned before this battle opens (the encounter dialog, §11.1):
+## always, except for a ranged attack the player ordered. An enemy firing from range warns
+## like contact (playtest round 19: volleys had opened their battles with no warning).
+func warns() -> bool:
+	return not ranged_only or attacker == 1
+
+
+## A side's tactic changes mid-battle (the player's Tactic menu).
+func set_tactic(side: int, tactic: String) -> void:
+	_input({"kind": "tactic", "side": side, "tactic": tactic})
+	tactics[side] = tactic
+
+
+## Notes an input for the report, at the step it comes before.
+func _input(what: Dictionary) -> void:
+	_mark_start()
+	what["at"] = steps
+	inputs.append(what)
+
+
+## Keeps how the battle stands just before its first action, when recording.
+func _mark_start() -> void:
+	if recording and start.is_empty():
+		start = DebugTools.battle_start(self)
 
 
 func _init(game_data: GameData, player: Squad, enemy: Squad, terrain_key: String, is_day: bool,
@@ -109,6 +143,8 @@ func run() -> void:
 ## Plays the next unit's turn. False once the battle is over. Each round every unit
 ## with attacks left acts once, fastest first.
 func step() -> bool:
+	_mark_start()
+	steps += 1
 	while not is_over():
 		if _queue.is_empty():
 			round += 1
@@ -672,6 +708,7 @@ func play_card(id: String, side := 0) -> bool:
 	var home := _home_terrain(own)
 	if c["effect"] == "home_terrain" and home.is_empty():
 		return false
+	_input({"kind": "card", "side": side, "card": id})
 	_record({"type": "card", "side": side, "card": id, "text": "Plays %s: %s" % [c["name"], c["text"]]})
 	match c["effect"]:
 		"buff":
@@ -806,6 +843,8 @@ func statuses_of(u: Unit) -> Array:
 func cure(u: Unit, status: String, potion: String) -> bool:
 	if not u.is_alive() or not has_status(u, status):
 		return false
+	var side := side_of(u)
+	_input({"kind": "cure", "side": side, "unit": sides[side].units.find(u), "status": status, "potion": potion})
 	_status[u].erase(status)
 	_record({"type": "status", "unit": u, "status": "cured", "text": "%s uses %s: no more %s." % [_n(u), potion, status.replace("_", " ")]})
 	return true
@@ -975,6 +1014,7 @@ func retreat_chance(side: int) -> float:
 
 ## On success the battle ends; on failure the side loses its next action.
 func retreat(side: int) -> bool:
+	_input({"kind": "retreat", "side": side})
 	if rng.randf() < retreat_chance(side):
 		retreated = side
 		_record({"type": "retreat", "side": side, "success": true, "text": "%s retreats." % sides[side].name})

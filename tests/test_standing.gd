@@ -93,6 +93,24 @@ func test_liberation_with_a_seer_queues_an_offer_not_a_card() -> void:
 	check_eq(st.card_offer.size(), 2, "a Seer chooses from 2")
 
 
+## Playtest round 19: a card cache found by a Seer's squad left an offer open; liberating
+## a town before choosing drew a second offer over it, so one card was lost. Offers queue.
+func test_a_second_offer_waits_behind_the_first() -> void:
+	var st := _state()
+	var s := _squad(st, 8, 80, [["Knight", "front"], ["Seer", "back"]])
+	var held := st.cards.size()
+	st.draw_card(s)  # the card cache, not chosen yet
+	var first := st.card_offer.duplicate()
+	_liberate(st)
+	check(st.liberations[0]["offer"], "the liberation says it made an offer")
+	check_eq(st.card_offer, first, "the cache's offer is still the one showing")
+	st.choose_card(st.card_offer[0])
+	check_eq(st.card_offer.size(), 2, "then the town's offer comes up")
+	st.choose_card(st.card_offer[1])
+	check(st.card_offer.is_empty(), "nothing left to choose")
+	check_eq(st.cards.size(), held + 2, "two cards, one from each")
+
+
 func test_black_market_doubles_swings() -> void:
 	var st := _state()
 	_squad(st, 8, 80, [["Knight", "front"], ["Fence", "back"]])

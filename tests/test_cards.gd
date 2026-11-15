@@ -99,6 +99,8 @@ func test_weakness_cards() -> void:
 	var b := _battle([_unit("Knight")], [foe])
 	b.play_card("mouse")
 	check(b.has_status(foe, "weak_physical"), "Mouse: weak to physical")
+	check("weak_physical" in b.status_ids(foe) and ItemIcons.status("weak_physical", 20) != null,
+			"and the battle card shows it as an icon (playtest round 19: it had seemed not to take)")
 	b.play_card("mink")
 	check(b.has_status(foe, "weak_magic"), "Mink: weak to magic")
 

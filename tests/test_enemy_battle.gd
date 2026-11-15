@@ -122,6 +122,25 @@ func test_enemy_archers_fire_from_range() -> void:
 	check(st.pending == null or not st.pending.ranged_only, "no second volley while reloading")
 
 
+## Playtest round 19: an enemy volley opened its battle with no warning. It warns like
+## contact does; only a ranged attack the player ordered opens at once.
+func test_enemy_volley_warns_but_your_own_fire_does_not() -> void:
+	var x := _volley_setup(2)
+	var st: GameState = x[0]
+	var mine: Squad = x[1]
+	var archers: Squad = x[2]
+	st.step()
+	check(st.pending != null and st.pending.ranged_only and st.pending.warns(), "their volley gets the warning")
+	st.resolve_pending()
+	mine.units.append(_unit("Bowman", "back"))
+	mine.refresh(d)
+	st.fire(mine, archers)
+	check(st.pending != null and not st.pending.warns(), "your own ordered shot opens at once")
+	st.resolve_pending()
+	var close := st.start_battle(mine, archers, archers)
+	check(close.warns(), "contact always warns")
+
+
 func test_no_volley_when_beside_or_falling_back() -> void:
 	var x := _volley_setup(1)
 	var st: GameState = x[0]

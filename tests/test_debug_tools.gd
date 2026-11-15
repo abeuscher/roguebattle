@@ -209,3 +209,32 @@ func test_build_of_puts_leader_first() -> void:
 	check_eq(build[0][0], s.leader.unit_class, "leader first")
 	var r := BattleSim.run(d, build, DebugTools.build_of(_theirs(st, 8)), 5, 1)
 	check_eq(int(r["trials"]), 5, "sim runs on the builds")
+
+
+## The battle report (playtest round 19): it holds both squads and every event, and pasted
+## back it plays the same battle again, cards, tactic changes and retreats included.
+func test_battle_report_replays_the_battle() -> void:
+	var st := _state()
+	var a := _ours(st, 5)
+	var e := _theirs(st, 6)
+	var b := st.start_battle(a, e, e)
+	st.pending = b
+	check(b.play_card("mouse"), "a card before Fight")
+	b.step()
+	b.step()
+	b.set_tactic(0, "weak")
+	for i in 4:
+		b.step()
+	b.retreat(0)
+	b.run()
+	var text := DebugTools.battle_report(b)
+	var j: Dictionary = JSON.parse_string(text)
+	check_eq(j["start"]["derived"].size(), 2, "both squads")
+	check_eq(j["start"]["derived"][0]["units"].size(), 3, "every unit of ours")
+	check(j["start"]["derived"][1]["units"][0].has("stats"), "with its stats")
+	check_eq(j["events"].size(), b.events.size(), "every event")
+	check_eq(j["inputs"].size(), 3, "the card, the tactic and the retreat")
+	var again := DebugTools.from_report(d, text)
+	check(again != null, "the report reads back")
+	DebugTools.replay_inputs(again, again.get_meta("inputs"))
+	check_eq(again.events.map(func(x): return again.log_line(x)), b.events.map(func(x): return b.log_line(x)), "the same battle, event for event")

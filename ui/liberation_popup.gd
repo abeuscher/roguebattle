@@ -15,10 +15,10 @@ var _panel: PanelContainer
 
 
 ## `drawn_card` is the card id if one went straight into the hand, or "" if there
-## was none or it's an offer instead (read from `game_state.card_offer`).
-func setup(game_state: GameState, building: Dictionary, drawn_card: String, options := {}, recruits: Array = []) -> void:
+## was none or it's an offer instead (`offered`; read from `game_state.card_offer`).
+func setup(game_state: GameState, building: Dictionary, drawn_card: String, options := {}, recruits: Array = [], offered := false) -> void:
 	state = game_state
-	_offering = drawn_card == "" and not state.card_offer.is_empty()
+	_offering = offered and not state.card_offer.is_empty()
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	var shade := ColorRect.new()
 	shade.color = Color(0, 0, 0, 0.5)

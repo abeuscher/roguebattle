@@ -38,6 +38,7 @@ var daily_ledger := {}  # set at noon for the UI to show once: {day, lines: [[wh
 var cards: Array[String] = []  # the hand: card ids (§13)
 var next_card := ""  # the next card to be drawn, rolled ahead so Foresight can preview it
 var card_offer: Array[String] = []  # cards to choose one from (a Seer or Oracle drew), shown by the HUD
+var offers_waiting: Array = []  # later offers, each an Array of card ids, behind card_offer (round 19: a second draw had overwritten the first)
 var tech: Array[String] = []  # tech nodes bought (§14), shared with the army and its squads
 var tech_points := 0
 var debt_noons := 0  # noons in a row that ended in debt (§15.1, round 9): 3 is a defeat
@@ -400,11 +401,14 @@ func _liberated(s: Squad, b: Dictionary) -> void:
 	change_alignment(s.units, int(st["liberate_alignment"]) * (1 if aligned == "holy" else -1), "liberating a %s" % what)
 	change_morale(s, int(data.battle["morale"]["liberation"]), "liberating a %s" % what)
 	var before := cards.size()
+	var drew := false
 	if not b.get("card_given", false):  # one card per building, the first time only (round 11)
 		b["card_given"] = true
 		draw_card(s)
+		drew = true
 	earn_tech_points(int(data.tech["points"]["liberation"]), "a liberation")
-	liberations.append({"building": b, "card": cards[-1] if cards.size() > before else "", "recruits": _conscript("player", b)})
+	var card := cards[-1] if cards.size() > before else ""
+	liberations.append({"building": b, "card": card, "offer": drew and card == "", "recruits": _conscript("player", b)})
 
 
 ## Conscription (single map mode, §18): the first time a side takes a town, recruits
@@ -874,8 +878,10 @@ func draw_card(s: Squad) -> void:
 	if choose == 1:
 		cards.append(drawn[0])
 		log.add(clock.tick, "progression", "You draw %s." % card_name(drawn[0]), s.id if s else -1)
-	else:
+	elif card_offer.is_empty():
 		card_offer = drawn
+	else:  # one offer at a time; this one waits its turn
+		offers_waiting.append(drawn)
 
 
 ## Takes one card from the offer into the hand.
@@ -884,6 +890,8 @@ func choose_card(id: String) -> void:
 		cards.append(id)
 		log.add(clock.tick, "progression", "You choose %s." % card_name(id))
 	card_offer.clear()
+	if not offers_waiting.is_empty():
+		card_offer.assign(offers_waiting.pop_front())
 
 
 func card_name(id: String) -> String:
@@ -2582,8 +2590,6 @@ func fire(s: Squad, target: Squad) -> void:
 func start_battle(player: Squad, enemy: Squad, defender: Squad) -> Battle:
 	var info: Dictionary = data.terrains[map.terrain[defender.hex]]
 	var stream := rng.get_stream("battle")
-	if player.side == "player":
-		last_battle = DebugTools.snapshot(player, enemy, stream)
 	var b := Battle.new(data, player, enemy, info["key"], clock.is_day(), stream, settings.get("fairness", "both"))
 	b.fairness_rules = debug_fairness.duplicate()
 	b.attacker = 0 if defender == enemy else 1
@@ -2603,7 +2609,12 @@ func start_battle(player: Squad, enemy: Squad, defender: Squad) -> Battle:
 	log.add(clock.tick, "battle", "Battle: %s against %s on %s. The enemy looks %s." % [player.name, enemy.name, info["name"],
 			Threat.label(data, player, enemy).to_lower()], player.id)
 	if player.side == "player":
-		last_battle["battle"] = b
+		last_battle = {"battle": b}
+		b.recording = true
+		b.context = {"game_seed": rng.seed, "map_seed": map.seed, "map_size": [map.width, map.height], "when": clock.time_text(),
+				"day": clock.is_day(), "hex": str(map.hex_at(defender.hex)), "terrain": info["name"], "building": building_at(defender.hex).get("type", ""),
+				"settings": settings.duplicate(true), "player": player.name, "enemy": enemy.name, "enemy_role": enemy.role,
+				"recent_losses": [player.losses.size(), enemy.losses.size()]}
 		if debug_force != "":
 			DebugTools.force(b, debug_force)
 	return b
