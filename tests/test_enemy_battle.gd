@@ -79,3 +79,58 @@ func test_an_enemy_keeps_the_tactic_it_rolled() -> void:
 		many[t] = many.get(t, 0) + 1
 	check(many.size() == Battle.TACTICS.size(), "every tactic turns up: %s" % many)
 	check(int(many.get("best", 0)) > 120, "mostly Best: %s" % many)
+
+
+## Enemy ranged attacks on the map (ai.json volleys; SPEC §11.2).
+func _volley_setup(gap: int) -> Array:
+	var config := GameConfig.create(d, 9)
+	config.values["width"] = 160
+	config.values["height"] = 90
+	var map := MapGen.generate(d, config.seed, config.map_overrides())
+	var st := GameState.new(d, map, GameLog.new(), config.game_settings())
+	st.setup_army()
+	st.place_enemies()
+	var road := st.pathfinder.find(st.map.enemy_base, st.map.player_base)
+	var mine := st.player_squads()[0]
+	var archers: Squad = st.squads.filter(func(s: Squad): return s.side == "enemy" and s.role in ["field", "raider", "garrison"])[0]
+	archers.units = [_unit("Soldier"), _unit("Bowman", "back"), _unit("Bowman", "back")]
+	archers.leader = archers.units[0]
+	archers.refresh(d)
+	archers.role = "garrison"  # stands still
+	for o in st.squads:
+		if o != mine and o != archers:
+			o.hex = st.map.enemy_base  # everyone else out of the way
+	archers.hex = road[30]
+	mine.hex = road[30 + gap]
+	mine.path.clear()
+	return [st, mine, archers]
+
+
+func test_enemy_archers_fire_from_range() -> void:
+	var x := _volley_setup(2)
+	var st: GameState = x[0]
+	var mine: Squad = x[1]
+	var archers: Squad = x[2]
+	check_eq(Hex.distance(st.map.hex_at(mine.hex), st.map.hex_at(archers.hex)), 2, "two hexes apart")
+	st.step()
+	check(st.pending != null and st.pending.ranged_only, "they fire")
+	if st.pending:
+		check(st.pending.sides[0] == mine and st.pending.sides[1] == archers and st.pending.attacker == 1, "your squad on the left, theirs attacking")
+		st.resolve_pending()
+	check(archers.fire_ready > st.clock.tick, "then they reload")
+	st.step()
+	check(st.pending == null or not st.pending.ranged_only, "no second volley while reloading")
+
+
+func test_no_volley_when_beside_or_falling_back() -> void:
+	var x := _volley_setup(1)
+	var st: GameState = x[0]
+	st.step()
+	check(st.pending == null or not st.pending.ranged_only, "side by side: a close fight, not a volley")
+	x = _volley_setup(2)
+	st = x[0]
+	var archers: Squad = x[2]
+	archers.marching_home = true
+	archers.role = "field"
+	st._enemy_volleys()
+	check(st.pending == null, "a squad falling back doesn't fire")

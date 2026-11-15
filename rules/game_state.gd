@@ -105,6 +105,8 @@ func step() -> void:
 	_reveal_sites()
 	_claim_sites()
 	_check_contact()
+	if not pending:
+		_enemy_volleys()
 	_check_game_over()
 
 
@@ -2528,6 +2530,38 @@ func fire_targets(s: Squad) -> Array[Squad]:
 				and Hex.distance(map.hex_at(s.hex), map.hex_at(e.hex)) <= fire_range(s):
 			out.append(e)
 	return out
+
+
+## Enemy squads fire on yours from a distance (ai.json volleys; SPEC §11.2): the first one
+## able, at the nearest of your squads in range (not one beside it: that's contact). The
+## battle is yours against theirs as usual (your squad on the left), theirs attacking.
+func _enemy_volleys() -> void:
+	if not data.ai["volleys"]["on"]:
+		return
+	for s in squads:
+		if s.side != "enemy" or s.marching_home or s.living().is_empty() or clock.tick < s.fire_ready or not can_fire(s):
+			continue
+		var at := map.hex_at(s.hex)
+		var best: Squad = null
+		var best_d := 0
+		for p in player_squads():
+			var dist := Hex.distance(at, map.hex_at(p.hex))
+			if p.living().is_empty() or dist <= 1 or dist > fire_range(s):
+				continue
+			if best == null or dist < best_d:
+				best = p
+				best_d = dist
+		if best == null:
+			continue
+		var b := start_battle(best, s, best)
+		b.ranged_only = true
+		for side in 2:
+			for u in b.sides[side].living():
+				b._join(u)
+		s.fire_ready = clock.tick + int(data.rules["ranged_attack"]["cooldown_ticks"])
+		pending = b
+		log.add(clock.tick, "battle", "%s fires on %s from %d hexes." % [s.name, best.name, best_d], best.id)
+		return
 
 
 ## A ranged map attack: only Ranged and Magic units on both sides act, no push-back.

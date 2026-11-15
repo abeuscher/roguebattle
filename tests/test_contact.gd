@@ -6,6 +6,7 @@ var d := GameData.load_dir()
 
 ## A plains strip map with the player base on the left and the enemy base on the right.
 func _state(w := 30, h := 9) -> GameState:
+	d.ai["volleys"]["on"] = false  # these tests are about squads meeting; enemy volleys from range have their own (test_enemy_battle)
 	var m := MapData.new(w, h)
 	for i in m.size():
 		m.terrain[i] = d.terrain_ids["plains"]

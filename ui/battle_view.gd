@@ -227,7 +227,7 @@ func _add_tags() -> void:
 		lines.append(["Replay", 15, Color(0.8, 0.82, 0.86)])
 	lines.append([battle.terrain["name"], 15, Color(0.8, 0.82, 0.86)])
 	lines.append(["Day" if battle.daytime else "Night", 15, Color(0.8, 0.82, 0.86)])
-	lines.append(["Ranged attack" if battle.ranged_only else "%s attacks" % battle.sides[battle.attacker].name, 15, Color(0.8, 0.82, 0.86)])
+	lines.append(["%s fires from range" % battle.sides[battle.attacker].name if battle.ranged_only else "%s attacks" % battle.sides[battle.attacker].name, 15, Color(0.8, 0.82, 0.86)])
 	if battle.sides[1].side == "enemy":  # the enemy's tactic, so you can answer it (ai.json battle)
 		lines.append(["They focus: %s" % TACTIC_WORDS[battle.tactics[1]], 15, Color(0.8, 0.82, 0.86)])
 	var mid := _tag(lines)

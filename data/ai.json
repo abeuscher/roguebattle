@@ -60,5 +60,9 @@
   "_note": "How enemy squads fight (SPEC 12.3: the AI's target priority and retreat threshold in data; built 2026-11-15). Each enemy squad rolls its battle tactic once, by tactic_weights, and keeps it (the battle's middle box names it). From the second round, once it has lost at least retreat_after_loss of the HP it began the battle with, and at least losing_ratio times the share your side has lost (clearly losing; battles last about three rounds), it tries to retreat at the start of each round, with the same chance yours has (battle.json retreat; a failure costs its next action). Squads in holders (the Warlord, the base guard, holdfasts) never retreat: they hold their ground.",
   "retreat_after_loss": 0.25,
   "losing_ratio": 2.0
+ },
+ "volleys": {
+  "on": true,
+  "_note": "Enemy ranged attacks on the map (SPEC 11.2 for both sides; built 2026-11-15): an enemy squad with Ranged or Magic units in position fires on one of your squads in range (rules.json ranged_attack: 2 hexes, 3 from high ground), the nearest, whenever its cooldown is over and no other fight has started that tick. Not while falling back to recover. Off: only you fire from a distance."
  }
 }
