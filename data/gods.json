@@ -7,14 +7,14 @@
    "domain": "Sun, Day, and Truth",
    "appearance": "A tall, bald figure with eyes too bright to look at directly.",
    "manifestation": "He appears as a white-robed stranger who casts no shadow, even standing in full sun. Anyone who lies in his presence feels their tongue burn until they take the lie back.",
-   "terrain": "desert"
+   "terrain": "day"
   },
   "seramund": {
    "name": "Seramund",
    "domain": "Moon, Night, and Dreams",
    "appearance": "A veiled woman carrying a hooded lamp.",
    "manifestation": "She visits only those asleep or half-asleep, sitting at the foot of the bed with a dim lantern. When the dreamer wakes, a faint silver dust lies on the blanket where she sat.",
-   "terrain": "forest"
+   "terrain": "night"
   },
   "velkaris": {
    "name": "Velkaris",
@@ -42,19 +42,21 @@
    "domain": "Harvest, Growth, and Fertility",
    "appearance": "A round-bellied, genderless figure with wheat sprouting from their shoulders.",
    "manifestation": "They appear at harvest as a cheerful, mud-spattered farmhand who outworks everyone in the field. Seeds sprout in their footprints, and bread they help bake never goes stale.",
-   "terrain": "plains"
+   "terrain": "forest"
   },
   "korrath": {
    "name": "Korrath",
    "domain": "War, Courage, and Discipline",
    "appearance": "A scarred warrior missing one hand, sacrificed to win a war among the gods.",
-   "manifestation": "He appears on the eve of battle as a one-handed veteran by the campfire, asking soldiers why they fight. Those who answer honestly fight without fear the next day; those who lie find their weapons strangely heavy."
+   "manifestation": "He appears on the eve of battle as a one-handed veteran by the campfire, asking soldiers why they fight. Those who answer honestly fight without fear the next day; those who lie find their weapons strangely heavy.",
+   "terrain": "desert"
   },
   "vessaline": {
    "name": "Vessaline",
    "domain": "Love, Family, and Home",
    "appearance": "A warm, middle-aged woman with flour on her hands.",
-   "manifestation": "She knocks on doors as a weary traveling woman asking for a meal and a bed, testing the household's hospitality. Homes that welcome her find their hearth fire never goes out, and homes that turn her away find it never stays lit."
+   "manifestation": "She knocks on doors as a weary traveling woman asking for a meal and a bed, testing the household's hospitality. Homes that welcome her find their hearth fire never goes out, and homes that turn her away find it never stays lit.",
+   "terrain": "plains"
   },
   "morvayne": {
    "name": "Morvayne",
@@ -85,5 +87,5 @@
    "terrain": "shallow"
   }
  },
- "_terrain": "Each god's terrain (user, 2026-11-15), for Battle the Gods and anything else that pairs them: terrain.json keys, plus \"sky\" for high sky (flyers' own terrain). Shallow and deep water count as two. Ten terrains for twelve gods: Korrath and Vessaline have none. Not used by the game yet."
+ "_terrain": "Each god's terrain (user, 2026-11-15), for Battle the Gods and anything else that pairs them: terrain.json keys, plus \"sky\" for high sky (flyers' own terrain); shallow and deep water count as two. Ithrael is the god of day and Seramund of night instead of a terrain (\"day\", \"night\"), so all twelve have one. Not used by the game yet."
 }
