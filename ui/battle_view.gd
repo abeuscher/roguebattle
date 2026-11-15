@@ -58,6 +58,7 @@ var _peek: Control  # an enemy unit looked at closely (round 14); the battle hol
 var _results: Control  # the end-of-battle panel, which a player tip points at
 var _items_btn: Button
 var _round := UiStyle.label("", 28, UiStyle.ACCENT)
+var _ranged_tag := UiStyle.label("Ranged Battle", 18, Color(0.86, 0.88, 0.92))  # under the round, in a ranged battle (round 19)
 var _ticker := RichTextLabel.new()
 var _controls := HBoxContainer.new()
 var _speed_btn: Button
@@ -104,6 +105,14 @@ func setup(game_state: GameState, b: Battle, is_replay := false, wait_for_fight 
 	_round.custom_minimum_size.x = 140
 	_round.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_field.add_child(_round)
+	# Placed on the field like the round heading, over it, so nothing else moves (round 19).
+	_ranged_tag.position = Vector2(FIELD.x / 2.0 - 100, 54)
+	_ranged_tag.custom_minimum_size.x = 200
+	_ranged_tag.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_ranged_tag.add_theme_color_override("font_outline_color", Color.BLACK)
+	_ranged_tag.add_theme_constant_override("outline_size", 4)
+	_ranged_tag.visible = false
+	_field.add_child(_ranged_tag)
 	for side in 2:
 		for u in battle.sides[side].units:
 			_add_card(u, side)
@@ -573,6 +582,7 @@ func _play(e: Dictionary, animate: bool) -> float:
 	match e["type"]:
 		"round":
 			_round.text = "Round %d" % e["round"]
+			_ranged_tag.visible = battle.ranged_only
 			return float(_view["round_pause"])
 		"attack":
 			var card: Card = _cards[e["target"]]
@@ -668,6 +678,9 @@ func _add_card(u: Unit, side: int) -> void:
 	c.attack = "%s ×%d" % [kind, battle.attack_count(u)]
 	c.concealed = side == 1 and _conceal
 	c.size = CARD
+	if battle.ranged_only and not battle.fires_at_range(u):  # sits a ranged battle out: faded (round 19)
+		c.modulate.a = 0.5
+		c.tooltip_text = "Doesn't fire in a ranged battle: only archers and casters act."
 	if side == 1:  # an enemy: click to look closer (round 14)
 		c.mouse_default_cursor_shape = CURSOR_POINTING_HAND
 		c.tooltip_text = "Look closer"
