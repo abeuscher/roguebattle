@@ -1,0 +1,2 @@
+<!-- skip to action (playtest round 15): a clock with speed lines; drawn in the Lucide style -->
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="15" cy="12" r="7.5"/><polyline points="15 8 15 12 17.5 13.5"/><line x1="1.5" y1="8" x2="5" y2="8"/><line x1="0.5" y1="12" x2="5" y2="12"/><line x1="1.5" y1="16" x2="5" y2="16"/></svg>

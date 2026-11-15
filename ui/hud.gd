@@ -15,6 +15,7 @@ signal tech_pressed
 signal speed_chosen(index: int)  # -1 to pause
 signal place_pressed(hex: int)  # a place named in the banner was clicked
 signal notes_pressed  # the book beside the gold: the notifications log
+signal skip_pressed  # skip to action (playtest round 15)
 
 const GOLD := Color("#f2c94c")
 const DAY := Color("#f6e7a8")
@@ -30,6 +31,8 @@ var _clock := Label.new()
 var _calendar := TextureRect.new()  # tinted like the clock text (day or night)
 var _clock_panel := PanelContainer.new()  # under the minimap, at its width
 var _speed := Label.new()  # shown only while a menu holds the game
+var _skip := Button.new()  # skip to action (playtest round 15), in its own space left of the clock
+var _skip_panel := PanelContainer.new()
 var _speed_pick := OptionButton.new()  # Paused, then the game speeds; Space, PgUp and PgDn change it too
 var _money_panel := PanelContainer.new()
 var _book_panel := PanelContainer.new()  # the notifications log's book, in its own space left of the gold
@@ -194,6 +197,16 @@ func _build_clock() -> void:
 	_speed_pick.tooltip_text = "Pause (Space) or game speed (PgUp / PgDn)"
 	_speed_pick.item_selected.connect(func(i: int): speed_chosen.emit(i - 1))
 	row.add_child(_speed_pick)
+	_skip.icon = UiStyle.svg("clock-fast", 22)
+	_skip.flat = true
+	_skip.focus_mode = FOCUS_NONE
+	_skip.custom_minimum_size = Vector2(30, 30)
+	_skip.add_theme_color_override("icon_disabled_color", Color(1, 1, 1, 0.25))
+	_skip.add_theme_color_override("icon_hover_color", UiStyle.ACCENT)
+	_skip.pressed.connect(skip_pressed.emit)
+	_skip_panel.add_theme_stylebox_override("panel", _glass(4))
+	add_child(_skip_panel)
+	_skip_panel.add_child(_skip)
 
 
 ## Bottom centre: small rounded, see-through buttons, an icon left of each label.
@@ -374,6 +387,10 @@ func refresh(state: GameState) -> void:
 			var x := float(state.data.rules["game_speeds"][i])
 			_speed_pick.add_item("%s  ×%s" % [names[i], str(int(x)) if x == int(x) else str(x)])
 	_pause_mark.visible = state.clock.paused
+	var no_skip := state.skip_blocker()
+	_skip.disabled = no_skip != ""
+	_skip.tooltip_text = "Skip to action (S): time runs fast until something needs you." if no_skip == "" else "Skip to action (S)
+" + no_skip
 	var shown := 0 if state.clock.paused else state.clock.speed_index + 1
 	if _speed_pick.selected != shown:
 		_speed_pick.select(shown)
@@ -449,6 +466,9 @@ func place() -> void:
 	_clock_panel.reset_size()
 	_clock_panel.position = Vector2(size.x - minimap.size.x - 16, size.y - _clock_panel.size.y - 16)
 	minimap.position = Vector2(_clock_panel.position.x, _clock_panel.position.y - minimap.size.y - 6)
+	_skip_panel.reset_size()
+	_skip_panel.size = Vector2(_clock_panel.size.y, _clock_panel.size.y)
+	_skip_panel.position = Vector2(_clock_panel.position.x - _skip_panel.size.x - 8, _clock_panel.position.y)
 	_toolbar.reset_size()
 	_toolbar.position = Vector2((size.x - _toolbar.size.x) / 2.0, size.y - _toolbar.size.y - 16)
 	_info.reset_size()

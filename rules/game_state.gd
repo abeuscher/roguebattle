@@ -2833,6 +2833,62 @@ func set_speed_index(index: int) -> void:
 		log.add(clock.tick, "system", "Game speed: %s (x%s)." % [speed_name(), clock.speed()])
 
 
+## Skip to action (playtest round 15): why it can't be offered now, or "" if it can. Only
+## while every squad of yours on the map is on the move, with nothing waiting on you.
+func skip_blocker() -> String:
+	if game_over != "":
+		return "The map is over."
+	if pending or not pending_recruit.is_empty() or not pending_rare.is_empty():
+		return "Something is waiting on you."
+	var mine := player_squads()
+	if mine.is_empty():
+		return "No squad of yours is on the map."
+	for s in mine:
+		if not s.is_moving():
+			return "%s is standing still: skip only while every squad is on the move." % s.name
+	return ""
+
+
+## Runs up to `n` ticks, stopping as soon as something needs you (user, 2026-11-14): a
+## squad of yours arrives or stops, a fight or a meeting starts, a building is taken or
+## lost (or any news for the banner), an enemy comes into sight, a hidden site is found,
+## noon, or the map ends. Returns what stopped it, for the banner, or "" if `n` ran out.
+func skip_ticks(n: int) -> String:
+	var seen := _visible_others()
+	var found := revealed.size()
+	var counts := [liberations.size(), losses.size(), notices.size()]
+	for i in n:
+		var minute := clock.minute_of_day()
+		var moving := player_squads()
+		step()
+		if game_over != "":
+			return "The map is over."
+		if pending or not pending_recruit.is_empty() or not pending_rare.is_empty():
+			return "Something needs you."
+		for s in moving:
+			if s not in squads:
+				return "%s is back at the base." % s.name
+			if not s.is_moving():
+				return "%s has stopped at %s." % [s.name, where(s.hex)]
+		if liberations.size() > counts[0] or losses.size() > counts[1]:
+			return "A building has changed hands."
+		if notices.size() > counts[2]:
+			return notices[-1]
+		if revealed.size() > found:
+			return "A hidden site has come into view."
+		for s in _visible_others():
+			if s not in seen:
+				return "%s has come into sight." % s.name
+		if minute < GameClock.NOON and clock.minute_of_day() >= GameClock.NOON:
+			return "Noon."
+	return ""
+
+
+## The enemy and neutral squads you can see now.
+func _visible_others() -> Array:
+	return squads.filter(func(s: Squad): return s.side != "player" and is_visible(s))
+
+
 func toggle_pause() -> void:
 	clock.paused = not clock.paused
 	log.add(clock.tick, "system", "Paused." if clock.paused else "Resumed.")

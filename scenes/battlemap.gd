@@ -67,6 +67,7 @@ var _tokens := {}  # squad id -> SquadToken
 var _selected: Squad  # the squad whose menu or move order is open (the game is held meanwhile)
 var _planning := false  # laying rally points for _selected
 var _firing := false  # choosing a ranged-attack target for _selected
+var _skipping := false  # skip to action running (playtest round 15)
 var _portaling := false  # choosing a glowing temple for _selected to step to (user's notes, 2026-11-11)
 var _glow: PortalGlow
 var _shown_sites := {}  # building index -> true once its icon is revealed
@@ -128,6 +129,7 @@ func _setup(game_data: GameData, game_log: GameLog, game_config: GameConfig) -> 
 			_select(found[0]))
 	hud.speed_chosen.connect(_on_speed_chosen)
 	hud.place_pressed.connect(func(hex: int): camera.center_on(MapView.hex_center(state.map, hex)))
+	hud.skip_pressed.connect(func(): _toggle_skip())
 	hud.notes_pressed.connect(func():
 		if _free():
 			_open_notes())
@@ -178,10 +180,13 @@ func _process(delta: float) -> void:
 	if state == null:
 		return
 	_hold_clock()  # whatever input opened since last frame stops time before it moves on
-	for i in state.clock.advance(delta):
-		state.step()
-		if state.pending or not state.pending_recruit.is_empty() or not state.pending_rare.is_empty() or state.game_over != "":
-			break
+	if _skipping:
+		_skip_frame()
+	else:
+		for i in state.clock.advance(delta):
+			state.step()
+			if state.pending or not state.pending_recruit.is_empty() or not state.pending_rare.is_empty() or state.game_over != "":
+				break
 	# What the world brings up opens only on the free map, one at a time; until then it waits.
 	if state.pending and _free():
 		if state.pending.ranged_only:
@@ -922,6 +927,37 @@ func _tactics_tip() -> void:
 		_offer_tip("fight_started", view)
 
 
+## Skip to action (playtest round 15): S or the clock button runs time fast, a frame's
+## worth of rules.json skip.ticks_per_frame at a time, until something needs you
+## (GameState.skip_ticks); then the game pauses and the banner says what. Pressing it again,
+## or anything opening over the map, stops it.
+func _toggle_skip() -> void:
+	if _skipping:
+		_skipping = false
+		hud.show_banner("Skip stopped.", 2.0)
+		return
+	var why := state.skip_blocker()
+	if why != "" or not _free():
+		hud.show_banner(why if why != "" else "Close what's open first.", 3.0)
+		return
+	_skipping = true
+	hud.show_banner("Skipping to the next thing that needs you...  (S: stop)")
+
+
+func _skip_frame() -> void:
+	if not _free() or state.skip_blocker() != "":
+		_skipping = false
+		return
+	var why := state.skip_ticks(int(data.rules["skip"]["ticks_per_frame"]))
+	if why != "":
+		_skipping = false
+		state.clock.paused = true
+		if not state.pending and state.pending_recruit.is_empty() and state.pending_rare.is_empty():
+			hud.show_banner(why, 4.0)  # (a fight or meeting opens its own window)
+		else:
+			hud.show_banner("")
+
+
 ## Round 10 experiment: the battle view grows from a point at the fight's place on the
 ## map to full size, overshooting a little, so you see where the battle is.
 func _spring_open(view: Control, a: Squad, b: Squad) -> void:
@@ -1429,6 +1465,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			hud.show_banner("%s now travels as: %s (order cleared)" % [s.name, s.travel_name()], 2.5)
 		KEY_F:
 			camera.fit()
+		KEY_S:
+			_toggle_skip()
 		KEY_H:
 			view.show_secrets = not view.show_secrets
 		KEY_G:
