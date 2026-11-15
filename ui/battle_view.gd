@@ -51,7 +51,6 @@ var _ended := false  # the battle has no turns left
 var _done := false  # the result is showing
 var _retreat_asked := false
 var _cards_btn: Button
-var _on_refuge := false  # the enemy squad stood where its fallen come back (its base or a town it holds) when the battle began
 var _picker: Control  # the hand, shown large; the battle holds while it's open
 var _peek: Control  # an enemy unit looked at closely (round 14); the battle holds while it's open
 var _results: Control  # the end-of-battle panel, which a player tip points at
@@ -69,7 +68,6 @@ func setup(game_state: GameState, b: Battle, is_replay := false, wait_for_fight 
 	battle = b
 	replay = is_replay
 	_waiting = wait_for_fight
-	_on_refuge = b.sides[1].side == "enemy" and state._is_refuge(b.sides[1].hex, b.sides[1])
 	_view = state.data.battle["view"]
 	_speed = clampi(int(options.get("battle_speed", 0)), 0, _view["speeds"].size() - 1)
 	var spotters: Array = state.data.battle["sees_enemy_details"]
@@ -785,10 +783,6 @@ func _finish() -> void:
 	buttons.alignment = BoxContainer.ALIGNMENT_END
 	var chance := state.drive_off_chance(player, enemy)
 	var can_drive: bool = chance > 0.0 and not out["wiped"][1] and out["retreated"] < 0 and out["hp_lost"][1] > out["hp_lost"][0] and enemy in state.squads
-	for hint in _hints(out, can_drive):
-		var h := UiStyle.label(hint, 16, Color(0.8, 0.82, 0.86))
-		h.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		col.add_child(h)
 	if can_drive:
 		var drive := UiStyle.button("Demand they flee (%d%%)" % roundi(chance * 100), 280)
 		drive.tooltip_text = "On success the enemy squad leaves the map for good, and your squad earns XP as if it had beaten them."
@@ -815,28 +809,6 @@ func _finish() -> void:
 	go.grab_focus.call_deferred()
 
 
-## What the player can do next with a beaten enemy (user's decision, 2026-11-10): when
-## "Demand they flee" is on offer and what it does; that it will be once the enemy's
-## spirit breaks; and, on the Enemy Base, that its fallen come back only slowly.
-func _hints(out: Dictionary, can_drive: bool) -> Array[String]:
-	var enemy := battle.sides[1]
-	var player := battle.sides[0]
-	var out_hints: Array[String] = []
-	if replay or enemy.side == "neutral" or out["wiped"][1] or enemy not in state.squads:
-		return out_hints
-	var warlord := " It's also a way to beat the Warlord without wiping out his whole squad." if enemy.role == "leader" else ""
-	if can_drive:
-		out_hints.append("Their spirit is broken. Your leader can demand they flee: if they agree, they leave the map for good, and your squad earns XP as if it had beaten them. The chance is your leader's charisma." + warlord)
-	elif GameState.battle_result(out) == "won" and player.leader and player.leader.is_alive() \
-			and enemy.morale < int(state.data.battle["drive_off"]["morale_below"]):  # broken, but too unlikely to offer (round 9)
-		out_hints.append("Their spirit is broken, but your leader lacks the charisma to make them flee (it takes a %d%% chance)." % roundi(float(state.data.battle["drive_off"]["min_chance"]) * 100))
-	elif GameState.battle_result(out) == "won" and player.leader and player.leader.is_alive():
-		out_hints.append("Their spirit holds for now. Keep beating them and it will break; then your leader can demand they flee." + warlord)
-	if _on_refuge and enemy.living().size() < enemy.units.size():
-		out_hints.append("Here, the enemy's fallen come back only one at a time, one every %s, and the living don't heal. Strike again soon." 				% GameState.duration_text(int(state.data.enemy["base_revive_ticks"])))
-	return out_hints
-
-
 ## One side's column: its name (the other side is always "Enemy") and units lost (no HP
 ## share: user, 2026-11-13, it confused more than it told).
 func _side_stats(side: int, out: Dictionary) -> Control:
@@ -844,22 +816,23 @@ func _side_stats(side: int, out: Dictionary) -> Control:
 	var box := PanelContainer.new()
 	box.add_theme_stylebox_override("panel", UiStyle.box(Color(0, 0, 0, 0.25), 14))
 	box.size_flags_horizontal = SIZE_EXPAND_FILL
-	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 6)
-	box.add_child(col)
-	var head := HBoxContainer.new()  # the leader's icon beside the side's name (round 18)
-	head.add_theme_constant_override("separation", 10)
-	col.add_child(head)
+	var head := HBoxContainer.new()  # the leader's icon, then the name with units lost under it (round 18)
+	head.add_theme_constant_override("separation", 12)
+	box.add_child(head)
 	var lead: Unit = s.leader if s.leader else (battle.fought[side][0] if not battle.fought[side].is_empty() else null)
 	if lead:
 		var pic := TextureRect.new()
-		pic.texture = UnitIcons.texture(lead.unit_class, 60)
+		pic.texture = UnitIcons.texture(lead.unit_class, 76)
 		pic.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
 		pic.tooltip_text = "%s, the %s" % [lead.name, lead.unit_class] if side == 0 else lead.unit_class
 		head.add_child(pic)
-	var name_label := UiStyle.label(s.name if side == 0 else "Enemy", 20, Color(LOG_COLORS[side]))
-	name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	head.add_child(name_label)
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 4)
+	col.alignment = BoxContainer.ALIGNMENT_CENTER
+	col.size_flags_horizontal = SIZE_EXPAND_FILL
+	head.add_child(col)
+	var title := s.name if side == 0 else ("Enemy (%s)" % lead.unit_class if lead else "Enemy")  # the leader's class, as your side's name has
+	col.add_child(UiStyle.label(title, 20, Color(LOG_COLORS[side])))
 	var fought: Array = battle.fought[side]  # alive when the battle began
 	col.add_child(UiStyle.label("Units lost: %d of %d" % [fought.filter(func(u: Unit): return not u.is_alive()).size(), fought.size()], 17))
 	if out["leader_dead"][side] and not out["wiped"][side] and side == 0:
