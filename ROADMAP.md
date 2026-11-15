@@ -172,6 +172,27 @@ Shaping only: no sessions yet. Sessions get planned once the thin story is writt
 - **Battle the Gods:** each terrain type is paired with one of the Gods of Perinea (`data/gods.json`). The pairing is set (user, 2026-11-15): each god's `terrain` in `data/gods.json`, shallow and deep water and high sky counted separately, with Ithrael the god of day and Seramund of night, so every god has one. One map per god emphasizing that terrain, water included, with neutrals native to it: about 7 or 8 maps, maybe shuffled. Each map is mostly map preferences plus a story of a panel or two, perhaps with an illustration. At the end of each, very high level squads of that god's agents defend the god's home temple: the Enemy Base with a temple picture, same behaviour. One map, probably lava, is always the last and hardest; the player should have a big army of high level units by then.
 - **Endless mode:** a small first map, each next one slightly bigger, up to a maximum size; past that the maps stop growing and the enemy gets harder instead. Harder maps can have more mountain passes, so the enemy has channels to defend.
 
+**Quest of the Gods: lore and structure (user's notes, 2026-11-15; a start, more to come).** The large campaign, growing out of Battle the Gods.
+- **The world:** the player names the planet at the start. On it live the twelve gods (`data/gods.json`). To rule the empire you must defeat each god's avatar and win their favour. The avatars all live in a magical valley, each with a realm made up mostly of their favoured terrain (each god's `terrain`) and its native inhabitants.
+- **The valley map:** an overall map at very low resolution, generated at random for the most part; the player moves through the realms in any order, as long as they're connected. The Land of Day (Ithrael) is always the first level and the Land of Night (Seramund) always the last.
+- **The Land of Day:** small and easy, and gives you plenty of soldiers and buffs. You start with 4 squads of 5 units and no recruits; taking the first town (its battle) brings recruits, and then you can build your squads up.
+- **Progression:** from map to map the enemies grow stronger as your army grows, and the maps grow in size up to a point, then stay at a manageable size. No map should take longer than about 45 real minutes from start to finish; the Land of Day more like 15-20 for a player who already knows the controls.
+- **The avatars:** on each map the enemy's Opinion Leader is the god's avatar, who must be defeated. They say something at the start of the level and give a speech when they fall, and they give up an item to your army.
+- **Quest items:** "inert" items, a prize from each god as proof you've conquered their realm (they do nothing in play).
+- **The gate to the Land of Night:** opens after a number of realms completed, between 3 and 10, a setting, 7 by default; so the player chooses what to build towards and which realms to take on.
+- Much of the progression is still to discuss.
+
+**The small campaign: the Rogue Army (user's notes, 2026-11-15).** A simpler story in 3 parts. A Rogue Army, displaced from its own world by a cataclysm, comes through a rift into a new world and is met with nothing but aggression. It has to fight to make a place for itself, and in doing so tries to civilize and cultivate this land of barbarians into something respectable.
+- **Moral ambiguity:** the story leaves it unclear whether the Rogue Army are the good guys or the bad guys; its choices are morally ambiguous, and there are 3 endings, good, evil and neutral, each simply different, none better or worse than another.
+- **The maps:** 3, each larger than the last; the final map has mountain barriers by default, to restrict travel and force more battles.
+
+**Open questions on these (for when the campaign is planned):**
+- Quest of the Gods: what carries between realms (the army, gold, cards, tech, items), and how the valley map is shown and travelled.
+- How hard each realm is once the order is free: by how many realms you've done, or set per realm.
+- What decides the Rogue Army's ending: choices the player makes along the way (which, and where they're asked), or how they play (alignment, reputation, what they liberate)?
+- Whether the small campaign's starting army matches the Land of Day's (4 squads of 5, no recruits) or the earlier note (4 squads, each with at least 2 front-row fighters and a healer, one monster squad, 6 Serfs and 3 recruits).
+- Where the avatars' words and the story text live (a data file the user edits, like `data/gods.json`).
+
 **Earmarked for later: a campaign creator.** Players write their own campaign: a series of maps, each with its text and map settings, saved to a file that can be shared and loaded by others. Builds on the named chapter settings above, so worth keeping those in data from the start.
 
 ## Next: easing players in (user's notes, 2026-11-13)
