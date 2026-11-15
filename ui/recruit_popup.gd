@@ -12,6 +12,7 @@ signal done  # the result was read
 signal glossary(unit_class: String)  # "What are they?": the class's glossary entry
 
 var _col := VBoxContainer.new()
+var _panel: PanelContainer
 var _title: Label
 var _title_row: Control  # the title's bar, kept when the result replaces the question
 
@@ -30,6 +31,7 @@ func setup(class_name_: String, beaten := false) -> void:
 	center.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	add_child(center)
 	var panel := PanelContainer.new()
+	_panel = panel
 	panel.add_theme_stylebox_override("panel", UiStyle.box(UiStyle.PANEL, 22))
 	center.add_child(panel)
 	_col.add_theme_constant_override("separation", 10)
@@ -71,3 +73,8 @@ func show_result(title: String, text: String, button: String) -> void:
 	var ok := UiStyle.button(button, 280, true)
 	ok.pressed.connect(func(): done.emit())
 	_col.add_child(ok)
+
+
+## Where a player tip points (Battlemap._offer_tip): "panel", the window.
+func anchor(name: String) -> Rect2:
+	return _panel.get_global_rect() if name == "panel" else Rect2()

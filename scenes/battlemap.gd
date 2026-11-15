@@ -1136,6 +1136,7 @@ func _open_recruit_popup() -> void:
 	_ui.add_child(_recruit_popup)
 	_recruit_popup.setup(state.recruit_class(), state.pending_recruit.get("beaten", false))
 	_fly_to_meeting(state.pending_recruit["player"], state.pending_recruit["neutral"], _recruit_popup)
+	_offer_tip("neutral_met", _recruit_popup)
 	_recruit_popup.recruit.connect(func():
 		var beaten: bool = state.pending_recruit.get("beaten", false)
 		var result := state.resolve_recruit(true)

@@ -98,3 +98,13 @@ func test_reset_shows_every_tip_again() -> void:
 	check((o["tips_seen"] as Array).is_empty(), "nothing seen after a reset")
 	check_eq(PlayerTips.due(d, o, "edit_units_open", "single_map"), "build_squad", "due again")
 	check_eq(PlayerTips.due(d, o, "time_started", "single_map"), "time_controls", "every one")
+
+
+## Playtest round 17: the first meeting with a neutral band (the user's words).
+func test_the_neutral_band_tip() -> void:
+	var o := _options()
+	for mode in ["single_map", "campaign", "quick_start"]:
+		check_eq(PlayerTips.due(d, o, "neutral_met", mode), "neutral_met", "due when a band is first met, in %s" % mode)
+	check(str(d.tips["tips"]["neutral_met"]["text"]).begins_with("In the course of your travels"), "with the user's text")
+	check_eq(d.tips["tips"]["neutral_met"]["anchor"], "panel", "beside the band's window")
+
