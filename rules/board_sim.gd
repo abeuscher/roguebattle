@@ -16,6 +16,7 @@ extends RefCounted
 const SAMPLE_TICKS := 360  # every 6 game hours
 const KINDS := ["town", "tower", "temple"]
 const RETURN_TICKS := 720  # half a game day to revive and redeploy
+const AREA := 50  # hexes on a side of the squares battles are counted in (the spread of the fighting)
 
 
 static func run(data: GameData, width: int, height: int, seed: int, days: float, overrides := {}, respond := true) -> Dictionary:
@@ -34,7 +35,7 @@ static func run(data: GameData, width: int, height: int, seed: int, days: float,
 	var away := {}  # squad -> the tick it left the map (wiped out, or home leaderless)
 	var places := map.buildings.filter(func(b): return b["type"] in KINDS)
 	var out := {"size": "%dx%d" % [width, height], "places": places.size(), "your_squads": 0, "enemy_squads": 0,
-			"samples": [], "battles": 0, "gaps": [], "held": 0, "lost": 0, "end": ""}
+			"samples": [], "battles": 0, "gaps": [], "held": 0, "lost": 0, "spots": {}, "end": ""}
 	var t := 0
 	var started := {}  # building hex -> true while the enemy is mid-capture of it (so each attempt counts once)
 	while t < days * GameClock.TICKS_PER_DAY and st.game_over == "":
@@ -43,12 +44,15 @@ static func run(data: GameData, width: int, height: int, seed: int, days: float,
 		st.step()
 		t += 1
 		if st.pending:
-			out["battles"] += 1 if st.pending.sides[0].side == "player" else 0
+			if st.pending.sides[0].side == "player":
+				out["battles"] += 1
+				out["spots"][_area(map, st.pending.sides[1].hex)] = true
 			st.resolve_pending()
 		if not st.pending_recruit.is_empty():
 			st.resolve_recruit(false)
 			if st.pending:
 				out["battles"] += 1
+				out["spots"][_area(map, st.pending.sides[1].hex)] = true
 				st.resolve_pending()
 		st.pending_rare = {}
 		st.liberations.clear()
@@ -178,6 +182,13 @@ static func _orders(st: GameState, places: Array) -> void:
 			taken[best["hex"]] = true
 
 
+## Which AREA-hex square of the map a hex is in: battles in many squares are spread over
+## many fronts, in few, one lane.
+static func _area(map: MapData, hex: int) -> Vector2i:
+	var o := Hex.to_offset(map.hex_at(hex))
+	return Vector2i(o.x / AREA, o.y / AREA)
+
+
 static func _shares(places: Array) -> Array:
 	var you := 0
 	var them := 0
@@ -201,7 +212,7 @@ static func report(r: Dictionary) -> String:
 	gaps.sort()
 	var median: int = gaps[gaps.size() / 2] if not gaps.is_empty() else -1
 	var close := gaps.filter(func(g: int): return g <= 10).size()
-	lines.append("%s: %d places, you %d squads, enemy %d | held you/enemy: %s | battles %d | enemy moves on yours: %d (held %d, lost %d), nearest squad median %d hexes, within 10 %d | %s" % [
-			r["size"], r["places"], r["your_squads"], r["enemy_squads"], ", ".join(held), r["battles"], gaps.size(), r["held"], r["lost"], median, close,
+	lines.append("%s: %d places, you %d squads, enemy %d | held you/enemy: %s | battles %d in %d areas | enemy moves on yours: %d (held %d, lost %d), nearest squad median %d hexes, within 10 %d | %s" % [
+			r["size"], r["places"], r["your_squads"], r["enemy_squads"], ", ".join(held), r["battles"], r["spots"].size(), gaps.size(), r["held"], r["lost"], median, close,
 			r["end"] if r["end"] != "" else "%.1f days" % r["days"]])
 	return "\n".join(lines)

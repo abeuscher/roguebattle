@@ -58,3 +58,39 @@ func test_your_buildings_resist() -> void:
 	for i in roundi(plain * (float(d.rules["capture"]["held_resist"]) - 1.0)):
 		st.step()
 	check_eq(st.building_at(town["hex"])["owner"], "enemy", "taken at held_resist times as long")
+
+
+## Lever 2 (round 16): the force splits into front, raiders and holdfasts, and the front's
+## starting towns are spread out.
+func test_the_force_splits_and_spreads() -> void:
+	var st := _state(600, 400)
+	st.place_enemies()
+	var c: Dictionary = d.ai["force"]
+	var field := st.squads.filter(func(s: Squad): return s.side == "enemy" and s.role in ["field", "raider", "garrison"])
+	var raiders := field.filter(func(s: Squad): return s.role == "raider").size()
+	check_eq(raiders, roundi(field.size() * float(c["raider_share"])), "the raiders' share")
+	var starts := field.filter(func(s: Squad): return s.role == "field" and s.hex != st.map.enemy_base)
+	check(starts.size() >= 2, "the front starts on several towns (%d)" % starts.size())
+	var apart := INF
+	for i in starts.size():
+		for j in range(i + 1, starts.size()):
+			apart = minf(apart, Hex.distance(st.map.hex_at(starts[i].hex), st.map.hex_at(starts[j].hex)))
+	check(apart >= 30, "far apart: the closest two are %d hexes" % apart)
+
+
+## A front squad only goes for places near ground the enemy holds; a raider goes anywhere.
+func test_the_front_keeps_to_its_ground() -> void:
+	var st := _state(600, 400)
+	st.place_enemies()
+	var reach := float(d.ai["front"]["reach"]) * maxf(1.0, st.map.width / 400.0)
+	var ground := EnemyAI.territory(st)
+	for s in st.squads:
+		if s.side != "enemy" or s.role not in ["field", "raider"]:
+			continue
+		var target: int = EnemyAI.best_move(st, s)[0]
+		if target < 0:
+			continue
+		var near := ground.any(func(g: Vector2i): return Hex.distance(g, st.map.hex_at(target)) <= reach)
+		if s.role == "field":
+			check(near, "%s goes for a place near the enemy's ground" % s.name)
+

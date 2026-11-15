@@ -14,9 +14,9 @@ extends RefCounted
 
 ## The hex an idle enemy squad should move to, or -1 to stay where it is.
 static func target_hex(state: GameState, s: Squad) -> int:
-	if s.role == "raider":
+	if s.role == "raider" and state.quick_start():  # Quick start's Raiders keep their own plan (user, 2026-11-13)
 		return -1 if state.clock.tick < s.think_at else raid_target(state, s)
-	if s.role != "field":
+	if s.role not in ["field", "raider"]:
 		return s.post if s.post != s.hex else -1
 	var here := state.building_at(s.hex)
 	if _takeable(state, here) and here["owner"] != "enemy":
@@ -24,7 +24,7 @@ static func target_hex(state: GameState, s: Squad) -> int:
 	if state.clock.tick < s.think_at:
 		return -1
 	var f: Dictionary = state.data.ai["field"]
-	var hold := hold_score(state, s)
+	var hold := hold_score(state, s) if s.role == "field" else 0.0  # a raider moves on once a place is taken
 	var best := best_move(state, s)
 	var stay: bool = hold >= best[1]
 	if state.rng.get_stream("enemy_ai").randf() >= float(f["logic_chance"]):
@@ -95,19 +95,46 @@ static func hold_score(state: GameState, s: Squad) -> float:
 
 
 ## The best building to move to and its score: [hex, score], or [-1, 0] if there's none.
+## A front squad (role field) only looks within ai.json front.reach of ground the enemy
+## holds; a raider looks anywhere and values your buildings more (round 16, lever 2).
 static func best_move(state: GameState, s: Squad) -> Array:
 	var f: Dictionary = state.data.ai["field"]
-	var reach := float(f["distance_range"]) * maxf(1.0, state.map.width / 400.0)
+	var fr: Dictionary = state.data.ai["front"]
+	var scale := maxf(1.0, state.map.width / 400.0)
+	var reach := float(f["distance_range"]) * scale
+	var raider := s.role == "raider"
+	var ground := territory(state)
+	var front_reach := float(fr["reach"]) * scale
 	var taken := {}
 	for o in state.squads:
-		if o != s and o.side == "enemy" and o.role == "field" and not o.living().is_empty():
+		if o != s and o.side == "enemy" and o.role in ["field", "raider"] and not o.living().is_empty():
 			taken[o.goal if o.is_moving() else o.hex] = true
 	var at := state.map.hex_at(s.hex)
 	var best := [-1, 0.0]
 	for b in state.map.buildings:
 		if not _takeable(state, b) or b["owner"] == "enemy" or b["hex"] == s.hex or taken.has(b["hex"]) or s.unreachable.has(b["hex"]) or b.get("away", false):
 			continue
-		var score := value(state, b) / (1.0 + Hex.distance(at, state.map.hex_at(b["hex"])) / reach)
+		var there := state.map.hex_at(b["hex"])
+		if not raider and not _near(ground, there, front_reach):
+			continue
+		var worth := value(state, b) * (float(fr["raider_player_weight"]) if raider and b["owner"] == "player" else 1.0)
+		var score := worth / (1.0 + Hex.distance(at, there) / reach)
 		if score > best[1]:
 			best = [b["hex"], score]
 	return best
+
+
+## The ground the enemy holds: the Enemy Base and every building of its, as positions.
+static func territory(state: GameState) -> Array:
+	var out := [state.map.hex_at(state.map.enemy_base)]
+	for b in state.map.buildings:
+		if b.get("owner", "") == "enemy" and b["hex"] != state.map.enemy_base:
+			out.append(state.map.hex_at(b["hex"]))
+	return out
+
+
+static func _near(ground: Array, at: Vector2i, reach: float) -> bool:
+	for g in ground:
+		if Hex.distance(g, at) <= reach:
+			return true
+	return false

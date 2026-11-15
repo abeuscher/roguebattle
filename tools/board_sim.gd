@@ -1,7 +1,7 @@
 extends SceneTree
 ## Headless whole-map sim (BoardSim; playtest round 16): who holds the map over time, how
 ## often the sides fight, and how far your squads are when the enemy moves on your holdings.
-##   godot --headless --path . -s res://tools/board_sim.gd -- [days] [seeds] [WxH ...] [--no-defence]
+##   godot --headless --path . -s res://tools/board_sim.gd -- [days] [seeds] [WxH ...] [--no-defence] [--no-front]
 ## Defaults: 4 days, 3 seeds, 100x45 400x225 600x400; your squads answer threats unless --no-defence.
 
 
@@ -11,7 +11,10 @@ func _initialize() -> void:
 	var days := float(args[0]) if args.size() > 0 else 4.0
 	var seeds := int(args[1]) if args.size() > 1 else 3
 	var respond := "--no-defence" not in args
-	args = PackedStringArray(Array(args).filter(func(a): return a != "--no-defence"))
+	if "--no-front" in args:  # the enemy as before round 16's lever 2: no raiders, occupiers or spread starts, no front limit
+		data.ai["force"] = {"raider_share": 0.0, "occupier_share": 0.0, "front_starts": 0.0}
+		data.ai["front"]["reach"] = 100000
+	args = PackedStringArray(Array(args).filter(func(a): return not a.begins_with("--")))
 	var sizes: Array = Array(args.slice(2)) if args.size() > 2 else ["100x45", "400x225", "600x400"]
 	for size in sizes:
 		var wh: PackedStringArray = str(size).split("x")

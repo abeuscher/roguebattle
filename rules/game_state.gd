@@ -1883,7 +1883,7 @@ func place_enemies() -> void:
 		_garrison_nearest_town()
 		_place_raiders(r)
 	else:
-		_forward_towns(r)
+		_spread_force(r)
 
 
 ## Quick start's Raiders (user, 2026-11-13: some adversity): one more enemy squad, built
@@ -1937,31 +1937,68 @@ func _garrison_nearest_town() -> void:
 	log.add(clock.tick, "map", "%s holds %s." % [s.name, where(best["hex"])], s.id)
 
 
-## Enemy forward towns (round 11): the enemy starts holding 1 or 2 towns (rules.json
-## enemy_forward_towns), picked at random with a weight toward the middle between the
-## bases (centrality()); one of its field squads, already placed, starts on each. No
-## extra squads, and never more towns than field squads.
-func _forward_towns(r: RandomNumberGenerator) -> void:
-	var cfg: Dictionary = data.rules["enemy_forward_towns"]
+## The enemy's field force at the start (playtest round 16, lever 2; user 2026-11-15:
+## fights shouldn't all happen in one lane): raiders (ai.json force.raider_share) set off
+## from the base to go anywhere; occupiers (occupier_share) hold the towns and towers
+## nearest the Enemy Base; the rest are the front, front_starts of them in towns of their
+## own spread across the enemy's half of the map, the rest at the base.
+func _spread_force(r: RandomNumberGenerator) -> void:
+	var c: Dictionary = data.ai["force"]
 	var field := squads.filter(func(o: Squad): return o.side == "enemy" and o.role == "field")
-	var count := mini(r.randi_range(int(cfg["count"][0]), int(cfg["count"][1])), field.size())
-	var towns := map.buildings.filter(func(b): return b["type"] == "town" and not b["hidden"] and b["owner"] == "neutral")
-	for k in count:
-		var weights := towns.map(func(b): return pow(centrality(b["hex"]), float(cfg["middle_power"])))
-		var total: float = weights.reduce(func(a, w): return a + w, 0.0)
-		if total <= 0.0:
-			return
-		var roll := r.randf() * total
-		var pick := 0
-		while pick < towns.size() - 1 and roll >= weights[pick]:
-			roll -= weights[pick]
-			pick += 1
-		var b: Dictionary = towns[pick]
-		towns.remove_at(pick)
+	var raiders := roundi(field.size() * float(c["raider_share"]))
+	var occupiers := roundi(field.size() * float(c["occupier_share"]))
+	var free := map.buildings.filter(func(b): return b["type"] in ["town", "tower"] and not b["hidden"] and b["owner"] == "neutral")
+	var home := map.hex_at(map.enemy_base)
+	free.sort_custom(func(a, b): return Hex.distance(home, map.hex_at(a["hex"])) < Hex.distance(home, map.hex_at(b["hex"])))
+	var k := 0
+	for s in field:
+		if k < raiders:
+			s.role = "raider"
+			s.name = s.name.replace(data.enemy["names"]["field"], data.enemy["names"]["raider"])
+		elif k < raiders + occupiers and not free.is_empty():
+			var b: Dictionary = free.pop_front()
+			b["owner"] = "enemy"
+			s.hex = b["hex"]
+			s.post = b["hex"]
+			s.role = "garrison"
+			s.name = "%s of %s" % [data.enemy["names"]["garrison"], place_label(b)]
+			log.add(clock.tick, "map", "%s holds %s." % [s.name, where(b["hex"])], s.id)
+		k += 1
+	var front := field.filter(func(o: Squad): return o.role == "field")
+	var starts := _front_starts(roundi(front.size() * float(c["front_starts"])))
+	for i in starts.size():
+		var b: Dictionary = starts[i]
 		b["owner"] = "enemy"
-		var s: Squad = field[k]
-		s.hex = b["hex"]
-		log.add(clock.tick, "map", "%s holds %s." % [s.name, where(b["hex"])], s.id)
+		front[i].hex = b["hex"]
+		log.add(clock.tick, "map", "%s holds %s." % [front[i].name, where(b["hex"])], front[i].id)
+
+
+## Up to `n` neutral towns in the enemy's half of the map (nearer its base than yours),
+## far apart: the most central first, then each the one farthest from those already
+## picked and from the Enemy Base, so the front starts on several lanes.
+func _front_starts(n: int) -> Array:
+	var p := map.hex_at(map.player_base)
+	var e := map.hex_at(map.enemy_base)
+	var pool := map.buildings.filter(func(b): return b["type"] == "town" and not b["hidden"] and b["owner"] == "neutral" and Hex.distance(map.hex_at(b["hex"]), e) < Hex.distance(map.hex_at(b["hex"]), p))
+	var out := []
+	var marks := [e]
+	while out.size() < n and not pool.is_empty():
+		var best := 0
+		var best_score := -1.0
+		for i in pool.size():
+			var at := map.hex_at(pool[i]["hex"])
+			var score := centrality(pool[i]["hex"])
+			if not out.is_empty():
+				score = INF
+				for m in marks:
+					score = minf(score, float(Hex.distance(at, m)))
+			if score > best_score:
+				best = i
+				best_score = score
+		out.append(pool[best])
+		marks.append(map.hex_at(pool[best]["hex"]))
+		pool.remove_at(best)
+	return out
 
 
 ## How close a hex is to the point midway between the two bases: 1 there, falling to 0

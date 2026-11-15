@@ -5,7 +5,7 @@
   {"role": "base_guard", "count": 1},
   {"role": "field", "count": "rest"}
  ],
- "names": {"leader": "Warlord", "base_guard": "Base Guard", "field": "Warband"},
+ "names": {"leader": "Warlord", "base_guard": "Base Guard", "field": "Warband", "raider": "Raiders", "garrison": "Holdfast"},
  "builds": [
   [["Soldier", "front"], ["Fighter", "front"], ["Squire", "front"], ["Bowman", "back"]],
   [["Berserker", "front"], ["Fighter", "front"], ["Slinger", "front"], ["Apprentice", "back"]],

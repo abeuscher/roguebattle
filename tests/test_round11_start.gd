@@ -29,25 +29,24 @@ func test_the_opinion_leader_takes_the_players_name() -> void:
 	check(SummaryScreen.random_name(d).contains(" "), "the summary's suggestion is a first and last name")
 
 
-func test_the_enemy_starts_on_central_towns() -> void:
-	var picked := 0.0
-	var all := 0.0
-	var n_picked := 0
-	var n_all := 0
-	for seed in [3, 8, 13, 21, 34, 55]:
+func test_the_enemy_starts_spread_out() -> void:
+	# Round 16 (lever 2, replacing round 11's 1-2 central towns): raiders at the base,
+	# holdfasts on the towns and towers nearest it, and a third of the front on towns of its
+	# own across the enemy's half, far apart.
+	for seed in [3, 8, 13]:
 		var st: GameState = _game(seed)[0]
 		var enemy := st.squads.filter(func(o: Squad): return o.side == "enemy")
 		check_eq(enemy.size(), st.enemy_squad_count(), "no extra squads (seed %d)" % seed)
-		var held := st.map.buildings.filter(func(b): return b["type"] == "town" and b["owner"] == "enemy")
-		check(held.size() >= 1 and held.size() <= 2, "1 or 2 enemy towns (seed %d): %d" % [seed, held.size()])
-		for b in held:
-			check(enemy.any(func(o: Squad): return o.role == "field" and o.hex == b["hex"]), "a field squad on each")
-			picked += st.centrality(b["hex"])
-			n_picked += 1
-		for b in st.map.buildings.filter(func(b): return b["type"] == "town"):
-			all += st.centrality(b["hex"])
-			n_all += 1
-	check(picked / n_picked > all / n_all, "the towns lean central: %.2f against %.2f on average" % [picked / n_picked, all / n_all])
+		var e := st.map.hex_at(st.map.enemy_base)
+		var p := st.map.hex_at(st.map.player_base)
+		for o in enemy:
+			if o.role == "raider":
+				check_eq(o.hex, st.map.enemy_base, "%s sets off from the base" % o.name)
+			elif o.role == "garrison":
+				check(st.building_at(o.hex).get("owner", "") == "enemy" and o.post == o.hex, "%s holds its building" % o.name)
+			elif o.role == "field" and o.hex != st.map.enemy_base:
+				var at := st.map.hex_at(o.hex)
+				check(Hex.distance(at, e) < Hex.distance(at, p), "%s starts in the enemy's half" % o.name)
 
 
 func test_a_squad_keeps_its_tactic() -> void:

@@ -42,9 +42,10 @@ func test_enemy_placement() -> void:
 				"%s: no healers" % s.name)
 		check(s.id > 100, "enemy squads are numbered from 101")
 		var town := st.building_at(s.hex)
-		check(s.hex == m.enemy_base or (s.role == "field" and town.get("type", "") == "town" and town["owner"] == "enemy"),
-				"%s starts on the Enemy Base or a forward town (round 11)" % s.name)
-	check_eq(roles, {"leader": 1, "base_guard": 1, "field": enemies.size() - 2}, "roles")
+		check(s.hex == m.enemy_base or (s.role in ["field", "garrison"] and town.get("type", "") in ["town", "tower"] and town["owner"] == "enemy"),
+				"%s starts on the Enemy Base or a town or tower it holds (round 16)" % s.name)
+	check_eq(roles.get("leader", 0) + roles.get("base_guard", 0), 2, "the Warlord and the base guard")
+	check_eq(roles.get("field", 0) + roles.get("raider", 0) + roles.get("garrison", 0), enemies.size() - 2, "the rest: front, raiders and holdfasts (round 16)")
 	for b in m.buildings:
 		if b["type"] not in ["player_base", "enemy_base"] and b.has("owner") and not st.squads.any(func(s: Squad): return s.side == "enemy" and s.hex == b["hex"]):
 			check_eq(b["owner"], "neutral", "%s starts neutral" % b["type"])
