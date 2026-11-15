@@ -595,6 +595,11 @@ func _open_menu() -> void:
 		_open_edit(s.id - 1)
 		_edit.closed.connect(_back_to_menu.bind(s)))  # (Deploy from Edit Units goes on to the map instead)
 	_menu.portal.connect(_start_portal)
+	_menu.glossary.connect(func(unit_class: String):  # over the menu, which waits under it
+		var g := UnitGlossary.new()
+		_ui.add_child(g)
+		g.setup(data, unit_class)
+		g.closed.connect(g.queue_free))
 	_menu.closed.connect(_end_selection)
 
 

@@ -12,6 +12,7 @@ signal heal  # the Heal window (supplies, and a temple's healing)
 signal view_destination
 signal portal
 signal closed
+signal glossary(unit_class: String)  # a unit's ? (playtest round 16)
 
 var _actions: Control  # the row of icon buttons, which a player tip points at
 
@@ -45,28 +46,19 @@ func setup(state: GameState, s: Squad) -> void:
 	status.size_flags_vertical = SIZE_SHRINK_CENTER
 	status.tooltip_text = state.status_text(s)
 	col.add_child(UiStyle.title_row(title, func(): closed.emit(), "Close (Esc)", [markers(data, s, 26), status]))
-	var cols := s.capacity(data)
-	for u in s.units:
-		cols = maxi(cols, u.col + 1)
+	# Playtest round 16: the units as the enemy squad window shows them (UnitPeek), front row
+	# above back; moving them stays in Edit Squad.
 	for r in ["front", "back"]:
+		col.add_child(UiStyle.label(r.capitalize() + " row", 15, UiStyle.ACCENT))
 		var row := HBoxContainer.new()
-		row.add_theme_constant_override("separation", 6)
+		row.add_theme_constant_override("separation", 10)
 		col.add_child(row)
-		for c in cols:
-			var slot := PanelContainer.new()
-			var style := UiStyle.box(Color(0.09, 0.1, 0.12), 2)
-			style.set_border_width_all(1)
-			style.border_color = Color(0.25, 0.27, 0.32)
-			slot.add_theme_stylebox_override("panel", style)
-			slot.custom_minimum_size = Vector2(108, 74)
-			var u := s.at(r, c)
-			if u:
-				var chip := EditUnits.Chip.new()
-				chip.setup(data, u, "menu", s, EditUnits.KIND_COLORS)
-				chip.mouse_default_cursor_shape = CURSOR_ARROW
-				chip.tooltip_text = "%s (%s), level %d. HP %d/%d." % [u.name, u.unit_class, u.level, u.hp, u.max_hp(data)]
-				slot.add_child(chip)
-			row.add_child(slot)
+		var units := s.row(r)
+		units.sort_custom(func(a: Unit, b: Unit): return a.col < b.col)
+		for u in units:
+			row.add_child(UnitPeek.make(data, u, func(c: String): glossary.emit(c), u == s.leader, 130.0))
+		if units.is_empty():
+			row.add_child(UiStyle.label("Empty", 15, Color(0.6, 0.62, 0.66)))
 	# Round 9: one row of icon buttons with tooltips instead of a column of words.
 	var actions := HBoxContainer.new()
 	_actions = actions

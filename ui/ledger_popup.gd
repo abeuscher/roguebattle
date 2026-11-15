@@ -8,6 +8,7 @@ signal closed
 
 const GAIN := Color("#7ee08a")
 const LOSS := Color("#ff8a7a")
+const ROOM := 380.0  # px kept for the title, the sums, the checkbox and the margins
 
 
 func setup(entry: Dictionary, options: Dictionary) -> void:
@@ -33,7 +34,16 @@ func setup(entry: Dictionary, options: Dictionary) -> void:
 	grid.columns = 2
 	grid.add_theme_constant_override("h_separation", 24)
 	grid.add_theme_constant_override("v_separation", 4)
-	col.add_child(grid)
+	grid.size_flags_horizontal = SIZE_EXPAND_FILL
+	var scroll := ScrollContainer.new()  # a long day on a big map scrolls (playtest round 16); the sums stay below
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	var lane := MarginContainer.new()  # room on the right for the scrollbar, clear of the amounts
+	lane.add_theme_constant_override("margin_right", 16)
+	lane.size_flags_horizontal = SIZE_EXPAND_FILL
+	lane.add_child(grid)
+	scroll.add_child(lane)
+	col.add_child(scroll)
+	_fit.call_deferred(scroll, lane)
 	var total := 0
 	for line in entry["lines"]:
 		var amount := int(line[1])
@@ -62,6 +72,11 @@ func setup(entry: Dictionary, options: Dictionary) -> void:
 		debt.custom_minimum_size.x = 360
 		col.add_child(debt)
 	col.add_child(UiStyle.dont_show_again(options, "show_daily_ledger"))
+
+
+## The list as tall as its lines, up to what leaves the rest of the window on the screen.
+func _fit(scroll: ScrollContainer, grid: Control) -> void:
+	scroll.custom_minimum_size.y = minf(grid.get_combined_minimum_size().y, get_viewport_rect().size.y - ROOM)
 
 
 func _amount(n: int, font_size: int) -> Label:

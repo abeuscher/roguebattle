@@ -365,9 +365,14 @@ func _choose_card() -> void:
 	row.add_theme_constant_override("v_separation", 16)
 	row.alignment = FlowContainer.ALIGNMENT_CENTER
 	row.custom_minimum_size.x = minf(1250.0, (CardFace.SIZE.x + 16) * _battle_cards().size())
-	col.add_child(row)
+	row.size_flags_horizontal = SIZE_EXPAND_FILL
+	var scroll := ScrollContainer.new()  # a full hand scrolls instead of running off the screen (playtest round 16)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.add_child(row)
+	col.add_child(scroll)
 	for id in _battle_cards():
 		row.add_child(_card_tile(id, int(_battle_cards()[id])))
+	_fit_picker.call_deferred(scroll, row)
 	_no_focus.call_deferred(_picker)
 
 
@@ -437,6 +442,14 @@ func _close_peek() -> void:
 	if _peek:
 		_peek.queue_free()
 		_peek = null
+
+
+## The hand as wide as the cards need and as tall as their rows, up to what fits on the
+## screen under the title.
+func _fit_picker(scroll: ScrollContainer, row: Control) -> void:
+	if not is_instance_valid(scroll):
+		return
+	scroll.custom_minimum_size = Vector2(row.custom_minimum_size.x + 16, minf(row.get_combined_minimum_size().y, get_viewport_rect().size.y - 160))
 
 
 func _close_picker() -> void:

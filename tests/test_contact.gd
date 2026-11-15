@@ -429,3 +429,33 @@ func test_a_winning_enemy_pauses() -> void:
 	for i in 60:
 		st.step()
 	check_eq(theirs.hex, at, "it stays put meanwhile")
+
+
+## Playtest round 16: an enemy that wins pauses a quarter as long as before (30 minutes).
+func test_the_victor_pause_is_half_an_hour() -> void:
+	check_eq(int(d.enemy["victor_pause_ticks"]), 30, "30 game minutes")
+
+
+## Playtest round 16: a squad of yours that wins against the squad it follows, which
+## survives, keeps following it.
+func test_following_survives_a_won_battle() -> void:
+	var st := _state(40)
+	var p := _ours(st, 5)
+	var e := _theirs(st, 8)
+	e.role = "raider"
+	st.order_move(e, PackedInt32Array([_at(st.map, 30, 4)]))
+	check(st.order_follow(p, e), "following")
+	var n := 0
+	while st.pending == null and n < 400:
+		st.step()
+		n += 1
+	check(st.pending != null, "they meet")
+	st.pending.retreated = 1  # they run: beaten, alive
+	st.resolve_pending()
+	check(e in st.squads and not e.living().is_empty(), "the enemy survives")
+	check(p.follow == e, "still following it")
+	st.order_move(e, PackedInt32Array([_at(st.map, 30, 4)]))
+	for i in 20:
+		st.step()
+	check(p.follow == e and p.is_moving(), "and after it as it moves off")
+

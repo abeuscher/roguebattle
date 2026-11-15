@@ -1,8 +1,8 @@
 class_name UnitPeek
-## What you can learn of an enemy unit by looking (playtest round 14, settled
-## 2026-11-14): its class icon, class and level, an HP bar with no numbers, the attack
-## it makes from the row it stands in, and a ? to its glossary entry. No attribute
-## numbers. Used in the battle view (an enemy card clicked) and the enemy squad window.
+## A unit at a glance (playtest round 14, settled 2026-11-14): its class icon, first name,
+## class and level, an HP bar with no numbers, the attack it makes from the row it stands
+## in, and a ? to its glossary entry. No attribute numbers. Used in the battle view (an
+## enemy card clicked), the enemy squad window and the squad menu (round 16).
 
 
 ## The unit as a small column `width` wide. `glossary` gets the class when its ? (beside
@@ -17,6 +17,9 @@ static func make(data: GameData, u: Unit, glossary: Callable, leader := false, w
 	pic.texture = UnitIcons.texture(u.unit_class, 56)
 	pic.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
 	box.add_child(pic)
+	var first := UiStyle.label(u.name.get_slice(" ", 0), 15, UiStyle.TITLE)  # its first name (round 16)
+	first.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(first)
 	var name_row := HBoxContainer.new()
 	name_row.add_theme_constant_override("separation", 6)
 	name_row.alignment = BoxContainer.ALIGNMENT_CENTER
