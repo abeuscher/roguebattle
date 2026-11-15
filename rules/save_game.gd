@@ -47,6 +47,8 @@ static func to_dict(state: GameState, config: GameConfig) -> Dictionary:
 	for s in state.army.cells:
 		if s:
 			_add_squad(s, squads, units)
+	for entry in state.returning:
+		_add_squad(entry["squad"], squads, units)
 	for u in state.army.pool + state.enemy_pool + state._rare_units.values():
 		if u not in units:
 			units.append(u)
@@ -61,6 +63,7 @@ static func to_dict(state: GameState, config: GameConfig) -> Dictionary:
 		"squads": squads.map(func(s: Squad): return _squad_dict(s, units, squads)),
 		"on_map": state.squads.map(func(s: Squad): return squads.find(s)),
 		"cells": state.army.cells.map(func(s): return squads.find(s) if s else -1),
+		"returning": state.returning.map(func(e: Dictionary): return [squads.find(e["squad"]), e["at"]]),
 		"pool": state.army.pool.map(func(u: Unit): return units.find(u)),
 		"enemy_pool": state.enemy_pool.map(func(u: Unit): return units.find(u)),
 		"opinion_leader": units.find(state.opinion_leader) if state.opinion_leader else -1,
@@ -265,6 +268,7 @@ static func from_dict(data: GameData, d: Dictionary, game_log: GameLog) -> Varia
 		squads[i].follow = squads[f] if f >= 0 else null
 	state.squads.assign(d["on_map"].map(func(i: int): return squads[i]))
 	state.army.cells = d["cells"].map(func(i: int): return squads[i] if i >= 0 else null)
+	state.returning.assign(d.get("returning", []).map(func(e: Array): return {"squad": squads[e[0]], "at": int(e[1])}))
 	state.army.pool.assign(d["pool"].map(func(i: int): return units[i]))
 	state.enemy_pool.assign(d["enemy_pool"].map(func(i: int): return units[i]))
 	state.opinion_leader = units[d["opinion_leader"]] if d["opinion_leader"] >= 0 else null

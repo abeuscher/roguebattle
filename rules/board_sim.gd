@@ -35,16 +35,20 @@ static func run(data: GameData, width: int, height: int, seed: int, days: float,
 	var away := {}  # squad -> the tick it left the map (wiped out, or home leaderless)
 	var places := map.buildings.filter(func(b): return b["type"] in KINDS)
 	var out := {"size": "%dx%d" % [width, height], "places": places.size(), "your_squads": 0, "enemy_squads": 0,
-			"samples": [], "battles": 0, "gaps": [], "held": 0, "lost": 0, "spots": {}, "end": ""}
+			"samples": [], "battles": 0, "first_battle": -1, "gaps": [], "held": 0, "lost": 0, "spots": {}, "end": ""}
 	var t := 0
 	var started := {}  # building hex -> true while the enemy is mid-capture of it (so each attempt counts once)
 	while t < days * GameClock.TICKS_PER_DAY and st.game_over == "":
 		_return(st, mine, away, t)
+		if t % SAMPLE_TICKS == 0 and mine.size() < st.field_cap():  # the cap grew with buildings held (round 19): form another
+			mine.append(_field_squad(st, mine.size()))
 		_orders(st, places)
 		st.step()
 		t += 1
 		if st.pending:
 			if st.pending.sides[0].side == "player":
+				if out["first_battle"] < 0:
+					out["first_battle"] = t
 				out["battles"] += 1
 				out["spots"][_area(map, st.pending.sides[1].hex)] = true
 			st.resolve_pending()
@@ -92,16 +96,20 @@ static func run(data: GameData, width: int, height: int, seed: int, days: float,
 ## single map's extra members), at the Player Base.
 static func _field_squads(st: GameState) -> Array:
 	var out := []
+	for i in st.squad_cap():
+		out.append(_field_squad(st, i))
+	return out
+
+
+static func _field_squad(st: GameState, i: int) -> Squad:
 	var r := st.rng.get_stream("board_sim")
 	var builds: Array = st.data.enemy["builds"]
 	var extra: Array = st.data.rules["single_map"]["enemy_builds"]["extra"]
-	for i in st.squad_cap():
-		var members: Array = builds[r.randi() % builds.size()].duplicate()
-		members += Map1Setup.extra_members(st.data, r, r.randi_range(int(extra[0]), int(extra[1])))
-		var s := st.add_squad("Squad %d" % (i + 1), st.map.player_base, members)
-		s.balance_rows(st.data)
-		out.append(s)
-	return out
+	var members: Array = builds[r.randi() % builds.size()].duplicate()
+	members += Map1Setup.extra_members(st.data, r, r.randi_range(int(extra[0]), int(extra[1])))
+	var s := st.add_squad("Squad %d" % (i + 1), st.map.player_base, members)
+	s.balance_rows(st.data)
+	return s
 
 
 ## A squad of yours that left the map (wiped out, or home without its leader) comes back
@@ -212,7 +220,7 @@ static func report(r: Dictionary) -> String:
 	gaps.sort()
 	var median: int = gaps[gaps.size() / 2] if not gaps.is_empty() else -1
 	var close := gaps.filter(func(g: int): return g <= 10).size()
-	lines.append("%s: %d places, you %d squads, enemy %d | held you/enemy: %s | battles %d in %d areas | enemy moves on yours: %d (held %d, lost %d), nearest squad median %d hexes, within 10 %d | %s" % [
-			r["size"], r["places"], r["your_squads"], r["enemy_squads"], ", ".join(held), r["battles"], r["spots"].size(), gaps.size(), r["held"], r["lost"], median, close,
+	lines.append("%s: %d places, first battle %s, you %d squads, enemy %d | held you/enemy: %s | battles %d in %d areas | enemy moves on yours: %d (held %d, lost %d), nearest squad median %d hexes, within 10 %d | %s" % [
+			r["size"], r["places"], ("%.1f h" % (r["first_battle"] / 60.0)) if r["first_battle"] >= 0 else "none", r["your_squads"], r["enemy_squads"], ", ".join(held), r["battles"], r["spots"].size(), gaps.size(), r["held"], r["lost"], median, close,
 			r["end"] if r["end"] != "" else "%.1f days" % r["days"]])
 	return "\n".join(lines)

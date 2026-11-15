@@ -142,14 +142,14 @@ func test_a_full_enemy_pool_forms_a_warband() -> void:
 
 func test_warbands_stop_at_the_cap() -> void:
 	var st := _state()
-	st.enemy_start_squads = 2  # cap: 3
+	st.enemy_start_squads = 2  # cap: 2, holding no buildings (rules.json cap_growth)
 	for k in 3:
 		st.add_squad("Them %d" % k, st.map.enemy_base, [["Knight", "front"]], "enemy")
 	var r := st.rng.get_stream("test")
 	for c in ["Knight", "Fighter", "Squire", "Bowman", "Fighter"]:
 		st.enemy_pool.append(Unit.roll(d, c, r, st.names))
 	st._form_warbands()
-	check_eq(st.squads.size(), 3, "no Warband past 1.5x the starting squads")
+	check_eq(st.squads.size(), 3, "no Warband past the enemy's cap")
 	check_eq(st.enemy_pool.size(), 5, "the recruits wait")
 
 

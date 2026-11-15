@@ -8,7 +8,9 @@ signal closed
 
 const GAIN := Color("#7ee08a")
 const LOSS := Color("#ff8a7a")
-const ROOM := 380.0  # px kept for the title, the sums, the checkbox and the margins
+const MAX_SHARE := 0.75  # the window never taller than this share of the screen (playtest round 19)
+
+var _panel: PanelContainer
 
 
 func setup(entry: Dictionary, options: Dictionary) -> void:
@@ -22,6 +24,7 @@ func setup(entry: Dictionary, options: Dictionary) -> void:
 	add_child(center)
 	UiStyle.close_on_click(shade, center, func(): closed.emit())
 	var panel := PanelContainer.new()
+	_panel = panel
 	panel.add_theme_stylebox_override("panel", UiStyle.box(UiStyle.PANEL, 22))
 	center.add_child(panel)
 	var col := VBoxContainer.new()
@@ -74,9 +77,12 @@ func setup(entry: Dictionary, options: Dictionary) -> void:
 	col.add_child(UiStyle.dont_show_again(options, "show_daily_ledger"))
 
 
-## The list as tall as its lines, up to what leaves the rest of the window on the screen.
+## The list as tall as its lines, up to what keeps the whole window within MAX_SHARE of the screen.
 func _fit(scroll: ScrollContainer, grid: Control) -> void:
-	scroll.custom_minimum_size.y = minf(grid.get_combined_minimum_size().y, get_viewport_rect().size.y - ROOM)
+	var rest := _panel.get_combined_minimum_size().y - scroll.get_combined_minimum_size().y  # title, sums, checkbox, margins
+	var room := get_viewport_rect().size.y * MAX_SHARE - rest
+	scroll.custom_minimum_size.y = maxf(80.0, minf(grid.get_combined_minimum_size().y, room))
+	_panel.reset_size()
 
 
 func _amount(n: int, font_size: int) -> Label:

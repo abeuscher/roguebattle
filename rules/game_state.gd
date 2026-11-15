@@ -45,6 +45,8 @@ var debt_noons := 0  # noons in a row that ended in debt (§15.1, round 9): 3 is
 var game_over := ""  # "", "victory" or "defeat" (§6.8), once a condition is met
 var game_over_reason := ""  # the sentence the end screen shows
 var enemy_squads_defeated := 0  # wiped or driven off, for "defeat N enemy squads" (§6.8)
+var _last_cap := -1  # the field cap last seen, to say when it changes
+var returning: Array = []  # wiped-out enemy squads off the board, {squad, at: tick it comes back at the Enemy Base} (round 19)
 # Debug panel switches (SPEC §19.2); never set in the real game.
 var debug_reveal := false  # every squad shows, whatever the sight radius
 var debug_freeze_ai := false  # enemy and neutral squads take no orders and stand still
@@ -91,6 +93,7 @@ func step() -> void:
 		return
 	for event in clock.step():
 		_clock_event(event)
+	_return_fallen()
 	_moved.clear()
 	if not debug_freeze_ai:
 		_run_enemy_ai()
@@ -103,6 +106,7 @@ func step() -> void:
 		if s.entering_base and s.hex == map.player_base:
 			return_to_base(s)
 	_capture()
+	_check_cap()
 	_reveal_sites()
 	_claim_sites()
 	_check_contact()
@@ -408,7 +412,8 @@ func _liberated(s: Squad, b: Dictionary) -> void:
 		drew = true
 	earn_tech_points(int(data.tech["points"]["liberation"]), "a liberation")
 	var card := cards[-1] if cards.size() > before else ""
-	liberations.append({"building": b, "card": card, "offer": drew and card == "", "recruits": _conscript("player", b)})
+	b["freed"] = int(b.get("freed", 0)) + 1  # times you've taken it: a second and later is "Recaptured" (round 19)
+	liberations.append({"building": b, "card": card, "offer": drew and card == "", "times": b["freed"], "recruits": _conscript("player", b)})
 
 
 ## Conscription (single map mode, §18): the first time a side takes a town, recruits
@@ -466,8 +471,8 @@ func median_level(side: String) -> int:
 ## cap (a share of its starting count). The new Warband marches out like the others.
 func _form_warbands() -> void:
 	var c: Dictionary = data.rules["single_map"]["conscription"]
-	var cap := roundi(enemy_start_squads * float(c["enemy_squad_cap"]))
-	while enemy_pool.size() >= int(c["warband_size"]) and squads.filter(func(o: Squad): return o.side == "enemy").size() < cap:
+	var cap := field_cap("enemy")
+	while enemy_pool.size() >= int(c["warband_size"]) and squads.filter(func(o: Squad): return o.side == "enemy").size() + returning.size() < cap:
 		var lead := -1
 		for i in enemy_pool.size():
 			if enemy_pool[i].info(data)["can_lead"]:
@@ -542,7 +547,7 @@ func _check_game_over() -> void:
 	if settings.get("victory_squads", false):
 		var n: Variant = settings.get("victory_squads_n", "all")
 		var is_all := typeof(n) == TYPE_STRING
-		var enemies_left := squads.any(func(s: Squad): return s.side == "enemy")
+		var enemies_left := squads.any(func(s: Squad): return s.side == "enemy") or not returning.is_empty()
 		if (is_all and not enemies_left) or (not is_all and enemy_squads_defeated >= int(n)):
 			_end_game("victory", "The enemy is defeated." if is_all else "You defeated %d enemy squads." % int(n))
 			return
@@ -625,6 +630,20 @@ func _train(s: Squad) -> void:
 
 func training_xp(u: Unit) -> int:
 	return maxi(1, roundi(float(data.rules["temples"]["training_xp"]) / maxi(1, u.level) * xp_rate()))
+
+
+## "second", "third"... for the recaptured window (round 19).
+static func ordinal(n: int) -> String:
+	var words := ["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth"]
+	if n >= 1 and n <= words.size():
+		return words[n - 1]
+	var tail: String = "th" if n % 100 in [11, 12, 13] else ["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"][n % 10]
+	return "%d%s" % [n, tail]
+
+
+## How many temples you hold (two or more open the Portal).
+func temples_held() -> int:
+	return map.buildings.filter(func(b): return b["type"] == "temple" and b["owner"] == "player").size()
 
 
 ## Temples a squad can step to through a portal (session 059): every other temple you
@@ -1423,6 +1442,31 @@ func squad_cap() -> int:
 	return board_squads() if str(cap) == "auto" else int(cap)
 
 
+## How many squads a side may have on the map now (round 19; rules.json cap_growth): its
+## starting cap plus one for every buildings_per_squad towns, towers and temples it holds,
+## the enemy needing enemy_mult times as many a step. Its starting cap: the squad cap for
+## you; the squads it began with for the enemy.
+func field_cap(side := "player") -> int:
+	var g: Dictionary = data.rules["cap_growth"]
+	var per := float(g["buildings_per_squad"]) * (float(g["enemy_mult"]) if side == "enemy" else 1.0)
+	var held := map.buildings.filter(func(b): return b.get("owner", "") == side and b["type"] in ["town", "tower", "temple"]).size()
+	return (squad_cap() if side == "player" else enemy_start_squads) + floori(held / per)
+
+
+## Says when your cap changes, and makes room in the army for the squads it allows.
+func _check_cap() -> void:
+	var cap := field_cap()
+	if _last_cap >= 0 and cap != _last_cap:
+		var line := ("You may now field %d squads: one more for every %d buildings you hold." if cap > _last_cap
+				else "You may field only %d squads now, having lost buildings: squads out stay out, but none can deploy while you're over.") % (
+				[cap, int(data.rules["cap_growth"]["buildings_per_squad"])] if cap > _last_cap else [cap])
+		notices.append(line)
+		log.add(clock.tick, "map", line)
+	_last_cap = cap
+	if army.cells.size() < cap + 1:
+		army.cells.resize(cap + 1)
+
+
 ## How many squads each side fields on this map when the cap is on Auto (playtest round 16):
 ## its towns, towers and temples / board_scale.places_per_squad, within min and max.
 func board_squads() -> int:
@@ -1456,8 +1500,8 @@ func deploy_hex() -> int:
 ## Why the toolbar's Deploy Squad is off: the squad cap is reached, or no squad waits at
 ## the Player Base. "" when it's on (user's playtest notes, 2026-11-09).
 func deploy_menu_blocker() -> String:
-	if player_squads().size() >= squad_cap():
-		return "The squad cap is %d on the map at once." % squad_cap()
+	if player_squads().size() >= field_cap():
+		return "The squad cap is %d on the map at once (one more for every %d buildings you hold)." % [field_cap(), int(data.rules["cap_growth"]["buildings_per_squad"])]
 	if not army.squads().any(func(s: Squad): return s not in squads):
 		return "No squads are waiting at the Player Base."
 	return ""
@@ -1470,8 +1514,8 @@ func deploy_blocker(s: Squad) -> String:
 		return "It needs a leader."
 	if not s.leader.is_alive():
 		return "Its leader has fallen: revive them first."
-	if player_squads().size() >= squad_cap():
-		return "The squad cap is %d on the map at once." % squad_cap()
+	if player_squads().size() >= field_cap():
+		return "The squad cap is %d on the map at once (one more for every %d buildings you hold)." % [field_cap(), int(data.rules["cap_growth"]["buildings_per_squad"])]
 	if gold < deploy_cost(s):
 		return "Not enough gold: deploying costs %d." % deploy_cost(s)
 	return ""
@@ -1912,6 +1956,7 @@ func _revive_at_enemy_base(s: Squad) -> void:
 	if fallen.is_empty():
 		s.revive_at = -1
 		s.marching_home = false
+		s.beaten = 0  # recovered (battle.json worn)
 		return
 	if s.revive_at < 0:
 		s.revive_at = clock.tick + int(data.enemy["base_revive_ticks"])
@@ -1926,6 +1971,57 @@ func _revive_at_enemy_base(s: Squad) -> void:
 		s.marching_home = false
 
 
+## An enemy squad wiped out leaves the board with a note (round 19), and comes back at the
+## Enemy Base later (enemy.json return): after travel_share of the time it would take it to
+## march there from where it fell.
+func _wiped_out(s: Squad) -> void:
+	var r: Dictionary = data.enemy["return"]
+	var note := "%s is wiped out and leaves the board" % s.name
+	if r["on"] and s.role != "leader":
+		var ticks := roundi(return_ticks(s) * float(r["travel_share"]))
+		returning.append({"squad": s, "at": clock.tick + ticks})
+		note += "; the enemy will raise it again at its base in %s" % duration_text(ticks)
+		log.add(clock.tick, "map", "%s will be back at the Enemy Base in %s." % [s.name, duration_text(ticks)], s.id)
+	notices.append(note + ".")
+
+
+## Ticks for this squad, at full strength, to march from where it stands to the Enemy Base.
+func return_ticks(s: Squad) -> float:
+	var route := pathfinder.find(s.hex, map.enemy_base, s.travel_type, s.sky)
+	var per_hex := float(data.rules["hex_seconds_by_tier"][s.speed_tier - 1]) * float(data.rules["ticks_per_real_second"])
+	var total := 0.0
+	for i in route.slice(1):
+		total += per_hex * pathfinder.hex_cost(i, s.travel_type, s.sky)
+	return total
+
+
+## Wiped-out enemy squads whose time is up stand again at the Enemy Base, every unit at full HP.
+func _return_fallen() -> void:
+	for entry in returning.duplicate():
+		if clock.tick < int(entry["at"]):
+			continue
+		returning.erase(entry)
+		var s: Squad = entry["squad"]
+		for u in s.units:
+			u.hp = u.max_hp(data)
+		s.hex = map.enemy_base
+		s.path.clear()
+		s.rally.clear()
+		s.progress = 0.0
+		s.capture_ticks = 0.0
+		s.marching_home = false
+		s.refuge = -1
+		s.revive_at = -1
+		s.hold_until = -1
+		s.follow = null
+		s.goal = -1
+		s.losses.clear()
+		s.beaten = 0
+		s.morale = int(data.rules["starting_morale"])
+		squads.append(s)
+		log.add(clock.tick, "map", "%s stands again at the Enemy Base." % s.name, s.id)
+
+
 ## How many squads the enemy fields (user's playtest notes, 2026-11-10): half as many
 ## as the map has towns, at least a few, so it scales with the map.
 func enemy_squad_count() -> int:
@@ -1936,25 +2032,31 @@ func enemy_squad_count() -> int:
 	return home + squad_cap()
 
 
+## An enemy squad's members: one of enemy.json's builds, and in single map mode 1-2 more
+## (rules.json single_map.enemy_builds) so they meet 6-unit squads evenly.
+func _enemy_members(r: RandomNumberGenerator) -> Array:
+	var builds: Array = data.enemy["builds"]
+	var members: Array = builds[r.randi() % builds.size()].duplicate()
+	if single_map():
+		var extra: Array = data.rules["single_map"]["enemy_builds"]["extra"]
+		members += Map1Setup.extra_members(data, r, r.randi_range(int(extra[0]), int(extra[1])))
+	return members
+
+
 ## Places every enemy squad on the Enemy Base (§17, changed 2026-11-10): the Warlord
 ## and the base guard hold it; field squads march out from there to take buildings,
 ## the way the player's squads set out from the Player Base.
 func place_enemies() -> void:
 	var e: Dictionary = data.enemy
 	var r := rng.get_stream("enemy")
-	var builds: Array = e["builds"]
 	var left := enemy_squad_count()
 	enemy_start_squads = left
-	var extra: Array = data.rules["single_map"]["enemy_builds"]["extra"]
 	for entry in e["roles"]:
 		var count := left if str(entry["count"]) == "rest" else mini(left, int(entry["count"]))
 		left -= count
 		for k in count:
 			var title: String = e["names"][entry["role"]]
-			var members: Array = builds[r.randi() % builds.size()].duplicate()
-			if single_map():  # single map mode: builds of 5-6 (rules.json single_map.enemy_builds)
-				members += Map1Setup.extra_members(data, r, r.randi_range(int(extra[0]), int(extra[1])))
-			var s := add_squad("%s %d" % [title, k + 1] if count > 1 else title, map.enemy_base, members, "enemy")
+			var s := add_squad("%s %d" % [title, k + 1] if count > 1 else title, map.enemy_base, _enemy_members(r), "enemy")
 			if entry["role"] == "field":
 				_warbands = k + 1
 			s.balance_rows(data)
@@ -2045,6 +2147,7 @@ func _spread_force(r: RandomNumberGenerator) -> void:
 			s.name = "%s of %s" % [data.enemy["names"]["garrison"], place_label(b)]
 			log.add(clock.tick, "map", "%s holds %s." % [s.name, where(b["hex"])], s.id)
 		k += 1
+	_place_forward(r)
 	var front := field.filter(func(o: Squad): return o.role == "field")
 	var starts := _front_starts(roundi(front.size() * float(c["front_starts"])))
 	for i in starts.size():
@@ -2052,6 +2155,30 @@ func _spread_force(r: RandomNumberGenerator) -> void:
 		b["owner"] = "enemy"
 		front[i].hex = b["hex"]
 		log.add(clock.tick, "map", "%s holds %s." % [front[i].name, where(b["hex"])], front[i].id)
+
+
+## Forward squads (round 19; ai.json force.forward): more front squads, each starting on a
+## neutral town or tower in one of the two quadrants of your half of the map, the one at the
+## middle distance from your base, so contact comes sooner on small boards.
+func _place_forward(r: RandomNumberGenerator) -> void:
+	var p := map.hex_at(map.player_base)
+	var e := map.hex_at(map.enemy_base)
+	var axis := Vector2(e - p)
+	for side in [-1, 1]:
+		for k in int(data.ai["force"]["forward"]):
+			var pool := map.buildings.filter(func(b): return b["type"] in ["town", "tower"] and not b["hidden"] and b["owner"] == "neutral" 					and Hex.distance(map.hex_at(b["hex"]), p) < Hex.distance(map.hex_at(b["hex"]), e) 					and signf(axis.cross(Vector2(map.hex_at(b["hex"]) - p))) == side)
+			if pool.is_empty():
+				break
+			pool.sort_custom(func(a, b): return Hex.distance(p, map.hex_at(a["hex"])) < Hex.distance(p, map.hex_at(b["hex"])))
+			var town: Dictionary = pool[pool.size() / 2]
+			town["owner"] = "enemy"
+			_warbands += 1
+			var s := add_squad("%s %d" % [data.enemy["names"]["field"], _warbands], town["hex"], _enemy_members(r), "enemy")
+			s.balance_rows(data)
+			s.role = "field"
+			s.post = map.enemy_base
+			enemy_start_squads += 1
+			log.add(clock.tick, "map", "%s holds %s, forward in your half." % [s.name, where(town["hex"])], s.id)
 
 
 ## Up to `n` neutral towns in the enemy's half of the map (nearer its base than yours),
@@ -2322,6 +2449,12 @@ func resolve_pending() -> Dictionary:
 
 ## How the battle went for side 0 (the player's squad, when there is one): "won" (the
 ## enemy was wiped out or lost the larger share of its HP), "lost", "retreated" or "even".
+## Whether the map stays paused after a battle with this result: the player option
+## "Pause game after losing battle?" (off by default; playtest round 19).
+static func pause_after(result: String, options: Dictionary) -> bool:
+	return result == "lost" and bool(options.get("pause_after_loss", false))
+
+
 static func battle_result(out: Dictionary) -> String:
 	if out["wiped"][1]:
 		return "won"
@@ -2594,6 +2727,7 @@ func start_battle(player: Squad, enemy: Squad, defender: Squad) -> Battle:
 	b.fairness_rules = debug_fairness.duplicate()
 	b.attacker = 0 if defender == enemy else 1
 	b.broken = [is_broken(player), is_broken(enemy)]
+	b.worn = [worn(player), worn(enemy)]
 	b.defense = [0.0 if b.broken[0] else building_defense(player), 0.0 if b.broken[1] else building_defense(enemy)]
 	b.odds = Threat.label(data, player, enemy)
 	if player.side == "player":
@@ -2651,9 +2785,10 @@ func end_battle(b: Battle) -> Dictionary:
 				log.add(clock.tick, "battle", "%s is wiped out and carried back to base." % s.name, s.id)
 			else:
 				squads.erase(s)
+				log.add(clock.tick, "battle", "%s is wiped out." % s.name, s.id)
 				if s.side == "enemy":
 					enemy_squads_defeated += 1
-				log.add(clock.tick, "battle", "%s is wiped out." % s.name, s.id)
+					_wiped_out(s)
 			continue
 		if out["retreated"] == side:
 			_push(s, enemy.hex, 1)
@@ -2699,7 +2834,21 @@ func is_broken(s: Squad) -> bool:
 	return s.losses.filter(func(t: int): return clock.tick - t < int(cfg["window_ticks"])).size() >= int(cfg["losses"])
 
 
+## Beaten squads give out (round 19; battle.json worn): the share of PDEF and MDEF a squad
+## keeps, down a step for each battle lost since it last recovered and each unit now fallen;
+## the enemy's steps bigger. Your squads count as recovered once everyone is at full HP.
+func worn(s: Squad) -> float:
+	if s.side == "player" and s.all_well(data):
+		s.beaten = 0
+	if s.side not in ["player", "enemy"]:
+		return 1.0
+	var cfg: Dictionary = data.battle["worn"]
+	var step := float(cfg["step"]) * (float(cfg["enemy_mult"]) if s.side == "enemy" else 1.0)
+	return 1.0 - minf(float(cfg["max"]), step * (s.beaten + _fallen(s)))
+
+
 func _lost_battle(s: Squad) -> void:
+	s.beaten += 1
 	var was := is_broken(s)
 	s.losses.append(clock.tick)
 	var window := int(data.battle["broken"]["window_ticks"])
@@ -2858,10 +3007,9 @@ func _give_xp(s: Squad, u: Unit, amount: int, out: Dictionary) -> void:
 				log.add(clock.tick, "progression", out["level_ups"][-1], s.id)
 
 
-## Promotes a unit at base into one of its options (§9.4). Returns why not, or "" on success.
+## Promotes a unit into one of its options (§9.4), anywhere: at base or in the field (round
+## 19). The squad must still fit its slots afterward. Returns why not, or "" on success.
 func promote(u: Unit, new_class: String) -> String:
-	if not at_base(u):
-		return "Promote at the Player Base."
 	if new_class not in Progression.promotion_options(data, u):
 		return "%s can't become a %s now." % [u.name, new_class]
 	var s := army.squad_of(u)

@@ -181,7 +181,7 @@ static func battle_start(b: Battle) -> Dictionary:
 		squads.append(sq)
 	return {"squads": squads, "terrain": b.terrain["key"], "daytime": b.daytime, "attacker": b.attacker,
 			"fair": b.fair.duplicate(), "fairness_rules": b.fairness_rules.duplicate(), "defense": b.defense.duplicate(),
-			"broken": b.broken.duplicate(), "tactics": b.tactics.duplicate(), "first_side": b.first_side,
+			"broken": b.broken.duplicate(), "worn": b.worn.duplicate(), "tactics": b.tactics.duplicate(), "first_side": b.first_side,
 			"ranged_only": b.ranged_only, "odds": b.odds, "tech": b.tech.duplicate(true),
 			"rng_seed": b.rng.seed, "rng_state": b.rng.state, "derived": _derived(b)}
 
@@ -286,7 +286,7 @@ static func rebuild(data: GameData, start: Dictionary) -> Battle:
 	var b := Battle.new(data, squads[0], squads[1], start["terrain"], start["daytime"], r)
 	for k in ["attacker", "first_side", "ranged_only", "odds"]:
 		b.set(k, start[k])
-	for k in ["fair", "fairness_rules", "defense", "broken", "tactics", "tech"]:
+	for k in ["fair", "fairness_rules", "defense", "broken", "tactics", "tech"] + (["worn"] if start.has("worn") else []):
 		b.set(k, start[k].duplicate(true))
 	for side in 2:
 		var draws: Array = start["squads"][side]["draws"]

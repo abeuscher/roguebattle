@@ -16,7 +16,9 @@ var _panel: PanelContainer
 
 ## `drawn_card` is the card id if one went straight into the hand, or "" if there
 ## was none or it's an offer instead (`offered`; read from `game_state.card_offer`).
-func setup(game_state: GameState, building: Dictionary, drawn_card: String, options := {}, recruits: Array = [], offered := false) -> void:
+## `times`: how often you've taken it; from the second time a town or tower that draws
+## nothing is "Recaptured" (round 19), with a line saying so over its picture.
+func setup(game_state: GameState, building: Dictionary, drawn_card: String, options := {}, recruits: Array = [], offered := false, times := 1) -> void:
 	state = game_state
 	_offering = offered and not state.card_offer.is_empty()
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
@@ -48,7 +50,8 @@ func setup(game_state: GameState, building: Dictionary, drawn_card: String, opti
 		panel.add_child(col)
 	var what: String = building.get("name", state.data.buildings[building["type"]]["name"])
 	var rewards: bool = state.data.buildings[building["type"]].get("liberation", true)
-	var title := UiStyle.label("%s %s!" % [what, "liberated" if rewards else "taken"], 24)
+	var recaptured := rewards and times > 1 and drawn_card == "" and not _offering
+	var title := UiStyle.label("%s %s!" % [what, "recaptured" if recaptured else ("liberated" if rewards else "taken")], 24)
 	col.add_child(UiStyle.title_row(title, Callable() if _offering else func(): closed.emit()))
 	# Round 9 layout: the card and View all cards on the left, the conscripts in an
 	# equal-width column on the right.
@@ -61,6 +64,12 @@ func setup(game_state: GameState, building: Dictionary, drawn_card: String, opti
 	body.add_child(left)
 	if not rewards:  # a temple (round 11): what holding it means, and its god
 		_temple(left, building)
+	elif recaptured:  # round 19: retaking it stings a little; tall enough that its picture shows
+		var l := UiStyle.label(str(state.data.buildings[building["type"]].get("recaptured_text", "")).format({"nth": GameState.ordinal(times)}), 18, Color("#f4ead2"))
+		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		l.custom_minimum_size = Vector2(380, 0)
+		left.add_child(l)
+		col.custom_minimum_size = Vector2(maxf(col.custom_minimum_size.x, 440), 300)
 	elif drawn_card != "":
 		left.add_child(UiStyle.section("You draw"))
 		var face := CardFace.make(state.data, drawn_card, 1, null, CARD_SCALE)

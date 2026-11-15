@@ -29,6 +29,7 @@ const TACTIC_TIPS := {"best": "Each unit hits the target it hurts most", "strong
 
 var state: GameState
 var battle: Battle
+var outcome := ""  # won, lost, retreated or draw, once the result shows
 var replay := false  # the debug panel's replay (§19.2): copies of the squads, nothing on the map changes
 var _waiting := false  # both squads shown; nothing happens until Fight (an option, on by default)
 var _fight_called := false  # "Fight!" has played
@@ -738,6 +739,7 @@ func _finish() -> void:
 	var player := battle.sides[0]
 	var enemy := battle.sides[1]
 	var result := GameState.battle_result(out)
+	outcome = result
 	Sound.event("battle_" + result)  # won or lost have sounds; a retreat or a draw doesn't
 	_panel.hide()
 	var center := CenterContainer.new()

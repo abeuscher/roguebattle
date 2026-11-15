@@ -37,6 +37,7 @@ var entering_base := false  # leaves the map when it reaches the Player Base (§
 var capture_ticks := 0.0  # time spent so far liberating the building it stands in (§6.5)
 var capture_wait := -1  # after a battle, its capture count stands still until this tick (rules.json capture.after_battle_ticks)
 var ordered_at := -1  # tick of its last move order (GameState.order_move)
+var beaten := 0  # battles lost since it last recovered, toward giving out (battle.json worn; round 19)
 var losses: Array = []  # ticks of its recent lost battles, toward losing heart (battle.json broken)
 var refuge := -1  # an enemy squad marching back to recover: the hex it heads for (GameState.enemy_refuge)
 var tech: Array = []  # the army's tech nodes (the player's squads share GameState.tech)
@@ -112,6 +113,11 @@ func living(alive := true) -> Array[Unit]:
 
 
 # --- Positions ---------------------------------------------------------------------
+
+## Whether every unit is at full HP, none hurt or fallen: nothing for Heal to do (round 19).
+func all_well(data: GameData) -> bool:
+	return units.all(func(u: Unit): return u.hp >= u.max_hp(data))
+
 
 func next_col(which: String) -> int:
 	var c := 0

@@ -45,6 +45,7 @@ var _encounter: EncounterPopup
 var _tip: TipPopup  # the player tip showing, if any (one at a time)
 var _tip_hex := -1  # the map hex it points at, for a tip anchored on the map; else -1
 var _next_liberation := 0  # msec before which the next queued liberation waits (a beat between two)
+var _portal_tip_asked := false  # the Portal tip has been offered this session
 var _base_tip_asked := false  # the home base tip has been offered this session
 var _flying_to_fight := false  # a ranged attack's battle waits while the camera glides to it
 ## A battle the recruit popup already announced (refused, or Fight), which opens with no
@@ -215,6 +216,7 @@ func _process(delta: float) -> void:
 		_open_end_screen()
 	_hold_clock()
 	_base_tip()
+	_portal_tip()
 	if not state.notices.is_empty():
 		var news := "  ·  ".join(state.notices)
 		hud.show_banner_links(news, 4.0, _place_links(news))
@@ -223,6 +225,7 @@ func _process(delta: float) -> void:
 		state.notices.clear()
 	if not state.daily_ledger.is_empty() and _free():
 		_note(state.noon_report)
+		Sound.event("noon_ledger")  # the user's sound (perhaps a cash register); silent until the file is in
 		if bool(options.get("show_daily_ledger", true)):
 			_open_ledger(state.daily_ledger)
 		else:
@@ -983,6 +986,8 @@ func _spring_open(view: Control, a: Squad, b: Squad) -> void:
 
 
 func _close_battle(text: String) -> void:
+	if not _battle.replay and GameState.pause_after(_battle.outcome, options) and not state.clock.paused:
+		state.toggle_pause()
 	_battle.queue_free()
 	_battle = null
 	_notify(text, 5.0)
@@ -1209,7 +1214,7 @@ func _pump_liberations() -> void:
 		_open_liberation_popup(entry)
 	else:  # the player turned the window off: a banner, and the fireworks show where
 		var joined: int = entry.get("recruits", []).size()
-		var won: String = "taken" if not state.data.buildings[entry["building"]["type"]].get("liberation", true) else "liberated"
+		var won: String = "taken" if not state.data.buildings[entry["building"]["type"]].get("liberation", true) else ("recaptured" if int(entry.get("times", 1)) > 1 else "liberated")
 		state.notices.append("%s %s!%s" % [state.where(entry["building"]["hex"]), won, " %d conscripts join the recruit pool." % joined if joined > 0 else ""])
 		_fireworks(entry["building"]["hex"])
 		_liberation_beat()
@@ -1264,6 +1269,14 @@ func _base_tip() -> void:
 	_offer_tip("base_in_view", hud)
 
 
+## The Portal tip (round 19): the first time you hold two temples at once, once the map is free.
+func _portal_tip() -> void:
+	if _portal_tip_asked or is_instance_valid(_tip) or not _free() or state.temples_held() < 2:
+		return
+	_portal_tip_asked = true
+	_offer_tip("portal_ready", hud)
+
+
 ## The time controls tip (user, 2026-11-14), the first time time runs: after any tip
 ## already showing (the map's own) has been read.
 func _time_tip() -> void:
@@ -1291,7 +1304,7 @@ func _open_liberation_popup(entry: Dictionary) -> void:
 	camera.center_on(MapView.hex_center(state.map, entry["building"]["hex"]))
 	_liberation_popup = LiberationPopup.new()
 	_ui.add_child(_liberation_popup)
-	_liberation_popup.setup(state, entry["building"], entry["card"], options, entry.get("recruits", []), entry.get("offer", false))
+	_liberation_popup.setup(state, entry["building"], entry["card"], options, entry.get("recruits", []), entry.get("offer", false), int(entry.get("times", 1)))
 	_offer_tip(str(entry["building"]["type"]) + "_liberated", _liberation_popup)
 	var hex: int = entry["building"]["hex"]
 	_liberation_popup.closed.connect(func():

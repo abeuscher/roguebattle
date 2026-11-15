@@ -15,10 +15,16 @@ signal view  # the squad's menu and the map, paused; the dialog comes back on re
 var _odds: Label
 var _battle: Battle
 var _panel: PanelContainer
+var _heal: Button
+var _heal_face: Control
+var _supplies: Dictionary
+var _data: GameData
 
 
 ## `supplies`: the army's herbs and revivals, for Heal ("Use item(s)" until playtest round 13; user's playtest notes, 2026-11-10).
 func setup(b: Battle, state_supplies: Dictionary) -> void:
+	_supplies = state_supplies
+	_data = b.data
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	var shade := ColorRect.new()
 	shade.color = Color(0, 0, 0, 0.2)
@@ -44,18 +50,14 @@ func setup(b: Battle, state_supplies: Dictionary) -> void:
 	_battle = b
 	_odds = UiStyle.label("", 17, Color(0.8, 0.82, 0.86))
 	col.add_child(_odds)
-	refresh()
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 12)
 	col.add_child(row)
 	var button := UiStyle.button("Begin Battle", 240, true)
 	button.pressed.connect(func(): go.emit())
 	row.add_child(button)
-	var herbs := 0
-	for id in state_supplies:
-		herbs += int(state_supplies[id])
 	var items := UiStyle.button("", 160)
-	items.disabled = herbs == 0
+	_heal = items
 	# The red cross beside the word, the two centred together (a Button's own icon sits at its left edge).
 	var face := HBoxContainer.new()
 	face.add_theme_constant_override("separation", 8)
@@ -67,9 +69,8 @@ func setup(b: Battle, state_supplies: Dictionary) -> void:
 	cross.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
 	face.add_child(cross)
 	face.add_child(UiStyle.label("Heal", 18, Color.WHITE))
-	face.modulate.a = 0.45 if items.disabled else 1.0
+	_heal_face = face
 	items.add_child(face)
-	items.tooltip_text = "Heal or revive units of this squad before the fight." if herbs > 0 else "No supplies: buy herbs at a shop."
 	items.focus_mode = FOCUS_NONE
 	items.pressed.connect(func(): heal.emit())
 	row.add_child(items)
@@ -78,6 +79,7 @@ func setup(b: Battle, state_supplies: Dictionary) -> void:
 	squad.focus_mode = FOCUS_NONE
 	squad.pressed.connect(func(): view.emit())
 	row.add_child(squad)
+	refresh()
 	button.grab_focus.call_deferred()
 
 
@@ -86,7 +88,15 @@ func anchor(name: String) -> Rect2:
 	return _panel.get_global_rect() if name == "panel" else Rect2()
 
 
-## How the enemy looks, again after Heal changed the squad.
+## How the enemy looks, and whether Heal has anything to do, again after Heal changed the squad.
+## Heal is grey with no supplies, or with everyone at full HP (round 19).
 func refresh() -> void:
+	var herbs := 0
+	for id in _supplies:
+		herbs += int(_supplies[id])
+	var well := _battle.sides[0].all_well(_data)
+	_heal.disabled = herbs == 0 or well
+	_heal_face.modulate.a = 0.45 if _heal.disabled else 1.0
+	_heal.tooltip_text = "Everyone is at full health." if well else "Heal or revive units of this squad before the fight." if herbs > 0 else "No supplies: buy herbs at a shop."
 	var lead := "%s fires from range" % _battle.sides[1].name if _battle.ranged_only else _battle.sides[1].name
 	_odds.text = "%s  ·  they look %s" % [lead, _battle.odds.to_lower()]

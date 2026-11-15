@@ -21,6 +21,7 @@ var attacker := 0  # the side that started the battle
 var fair := [true, true]  # fairer dice per side (§12.1)
 var fairness_rules := {"two_dice": true, "ramping_crits": true, "streak_breaker": true, "spread": true}  # each can be switched off from the debug panel (§19.2)
 var defense := [0.0, 0.0]  # building defense bonus per side (§6.5)
+var worn := [1.0, 1.0]  # per side: what's left of PDEF and MDEF after its defeats and fallen (battle.json worn)
 var broken := [false, false]  # per side: lost heart (too many recent losses): no defensive bonuses (battle.json broken)
 var tactics := ["best", "best"]
 var first_side := -1  # a side that takes its whole first round first (neutrals that resisted recruitment)
@@ -894,7 +895,7 @@ func stat(u: Unit, s: String, vs := "") -> float:
 		var bare := float(u.stat(data, s))
 		for st in _status.get(u, {}):
 			bare *= minf(1.0, float(cfg["statuses"][st].get("stats", {}).get(s, 1.0)))
-		return bare
+		return bare * worn[side_of(u)]
 	var v := float(u.stat(data, s)) + (terrain_level(side_of(u), u) if s in ["STR", "INT", "PDEF", "MDEF"] else 0)
 	if s in ["PDEF", "MDEF"]:
 		v *= tech_defense(u, s)
@@ -908,6 +909,8 @@ func stat(u: Unit, s: String, vs := "") -> float:
 			v *= 1.0 + float(e["stats"].get(s, 0.0))
 	if u.has_trait(data, "Last stand") and u.hp * 2 < u.max_hp(data):
 		v *= 1.0 + float(cfg["traits"]["Last stand"]["below_half_stats"].get(s, 0.0))
+	if s in ["PDEF", "MDEF"]:
+		v *= worn[side_of(u)]
 	return v
 
 
@@ -1105,9 +1108,9 @@ func pick_target(u: Unit, base: String, targets: Array[Unit], tactic: String) ->
 			"weak":
 				if t.hp < best.hp:
 					best = t
-			_:
-				var d := expected_damage(u, t, base)
-				var bd := expected_damage(u, best, base)
+			_:  # Best: the most HP actually taken off, so damage past a unit's last HP counts for nothing (round 19)
+				var d := minf(expected_damage(u, t, base), t.hp)
+				var bd := minf(expected_damage(u, best, base), best.hp)
 				if d > bd or (d == bd and t.hp < best.hp):
 					best = t
 	return best

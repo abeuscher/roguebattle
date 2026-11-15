@@ -1,7 +1,8 @@
 class_name SuppliesMenu
 extends Control
 ## Heal (squad menu; "Use item" until playtest round 13), anywhere on the map: a Herb
-## for a hurt unit, a Revival Draught for a fallen one. Standing in a temple the enemy
+## for a hurt unit, a Revival Draught for a fallen one. Since round 19 the squad shows as
+## Edit Units shows it, a tile per unit with its HP bar, the supplies left as icon × count. Standing in a temple the enemy
 ## doesn't hold, the paid healing and reviving is underneath. Cure potions are for
 ## battle and don't show here. Also opened from the encounter popup, before a battle
 ## starts (`battle` set; supplies only). A modal: 50% dark overlay.
@@ -33,9 +34,9 @@ func setup(game_state: GameState, s: Squad, before: Battle = null) -> void:
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 10)
 	col.custom_minimum_size.x = 520
+	_list.add_theme_constant_override("separation", 8)
 	panel.add_child(col)
 	col.add_child(UiStyle.title_row(UiStyle.label("Heal  ·  %s" % s.name, 24), func(): closed.emit()))
-	_list.add_theme_constant_override("separation", 8)
 	col.add_child(_list)
 	_refresh()
 
@@ -43,64 +44,93 @@ func setup(game_state: GameState, s: Squad, before: Battle = null) -> void:
 func _refresh() -> void:
 	for c in _list.get_children():
 		c.queue_free()
-	var any := false
+	if battle and squad.all_well(state.data):  # round 19: healed up before the fight, back to it
+		Sound.event("all_better")
+		closed.emit()
+		return
+	# What's left, as icon × count (round 19).
+	var stock := HBoxContainer.new()
+	stock.add_theme_constant_override("separation", 22)
+	_list.add_child(stock)
+	var kinds := []
 	for id in state.data.items["consumables"]:
 		var item: Dictionary = state.data.items["consumables"][id]
 		if item["where"] != "map":
 			continue
-		var have := int(state.army.supplies.get(id, 0))
-		var head := HBoxContainer.new()
-		head.add_theme_constant_override("separation", 10)
-		head.add_child(ItemIcons.rect(id, 32))
-		head.add_child(UiStyle.label("%s: %s  You have %d." % [item["name"], item["text"], have], 16, UiStyle.ACCENT))
-		_list.add_child(head)
-		for u in squad.units:
-			if not state.supply_helps(u, id):
-				continue
-			any = true
-			var row := HBoxContainer.new()
-			var l := UiStyle.label("%s (%s): HP %d/%d" % [u.name, u.unit_class, u.hp, u.max_hp(state.data)], 16)
-			l.size_flags_horizontal = SIZE_EXPAND_FILL
-			row.add_child(l)
-			var b := UiStyle.button("Use %s" % item["name"], 150)
-			b.disabled = have <= 0
-			b.pressed.connect(func():
-				if battle:
-					state.use_supply_before_battle(battle, u, id)
-				else:
-					state.use_supply(u, id)
-				_refresh())
-			row.add_child(b)
-			_list.add_child(row)
-	if not any:
-		_list.add_child(UiStyle.label("No one in %s is hurt or fallen." % squad.name, 15, Color(0.6, 0.62, 0.66)))
-	if battle == null and state.heals_here(squad):
-		_services()
-
-
-## The temple's healing: each hurt or fallen unit, healed or revived to full HP for gold.
-func _services() -> void:
-	_list.add_child(UiStyle.section(state.place_label(state.building_at(squad.hex))))
-	var none := true
+		kinds.append(id)
+		var have := HBoxContainer.new()
+		have.add_theme_constant_override("separation", 6)
+		have.tooltip_text = "%s: %s" % [item["name"], item["text"]]
+		have.mouse_filter = MOUSE_FILTER_PASS
+		have.add_child(ItemIcons.rect(id, 32))
+		have.add_child(UiStyle.label("× %d" % int(state.army.supplies.get(id, 0)), 18, UiStyle.ACCENT))
+		stock.add_child(have)
+	var temple := battle == null and state.heals_here(squad)
+	if temple:
+		stock.add_child(UiStyle.label(state.place_label(state.building_at(squad.hex)) + ": healing for gold", 15, Color(0.75, 0.78, 0.84)))
+	# The squad as Edit Units shows it: a tile per unit with its HP bar, front row above back,
+	# and under each tile what can be done for it.
+	var cols := squad.capacity(state.data)
 	for u in squad.units:
-		var cost := state.heal_cost(u) + state.revive_cost(u)
-		if cost == 0:
-			continue
-		none = false
+		cols = maxi(cols, u.col + 1)
+	for r in ["front", "back"]:
+		_list.add_child(UiStyle.label("%s row" % r.capitalize(), 15, Color(0.75, 0.78, 0.84)))
 		var row := HBoxContainer.new()
-		var l := UiStyle.label("%s (%s): %s" % [u.name, u.unit_class, "fallen" if not u.is_alive() else "HP %d/%d" % [u.hp, u.max_hp(state.data)]], 16)
-		l.size_flags_horizontal = SIZE_EXPAND_FILL
-		row.add_child(l)
-		var b := UiStyle.button("%s  %d g" % ["Revive" if not u.is_alive() else "Heal to full", cost], 150)
+		row.add_theme_constant_override("separation", 8)
+		_list.add_child(row)
+		for c in cols:
+			row.add_child(_tile(squad.at(r, c), kinds, temple))
+	if squad.all_well(state.data):
+		_list.add_child(UiStyle.label("Everyone in %s is at full health." % squad.name, 15, Color(0.6, 0.62, 0.66)))
+
+
+## One unit's tile and its buttons (a supply that helps it; in a temple, healing for gold),
+## or an empty slot.
+func _tile(u: Unit, kinds: Array, temple: bool) -> Control:
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 4)
+	col.custom_minimum_size.x = 148
+	if u == null:
+		var empty := Panel.new()
+		var style := UiStyle.box(Color(0.09, 0.1, 0.12), 3)
+		style.set_border_width_all(1)
+		style.border_color = Color(0.25, 0.27, 0.32)
+		empty.add_theme_stylebox_override("panel", style)
+		empty.custom_minimum_size = Vector2(148, 122)
+		col.add_child(empty)
+		return col
+	var chip := EditUnits.Chip.new()
+	chip.setup(state.data, u, "slot", squad, EditUnits.KIND_COLORS)
+	chip.mouse_default_cursor_shape = CURSOR_ARROW
+	chip.tooltip_text = "%s (%s), level %d. HP %d/%d." % [u.name, u.unit_class, u.level, u.hp, u.max_hp(state.data)]
+	col.add_child(chip)
+	for id in kinds:
+		if not state.supply_helps(u, id):
+			continue
+		var item: Dictionary = state.data.items["consumables"][id]
+		var b := UiStyle.button(item["name"], 148)
+		b.icon = ItemIcons.item(id, 22)
+		b.add_theme_font_size_override("font_size", 14)
+		b.disabled = int(state.army.supplies.get(id, 0)) <= 0
+		b.tooltip_text = "None left." if b.disabled else "Use a %s: %s" % [item["name"], item["text"]]
+		b.pressed.connect(func():
+			if battle:
+				state.use_supply_before_battle(battle, u, id)
+			else:
+				state.use_supply(u, id)
+			_refresh())
+		col.add_child(b)
+	var cost := state.heal_cost(u) + state.revive_cost(u) if temple else 0
+	if cost > 0:
+		var b := UiStyle.button("%s  %d g" % ["Revive" if not u.is_alive() else "Heal to full", cost], 148)
+		b.add_theme_font_size_override("font_size", 14)
 		b.disabled = cost > state.gold
-		b.tooltip_text = "Not enough gold." if b.disabled else ""
+		b.tooltip_text = "Not enough gold." if b.disabled else "The temple heals or revives them to full HP."
 		b.pressed.connect(func():
 			state.restore(u)
 			_refresh())
-		row.add_child(b)
-		_list.add_child(row)
-	if none:
-		_list.add_child(UiStyle.label("Everyone in %s is in good health." % squad.name, 15, Color(0.6, 0.62, 0.66)))
+		col.add_child(b)
+	return col
 
 
 func _unhandled_key_input(event: InputEvent) -> void:

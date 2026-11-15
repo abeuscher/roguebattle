@@ -34,7 +34,8 @@ func test_enemy_placement() -> void:
 	var st := GameState.new(d, m, GameLog.new())
 	st.place_enemies()
 	var enemies := st.squads.filter(func(s: Squad): return s.side == "enemy")
-	check_eq(enemies.size(), 2 + st.board_squads(), "the base's two plus as many field squads as you may field (round 16)")
+	var forward := st.enemy_start_squads - st.enemy_squad_count()
+	check_eq(enemies.size(), 2 + st.board_squads() + forward, "the base's two plus as many field squads as you may field (round 16), and the forward ones (round 19)")
 	var roles := {}
 	for s in enemies:
 		roles[s.role] = roles.get(s.role, 0) + 1

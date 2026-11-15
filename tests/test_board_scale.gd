@@ -27,7 +27,8 @@ func test_both_sides_are_matched() -> void:
 	var st := _state(400, 225)
 	st.place_enemies()
 	var field := st.squads.filter(func(s: Squad): return s.side == "enemy" and s.role not in ["leader", "base_guard"]).size()
-	check_eq(field, st.squad_cap(), "the enemy fields as many squads as you may")
+	var forward := st.enemy_start_squads - st.enemy_squad_count()  # round 19: forward squads in your half, on top
+	check_eq(field, st.squad_cap() + forward, "the enemy fields as many squads as you may, and its forward squads")
 
 
 func test_a_cap_set_by_hand_still_rules() -> void:
@@ -68,8 +69,11 @@ func test_the_force_splits_and_spreads() -> void:
 	var c: Dictionary = d.ai["force"]
 	var field := st.squads.filter(func(s: Squad): return s.side == "enemy" and s.role in ["field", "raider", "garrison"])
 	var raiders := field.filter(func(s: Squad): return s.role == "raider").size()
-	check_eq(raiders, roundi(field.size() * float(c["raider_share"])), "the raiders' share")
-	var starts := field.filter(func(s: Squad): return s.role == "field" and s.hex != st.map.enemy_base)
+	var forward := st.enemy_start_squads - st.enemy_squad_count()  # round 19: on top of the usual force
+	check_eq(raiders, roundi((field.size() - forward) * float(c["raider_share"])), "the raiders' share")
+	var p := st.map.hex_at(st.map.player_base)
+	var e := st.map.hex_at(st.map.enemy_base)
+	var starts := field.filter(func(s: Squad): return s.role == "field" and s.hex != st.map.enemy_base 			and Hex.distance(st.map.hex_at(s.hex), e) < Hex.distance(st.map.hex_at(s.hex), p))
 	check(starts.size() >= 2, "the front starts on several towns (%d)" % starts.size())
 	var apart := INF
 	for i in starts.size():

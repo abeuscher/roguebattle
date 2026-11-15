@@ -236,7 +236,7 @@ func _refresh() -> void:
 	_crumb.visible = _squad != null
 	_done.visible = _squad == null
 	_close.visible = _squad != null
-	_gold.text = "Gold %d  ·  Upkeep %d a day  ·  On the map %d / %d" % [state.gold, state.army_upkeep(), state.player_squads().size(), state.squad_cap()]
+	_gold.text = "Gold %d  ·  Upkeep %d a day  ·  On the map %d / %d" % [state.gold, state.army_upkeep(), state.player_squads().size(), state.field_cap()]
 	if _squad:
 		_crumb_squad.text = "Edit Squad: %s" % ("%s (%s)" % [_squad.leader.name.get_slice(" ", 0), _squad.leader.unit_class] if _squad.leader else _squad.name)
 	if _squad:
@@ -803,7 +803,7 @@ func _sheet_wrapped(text: String, px: int) -> Label:
 
 
 ## Promotion (§9.4): a button per class the unit can become now, or when it can next promote.
-func _promotion(u: Unit, locked: bool) -> Control:
+func _promotion(u: Unit, _locked: bool) -> Control:
 	var box := VBoxContainer.new()
 	var options := Progression.promotion_options(data, u)
 	if options.is_empty():
@@ -820,20 +820,26 @@ func _promotion(u: Unit, locked: bool) -> Control:
 		box.add_child(flow)
 		return box
 	box.add_child(UiStyle.label("Ready to promote:", 15, Color("#7ee08a")))
-	var row := HFlowContainer.new()
-	row.add_theme_constant_override("h_separation", 8)
-	row.add_theme_constant_override("v_separation", 8)
-	box.add_child(row)
+	box.add_theme_constant_override("separation", 6)
+	# One under another, each with the class's glossary entry at its right (round 19); anywhere,
+	# in the field too.
 	for c in options:
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		box.add_child(row)
 		var b := _small("Promote to %s" % c, false, true)
 		b.icon = UnitIcons.texture(c, 28, true)
-		b.disabled = locked or not state.at_base(u)
-		b.tooltip_text = "Promote at the Player Base." if b.disabled else _promotion_tip(u, c)
+		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		b.custom_minimum_size.x = 260
+		b.tooltip_text = _promotion_tip(u, c)
 		b.pressed.connect(func():
 			var why := state.promote(u, c)
 			_status.text = why
 			_refresh())
 		row.add_child(b)
+		var info := UiStyle.help(_open_glossary.bind(c), "About the %s" % c)
+		info.size_flags_vertical = SIZE_SHRINK_CENTER
+		row.add_child(info)
 	return box
 
 

@@ -267,7 +267,26 @@ func test_tactics() -> void:
 	check_eq(b.pick_target(a, "Melee", targets, "strong").name, "Lead", "Strong focuses the highest stat total")
 	var best := b.pick_target(a, "Melee", targets, "best")
 	for t in targets:
-		check(b.expected_damage(a, best, "Melee") >= b.expected_damage(a, t, "Melee"), "Best hurts most")
+		check(minf(b.expected_damage(a, best, "Melee"), best.hp) >= minf(b.expected_damage(a, t, "Melee"), t.hp), "Best takes off the most HP")
+
+
+## Round 19: Best counts only the HP a hit can actually take off. A unit with 2 HP left
+## is worth 2 to it, however hard the hit would land, so a full-health unit that loses
+## more to the same hit comes first; and between two hits that each finish a unit off, the
+## bigger kill.
+func test_best_counts_only_hp_left() -> void:
+	var nearly := _unit("Bowman", "front", "Nearly")
+	var fresh := _unit("Bowman", "front", "Fresh")
+	var a := _unit("Fighter")
+	var b := _battle([a], [nearly, fresh])
+	var hit := b.expected_damage(a, fresh, "Melee")
+	nearly.hp = 2
+	nearly.stats["PDEF"] = 0  # the bigger hit lands on the nearly dead one, but most of it is wasted
+	var targets := b.reachable(a, "Melee", b.sides[1])
+	check(b.expected_damage(a, nearly, "Melee") > hit and hit > 2, "the bigger number is on the nearly dead one")
+	check_eq(b.pick_target(a, "Melee", targets, "best").name, "Fresh", "Best takes the hit that takes off more HP")
+	fresh.hp = 3
+	check_eq(b.pick_target(a, "Melee", targets, "best").name, "Fresh", "both finished off: the bigger kill")
 
 
 func test_battle_runs_to_an_end() -> void:

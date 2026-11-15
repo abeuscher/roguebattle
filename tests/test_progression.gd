@@ -143,7 +143,7 @@ func test_retreating_earns_a_quarter() -> void:
 	check_eq(out["xp"][u], roundi(full * float(d.rules["progression"]["retreat_xp_share"])), "a quarter of the XP for running")
 
 
-func test_promote_at_base() -> void:
+func test_promote_at_base_and_in_the_field() -> void:
 	var m := MapData.new(20, 5)
 	for i in m.size():
 		m.terrain[i] = d.terrain_ids["plains"]
@@ -165,4 +165,7 @@ func test_promote_at_base() -> void:
 	var field := st.player_squads()[0]
 	field.hex = m.index_of(Hex.from_offset(Vector2i(8, 2)))
 	field.units[1].level = 6
-	check(st.promote(field.units[1], Progression.promotion_options(d, field.units[1])[0]) != "", "not out in the field")
+	var out := field.units[1]
+	var pick: String = Progression.promotion_options(d, out)[0]
+	check_eq(st.promote(out, pick), "", "out in the field too (round 19: field promotion)")
+	check_eq(out.unit_class, pick, "promoted where it stands")

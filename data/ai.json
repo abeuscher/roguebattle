@@ -29,6 +29,8 @@
   "raider_share": 0.25,
   "occupier_share": 0.15,
   "front_starts": 0.34,
+  "forward": 1,
+  "_forward": "Playtest round 19 (user, 2026-11-15: on small boards the enemy came too late): besides the usual squads, this many more front squads start in each of the two quadrants of your half of the map (either side of the line between the bases), each on a neutral town or tower there, the one at the middle distance from your base, so battles begin sooner. Not in Quick start.",
   "_note": "Playtest round 16 (pace and board scale, lever 2; user 2026-11-15: not one lane): of the enemy's field squads, raider_share are raiders (free to go anywhere, keen on your buildings), occupier_share hold the towns and towers nearest the Enemy Base, and the rest are the front. front_starts of the front start in towns of their own across the enemy's half of the map, picked far apart, so the front opens on several lanes; the rest start at the base. Quick start keeps its own setup (the Garrison and the Raiders)."
  },
  "front": {

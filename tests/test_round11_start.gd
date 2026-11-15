@@ -36,15 +36,17 @@ func test_the_enemy_starts_spread_out() -> void:
 	for seed in [3, 8, 13]:
 		var st: GameState = _game(seed)[0]
 		var enemy := st.squads.filter(func(o: Squad): return o.side == "enemy")
-		check_eq(enemy.size(), st.enemy_squad_count(), "no extra squads (seed %d)" % seed)
 		var e := st.map.hex_at(st.map.enemy_base)
 		var p := st.map.hex_at(st.map.player_base)
+		var ours := enemy.filter(func(o: Squad): var at := st.map.hex_at(o.hex); return Hex.distance(at, p) < Hex.distance(at, e))
+		check_eq(enemy.size(), st.enemy_squad_count() + ours.size(), "no extra squads but the forward ones (seed %d)" % seed)
+		check(ours.size() <= 2 * int(d.ai["force"]["forward"]), "at most the forward ones in your half")
 		for o in enemy:
 			if o.role == "raider":
 				check_eq(o.hex, st.map.enemy_base, "%s sets off from the base" % o.name)
 			elif o.role == "garrison":
 				check(st.building_at(o.hex).get("owner", "") == "enemy" and o.post == o.hex, "%s holds its building" % o.name)
-			elif o.role == "field" and o.hex != st.map.enemy_base:
+			elif o.role == "field" and o.hex != st.map.enemy_base and o not in ours:
 				var at := st.map.hex_at(o.hex)
 				check(Hex.distance(at, e) < Hex.distance(at, p), "%s starts in the enemy's half" % o.name)
 

@@ -72,8 +72,9 @@ func setup(state: GameState, s: Squad) -> void:
 	for id in state.army.supplies:
 		herbs += int(state.army.supplies[id])
 	var paid := state.heals_here(s)  # in a temple: healing for gold
-	var heal_tip := "Herbs and Revival Draughts%s." % (", and healing here for gold" if paid else "") if herbs > 0 or paid else "No supplies: buy herbs at a shop, or stand in a temple."
-	var heal_button := _button(actions, "medical-cross", "Heal", herbs > 0 or paid, heal_tip)
+	var well := s.all_well(state.data)
+	var heal_tip := "Everyone is at full health." if well else "Herbs and Revival Draughts%s." % (", and healing here for gold" if paid else "") if herbs > 0 or paid else "No supplies: buy herbs at a shop, or stand in a temple."
+	var heal_button := _button(actions, "medical-cross", "Heal", not well and (herbs > 0 or paid), heal_tip)
 	heal_button.add_theme_color_override("icon_disabled_color", Color(1, 1, 1, 0.35))
 	heal_button.pressed.connect(func(): heal.emit())
 	var place := state.shop_at(s)
