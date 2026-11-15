@@ -1,14 +1,16 @@
 class_name EncounterPopup
 extends Control
 ## Shown when one of your squads runs into a hostile one (SPEC §11.1): the map is
-## paused and the camera has flown to the fight; Begin Battle opens the battle view, and
-## Edit Squad opens the squad in Edit Units first (playtest round 9).
+## paused and the camera has flown to the fight; Begin Battle opens the battle view, Heal
+## uses supplies first, and View Squad and Map puts the dialog aside, paused, with the
+## squad's menu open, so you can shop, heal or move other squads first; it comes back when
+## time runs again (playtest round 16, replacing Edit Squad).
 ## A modal, with a light shade and the panel in the lower part of the screen so the
 ## two squads stay in view at its center.
 
 signal go
 signal heal  # the Heal window, before the fight
-signal edit
+signal view  # the squad's menu and the map, paused; the dialog comes back on resuming
 
 var _odds: Label
 var _battle: Battle
@@ -70,10 +72,10 @@ func setup(b: Battle, state_supplies: Dictionary) -> void:
 	items.focus_mode = FOCUS_NONE
 	items.pressed.connect(func(): heal.emit())
 	row.add_child(items)
-	var squad := UiStyle.button("Edit Squad", 160)
-	squad.tooltip_text = "Change the formation before the fight."
+	var squad := UiStyle.button("View Squad and Map", 220)
+	squad.tooltip_text = "Look over the squad and the map, paused: shop, heal or give orders first.\nThis comes back when you resume."
 	squad.focus_mode = FOCUS_NONE
-	squad.pressed.connect(func(): edit.emit())
+	squad.pressed.connect(func(): view.emit())
 	row.add_child(squad)
 	button.grab_focus.call_deferred()
 

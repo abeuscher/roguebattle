@@ -124,6 +124,20 @@ static func best_move(state: GameState, s: Squad) -> Array:
 	return best
 
 
+## How many buildings the enemy holds (towns, towers, the Enemy Base) that your squad `p`
+## is nearer to than its squad `s` is: what `s` leaves behind it (ai.json hunt).
+static func behind(state: GameState, s: Squad, p: Squad) -> int:
+	var at := state.map.hex_at(s.hex)
+	var you := state.map.hex_at(p.hex)
+	var n := 0
+	for b in state.map.buildings:
+		if b["type"] == "enemy_base" or (b.get("owner", "") == "enemy" and b["type"] in ["town", "tower"]):
+			var there := state.map.hex_at(b["hex"])
+			if Hex.distance(you, there) < Hex.distance(at, there):
+				n += 1
+	return n
+
+
 ## The ground the enemy holds: the Enemy Base and every building of its, as positions.
 static func territory(state: GameState) -> Array:
 	var out := [state.map.hex_at(state.map.enemy_base)]

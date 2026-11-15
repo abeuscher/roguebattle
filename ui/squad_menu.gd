@@ -82,21 +82,23 @@ func setup(state: GameState, s: Squad) -> void:
 	var here := state.building_at(s.hex)
 	if here.get("type", "") == "temple" and not s.is_moving():  # session 059
 		var gates := state.portal_targets(s)
-		var no_gate := "Take this temple to use its portal." if here["owner"] != "player" else "Hold another temple to step to it."
+		var no_gate := "Take this temple to use its portal." if here["owner"] != "player" else "Not now: a fight is about to start." if state.in_fight(s) else "Hold another temple to step to it."
 		_button(actions, "orbit", "Portal", not gates.is_empty(), "Step at once to another temple you hold." if not gates.is_empty() else no_gate) \
 				.pressed.connect(func(): portal.emit())
 	if s.is_moving():
 		_button(actions, "flag", "View destination", true, "Show where %s is headed." % s.name).pressed.connect(func(): view_destination.emit())
 	var targets := state.fire_targets(s)
 	var why := ""
-	if not state.can_fire(s):
+	if state.pending:
+		why = "Not now: a fight is about to start."
+	elif not state.can_fire(s):
 		why = "No ranged or magic units in position."
 	elif state.clock.tick < s.fire_ready:
 		why = "Reloading: ready in %s." % GameState.duration_text(s.fire_ready - state.clock.tick)
 	elif targets.is_empty():
 		why = "No visible enemy within %d hexes." % state.fire_range(s)
 	_button(actions, "crosshair", "Ranged attack", targets.size() > 0, why if why != "" else "Click an enemy squad within %d hexes." % state.fire_range(s)) 			.pressed.connect(func(): fire.emit())
-	_button(actions, "house", "Return to base", true, "Go into the Player Base." if at_base else "March to the Player Base and go in on arrival.") 			.pressed.connect(func(): return_to_base.emit())
+	_button(actions, "house", "Return to base", not state.in_fight(s), "Not now: a fight is about to start." if state.in_fight(s) else "Go into the Player Base." if at_base else "March to the Player Base and go in on arrival.") 			.pressed.connect(func(): return_to_base.emit())
 
 
 ## The squad's travel terrain, speed tier and alignment, with tooltips: in the squad menu

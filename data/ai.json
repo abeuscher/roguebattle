@@ -35,5 +35,14 @@
   "reach": 40,
   "raider_player_weight": 2.0,
   "_note": "A front squad only goes for buildings within reach hexes (given for a 400-wide map, scaled up for wider ones, never down) of ground the enemy holds: a building of its or the Enemy Base, so it pushes out from its territory instead of leapfrogging. A raider's targets have no such limit, and a building you hold is worth raider_player_weight times more to it (on top of field.player_held)."
+ },
+ "hunt": {
+  "sight": 7,
+  "per_building": 0.25,
+  "_note": "Playtest round 16 (user 2026-11-15: the enemy wants your squads out of its backfield). When a front squad first sees one of your squads (within sight hexes), it turns to chase it with a chance of per_building for each building the enemy holds (towns, towers and the Enemy Base) that your squad is nearer to than it is: 1 building 25%, 2 50%, 3 75%, 4 or more always. It follows your squad until it fights it or loses sight of it, then goes back to its own plans; the roll comes again once your squad has left its sight (or after a fight). Raiders and holdfasts never chase."
+ },
+ "dodge": {
+  "raider_chance": 0.3,
+  "_note": "Playtest rounds 15 and 16 (user 2026-11-15): an enemy squad falling back to recover routes round your squads that are standing still (not ones on the move: you have to move to catch it). A raider routes round all your squads, keeping a hex clear of each, raider_chance of the times it sets off for a new target: sneaking behind your lines. Where there's no way round, it goes straight."
  }
 }

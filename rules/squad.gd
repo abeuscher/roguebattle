@@ -26,8 +26,9 @@ var speed_tier := 2
 var path := PackedInt32Array()  # hexes still to enter, in order
 var rally := PackedInt32Array()  # rally points still ahead, each also on the path
 var progress := 0.0  # ticks spent so far toward entering path[0]
-var follow: Squad  # an enemy squad this one is following (re-routes as it moves), or null
+var follow: Squad  # the squad this one is following (re-routes as it moves), or null: yours follow enemies and neutrals, an enemy front squad chases yours (ai.json hunt)
 var follow_hex := -1  # where the followed squad was last seen
+var spotted := {}  # an enemy front squad: str(id) of your squads it has already rolled to chase while they stay in sight (ai.json hunt)
 var tactic := "best"  # the battle tactic last chosen for it (Battle.TACTICS), kept until changed (round 11)
 var morale := 50  # 0-100, hidden (§12.2); below 30 deals less damage, below 25 can be driven off
 var marching_home := false  # lost its leader: heads for base on its own (§11.3)

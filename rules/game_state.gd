@@ -622,7 +622,7 @@ func training_xp(u: Unit) -> int:
 func portal_targets(s: Squad) -> Array[int]:
 	var out: Array[int] = []
 	var here := building_at(s.hex)
-	if s.side != "player" or s not in squads or s.is_moving() or here.get("type", "") != "temple" or here["owner"] != "player":
+	if s.side != "player" or s not in squads or s.is_moving() or here.get("type", "") != "temple" or here["owner"] != "player" or in_fight(s):
 		return out
 	for b in map.buildings:
 		if b["type"] == "temple" and b["owner"] == "player" and b["hex"] != s.hex:
@@ -1486,6 +1486,8 @@ func deploy(s: Squad, points := PackedInt32Array()) -> bool:
 ## A squad standing on the Player Base can go in; elsewhere it marches there and goes
 ## in on arrival.
 func send_home(s: Squad) -> void:
+	if in_fight(s):
+		return
 	if s.hex == map.player_base:
 		return_to_base(s)
 	elif order_move(s, PackedInt32Array([map.player_base])):
@@ -1618,11 +1620,11 @@ func step_ticks(s: Squad, i: int) -> float:
 
 ## The route through these rally points in order, starting where the squad stands
 ## (the squad's own hex not included). Empty if any point can't be reached.
-func plan(s: Squad, points: PackedInt32Array) -> PackedInt32Array:
+func plan(s: Squad, points: PackedInt32Array, avoid := PackedInt32Array()) -> PackedInt32Array:
 	var route := PackedInt32Array()
 	var from := s.hex
 	for p in points:
-		var leg := pathfinder.find(from, p, s.travel_type, s.sky)
+		var leg := pathfinder.find(from, p, s.travel_type, s.sky, avoid)
 		if leg.is_empty():
 			return PackedInt32Array()
 		route.append_array(leg.slice(1))
@@ -1638,8 +1640,11 @@ func route_ticks(s: Squad, route: PackedInt32Array) -> float:
 
 
 ## Gives a move order through these rally points. Returns false if a point can't be reached.
-func order_move(s: Squad, points: PackedInt32Array) -> bool:
-	var route := plan(s, points)
+## `avoid`: hexes to keep out of if there's a way round (an enemy dodging your squads).
+func order_move(s: Squad, points: PackedInt32Array, avoid := PackedInt32Array()) -> bool:
+	var route := plan(s, points, avoid) if not avoid.is_empty() else PackedInt32Array()
+	if route.is_empty():
+		route = plan(s, points)
 	if route.is_empty() and not points.is_empty():
 		return false
 	s.entering_base = false
@@ -1678,12 +1683,21 @@ func order_follow(s: Squad, target: Squad) -> bool:
 ## sight, it heads for where it was last seen and stops there; if the target is gone
 ## (wiped out, or off the map), following just ends.
 func _update_followers() -> void:
-	for s in player_squads():
+	for s in squads:
 		var t := s.follow
 		if t == null:
 			continue
-		if t not in squads or t.living().is_empty():
+		if t not in squads or t.living().is_empty() or t.side == s.side:
 			s.follow = null
+			continue
+		if s.side == "enemy":  # a front squad chasing yours (ai.json hunt): stops when it loses sight
+			if s.marching_home or Hex.distance(map.hex_at(s.hex), map.hex_at(t.hex)) > int(data.ai["hunt"]["sight"]):
+				s.follow = null
+				s.path.clear()
+				s.rally.clear()
+			elif t.hex != s.follow_hex:
+				s.follow_hex = t.hex
+				_head_for(s, t.hex)
 			continue
 		if not seen(t.hex):
 			s.follow = null
@@ -1777,10 +1791,15 @@ func _run_enemy_ai() -> void:
 				s.marching_home = true
 				s.goal = -1
 				_fall_back(s)
+		if s.role == "field" and not s.marching_home and s.follow == null:
+			_spot(s)
 		if s.is_moving() or s.marching_home:
 			continue
 		var target := EnemyAI.target_hex(self, s)
-		if target >= 0 and target != s.hex and not order_move(s, PackedInt32Array([target])):
+		var avoid := PackedInt32Array()
+		if s.role == "raider" and target >= 0 and target != s.hex and rng.get_stream("enemy_ai").randf() < float(data.ai["dodge"]["raider_chance"]):
+			avoid = _around(player_squads(), target)
+		if target >= 0 and target != s.hex and not order_move(s, PackedInt32Array([target]), avoid):
 			s.unreachable[target] = true  # no route (water, say): pick something else next time
 			s.goal = -1
 
@@ -1809,12 +1828,60 @@ func _is_refuge(hex: int, s: Squad) -> bool:
 ## Sends a battered enemy squad to its refuge (enemy_refuge), or the Enemy Base if no route.
 func _fall_back(s: Squad) -> void:
 	s.refuge = enemy_refuge(s)
+	s.follow = null
 	if s.refuge == s.hex:
 		s.path.clear()
 		s.rally.clear()
-	elif not order_move(s, PackedInt32Array([s.refuge])):
+	elif not order_move(s, PackedInt32Array([s.refuge]), _around(player_squads().filter(func(p: Squad): return not p.is_moving()), s.refuge)):
 		s.refuge = map.enemy_base
 		order_move(s, PackedInt32Array([map.enemy_base]))
+
+
+## A front squad that sees one of your squads for the first time may turn to chase it
+## (ai.json hunt; user, 2026-11-15): the more of the enemy's buildings your squad is
+## nearer to than it is, the likelier, 25% each. One roll per squad of yours while it stays
+## in sight; it leaves sight (or a fight ends the chase) and the next sighting rolls again.
+func _spot(s: Squad) -> void:
+	var h: Dictionary = data.ai["hunt"]
+	var at := map.hex_at(s.hex)
+	for p in player_squads():
+		var key := str(p.id)
+		if p.living().is_empty() or Hex.distance(at, map.hex_at(p.hex)) > int(h["sight"]):
+			s.spotted.erase(key)
+			continue
+		if s.spotted.has(key):
+			continue
+		s.spotted[key] = true
+		var behind := EnemyAI.behind(self, s, p)
+		if behind > 0 and rng.get_stream("enemy_ai").randf() < float(h["per_building"]) * behind and order_move(s, PackedInt32Array([p.hex])):
+			s.follow = p
+			s.follow_hex = p.hex
+			s.goal = -1
+			log.add(clock.tick, "map", "%s turns to chase %s." % [s.name, p.name], s.id)
+			return
+
+
+## These squads' hexes and the hexes beside them (where contact starts), for a route that
+## keeps clear of them; `goal` is left open.
+func _around(them: Array, goal: int) -> PackedInt32Array:
+	var out := PackedInt32Array()
+	for p in them:
+		var h := map.hex_at(p.hex)
+		for d in 7:
+			var n := h if d == 6 else Hex.neighbor(h, d)
+			var o := Hex.to_offset(n)
+			if o.x < 0 or o.y < 0 or o.x >= map.width or o.y >= map.height:
+				continue
+			var i := map.index_of(n)
+			if i != goal:
+				out.append(i)
+	return out
+
+
+## Whether this squad is one of the two in the fight waiting to start (the encounter
+## dialog, perhaps put aside to look at the map): it can't leave by portal or go home.
+func in_fight(s: Squad) -> bool:
+	return pending != null and (pending.sides[0] == s or pending.sides[1] == s)
 
 
 func _fallen(s: Squad) -> int:
@@ -2450,7 +2517,7 @@ func fire_range(s: Squad) -> int:
 ## Visible hostile squads within range, if the squad has ranged units and its cooldown is over.
 func fire_targets(s: Squad) -> Array[Squad]:
 	var out: Array[Squad] = []
-	if not can_fire(s) or clock.tick < s.fire_ready:
+	if not can_fire(s) or clock.tick < s.fire_ready or pending:  # not while a fight waits to start
 		return out
 	for e in squads:
 		if hostile(s, e) and is_visible(e) and not e.living().is_empty() \
@@ -2551,6 +2618,10 @@ func end_battle(b: Battle) -> Dictionary:
 		for side in 2:
 			if b.sides[side] in squads and (out["retreated"] == side or _won(out, 1 - side)):
 				_lost_battle(b.sides[side])
+	for side in 2:  # a fight ends an enemy's chase; once it's free again it may roll to chase anew (ai.json hunt)
+		if b.sides[side].side == "enemy" and b.sides[side].follow == b.sides[1 - side]:
+			b.sides[side].follow = null
+			b.sides[side].spotted.erase(str(b.sides[1 - side].id))
 	for side in 2:  # an enemy that beat your squad stands a while, so you can come back at it (round 10)
 		if b.sides[side].side == "enemy" and b.sides[1 - side].side == "player" and _won(out, side) and b.sides[side] in squads:
 			b.sides[side].hold_until = clock.tick + int(data.enemy["victor_pause_ticks"])

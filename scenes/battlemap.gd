@@ -49,6 +49,7 @@ var _flying_to_fight := false  # a ranged attack's battle waits while the camera
 ## encounter popup. Tied to that battle, so a recruit that ends in no fight can't make
 ## the next enemy contact skip its popup.
 var _announced: Battle
+var _set_aside: Battle  # a fight whose dialog the player put aside (View Squad and Map): it waits while time is paused
 var _edit: EditUnits
 var _deploy_menu: DeployMenu
 var _confirm: ConfirmDialog
@@ -193,7 +194,7 @@ func _process(delta: float) -> void:
 			if state.pending or not state.pending_recruit.is_empty() or not state.pending_rare.is_empty() or state.game_over != "":
 				break
 	# What the world brings up opens only on the free map, one at a time; until then it waits.
-	if state.pending and _free():
+	if state.pending and _free() and not (_set_aside == state.pending and state.clock.paused):
 		if state.pending.ranged_only:
 			_fly_to_ranged_attack()
 		elif _announced == state.pending:
@@ -856,6 +857,9 @@ func _close_confirm() -> void:
 ## A fight has started (§11.1): pause, center the map on it, and say so before the battle view.
 func _open_encounter() -> void:
 	var b := state.pending
+	_set_aside = null
+	b.refresh_side(0)  # the squad may have changed while the dialog was put aside
+	b.odds = Threat.label(data, b.sides[0], b.sides[1])
 	_encounter = EncounterPopup.new()
 	_ui.add_child(_encounter)
 	_encounter.setup(b, state.army.supplies)
@@ -871,15 +875,13 @@ func _open_encounter() -> void:
 			if _encounter:
 				_encounter.refresh()
 				_encounter.show()))
-	_encounter.edit.connect(func():  # rearrange before the fight (playtest round 9)
-		_encounter.hide()
-		_open_edit(b.sides[0].id - 1)
-		_edit.closed.connect(func():
-			b.refresh_side(0)
-			b.odds = Threat.label(data, b.sides[0], b.sides[1])
-			if _encounter:
-				_encounter.refresh()
-				_encounter.show()))
+	_encounter.view.connect(func():  # put aside, paused, with the squad's menu open (playtest round 16)
+		_encounter.queue_free()
+		_encounter = null
+		_set_aside = b
+		if not state.clock.paused:
+			state.toggle_pause()
+		_select(b.sides[0]))
 	_encounter.go.connect(func():
 		_encounter.queue_free()
 		_encounter = null

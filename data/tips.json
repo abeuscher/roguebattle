@@ -32,7 +32,7 @@
   "first_battle": {
    "moment": "encounter_open",
    "anchor": "panel",
-   "text": "A fight is about to begin. Edit Squad lets you change your formation first: the front row takes melee blows with 20% less damage, and the back row is safe from melee until the front falls. Heal uses herbs from a shop. Begin Battle opens the battle, where you choose a tactic and press Fight."
+   "text": "A fight is about to begin. Heal uses herbs and Revival Draughts on this squad first. View Squad and Map pauses and puts this aside, so you can shop, heal, change the formation (Edit squad) or move other squads; it comes back when you resume. Begin Battle opens the battle, where you choose a tactic and press Fight."
   },
   "first_town": {
    "moment": "town_liberated",
