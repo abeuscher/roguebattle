@@ -301,6 +301,9 @@ func _effects_on(u: Unit) -> Array:
 
 ## Regenerate, Regrowth at the start of each round.
 func _start_round() -> void:
+	_ai_retreat()
+	if is_over():
+		return
 	for side in 2:
 		var squad_regen := 0.0
 		for e in _effects(side):
@@ -946,6 +949,23 @@ func _add_skeleton(squad: Squad, row: String, col: int) -> void:
 
 # --- Retreat and the end (§11.6, §11.3) ------------------------------------------------
 
+## An enemy squad that's losing badly tries to get away (ai.json battle; SPEC 12.3): from
+## the second round, once it has lost retreat_after_loss of the HP it began with and
+## losing_ratio times the share the other side has lost. The Warlord, base guard and holdfasts never do.
+func _ai_retreat() -> void:
+	if round < 2 or ranged_only:
+		return
+	var c: Dictionary = data.ai["battle"]
+	for side in 2:
+		var s := sides[side]
+		if s.side != "enemy" or s.role in c["holders"] or s.living().is_empty():
+			continue
+		var lost := hp_lost_share(side)
+		if lost >= float(c["retreat_after_loss"]) and lost >= float(c["losing_ratio"]) * hp_lost_share(1 - side):
+			retreat(side)
+			return
+
+
 ## 50% + 20% per speed tier over the enemy, clamped 10–90%.
 func retreat_chance(side: int) -> float:
 	var r: Dictionary = cfg["retreat"]
@@ -957,10 +977,10 @@ func retreat_chance(side: int) -> float:
 func retreat(side: int) -> bool:
 	if rng.randf() < retreat_chance(side):
 		retreated = side
-		_record({"type": "retreat", "side": side, "success": true, "text": "The squad retreats."})
+		_record({"type": "retreat", "side": side, "success": true, "text": "%s retreats." % sides[side].name})
 		return true
 	_lose_turn[side] = true
-	_record({"type": "retreat", "side": side, "success": false, "text": "The squad tries to retreat and fails; it loses its next action."})
+	_record({"type": "retreat", "side": side, "success": false, "text": "%s tries to retreat and fails; it loses its next action." % sides[side].name})
 	return false
 
 

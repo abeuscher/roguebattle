@@ -44,5 +44,21 @@
  "dodge": {
   "raider_chance": 0.3,
   "_note": "Playtest rounds 15 and 16 (user 2026-11-15): an enemy squad falling back to recover routes round your squads that are standing still (not ones on the move: you have to move to catch it). A raider routes round all your squads, keeping a hex clear of each, raider_chance of the times it sets off for a new target: sneaking behind your lines. Where there's no way round, it goes straight."
+ },
+ "battle": {
+  "tactic_weights": {
+   "best": 0.55,
+   "strong": 0.15,
+   "weak": 0.15,
+   "leader": 0.15
+  },
+  "holders": [
+   "leader",
+   "base_guard",
+   "garrison"
+  ],
+  "_note": "How enemy squads fight (SPEC 12.3: the AI's target priority and retreat threshold in data; built 2026-11-15). Each enemy squad rolls its battle tactic once, by tactic_weights, and keeps it (the battle's middle box names it). From the second round, once it has lost at least retreat_after_loss of the HP it began the battle with, and at least losing_ratio times the share your side has lost (clearly losing; battles last about three rounds), it tries to retreat at the start of each round, with the same chance yours has (battle.json retreat; a failure costs its next action). Squads in holders (the Warlord, the base guard, holdfasts) never retreat: they hold their ground.",
+  "retreat_after_loss": 0.25,
+  "losing_ratio": 2.0
  }
 }

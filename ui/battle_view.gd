@@ -21,6 +21,7 @@ const EDGE := 40.0  # back rows' distance from the field's sides
 const ROW_GAP := 34.0  # between a squad's back and front rows
 const SIDE_COLORS := [Color("#3b6fd6"), Color("#c8402f")]
 const LOG_COLORS := ["#a8c4ff", "#ffaa9a"]
+const TACTIC_WORDS := {"best": "best targets", "strong": "the strongest", "weak": "the weakest", "leader": "the leader"}
 const RESULT_WORDS := {"won": "Won", "lost": "Lost", "retreated": "Retreated", "even": "Draw"}
 const RESULT_COLORS := {"won": Color("#7ee08a"), "lost": Color("#ff7a66"), "retreated": Color("#e0b03a"), "even": Color("#e8e0c8")}
 const TACTIC_TIPS := {"best": "Each unit hits the target it hurts most", "strong": "Focus the strongest enemy",
@@ -227,6 +228,8 @@ func _add_tags() -> void:
 	lines.append([battle.terrain["name"], 15, Color(0.8, 0.82, 0.86)])
 	lines.append(["Day" if battle.daytime else "Night", 15, Color(0.8, 0.82, 0.86)])
 	lines.append(["Ranged attack" if battle.ranged_only else "%s attacks" % battle.sides[battle.attacker].name, 15, Color(0.8, 0.82, 0.86)])
+	if battle.sides[1].side == "enemy":  # the enemy's tactic, so you can answer it (ai.json battle)
+		lines.append(["They focus: %s" % TACTIC_WORDS[battle.tactics[1]], 15, Color(0.8, 0.82, 0.86)])
 	var mid := _tag(lines)
 	mid.position = (FIELD - mid.size) / 2.0 + Vector2(0, 20)
 	_field.add_child(mid)

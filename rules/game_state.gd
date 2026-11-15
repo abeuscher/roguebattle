@@ -2559,6 +2559,13 @@ func start_battle(player: Squad, enemy: Squad, defender: Squad) -> Battle:
 	if player.side == "player":
 		b.tech[0] = tech
 		b.tactics[0] = player.tactic  # the squad's last tactic (round 11)
+	for side in 2:  # an enemy squad fights with the tactic it rolled once (ai.json battle)
+		var s: Squad = b.sides[side]
+		if s.side == "enemy":
+			if not s.tactic_rolled:
+				s.tactic = _roll_tactic()
+				s.tactic_rolled = true
+			b.tactics[side] = s.tactic
 	log.add(clock.tick, "battle", "Battle: %s against %s on %s. The enemy looks %s." % [player.name, enemy.name, info["name"],
 			Threat.label(data, player, enemy).to_lower()], player.id)
 	if player.side == "player":
@@ -2775,6 +2782,20 @@ func _award_xp(b: Battle, out: Dictionary) -> void:
 		log.add(clock.tick, "progression", "%s earns %d XP each from the cards played." % [leader_squad.name, redirected], leader_squad.id)
 	if not out["xp"].is_empty():
 		log.add(clock.tick, "progression", "%s earns %s XP." % [s.name, "/".join(PackedStringArray(out["xp"].values().map(func(x): return str(x))))], s.id)
+
+
+## A tactic by ai.json battle.tactic_weights.
+func _roll_tactic() -> String:
+	var w: Dictionary = data.ai["battle"]["tactic_weights"]
+	var total := 0.0
+	for t in w:
+		total += float(w[t])
+	var r := rng.get_stream("enemy_ai").randf() * total
+	for t in w:
+		r -= float(w[t])
+		if r < 0.0:
+			return str(t)
+	return "best"
 
 
 ## Adds XP to a unit, with level-ups and the leader's slot growth (§8.2).

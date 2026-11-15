@@ -179,8 +179,14 @@ func test_capture_waits_after_a_battle() -> void:
 	check(t.capture_ticks > 0.0, "the enemy starts taking the town")
 	var before := t.capture_ticks
 	var o := _ours(st, 25)  # far away: a fight set up by hand
+	var c: Dictionary = d.ai["battle"]
+	var was: float = c["retreat_after_loss"]
+	c["retreat_after_loss"] = 2.0  # it mustn't retreat off the town (ai.json battle), so the pause is what's tested
+	t.tactic_rolled = true  # and fights as when this was written
+	t.tactic = "best"
 	st.pending = st.start_battle(o, t, t)
 	st.resolve_pending()
+	c["retreat_after_loss"] = was
 	st.squads.erase(o)
 	for i in int(d.rules["capture"]["after_battle_ticks"]) - 1:
 		st.step()

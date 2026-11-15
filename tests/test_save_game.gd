@@ -80,7 +80,7 @@ func test_save_then_load_reproduces_the_state() -> void:
 
 
 func test_the_game_plays_on_identically_after_loading() -> void:
-	var g := _game(78)  # a seed whose game is still on at the save (a finished map can't be saved)
+	var g := _game(79)  # a seed whose game is still on at the save (a finished map can't be saved; 78 ended once enemies retreated)
 	var st: GameState = g[0]
 	_deploy_some(st)
 	_play(st, 600)
