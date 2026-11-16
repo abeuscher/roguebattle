@@ -27,6 +27,7 @@ var tower_names: Dictionary = {}    # name patterns and parts for towers (MapPla
 var gods: Dictionary = {}           # the Gods of Perinea: each temple belongs to one
 var shops: Dictionary = {}          # selling share and shopkeepers' greetings (shops.json)
 var audio: Dictionary = {}          # sound: cue files and buses, and which game events play them (audio.json)
+var version: Dictionary = {}        # this copy's version and when it was stamped (version.json, tools/stamp_version.py)
 var config_fields: Array = []       # configurator settings, in share-code order
 var first_names: PackedStringArray = []
 var last_names: PackedStringArray = []
@@ -60,6 +61,7 @@ static func load_dir(dir: String = "res://data") -> GameData:
 	d.audio = _read_json(dir.path_join("audio.json"))
 	d.shops = _read_json(dir.path_join("shops.json"))
 	d.config_fields = _read_json(dir.path_join("configurator.json"))
+	d.version = _read_json(dir.path_join("version.json"))
 	d._load_names(dir.path_join("unit-names.csv"))
 	return d
 

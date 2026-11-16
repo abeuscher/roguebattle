@@ -217,6 +217,7 @@ func _process(delta: float) -> void:
 	_hold_clock()
 	_base_tip()
 	_portal_tip()
+	_drawer_tip()
 	if not state.notices.is_empty():
 		var news := "  ·  ".join(state.notices)
 		hud.show_banner_links(news, 4.0, _place_links(news))
@@ -869,7 +870,7 @@ func _open_encounter() -> void:
 	b.odds = Threat.label(data, b.sides[0], b.sides[1])
 	_encounter = EncounterPopup.new()
 	_ui.add_child(_encounter)
-	_encounter.setup(b, state.army.supplies)
+	_encounter.setup(b, state)
 	_fly_to_meeting(b.sides[0], b.sides[1], _encounter)
 	_offer_tip("encounter_open", _encounter)
 	_encounter.heal.connect(func():  # herbs and revivals before the fight
@@ -1276,6 +1277,15 @@ func _portal_tip() -> void:
 		return
 	_portal_tip_asked = true
 	_offer_tip("portal_ready", hud)
+
+
+## The squad list tip (round 21): the first time a squad of yours stops somewhere that
+## isn't a building to liberate, once the map is free.
+func _drawer_tip() -> void:
+	if not state.stopped_in_open or is_instance_valid(_tip) or not _free():
+		return
+	state.stopped_in_open = false
+	_offer_tip("squad_stopped", hud)
 
 
 ## The time controls tip (user, 2026-11-14), the first time time runs: after any tip

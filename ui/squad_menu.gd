@@ -68,13 +68,10 @@ func setup(state: GameState, s: Squad) -> void:
 	col.add_child(actions)
 	var at_base := s.hex == state.map.player_base
 	_button(actions, "pencil", "Edit squad", true, "Open the squad in Edit Units." if state.can_edit(s) else "Open the squad in Edit Units: in the field you can rearrange it but not add or remove units.") 			.pressed.connect(func(): edit.emit())
-	var herbs := 0
-	for id in state.army.supplies:
-		herbs += int(state.army.supplies[id])
-	var paid := state.heals_here(s)  # in a temple: healing for gold
-	var well := s.all_well(state.data)
-	var heal_tip := "Everyone is at full health." if well else "Herbs and Revival Draughts%s." % (", and healing here for gold" if paid else "") if herbs > 0 or paid else "No supplies: buy herbs at a shop, or stand in a temple."
-	var heal_button := _button(actions, "medical-cross", "Heal", not well and (herbs > 0 or paid), heal_tip)
+	var paid := state.heals_here(s)  # in a temple or at the Player Base: healing for gold
+	var blocked := state.heal_blocked(s)  # greyed with the reason when there's nothing to do (round 21)
+	var heal_tip := blocked if blocked != "" else "Herbs and Revival Draughts%s." % (", and healing here for gold" if paid else "")
+	var heal_button := _button(actions, "medical-cross", "Heal", blocked == "", heal_tip)
 	heal_button.add_theme_color_override("icon_disabled_color", Color(1, 1, 1, 0.35))
 	heal_button.pressed.connect(func(): heal.emit())
 	var place := state.shop_at(s)

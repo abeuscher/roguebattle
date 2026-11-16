@@ -469,7 +469,19 @@ func _show_unit() -> void:
 	names.add_theme_constant_override("separation", 2)
 	names.size_flags_horizontal = SIZE_EXPAND_FILL
 	head.add_child(names)
-	names.add_child(_sheet_text(u.name, 34, SHEET_INK, true))
+	var name_row := HBoxContainer.new()
+	name_row.add_theme_constant_override("separation", 10)
+	names.add_child(name_row)
+	var name_label := _sheet_text(u.name, 34, SHEET_INK, true)
+	name_row.add_child(name_label)
+	if u == state.opinion_leader:  # round 21: the Opinion Leader can be renamed here
+		var pen := UiStyle.help(func(): _rename_field(name_row, name_label), "Rename the Opinion Leader", 24, SHEET_GOLD)
+		pen.text = ""
+		pen.icon = UiStyle.svg("pencil", 16)
+		pen.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		pen.add_theme_color_override("icon_normal_color", SHEET_GOLD)
+		pen.size_flags_vertical = SIZE_SHRINK_CENTER
+		name_row.add_child(pen)
 	var where := "%s of #%d %s" % ["Leader" if sq.leader == u else "In", sq.id, sq.name] if sq else "In the recruit pool"
 	names.add_child(_sheet_text("Level %d %s  ·  %s" % [u.level, u.unit_class, where], 17, SHEET_FADED))
 	for t in [["overview", "Character"], ["about", "About the %s" % u.unit_class]]:
@@ -483,6 +495,28 @@ func _show_unit() -> void:
 	body.size_flags_vertical = SIZE_EXPAND_FILL
 	col.add_child(body)
 	col.add_child(UiStyle.label(_status.text, 16, UiStyle.ACCENT))
+
+
+## Swaps the Opinion Leader's name for a field; Enter or clicking away keeps the new name.
+func _rename_field(row: HBoxContainer, shown: Label) -> void:
+	var field := LineEdit.new()
+	field.text = shown.text
+	field.max_length = int(data.rules["player_name_max"])
+	field.custom_minimum_size.x = 420
+	field.add_theme_font_override("font", UiStyle.title_font())
+	field.add_theme_font_size_override("font_size", 30)
+	for c in row.get_children():
+		c.queue_free()
+	row.add_child(field)
+	var done := func(_t := ""):
+		if not is_instance_valid(field) or field.is_queued_for_deletion():
+			return
+		state.rename_leader(field.text)
+		_refresh()
+	field.text_submitted.connect(done)
+	field.focus_exited.connect(done)
+	field.grab_focus.call_deferred()
+	field.select_all.call_deferred()
 
 
 ## The character sheet's frame (playtest round 13): dark leather in a gold double border,

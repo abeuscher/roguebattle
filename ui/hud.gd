@@ -465,6 +465,8 @@ func anchor(name: String) -> Rect2:
 			return _deploy_button.get_global_rect()
 		"speed":
 			return _speed_pick.get_global_rect()
+		"squad_drawer":
+			return _drawer.get_global_rect()
 	return Rect2()
 
 

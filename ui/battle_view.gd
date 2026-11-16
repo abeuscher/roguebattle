@@ -59,7 +59,7 @@ var _peek: Control  # an enemy unit looked at closely (round 14); the battle hol
 var _results: Control  # the end-of-battle panel, which a player tip points at
 var _items_btn: Button
 var _round := UiStyle.label("", 28, UiStyle.ACCENT)
-var _ranged_tag := UiStyle.label("Ranged Battle", 18, Color(0.86, 0.88, 0.92))  # under the round, in a ranged battle (round 19)
+var _ranged_tag := UiStyle.label("Ranged Battle", 18, Color.WHITE)  # under the round, in a ranged battle (round 19)
 var _ticker := RichTextLabel.new()
 var _controls := HBoxContainer.new()
 var _speed_btn: Button
@@ -111,7 +111,12 @@ func setup(game_state: GameState, b: Battle, is_replay := false, wait_for_fight 
 	_ranged_tag.custom_minimum_size.x = 200
 	_ranged_tag.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_ranged_tag.add_theme_color_override("font_outline_color", Color.BLACK)
-	_ranged_tag.add_theme_constant_override("outline_size", 4)
+	_ranged_tag.add_theme_constant_override("outline_size", 6)
+	# On a dark band so it reads over any ground (round 21: more contrast).
+	var band := UiStyle.box(Color(0, 0, 0, 0.72), 6)
+	band.content_margin_top = 2
+	band.content_margin_bottom = 2
+	_ranged_tag.add_theme_stylebox_override("normal", band)
 	_ranged_tag.visible = false
 	_field.add_child(_ranged_tag)
 	for side in 2:

@@ -26,6 +26,15 @@ func setup(data: GameData) -> void:
 	var press := UiStyle.label("Press Space", 28, UiStyle.ACCENT)
 	press.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(press)
+	# Which copy this is, so testers and the user mean the same build (round 21).
+	var stamp := PanelContainer.new()
+	stamp.add_theme_stylebox_override("panel", UiStyle.box(Color(0, 0, 0, 0.85), 10))
+	stamp.add_child(UiStyle.label("Working copy  ·  v%s  ·  %s" % [data.version.get("version", "?"), data.version.get("stamp", "")], 18, Color(0.9, 0.91, 0.93)))
+	stamp.set_anchors_and_offsets_preset(PRESET_CENTER_BOTTOM)
+	stamp.grow_horizontal = GROW_DIRECTION_BOTH
+	stamp.grow_vertical = GROW_DIRECTION_BEGIN
+	stamp.offset_bottom = -90
+	add_child(stamp)
 
 
 func _unhandled_key_input(event: InputEvent) -> void:

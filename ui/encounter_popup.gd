@@ -17,14 +17,12 @@ var _battle: Battle
 var _panel: PanelContainer
 var _heal: Button
 var _heal_face: Control
-var _supplies: Dictionary
-var _data: GameData
+var _state: GameState
 
 
-## `supplies`: the army's herbs and revivals, for Heal ("Use item(s)" until playtest round 13; user's playtest notes, 2026-11-10).
-func setup(b: Battle, state_supplies: Dictionary) -> void:
-	_supplies = state_supplies
-	_data = b.data
+## `game_state`: for whether Heal has anything to do (its supplies; no healing for gold before a fight).
+func setup(b: Battle, game_state: GameState) -> void:
+	_state = game_state
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	var shade := ColorRect.new()
 	shade.color = Color(0, 0, 0, 0.2)
@@ -91,12 +89,9 @@ func anchor(name: String) -> Rect2:
 ## How the enemy looks, and whether Heal has anything to do, again after Heal changed the squad.
 ## Heal is grey with no supplies, or with everyone at full HP (round 19).
 func refresh() -> void:
-	var herbs := 0
-	for id in _supplies:
-		herbs += int(_supplies[id])
-	var well := _battle.sides[0].all_well(_data)
-	_heal.disabled = herbs == 0 or well
+	var blocked := _state.heal_blocked(_battle.sides[0], false)
+	_heal.disabled = blocked != ""
 	_heal_face.modulate.a = 0.45 if _heal.disabled else 1.0
-	_heal.tooltip_text = "Everyone is at full health." if well else "Heal or revive units of this squad before the fight." if herbs > 0 else "No supplies: buy herbs at a shop."
+	_heal.tooltip_text = blocked if _heal.disabled else "Heal or revive units of this squad before the fight."
 	var lead := "%s fires from range" % _battle.sides[1].name if _battle.ranged_only else _battle.sides[1].name
 	_odds.text = "%s  ·  they look %s" % [lead, _battle.odds.to_lower()]

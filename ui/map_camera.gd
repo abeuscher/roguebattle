@@ -38,12 +38,7 @@ func center_on(world_point: Vector2) -> void:
 ## back). Returns the tween, so the caller can wait for it to land.
 func fly_to(world_point: Vector2, map_share: float, seconds: float) -> Tween:
 	var to_zoom := clampf(maxf(zoom.x, _fit_zoom / map_share), _fit_zoom * 0.5, MAX_ZOOM)
-	# Keep the view on the map: near an edge, stop short of centering exactly.
-	var half := get_viewport_rect().size / to_zoom / 2.0
-	var origin := -Vector2(MapView.HEX_SIZE * Hex.SQRT3 / 2.0, MapView.HEX_SIZE)
-	for axis in 2:
-		if half[axis] * 2.0 < world[axis]:
-			world_point[axis] = clampf(world_point[axis], origin[axis] + half[axis], origin[axis] + world[axis] - half[axis])
+	# Centred exactly, even near an edge, where the view runs past the map (round 21).
 	return _glide(world_point, to_zoom, seconds)
 
 

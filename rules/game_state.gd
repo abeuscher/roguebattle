@@ -31,6 +31,7 @@ var _moved := {}  # squads that entered a new hex this tick
 var _building_at := {}  # hex -> index in map.buildings
 var _river_hexes := {}  # hex -> true for every river hex, built on first use (ambience_facts)
 var notices: Array[String] = []  # short news for the HUD banner, oldest first (a squad of yours stopped)
+var stopped_in_open := false  # a squad of yours has stopped somewhere not to liberate (the squad list tip, round 21)
 var notes := []  # the notifications log: every notice shown, oldest first ({when, text, links}); the map screen fills it
 var noon_report := ""  # the last noon's ledger in one line, for the HUD banner
 var ledger: Array = []  # [what, gold +/-] for every gold change since the last noon
@@ -45,6 +46,8 @@ var debt_noons := 0  # noons in a row that ended in debt (§15.1, round 9): 3 is
 var game_over := ""  # "", "victory" or "defeat" (§6.8), once a condition is met
 var game_over_reason := ""  # the sentence the end screen shows
 var enemy_squads_defeated := 0  # wiped or driven off, for "defeat N enemy squads" (§6.8)
+var stats := {"battles_won": 0, "battles_lost": 0, "liberated": 0}  # for the end screen (round 21)
+var victory_reward := {}  # {income, buildings, per_building, total}: paid on winning the map (round 21)
 var _last_cap := -1  # the field cap last seen, to say when it changes
 var returning: Array = []  # wiped-out enemy squads off the board, {squad, at: tick it comes back at the Enemy Base} (round 19)
 # Debug panel switches (SPEC §19.2); never set in the real game.
@@ -305,8 +308,8 @@ func building_defense(s: Squad) -> float:
 func _capture() -> void:
 	var c: Dictionary = data.rules["capture"]
 	for s in squads:
-		if s.side == "neutral":
-			continue
+		if s.side == "neutral" or s.leader == null or not s.leader.is_alive():
+			continue  # a leaderless squad can't take a building (round 21)
 		var b := building_at(s.hex)
 		if s.is_moving() or b.is_empty() or not data.buildings[b["type"]].get("capturable", false) or b["owner"] == s.side \
 				or not s.living().any(func(u: Unit): return not u.has_tag(data, "flyer")):
@@ -332,6 +335,7 @@ func _capture() -> void:
 				log.add(clock.tick, "map", "%s takes %s." % [s.name, place_label(b)], s.id)
 				liberations.append({"building": b, "card": "", "recruits": [], "taken": taken})
 			elif s.side == "player":
+				stats["liberated"] = int(stats["liberated"]) + 1
 				log.add(clock.tick, "map", "%s liberates %s." % [s.name, place_label(b)], s.id)
 				var bonus := liberation_bonus()
 				_pay(bonus, "Liberation bonus: %s" % place_label(b))
@@ -573,6 +577,13 @@ func _end_game(kind: String, reason: String) -> void:
 	log.add(clock.tick, "system", "%s: %s" % ["Victory" if kind == "victory" else "Defeat", reason])
 	if kind == "victory":
 		earn_tech_points(int(data.tech["points"]["map_end"]), "finishing the map")
+		var r: Dictionary = data.rules["victory_reward"]
+		var held := map.buildings.filter(func(b): return b["owner"] == "player" and b["type"] in ["town", "tower", "temple"]).size()
+		var from_income := income() * int(r["days_income"])
+		victory_reward = {"income": from_income, "buildings": held, "per_building": int(r["per_building"]),
+				"total": from_income + held * int(r["per_building"])}
+		_pay(int(victory_reward["total"]), "Victory reward")
+		log.add(clock.tick, "economy", "Victory reward: %d gold." % int(victory_reward["total"]))
 
 
 ## Stats for the end-of-map summary (§4, §6.8): gold, reputation, days played,
@@ -589,6 +600,12 @@ func end_summary() -> Dictionary:
 		"towns_held": towns.filter(func(b): return b["owner"] == "player").size(),
 		"towns_total": towns.size(),
 		"tech_points": tech_points,
+		"battles_won": int(stats["battles_won"]),
+		"battles_lost": int(stats["battles_lost"]),
+		"liberated": int(stats["liberated"]),
+		"squads_out": player_squads().size(),
+		"army_size": army.units().size(),
+		"reward": victory_reward,
 	}
 
 
@@ -920,6 +937,22 @@ func card_name(id: String) -> String:
 ## Whether a squad on the map has a leader with the Foresight aura, which shows the next card.
 func foresight() -> bool:
 	return player_squads().any(func(s: Squad): return s.leader and s.leader.is_alive() and s.leader.info(data)["leader_aura"] == "Foresight")
+
+
+## Renames the Opinion Leader (round 21, from its character sheet). Blank or over the
+## name length leaves the name as it was. Returns whether it changed.
+func rename_leader(new_name: String) -> bool:
+	var given := new_name.strip_edges()
+	if opinion_leader == null or given == "" or given == opinion_leader.name or given.length() > int(data.rules["player_name_max"]):
+		return false
+	log.add(clock.tick, "progression", "%s is now known as %s." % [opinion_leader.name, given])
+	opinion_leader.name = given
+	if names:
+		names.used[given] = true
+	var s := army.squad_of(opinion_leader)
+	if s:
+		s.refresh(data)
+	return true
 
 
 ## The Opinion Leader's squad (§18): wherever that unit is (null while it waits in the
@@ -1600,15 +1633,37 @@ func at_base(u: Unit) -> bool:
 ## units can be healed and revived for gold (the Heal window, playtest round 13).
 func heals_here(s: Squad) -> bool:
 	var b := building_at(s.hex)
-	return not s.is_moving() and b.get("type", "") == "temple" and b["owner"] != "enemy"
+	if s.is_moving():
+		return false
+	return s.hex == map.player_base or b.get("type", "") == "temple" and b["owner"] != "enemy"
+
+
+## Why the Heal window has nothing to do for a squad, or "" if it does (round 21: a greyed
+## Heal says why rather than opening on a dead end). `paid`: whether healing for gold
+## counts (not before a fight).
+func heal_blocked(s: Squad, paid := true) -> String:
+	if s.all_well(data):
+		return "Everyone is at full health."
+	if paid and heals_here(s):
+		return ""
+	var stocked := false
+	for id in data.items["consumables"]:
+		if data.items["consumables"][id]["where"] != "map" or int(army.supplies.get(id, 0)) <= 0:
+			continue
+		stocked = true
+		for u in s.units:
+			if supply_helps(u, id):
+				return ""
+	if stocked:
+		return "No supply you have helps: herbs heal the hurt, Revival Draughts raise the fallen. Buy at a shop, or stand in a temple or at the Player Base."
+	return "Out of herbs and revivals: buy them at a shop, or stand in a temple or at the Player Base to heal for gold."
 
 
 ## Healing and revival can be bought at base, or by a squad standing in a temple (§6.5).
 func can_service(u: Unit) -> bool:
 	if at_base(u):
 		return true
-	var s := army.squad_of(u)
-	return not s.is_moving() and building_at(s.hex).get("type", "") == "temple" and building_at(s.hex)["owner"] != "enemy"
+	return heals_here(army.squad_of(u))
 
 
 func heal_cost(u: Unit) -> int:
@@ -1908,14 +1963,31 @@ func _is_refuge(hex: int, s: Squad) -> bool:
 
 ## Sends a battered enemy squad to its refuge (enemy_refuge), or the Enemy Base if no route.
 func _fall_back(s: Squad) -> void:
-	s.refuge = enemy_refuge(s)
 	s.follow = null
+	if s.leader == null or not s.leader.is_alive():
+		s.refuge = map.enemy_base  # leaderless: only ever home (round 21)
+		_crawl_home(s)
+		return
+	s.refuge = enemy_refuge(s)
 	if s.refuge == s.hex:
 		s.path.clear()
 		s.rally.clear()
 	elif not order_move(s, PackedInt32Array([s.refuge]), _around(player_squads().filter(func(p: Squad): return not p.is_moving()), s.refuge)):
 		s.refuge = map.enemy_base
 		order_move(s, PackedInt32Array([map.enemy_base]))
+
+
+## A leaderless squad's march to its own base (round 21): round the other side's squads
+## standing still (the player's squad only round those it can see), unless that's more than
+## ai.json crawl_detour times the straight way.
+func _crawl_home(s: Squad) -> void:
+	var home := map.player_base if s.side == "player" else map.enemy_base
+	var them := squads.filter(func(o: Squad): return o.side != s.side and o.side != "neutral" and not o.is_moving() 			and (s.side != "player" or seen(o.hex)))
+	var goal := PackedInt32Array([home])
+	var straight := plan(s, goal)
+	var around := plan(s, goal, _around(them, home)) if not them.is_empty() else PackedInt32Array()
+	var detour := not around.is_empty() and around.size() <= straight.size() * float(data.ai["dodge"]["crawl_detour"])
+	order_move(s, goal, _around(them, home) if detour else PackedInt32Array())
 
 
 ## A front squad that sees one of your squads for the first time may turn to chase it
@@ -2826,8 +2898,14 @@ func end_battle(b: Battle) -> Dictionary:
 			if s.side == "enemy":
 				_fall_back(s)
 			else:
-				order_move(s, PackedInt32Array([map.player_base]))
+				_crawl_home(s)
 			s.entering_base = s.side == "player"
+	for side in 2:  # the end screen's tally (round 21)
+		if b.sides[side].side == "player":
+			if _won(out, side):
+				stats["battles_won"] = int(stats["battles_won"]) + 1
+			elif out["retreated"] == side or _won(out, 1 - side):
+				stats["battles_lost"] = int(stats["battles_lost"]) + 1
 	if not b.ranged_only:
 		for side in 2:
 			if b.sides[side] in squads and (out["retreated"] == side or _won(out, 1 - side)):
@@ -3178,6 +3256,9 @@ func _move(s: Squad) -> void:
 				log.add(clock.tick, "map", "%s has stopped at %s." % [s.name, where(s.hex)], s.id)
 				if s.side == "player":  # user's playtest notes, 2026-11-10: say when a party stops
 					notices.append("%s has stopped at %s." % [s.name, where(s.hex)])
+					var b := building_at(s.hex)
+					if b.is_empty() or b["owner"] == "player" or not data.buildings[b["type"]].get("capturable", false):
+						stopped_in_open = true
 			else:
 				log.add(clock.tick, "map", "%s reached a rally point; %d to go." % [s.name, s.rally.size()], s.id)
 	if not s.is_moving():

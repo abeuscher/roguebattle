@@ -331,3 +331,19 @@ The open questions were settled with the user on 2026-11-15 (row 10's display of
 | 9 | **A neutral meeting shouldn't stop the march** (unless you lose the fight) | §16 | A test reproducing it | Checked (session 104): not reproduced; a test now guards it |
 | 10 | **Ambience louder zoomed in, quieter zoomed out** | M5 | Test of the zoom measure; by ear | Done (session 104) |
 
+
+## Playtest round 21 (user's notes, 2026-11-15)
+
+| # | Session | Spec | Verify | Status |
+|---|---|---|---|---|
+| 1 | **Rename the Opinion Leader** somewhere in the game | §18 | Test | Done (session 105): a pencil by the name on their character sheet in Edit Units |
+| 2 | **More contrast on "Ranged Battle"** in the battle view | §11 | By eye | Done (session 105): white on a dark band |
+| 3 | **The camera centres a fight near the map's edge** (it may run past the edge) | §5.2 | By eye | Done (session 105) |
+| 4 | **Heal greyed when there's nothing to do** (away from the Player Base and temples, with no supply that helps), saying why | §14 | Test | Done (session 105); standing on the Player Base now offers healing for gold too |
+| 5 | **A victory screen to pause on:** the run's stats, a gold reward (a day's income and more for places held), the user's video (plays, then loops) | §4, §6.8 | Test; screenshot | Done (session 105) |
+| 6 | **Squad list tip** the first time a squad stops somewhere that isn't a building to liberate | §19.4 | Test of the trigger | Done (session 105) |
+| 7 | **Tips that collide** (a liberation and a first neutral band at once) | §19.4 | | To discuss: a proposal is with the user |
+| 8 | **Version and stamp on the title screen:** "Working copy", 0.<session>, the time | §4 | Test | Done (session 105): `tools/stamp_version.py` writes `data/version.json` |
+| 9 | **The tech tree's place** in single map and campaign play, and its balance | §14 | | To discuss before any work |
+| 10 | **Leaderless squads only head home,** can't take buildings, step round the other side's squads only if it's not far out of the way | §11.3 | Tests | Done (session 105): the enemy's went to its nearest town and either side's could take a building it stopped on; both fixed |
+

@@ -22,6 +22,8 @@
  "player_name_max": 24, "_player_name_max": "Round 11: longest name the Game summary's Your name field takes.",
  "first_noon_day": 2, "_first_noon_day": "Round 11 (user's answer): no noon settlement (income, upkeep, ledger) before this day; day 1 runs without one.",
  "starting_reputation": 50,
+ "end_screen": {"victory_video": "res://data/video/victory_full.ogv", "victory_loop": "res://data/video/victory_loop.ogv", "fireworks": 4, "_note": "Playtest round 21 (user 2026-11-15): the victory screen plays victory_video once, then victory_loop over and over (the user's videos); fireworks: shows set off over it, a couple of seconds apart."},
+ "victory_reward": {"days_income": 1, "per_building": 25, "_note": "Playtest round 21 (user 2026-11-15): winning a map pays days_income days of income (towns and towers held) plus per_building gold for every town, tower and temple you hold, shown on the end screen."},
  "crawl_slowdown": 2.0, "_crawl_note": "A leaderless squad marching home moves this many times slower (playtest round 9).",
  "starting_morale": 50,
  "starting_loyalty": 50,

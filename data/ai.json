@@ -45,6 +45,8 @@
  },
  "dodge": {
   "raider_chance": 0.3,
+  "crawl_detour": 1.3,
+  "_crawl_detour": "Playtest round 21 (user 2026-11-15): a leaderless squad (either side) heads only for its own base and can't take buildings; it routes round the other side's squads standing still (yours only those it can see) if that route is at most crawl_detour times the straight one, else it goes straight.",
   "_note": "Playtest rounds 15 and 16 (user 2026-11-15): an enemy squad falling back to recover routes round your squads that are standing still (not ones on the move: you have to move to catch it). A raider routes round all your squads, keeping a hex clear of each, raider_chance of the times it sets off for a new target: sneaking behind your lines. Where there's no way round, it goes straight."
  },
  "battle": {
