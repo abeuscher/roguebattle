@@ -562,6 +562,56 @@ def battle_theme(variant: str) -> tuple:
     return tracks, len(BATTLE_CHORDS) * 4
 
 
+# --- A battle is coming --------------------------------------------------------------
+# Draft 1 (playtest round 22): plays from the moment a fight is announced until the battle
+# opens (while you heal, edit the squad or decide). Tension that builds, not the battle
+# theme itself (the user's reference: the build-up before an adventure film's main march).
+# 8 bars at 100, D minor, looping: low strings trembling on a D pedal, the harmony leaning
+# up a half step (Dm, Eb over D) and back; a horn call of a rising fourth answered higher
+# each time; timpani on the downbeats that turn to an 8th pulse in the second half, and a
+# snare roll that swells over the last bar into the loop.
+
+INTRO_HARMONY = ["Dm", "Dm", "Eb/D", "Dm", "Dm", "Eb/D", "Gm/D", "A/D"]
+INTRO_VOICES = {"Dm": ["D3", "F3", "A3"], "Eb/D": ["Eb3", "G3", "Bb3"], "Gm/D": ["D3", "G3", "Bb3"], "A/D": ["E3", "A3", "C#4"]}
+INTRO_CALLS = {  # bar -> the horn's call (the battle theme's fourth, answered higher)
+    0: [("A3", .75), ("D4", .25), ("D4", 3)],
+    2: [("Bb3", .75), ("Eb4", .25), ("Eb4", 3)],
+    4: [("A3", .75), ("D4", .25), ("F4", 1), ("E4", 2)],
+    6: [("D4", .75), ("G4", .25), ("G4", 1), ("A4", .5), ("C#5", 1.5)],
+}
+
+
+def battle_intro() -> tuple:
+    strings = Track("Strings", 0, STRINGS)
+    basses = Track("Contrabass", 1, CONTRABASS)
+    horn = Track("Horn", 2, FRENCH_HORN)
+    brass = Track("Brass", 3, BRASS)
+    timp = Track("Timpani", 4, TIMPANI)
+    drums = Track("Drums", DRUMS, None)
+    for bar, chord in enumerate(INTRO_HARMONY):
+        b = bar * 4
+        swell = 46 + bar * 4  # louder bar by bar
+        for k in range(16):  # tremolo: 16ths, the chord over the pedal
+            for name in INTRO_VOICES[chord]:
+                strings.note(b + k * .25, .22, n(name), swell + (8 if k % 4 == 0 else 0))
+        basses.note(b, 3.95, n("D2"), 80)
+        if bar in INTRO_CALLS:
+            horn.line(b, INTRO_CALLS[bar], 70 + bar * 3)
+        if bar >= 4:  # brass stabs join the second half, short and low
+            for at in (0, 1.5, 3):
+                for name in INTRO_VOICES[chord]:
+                    brass.note(b + at, .3, n(name), 58 + bar * 3)
+        if bar < 4:
+            timp.note(b, .6, n("D2"), 70 + bar * 4)
+        else:
+            for k in range(8):
+                timp.note(b + k * .5, .3, n("D2") if chord != "A/D" or k < 4 else n("A1"), 66 + bar * 3 + (12 if k == 0 else 0))
+    for k in range(16):  # the snare roll into the loop
+        drums.note(28 + k * .25, .2, SNARE, 36 + k * 4)
+    drums.note(28, 4, CRASH, 40)
+    return [strings, basses, horn, brass, timp, drums], len(INTRO_HARMONY) * 4
+
+
 # --- End of the map: victory and defeat screens -----------------------------------------
 # Draft 1 (M5 session 3). Both loop, 8 bars, while the end screen is up.
 
@@ -644,3 +694,4 @@ if __name__ == "__main__":
     write("firework", 120, *firework())
     write("recruit_joined", 100, *recruit_joined())  # the title screen: the victory tune at double tempo (user, 2026-11-12)
     write("end_defeat", 66, *end_defeat())
+    write("battle_intro", 100, *battle_intro())

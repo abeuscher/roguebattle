@@ -347,3 +347,22 @@ The open questions were settled with the user on 2026-11-15 (row 10's display of
 | 9 | **The tech tree's place** in single map and campaign play, and its balance | §14 | BattleSim with tech; BoardSim tech by day | Done (session 105): measured; Drill fixed in off-screen fights; Volley an extra shot; terrain nodes 3x the cost; tech points from battles only (1 per 2 wins) and the map's end. Its place across a campaign waits for the campaign |
 | 10 | **Leaderless squads only head home,** can't take buildings, step round the other side's squads only if it's not far out of the way | §11.3 | Tests | Done (session 105): the enemy's went to its nearest town and either side's could take a building it stopped on; both fixed |
 
+
+## Playtest round 22 (user's notes, 2026-11-16)
+
+| # | Session | Spec | Verify | Status |
+|---|---|---|---|---|
+| 1 | **"Round 1" and "Ranged Battle" as the battle window opens,** not when the fight starts | §11 | By eye | Done (session 106) |
+| 2 | **Buffs, debuffs and potions don't matter enough** to use; a modest change | §13, §15 | | To discuss |
+| 3 | **Add back 4x speed** | §5 | | Asked: which screen (the map has x4; battles have x1, x2, x4 since they were halved) |
+| 4 | **Skip to action didn't work** | §5 | Test | Done (session 106): it was grey whenever any squad stood still (nearly always); now only squads on the move are watched. Pausing stops it (it ran on while paused) |
+| 5 | **A card's sound as it starts to grow and fade** | M5 | By ear | Done (session 106): in battle it played on Play, before the card showed |
+| 6 | **Music for a battle that's coming:** from the announcement until Begin Battle, a build-up, not the battle theme | M5 | By ear | Done (session 106): a first draft (`tools/midi_draft.py` battle_intro) |
+| 7 | **Playthroughs listening for collisions** (battles, liberations, tips at once): keep the player feeling in control | §19.4 | Scripted runs | To plan with the user |
+| 8 | **The temple tip came over a town taken just after** | §19.4 | By eye | Done (session 106): the camera goes back to the temple before its tip |
+| 9 | **Ranged attacks on the map: nerf them and see** | §11.2 | Test | Done (session 106): half damage, a 4-hour reload (was 2) |
+| 10 | **How far hidden sites are seen** | §8.5 | Code | Answered: a squad sees 5 to 10 hexes (7 base), and places you hold see too: a town 8, a temple 12, a tower 16 |
+| 11 | **Buff and debuff icons in the unit's detail view in battle, named on hover** | §13 | By eye | Done (session 106): click any unit (yours too now); status names and what they do in battle.json |
+| 12 | **A liberation while paused** | §6.5 | Code | Done (session 106): skip to action ran on after a pause |
+| 13 | **Squads shaking between two places after a battle** | §11.3 | Probe | Done (session 106): new enemy and neutral squads could take an id already in use, and two squads then shared one marker |
+

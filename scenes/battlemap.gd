@@ -46,6 +46,7 @@ var _tip: TipPopup  # the player tip showing, if any (one at a time)
 var _tips_waiting := {}  # tip id -> true: due, waiting for the tip showing to be closed (round 21)
 var _was_free := false  # the map was free last frame (for the beat after a window closes)
 var _calm_at := 0  # msec: the world's next window or map tip waits till then (rules.json event_beat)
+var _last_temple := -1  # hex of the last temple you took, for the portal tip's camera (round 22)
 var _tip_hex := -1  # the map hex it points at, for a tip anchored on the map; else -1
 var _next_liberation := 0  # msec before which the next queued liberation waits (a beat between two)
 var _portal_tip_asked := false  # the Portal tip has been offered this session
@@ -969,12 +970,13 @@ func _toggle_skip() -> void:
 		hud.show_banner(why if why != "" else "Close what's open first.", 3.0)
 		return
 	_skipping = true
+	state.clock.paused = false  # skipping runs time: it starts from a pause too
 	hud.show_banner("Skipping to the next thing that needs you...  (S: stop)")
 
 
 func _skip_frame() -> void:
-	if not _free() or state.skip_blocker() != "":
-		_skipping = false
+	if not _free() or state.skip_blocker() != "" or state.clock.paused:
+		_skipping = false  # pausing stops it (round 22: it ran on, and liberated towns, while paused)
 		return
 	var why := state.skip_ticks(int(data.rules["skip"]["ticks_per_frame"]))
 	if why != "":
@@ -1220,6 +1222,8 @@ func _pump_liberations() -> void:
 	if Time.get_ticks_msec() < _next_liberation or Sound.quiet_in() > 0.0:
 		return  # a beat after the last one, its sound finished, so each plays with its own window (round 18)
 	var entry: Dictionary = state.liberations.pop_front()
+	if entry["building"]["type"] == "temple":
+		_last_temple = entry["building"]["hex"]
 	Sound.event("taken_" + str(entry["building"]["type"]))  # the riff goes with the window (or its banner), one at a time
 	if entry.get("taken", "") == "new":  # then "New Town!" (or Tower, Temple), after the riff
 		Sound.event("new_" + str(entry["building"]["type"]))
@@ -1288,6 +1292,10 @@ func _portal_tip() -> void:
 	if _portal_tip_asked or not _calm() or _world_waiting() or state.temples_held() < 2:
 		return
 	_portal_tip_asked = true
+	# It waits behind whatever else was taken at the same time, so the camera goes back to
+	# the temple it's about (round 22: it came up over a town taken just after).
+	if _last_temple >= 0:
+		camera.fly_to(MapView.hex_center(state.map, _last_temple), 1.0, 0.6)  # a share of 1: keeps the zoom
 	_offer_tip("portal_ready", hud)
 
 
@@ -1348,6 +1356,10 @@ func _music() -> String:
 		return Sound.music_for(data.audio, state.game_over)
 	if _battle and _battle.battle:
 		return Sound.music_for(data.audio, "battle", str(_battle.battle.terrain["key"]))
+	# A fight announced and not yet begun (you may be healing or editing the squad first):
+	# the build-up, not the battle theme (playtest round 22).
+	if state.pending and state.pending.warns() and (_encounter or _flying_to_fight or _edit or _menu):
+		return Sound.music_for(data.audio, "battle_intro")
 	if _edit:
 		return Sound.music_for(data.audio, "army")
 	return Sound.music_for(data.audio, "day" if state.clock.is_day() else "night")

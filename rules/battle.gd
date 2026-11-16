@@ -500,6 +500,8 @@ func _attack(u: Unit, base: String, t: Unit, mult := 1.0, note := "") -> void:
 	var crit := roll_crit(u)
 	var dmg := expected_damage(u, t, base) * mult * (float(cfg["crit_multiplier"]) if crit else 1.0)
 	dmg *= 1.0 + rng.randf_range(-_spread(), _spread())
+	if ranged_only:  # a ranged attack on the map hits softer (playtest round 22: rules.json ranged_attack damage)
+		dmg *= float(data.rules["ranged_attack"].get("damage", 1.0))
 	var amount := maxi(1, roundi(dmg))
 	t.hp = maxi(0, t.hp - amount)
 	event.merge({"crit": crit, "damage": amount, "killed": not t.is_alive()}, true)

@@ -134,10 +134,23 @@ func _clock_event(event: String) -> void:
 ## A squad of freshly rolled units. `members` lists [class name, row] pairs;
 ## units that don't fit are skipped. Player squads are numbered from 1, others from 101.
 func add_squad(squad_name: String, at_hex: int, members: Array, side := "player") -> Squad:
-	var number := 1 + squads.filter(func(o: Squad): return o.side == side).size() + (0 if side == "player" else 100)
+	var number := 1 + squads.filter(func(o: Squad): return o.side == side).size() if side == "player" else fresh_id()
 	var s := _form(number, squad_name, at_hex, members, side)
 	squads.append(s)
 	return s
+
+
+## An id for a new enemy or neutral squad that no squad has, on the map or waiting to come
+## back (playtest round 22): ids were counted from the squads on the map, so after one left
+## the board a new Warband could share an id, and the two shared one token, which jumped
+## between them. Player squads keep their army cell numbers, under 100.
+func fresh_id() -> int:
+	var top := 100
+	for s in squads:
+		top = maxi(top, s.id)
+	for r in returning:
+		top = maxi(top, (r["squad"] as Squad).id)
+	return top + 1
 
 
 ## Map 1's starting army (SPEC §18): 6 Serf-line squads from Map1Setup fill the
@@ -490,7 +503,7 @@ func _form_warbands() -> void:
 		while members.size() < int(c["warband_size"]):
 			members.append(enemy_pool.pop_front())
 		_warbands += 1
-		var s := Squad.new(1 + squads.filter(func(o: Squad): return o.side == "enemy").size() + 100, "%s %d" % [data.enemy["names"]["field"], _warbands], map.enemy_base)
+		var s := Squad.new(fresh_id(), "%s %d" % [data.enemy["names"]["field"], _warbands], map.enemy_base)
 		s.side = "enemy"
 		s.base_slots = int(data.rules["single_map"]["base_slots"])
 		for u in members:
@@ -2345,8 +2358,7 @@ func place_neutrals() -> void:
 		var units := NeutralSquads.roll(data, lair["home"], lair["danger"], r, names)
 		if units.is_empty():
 			continue
-		var number := 1 + squads.filter(func(o: Squad): return o.side == "neutral").size() + 200
-		var s := Squad.new(number, units[0].unit_class, lair["hex"])
+		var s := Squad.new(fresh_id(), units[0].unit_class, lair["hex"])
 		s.side = "neutral"
 		s.role = "roamer"
 		s.lair_hex = lair["hex"]
@@ -2377,7 +2389,7 @@ func _place_guard(b: Dictionary, r: RandomNumberGenerator) -> void:
 	var units := NeutralSquads.roll(data, homes[r.randi() % homes.size()], danger, r, names)
 	if units.is_empty():
 		return
-	var s := Squad.new(1 + squads.filter(func(o: Squad): return o.side == "neutral").size() + 200, units[0].unit_class, b["hex"])
+	var s := Squad.new(fresh_id(), units[0].unit_class, b["hex"])
 	s.side = "neutral"
 	s.role = "guard"
 	s.lair_hex = b["hex"]
@@ -3336,13 +3348,9 @@ func skip_blocker() -> String:
 		return "The map is over."
 	if pending or not pending_recruit.is_empty() or not pending_rare.is_empty():
 		return "Something is waiting on you."
-	var mine := player_squads()
-	if mine.is_empty():
+	if player_squads().is_empty():
 		return "No squad of yours is on the map."
-	for s in mine:
-		if not s.is_moving():
-			return "%s is standing still: skip only while every squad is on the move." % s.name
-	return ""
+	return ""  # squads standing in towns no longer block it (round 22: it was nearly always grey)
 
 
 ## Runs up to `n` ticks, stopping as soon as something needs you (user, 2026-11-14): a
@@ -3355,7 +3363,7 @@ func skip_ticks(n: int) -> String:
 	var counts := [liberations.size(), losses.size(), notices.size()]
 	for i in n:
 		var minute := clock.minute_of_day()
-		var moving := player_squads()
+		var moving := player_squads().filter(func(s: Squad): return s.is_moving())
 		step()
 		if game_over != "":
 			return "The map is over."

@@ -11,6 +11,7 @@
   "victory_bed": {"file": "", "pool": "victory", "bus": "Music", "_note": "The end-of-map victory screen's piano phrases."},
   "army": {"file": "res://data/audio/music/army.wav", "bus": "Music"},
   "battle_plains": {"file": "res://data/audio/music/battle_plains.wav", "bus": "Music"},
+  "battle_intro": {"file": "res://data/audio/music/battle_intro.wav", "bus": "Music", "_note": "Draft 1 (tools/midi_draft.py battle_intro, playtest round 22): a battle is coming."},
   "battle_forest": {"file": "res://data/audio/music/battle_forest.wav", "bus": "Music"},
   "battle_mountain": {"file": "res://data/audio/music/battle_mountain.wav", "bus": "Music"},
   "battle_swamp": {"file": "res://data/audio/music/battle_swamp.wav", "bus": "Music"},
@@ -102,6 +103,7 @@
   "day": "map_day",
   "night": "map_night",
   "army": "army",
+  "battle_intro": "battle_intro",
   "battle": {"plains": "battle_plains", "forest": "battle_forest", "mountain": "battle_mountain", "snow": "battle_mountain", "frozen_lake": "battle_mountain", "swamp": "battle_swamp", "desert": "battle_swamp", "_default": "battle_plains"},
   "victory": "victory_bed",
   "defeat": "end_defeat"

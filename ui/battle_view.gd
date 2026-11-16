@@ -117,8 +117,11 @@ func setup(game_state: GameState, b: Battle, is_replay := false, wait_for_fight 
 	band.content_margin_top = 2
 	band.content_margin_bottom = 2
 	_ranged_tag.add_theme_stylebox_override("normal", band)
-	_ranged_tag.visible = false
 	_field.add_child(_ranged_tag)
+	# Shown from the moment the window opens, not when the fight starts (playtest round 22);
+	# the round events take it from there.
+	_round.text = "Round %d" % maxi(1, battle.round)
+	_ranged_tag.visible = battle.ranged_only
 	for side in 2:
 		for u in battle.sides[side].units:
 			_add_card(u, side)
@@ -399,11 +402,7 @@ func _card_tile(id: String, count: int) -> Control:
 	var tile := CardFace.make(state.data, id, count, play)
 	play.pressed.connect(func():
 		_close_picker()
-		_now(func():
-			var played := state.play_battle_card(battle, id)
-			if played:
-				Sound.event("card_" + id)  # the card's own sound (audio.json)
-			return played)
+		_now(func(): return state.play_battle_card(battle, id))
 		_update_cards())
 	return tile
 
@@ -452,11 +451,38 @@ func _look_at(u: Unit) -> void:
 		_peek.add_child(g)
 		g.setup(state.data, u.unit_class)
 		g.closed.connect(g.queue_free)
-	col.add_child(UiStyle.title_row(UiStyle.label(battle.sides[1].name, 20), _close_peek, "Close (Esc)",
+	var side := battle.side_of(u)
+	col.add_child(UiStyle.title_row(UiStyle.label(battle.sides[side].name, 20), _close_peek, "Close (Esc)",
 			[UiStyle.help(open_glossary, "The %s in the unit glossary" % u.unit_class)]))
-	var look := UnitPeek.make(state.data, u, Callable(), u == battle.sides[1].leader, 220.0)
+	var look := UnitPeek.make(state.data, u, Callable(), u == battle.sides[side].leader, 220.0)
 	look.size_flags_horizontal = SIZE_SHRINK_CENTER
 	col.add_child(look)
+	# Its buffs and debuffs, each with its icon and what it does (playtest round 22).
+	var info: Dictionary = state.data.battle["statuses"]
+	var ids := battle.status_ids(u)
+	if not ids.is_empty():
+		col.add_child(UiStyle.section("In this battle"))
+		for id in ids:
+			var row := HBoxContainer.new()
+			row.add_theme_constant_override("separation", 8)
+			row.tooltip_text = status_line(info, str(id))
+			var pic := TextureRect.new()
+			pic.texture = ItemIcons.status(str(id), 28)
+			pic.mouse_filter = MOUSE_FILTER_IGNORE
+			row.add_child(pic)
+			var words := UiStyle.label(status_line(info, str(id)), 16,
+					Color("#ff9a8a") if info.get(id, {}).get("harmful", false) else Color("#9fe0a0"))
+			words.autowrap_mode = TextServer.AUTOWRAP_WORD
+			words.custom_minimum_size.x = 360
+			words.mouse_filter = MOUSE_FILTER_IGNORE
+			row.add_child(words)
+			col.add_child(row)
+
+
+## A status as the player reads it: "Poisoned: loses 5% of max HP each turn."
+static func status_line(info: Dictionary, id: String) -> String:
+	var s: Dictionary = info.get(id, {})
+	return "%s: %s" % [s.get("name", id.capitalize()), s.get("text", "")] if s.has("text") else id.capitalize()
 
 
 func _close_peek() -> void:
@@ -643,6 +669,9 @@ func _play(e: Dictionary, animate: bool) -> float:
 			if animate:
 				var fade := beat * 2.0 / _speed_now()
 				var t := l.create_tween().set_parallel().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+				var card_id := str(e["card"])
+				# The card's own sound as it starts to grow and fade (playtest round 22).
+				t.tween_callback(func(): Sound.event("card_" + card_id)).set_delay(beat * 0.6 / _speed_now())
 				t.tween_property(l, "modulate:a", 0.0, fade).set_delay(beat * 0.6 / _speed_now())
 				t.tween_property(l, "scale", Vector2.ONE * float(state.data.cards["played_fade"]["scale"]), fade) 						.set_delay(beat * 0.6 / _speed_now())
 				t.chain().tween_callback(l.queue_free)
@@ -687,16 +716,18 @@ func _add_card(u: Unit, side: int) -> void:
 	c.subtitle = "" if u.name == u.unit_class else u.name
 	c.attack = "%s ×%d" % [kind, battle.attack_count(u)]
 	c.concealed = side == 1 and _conceal
+	c.status_info = state.data.battle["statuses"]
 	c.size = CARD
 	if battle.ranged_only and not battle.fires_at_range(u):  # sits a ranged battle out: faded (round 19)
 		c.modulate.a = 0.5
 		c.tooltip_text = "Doesn't fire in a ranged battle: only archers and casters act."
-	if side == 1:  # an enemy: click to look closer (round 14)
-		c.mouse_default_cursor_shape = CURSOR_POINTING_HAND
+	# Click any unit to look closer (round 14 for an enemy; round 22 yours too, for its statuses).
+	c.mouse_default_cursor_shape = CURSOR_POINTING_HAND
+	if c.tooltip_text == "":
 		c.tooltip_text = "Look closer"
-		c.gui_input.connect(func(ev: InputEvent):
-			if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
-				_look_at(u))
+	c.gui_input.connect(func(ev: InputEvent):
+		if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
+			_look_at(u))
 	_field.add_child(c)
 	_cards[u] = c
 
@@ -941,7 +972,16 @@ class Card extends Control:
 		set(v):
 			statuses = v
 			queue_redraw()
+	var status_info := {}  # battle.json statuses, for the icons' names on hover (round 22)
 	var _flash := Color(0, 0, 0, 0)
+
+	## Over a status icon: its name and what it does (playtest round 22); else the card's own tooltip.
+	func _get_tooltip(at: Vector2) -> String:
+		var x := 8.0 + ICON + 6.0
+		for i in statuses.size():
+			if Rect2(x + i * 23, 46, 20, 20).grow(1).has_point(at):
+				return BattleView.status_line(status_info, str(statuses[i]))
+		return tooltip_text
 
 	func flash(c: Color) -> void:
 		_flash = c

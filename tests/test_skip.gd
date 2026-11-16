@@ -28,15 +28,15 @@ func _march(st: GameState, col: int, to_col: int) -> Squad:
 	return s
 
 
-func test_only_while_every_squad_moves() -> void:
+func test_standing_squads_dont_block_it() -> void:
 	var st := _state()
 	check(st.skip_blocker() != "", "nothing on the map: no skip")
 	var a := _march(st, 5, 12)
 	check_eq(st.skip_blocker(), "", "one squad, on the move: skip")
 	var b := st.add_squad("Idle", _at(st.map, 8, 2), [["Knight", "front"]])
-	check(st.skip_blocker().contains(b.name), "another standing still: no skip, and it says which")
-	st.order_move(b, PackedInt32Array([_at(st.map, 9, 2)]))
-	check_eq(st.skip_blocker(), "", "both moving again")
+	check_eq(st.skip_blocker(), "", "another standing in place doesn't stop it (round 22)")
+	var why := st.skip_ticks(5000)
+	check(why.contains(a.name), "it runs until the one moving arrives, not stopped by %s" % b.name)
 
 
 func test_stops_when_a_squad_arrives() -> void:
