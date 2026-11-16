@@ -48,8 +48,8 @@ Wind magic,Battle,One-shot,,,,battle_wind; source data/audio/battle_src/wind.wav
 Heal (for now every support skill),Battle,One-shot,,,,battle_heal; source data/audio/battle_src/heal.wav,,Done (supplied 2026-11-14; prepared by tools/prepare_battle_sounds.py)
 Earth magic,Battle,One-shot,,,,battle_earth,,To come (the user); silent until then
 Lightning magic,Battle,One-shot,,,,battle_lightning,,To come (the user); silent until then
-Holy magic,Battle,One-shot,,,,battle_holy,,To come (the user); silent until then
-Dark magic,Battle,One-shot,,,,battle_dark,,To come (the user); silent until then
+Holy magic,Battle,One-shot,,,,battle_holy,,Done (the user's sound, 2026-11-16)
+Dark magic,Battle,One-shot,,,,battle_dark,,Done (the user's sound, 2026-11-16)
 Plain magic (no element),Battle,One-shot,,,,battle_magic,,To come (the user); silent until then
 A miss (whoosh),Battle,One-shot,,,,battle_miss,,To come (the user); silent until then
 A unit falling,Battle,One-shot,,,,battle_fall,,To come (the user); silent until then
