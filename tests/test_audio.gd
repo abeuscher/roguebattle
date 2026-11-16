@@ -72,8 +72,9 @@ func test_stingers_take_turns() -> void:
 	check_eq(float(d.audio["queue"]["max_wait"]), 2.0, "the wait limit is data")
 	for id in ["new_town", "new_tower", "new_temple"]:
 		check(d.audio["events"].has(id), "the %s voice line has its event" % id)
-		check(d.audio["cues"][id].get("wait", false), "%s waits out its building's riff, never dropped" % id)
-	check_eq(Sound.queue_slot(10.0, 17.35, INF), 17.35, "a waiting line plays when a 7 s riff ends")
+		check(d.audio["cues"][id].get("wait", false), "%s waits its turn, never dropped" % id)
+		check_eq(float(d.audio["cues"][id].get("next_at", 1.0)), 0.75, "%s comes first; the riff starts three quarters of the way through it (round 22)" % id)
+	check_eq(Sound.queue_slot(10.0, 17.35, INF), 17.35, "a waiting line plays when a 7 s sound ends")
 	check(not d.audio["events"].has("retaken") and not d.audio["cues"].has("give_it_back"), "no retake line (user, 2026-11-14)")
 
 

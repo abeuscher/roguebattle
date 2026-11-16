@@ -104,9 +104,9 @@ func _record() -> void:
 		var up: bool = node != null and is_instance_valid(node) and (not node is CanvasItem or node.is_visible_in_tree())
 		if up and not open.has(w):
 			open[w] = _now()
-			_add("open", w.trim_prefix("_") + _detail(w, node))
+			_add("open", w.trim_prefix("_") + _detail(w, node) + " @%d" % bm.state.clock.tick)
 		elif not up and open.has(w):
-			_add("close", w.trim_prefix("_"))
+			_add("close", w.trim_prefix("_") + " @%d" % bm.state.clock.tick)
 			open.erase(w)
 	var tip_up := is_instance_valid(bm._tip)
 	if tip_up and tip_at < 0:
@@ -135,7 +135,7 @@ func _record() -> void:
 		if Sound._it.music_cue != music:
 			music = Sound._it.music_cue
 			_add("music", music)
-	var b: String = bm.hud._banner_text if "_banner_text" in bm.hud else ""
+	var b: String = bm.hud.banner_text().get_slice("\n", bm.hud.banner_text().count("\n"))  # the newest line
 	if b != banner:
 		banner = b
 		if b != "":

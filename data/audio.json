@@ -2,7 +2,7 @@
  "_note": "Sound (SPEC §24, ROADMAP M5). cues: each sound's file (\"\" = none yet: it plays nothing), its bus, and an optional db offset (-6 is half as loud, -1.9 is 20% quieter). events: the game moments that play cues, each entry a cue id or {\"cue\", \"after\" seconds}. The cue list being made is data/audio-asset-list.csv; music comes from tools/midi_draft.py and tools/render_audio.py.",
  "buses": ["Music", "Effects", "Voice"],
  "duck": {"db": -9, "seconds": 2.0, "_note": "Music dips this much while a stinger or voice line plays, for about this long, then comes back."},
- "queue": {"max_wait": 2.0, "_note": "Cues that duck the music (stingers and voice lines) take turns: one starts when the last ends; one that would wait longer than max_wait seconds is dropped, unless its cue has \"wait\" (the New Town/Tower/Temple lines, which follow a 4-7 s riff). No cue plays over itself. Clicks and fireworks aren't queued."},
+ "queue": {"max_wait": 2.0, "_note": "Cues that duck the music (stingers and voice lines) take turns: one starts when the last ends; one that would wait longer than max_wait seconds is dropped, unless its cue has \"wait\". A cue with \"next_at\" lets the next start that share of the way through it (the New Town/Tower/Temple lines: the riff starts three quarters of the way in; user, playtest round 22). No cue plays over itself. Clicks and fireworks aren't queued."},
  "cues": {
   "map_day": {"file": "", "pool": "day", "bus": "Music", "_note": "Phrases from map_ambience's day pool, not one loop."},
   "map_night": {"file": "", "pool": "night", "bus": "Music"},
@@ -31,9 +31,9 @@
   "victory": {"file": "res://data/audio/lines/victory.wav", "bus": "Voice", "duck": true},
   "defeat": {"file": "res://data/audio/lines/defeat.wav", "bus": "Voice", "duck": true},
   "hidden_location": {"file": "res://data/audio/lines/hidden_item.wav", "bus": "Voice", "duck": true},
-  "new_town": {"file": "res://data/audio/lines/new_town.wav", "bus": "Voice", "duck": true, "wait": true, "_note": "\"New Town!\""},
-  "new_tower": {"file": "res://data/audio/lines/new_tower.wav", "bus": "Voice", "duck": true, "wait": true, "_note": "\"New Tower!\", with a thunderclap at the front (clipped on purpose, the user's call)"},
-  "new_temple": {"file": "res://data/audio/lines/new_temple.wav", "bus": "Voice", "duck": true, "wait": true, "_note": "\"New Temple!\""},
+  "new_town": {"file": "res://data/audio/lines/new_town.wav", "bus": "Voice", "duck": true, "wait": true, "next_at": 0.75, "_note": "\"New Town!\""},
+  "new_tower": {"file": "res://data/audio/lines/new_tower.wav", "bus": "Voice", "duck": true, "wait": true, "next_at": 0.75, "_note": "\"New Tower!\", with a thunderclap at the front (clipped on purpose, the user's call)"},
+  "new_temple": {"file": "res://data/audio/lines/new_temple.wav", "bus": "Voice", "duck": true, "wait": true, "next_at": 0.75, "_note": "\"New Temple!\""},
   "click": {"file": "res://data/audio/effects/click.wav", "bus": "Effects", "db": -10},
   "recruit_joined": {"file": "res://data/audio/stingers/recruit_joined.wav", "bus": "Effects", "duck": true, "_note": "A recruit attempt succeeds, or a rare recruit joins."},
   "firework": {"file": "res://data/audio/effects/firework.wav", "bus": "Effects", "db": -6.0, "_note": "One burst: a pop or crackle. Plays with each of the fireworks show's 5 bursts (0.35 s apart), separate from the building's riff."},
@@ -125,7 +125,7 @@
   "shot_pan": 0.7, "pan_steps": 5, "zoom_db": [-6.0, 2.0], "_zoom_db": "Playtest round 20 (user): the ambience (bed and one-shots, through its own Ambience bus) is zoom_db[0] dB zoomed all the way out and zoom_db[1] zoomed all the way in, between them in step with the zoom (on a log scale, as the wheel zooms).", "_pan_steps": "One-shots go through one of this many panned buses at random, spread evenly from -shot_pan (left) to +shot_pan (right); the bed stays in the middle."
  },
  "events": {
-  "_note": "new_<type>: after the riff, the first time you take that building (its cue waits out the riff however long: \"wait\"). taken_<type>: you take a town, tower or temple (a tower plays nothing: just its \"New Tower!\" line, user 2026-11-14, the riff was distracting) (the enemy taking a neutral one plays nothing); building_lost: the enemy takes one of yours; firework_burst: each burst of the fireworks over a liberated building.",
+  "_note": "new_<type>: the first time you take that building, before the riff, which starts three quarters of the way through the line (its \"next_at\"). taken_<type>: you take a town, tower or temple (a tower plays nothing: just its \"New Tower!\" line, user 2026-11-14, the riff was distracting) (the enemy taking a neutral one plays nothing); building_lost: the enemy takes one of yours; firework_burst: each burst of the fireworks over a liberated building.",
   "click": ["click"],
   "battle_fight": ["fight"],
   "all_better": ["all_better"],

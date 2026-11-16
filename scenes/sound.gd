@@ -235,6 +235,9 @@ func _next_turn() -> void:
 		left += (k[2] as AudioStream).get_length()
 	_queue_free_at = Time.get_ticks_msec() / 1000.0 + left  # what's queued, from now
 	_start(t[0], t[1], t[2], _next_turn)
+	var lead := float(t[1].get("next_at", 1.0))  # the next may start before this one ends (a share of it)
+	if lead < 1.0:
+		_queue_free_at -= (t[2] as AudioStream).get_length() * (1.0 - lead)
 
 
 ## When a queued cue asked for at `now` starts: at once if the queue is free, else when
@@ -251,11 +254,16 @@ func _start(cue: String, c: Dictionary, stream: AudioStream, then := Callable())
 	p.bus = str(c.get("bus", "Master"))
 	p.volume_db = float(c.get("db", 0.0))
 	add_child(p)
+	var lead := float(c.get("next_at", 1.0))
+	var next := then
+	if lead < 1.0 and then.is_valid():  # the next in turn starts partway through (playtest round 22)
+		next = Callable()
+		get_tree().create_timer(stream.get_length() * lead).timeout.connect(then)
 	p.finished.connect(func():
 		_sounding.erase(cue)
 		p.queue_free()
-		if then.is_valid():
-			then.call())
+		if next.is_valid():
+			next.call())
 	p.play()
 	if c.get("duck", false):
 		_duck()

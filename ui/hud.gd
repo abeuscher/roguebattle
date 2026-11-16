@@ -49,14 +49,10 @@ var _drawer_open := false
 var _help := Label.new()
 var _info := Button.new()  # shows or hides _help
 var _pause_mark := PanelContainer.new()  # a large pause sign at the top left while time is stopped (playtest)
-var _banner := PanelContainer.new()  # one line of labels, with place names as links
-var _banner_line := HBoxContainer.new()
-var _banner_text := ""
-var _banner_at := 0  # msec the banner last changed
-var _banner_timed := false  # it goes by itself (news), not one that stays (a prompt)
-var _banner_links := {}  # its place names -> hex
-var _banner_fresh_ms := 2000  # news within this long of the last joins it (rules.json event_beat banner_fresh; set in refresh)
-var _flash_until := 0
+var _banner := PanelContainer.new()  # lines of labels, with place names as links
+var _banner_box := VBoxContainer.new()
+var _banner_lines: Array = []  # [text, its row, msec it goes (0: it stays)], oldest first
+var _banner_depth := 3  # rules.json banner lines (set in refresh)
 var _toolbar := HBoxContainer.new()
 var _cards_button: Button
 var _deploy_button: Button  # off when the squad cap is reached or no squad waits at base
@@ -101,9 +97,9 @@ func _ready() -> void:
 	add_child(_pause_mark)
 	_banner.add_theme_stylebox_override("panel", UiStyle.box(Color(0.12, 0.1, 0.04, 0.92), 10))
 	_banner.mouse_filter = MOUSE_FILTER_IGNORE
-	_banner_line.add_theme_constant_override("separation", 0)
-	_banner_line.mouse_filter = MOUSE_FILTER_IGNORE
-	_banner.add_child(_banner_line)
+	_banner_box.add_theme_constant_override("separation", 2)
+	_banner_box.mouse_filter = MOUSE_FILTER_IGNORE
+	_banner.add_child(_banner_box)
 	_banner.visible = false
 	add_child(_banner)
 	_build_toolbar()
@@ -339,25 +335,34 @@ func show_banner(text: String, seconds := 0.0) -> void:
 
 ## A banner whose place names (`links`: name -> hex) are links: clicking one sends
 ## place_pressed, and the map centres on it (playtest round 9).
+## Timed news stacks (user, playtest round 22): each message is its own line, the newest at
+## the bottom, up to rules.json banner lines deep; a fourth pushes the oldest off, and each
+## goes when its own time is up. A message that stays (a prompt, `seconds` 0) replaces them
+## all, and any new message replaces a prompt; "" clears the banner.
 func show_banner_links(text: String, seconds: float, links: Dictionary) -> void:
-	# News that comes while the last timed banner is still fresh joins it instead of
-	# replacing it before it can be read (round 22's watch runs: half the banners went in
-	# under 2 s); the latest three at most.
-	var now := Time.get_ticks_msec()
-	if text != "" and seconds > 0.0 and _banner_timed and _banner_text != "" and now - _banner_at < _banner_fresh_ms:
-		var parts := Array(_banner_text.split("  ·  ")) + Array(text.split("  ·  "))
-		text = "  ·  ".join(parts.slice(maxi(0, parts.size() - 3)))
-		var merged := _banner_links.duplicate()
-		merged.merge(links, true)
-		links = merged
-		seconds = maxf(seconds, (_flash_until - now) / 1000.0)
-	_banner_at = now
-	_banner_timed = seconds > 0.0
-	_banner_links = links
-	_banner_text = text
-	for c in _banner_line.get_children():
-		_banner_line.remove_child(c)
-		c.queue_free()
+	if text == "" or seconds <= 0.0:
+		for line in _banner_lines:
+			line[1].queue_free()
+		_banner_lines.clear()
+	else:
+		for line in _banner_lines.filter(func(l: Array): return int(l[2]) == 0):
+			line[1].queue_free()
+			_banner_lines.erase(line)
+	if text != "":
+		var row := _banner_row(text, links)
+		_banner_box.add_child(row)
+		_banner_lines.append([text, row, Time.get_ticks_msec() + int(seconds * 1000) if seconds > 0.0 else 0])
+		while _banner_lines.size() > _banner_depth:
+			_banner_lines.pop_front()[1].queue_free()
+	_place_banner()
+
+
+## One line of the banner: plain labels, with the place names as links.
+func _banner_row(text: String, links: Dictionary) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 0)
+	row.mouse_filter = MOUSE_FILTER_IGNORE
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	var rest := text
 	while rest != "":
 		var at := rest.length()
@@ -370,7 +375,7 @@ func show_banner_links(text: String, seconds: float, links: Dictionary) -> void:
 		if at > 0:
 			var plain := UiStyle.label(rest.left(at), 18, UiStyle.ACCENT)
 			plain.mouse_filter = MOUSE_FILTER_IGNORE
-			_banner_line.add_child(plain)
+			row.add_child(plain)
 		if found == "":
 			break
 		var link := LinkButton.new()
@@ -385,16 +390,20 @@ func show_banner_links(text: String, seconds: float, links: Dictionary) -> void:
 		link.tooltip_text = "Show %s on the map" % found
 		var hex: int = links[found]
 		link.pressed.connect(func(): place_pressed.emit(hex))
-		_banner_line.add_child(link)
+		row.add_child(link)
 		rest = rest.substr(at + found.length())
-	_banner.visible = text != ""
+	return row
+
+
+func _place_banner() -> void:
+	_banner.visible = not _banner_lines.is_empty()
 	_banner.reset_size()
 	_banner.position = Vector2((size.x - _banner.size.x) / 2.0, 16)
-	_flash_until = Time.get_ticks_msec() + int(seconds * 1000) if seconds > 0.0 else 0
 
 
+## What the banner says, a line per message ("" when it's empty).
 func banner_text() -> String:
-	return _banner_text if _banner.visible else ""
+	return "\n".join(_banner_lines.map(func(l: Array): return l[0]))
 
 
 func set_help(text: String) -> void:
@@ -403,7 +412,7 @@ func set_help(text: String) -> void:
 
 
 func refresh(state: GameState) -> void:
-	_banner_fresh_ms = roundi(float(state.data.rules["event_beat"]["banner_fresh"]) * 1000.0)
+	_banner_depth = int(state.data.rules["banner"]["lines"])
 	var tint := DAY if state.clock.is_day() else NIGHT
 	_clock.text = state.clock.time_text()
 	var phase := GameClock.phase(state.clock.minute_of_day())
@@ -469,9 +478,13 @@ func refresh(state: GameState) -> void:
 	var why: String = state.deploy_menu_blocker()
 	_deploy_button.disabled = why != ""
 	_deploy_button.tooltip_text = why
-	if _flash_until > 0 and Time.get_ticks_msec() > _flash_until:
-		_flash_until = 0
-		_banner.visible = false
+	var now := Time.get_ticks_msec()
+	var gone := _banner_lines.filter(func(l: Array): return int(l[2]) > 0 and now > int(l[2]))
+	for line in gone:
+		line[1].queue_free()
+		_banner_lines.erase(line)
+	if not gone.is_empty():
+		_place_banner()
 
 
 ## Gold top right; the drawer middle left; the minimap bottom right with the clock under

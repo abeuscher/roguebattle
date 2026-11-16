@@ -46,6 +46,8 @@ var _tip: TipPopup  # the player tip showing, if any (one at a time)
 var _tips_waiting := {}  # tip id -> true: due, waiting for the tip showing to be closed (round 21)
 var _was_free := false  # the map was free last frame (for the beat after a window closes)
 var _calm_at := 0  # msec: the world's next window or map tip waits till then (rules.json event_beat)
+var _queue_hold := false  # a window closed with more of the world's waiting: time stays stopped (_hold_clock)
+var _hold_was_free := true
 var _music_want := ""  # the music the map wants now, and since when (msec), for _settle_music
 var _music_since := 0
 var _last_temple := -1  # hex of the last temple you took, for the portal tip's camera (round 22)
@@ -230,9 +232,8 @@ func _process(delta: float) -> void:
 	_portal_tip()
 	_drawer_tip()
 	if not state.notices.is_empty():
-		var news := "  ·  ".join(state.notices)
-		hud.show_banner_links(news, 4.0, _place_links(news))
-		for n in state.notices:
+		for n in state.notices:  # a line each: the banner stacks them (round 22)
+			hud.show_banner_links(n, 4.0, _place_links(n))
 			_note(n)
 		state.notices.clear()
 	if not state.daily_ledger.is_empty() and _calm():
@@ -923,12 +924,15 @@ func _fly_to_ranged_attack() -> void:
 
 ## A window about a place: the camera glides there (keeping its zoom) with the window
 ## hidden until it lands, so you see where you've been taken (round 22's watch runs: it
-## cut across the map at once, every few seconds with many squads out).
+## cut across the map at once, every few seconds with many squads out); then the window
+## springs open from the place, as a battle does (user, round 22).
 func _glide_to_place(hex: int, popup: Control) -> void:
+	var at := MapView.hex_center(state.map, hex)
 	popup.hide()
-	camera.fly_to(MapView.hex_center(state.map, hex), 1.0, float(data.rules["event_beat"]["glide_seconds"])).finished.connect(func():
+	camera.fly_to(at, 1.0, float(data.rules["event_beat"]["glide_seconds"])).finished.connect(func():
 		if is_instance_valid(popup):
-			popup.show())
+			popup.show()
+			_spring_open_at(popup, at))
 
 
 ## Glides the camera to two squads that just met (zooming in, never out), with the
@@ -939,7 +943,8 @@ func _fly_to_meeting(a: Squad, b: Squad, popup: Control) -> void:
 	popup.hide()
 	camera.fly_to((at[0] + at[1]) / 2.0, float(cam["map_share"]), float(cam["seconds"])).finished.connect(func():
 		if is_instance_valid(popup):
-			popup.show())
+			popup.show()
+			_spring_open_at(popup, (at[0] + at[1]) / 2.0))
 
 
 func _open_battle() -> void:
@@ -1004,9 +1009,29 @@ func _skip_frame() -> void:
 ## map to full size, overshooting a little, so you see where the battle is.
 func _spring_open(view: Control, a: Squad, b: Squad) -> void:
 	var at := [a, b].map(func(s: Squad): return _tokens[s.id].position if _tokens.has(s.id) else MapView.hex_center(state.map, s.hex))
-	view.pivot_offset = get_viewport().get_canvas_transform() * ((at[0] + at[1]) / 2.0)
+	_spring_open_at(view, (at[0] + at[1]) / 2.0)
+
+
+## A window grows from `at` (a point on the map) to full size, overshooting a little.
+func _spring_open_at(view: Control, at: Vector2) -> void:
+	view.set_meta("from", at)
+	view.pivot_offset = get_viewport().get_canvas_transform() * at
 	view.scale = Vector2(0.001, 0.001)
 	create_tween().tween_property(view, "scale", Vector2.ONE, SPRING_SECONDS).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+## The other way (user, round 22): a window about a place shrinks back into it, taking no
+## more input, before `then` (which frees it), so the camera moves on only once it's gone.
+func _spring_close(view: Control, then: Callable) -> void:
+	if not is_instance_valid(view) or view.has_meta("closing"):
+		return
+	view.set_meta("closing", true)
+	view.process_mode = Node.PROCESS_MODE_DISABLED
+	if view.has_meta("from"):
+		view.pivot_offset = get_viewport().get_canvas_transform() * Vector2(view.get_meta("from"))
+	var t := create_tween()
+	t.tween_property(view, "scale", Vector2(0.001, 0.001), SPRING_SECONDS * 0.8).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+	t.tween_callback(then)
 
 
 func _close_battle(text: String) -> void:
@@ -1042,7 +1067,7 @@ func _offer_tip(moment: String, host: Control) -> void:
 	await get_tree().process_frame
 	# Wait for the host to show and any tip up to be closed (round 21: a new tip used to
 	# replace it). If the host goes first, the tip isn't seen: it comes at its next moment.
-	while is_instance_valid(host) and (not host.is_visible_in_tree() or _tips_on(host) or (host == hud and _tip_up())):
+	while is_instance_valid(host) and (not host.is_visible_in_tree() or host.scale != Vector2.ONE or _tips_on(host) or (host == hud and _tip_up())):
 		await get_tree().process_frame
 	_tips_waiting.erase(id)
 	if not is_instance_valid(host) or PlayerTips.due(data, options, moment, _tip_mode(), _tip_facts()) != id:
@@ -1215,16 +1240,18 @@ func _open_rare_popup() -> void:
 		if take:
 			Sound.event("recruit_joined")
 		state.resolve_rare(take)
-		_rare_popup.queue_free()
-		_rare_popup = null
-		_sync_tokens())
+		_spring_close(_rare_popup, func():
+			_rare_popup.queue_free()
+			_rare_popup = null
+			_sync_tokens()))
 
 
 func _close_recruit_popup() -> void:
-	_recruit_popup.queue_free()
-	_recruit_popup = null
-	if state.pending and _battle == null:
-		_open_battle()
+	_spring_close(_recruit_popup, func():
+		_recruit_popup.queue_free()
+		_recruit_popup = null
+		if state.pending and _battle == null:
+			_open_battle())
 
 
 ## Shows the next unshown liberation (§6.5), if any.
@@ -1236,9 +1263,12 @@ func _pump_liberations() -> void:
 	var entry: Dictionary = state.liberations.pop_front()
 	if entry["building"]["type"] == "temple":
 		_last_temple = entry["building"]["hex"]
-	Sound.event("taken_" + str(entry["building"]["type"]))  # the riff goes with the window (or its banner), one at a time
-	if entry.get("taken", "") == "new":  # then "New Town!" (or Tower, Temple), after the riff
+	# "New Town!" (or Tower, Temple) first, the important part, and the riff three quarters
+	# of the way through it (audio.json the line's "next_at"; user, round 22: it came after
+	# a 4-7 s riff, often once its window had closed); the riff goes with the window.
+	if entry.get("taken", "") == "new":
 		Sound.event("new_" + str(entry["building"]["type"]))
+	Sound.event("taken_" + str(entry["building"]["type"]))
 	var offering: bool = entry.get("offer", false) and not state.card_offer.is_empty()
 	if bool(options.get("show_liberations", true)) or offering:
 		_open_liberation_popup(entry)
@@ -1266,8 +1296,9 @@ func _pump_losses() -> void:
 	_lost_popup.setup(state, entry)
 	_glide_to_place(entry["building"]["hex"], _lost_popup)
 	_lost_popup.closed.connect(func():
-		_lost_popup.queue_free()
-		_lost_popup = null)
+		_spring_close(_lost_popup, func():
+			_lost_popup.queue_free()
+			_lost_popup = null))
 
 
 ## A short fireworks show over a hex (a liberated building).
@@ -1351,14 +1382,11 @@ func _open_liberation_popup(entry: Dictionary) -> void:
 	_offer_tip(str(entry["building"]["type"]) + "_liberated", _liberation_popup)
 	var hex: int = entry["building"]["hex"]
 	_liberation_popup.closed.connect(func():
-		_close_liberation_popup()
-		_fireworks(hex)
-		_liberation_beat())
-
-
-func _close_liberation_popup() -> void:
-	_liberation_popup.queue_free()
-	_liberation_popup = null
+		_spring_close(_liberation_popup, func():
+			_liberation_popup.queue_free()
+			_liberation_popup = null
+			_fireworks(hex)
+			_liberation_beat()))
 
 
 ## The music for what's on screen (SPEC §24): the end screen's, the battle's (by its
@@ -1515,8 +1543,18 @@ func _world_waiting() -> bool:
 
 ## Time stops whenever anything but the bare map has the player's attention. Worked out
 ## from what's open, each frame, rather than paired hold and release calls that can drift.
+## When a window closes with more the world brought still waiting (a queue: liberations
+## after a battle, say), time stays stopped until the last of them has been seen
+## (user, playtest round 22), so the camera goes from one to the next with nothing moving.
 func _hold_clock() -> void:
-	if _free() == _holding:
+	var free := _free()
+	var waiting := _world_waiting()
+	if free and not _hold_was_free:
+		_queue_hold = waiting
+	_hold_was_free = free
+	if not waiting:
+		_queue_hold = false
+	if (free and not _queue_hold) == _holding:
 		_holding = not _holding
 		if _holding:
 			state.clock.hold()
