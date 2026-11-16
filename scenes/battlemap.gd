@@ -43,6 +43,9 @@ var _main_menu: MainMenu
 var _battle: BattleView
 var _encounter: EncounterPopup
 var _tip: TipPopup  # the player tip showing, if any (one at a time)
+var _tips_waiting := {}  # tip id -> true: due, waiting for the tip showing to be closed (round 21)
+var _was_free := false  # the map was free last frame (for the beat after a window closes)
+var _calm_at := 0  # msec: the world's next window or map tip waits till then (rules.json event_beat)
 var _tip_hex := -1  # the map hex it points at, for a tip anchored on the map; else -1
 var _next_liberation := 0  # msec before which the next queued liberation waits (a beat between two)
 var _portal_tip_asked := false  # the Portal tip has been offered this session
@@ -196,21 +199,26 @@ func _process(delta: float) -> void:
 			state.step()
 			if state.pending or not state.pending_recruit.is_empty() or not state.pending_rare.is_empty() or state.game_over != "":
 				break
-	# What the world brings up opens only on the free map, one at a time; until then it waits.
-	if state.pending and _free() and not (_set_aside == state.pending and state.clock.paused):
+	# What the world brings up opens only on the free map, one at a time, a beat after the
+	# last window closed and with no tip up (round 21); until then it waits.
+	var free := _free()
+	if free and not _was_free:
+		_calm_at = Time.get_ticks_msec() + roundi(float(data.rules["event_beat"]["seconds"]) * 1000.0)
+	_was_free = free
+	if state.pending and _calm() and not (_set_aside == state.pending and state.clock.paused):
 		if not state.pending.warns():  # a ranged attack you ordered
 			_fly_to_ranged_attack()
 		elif _announced == state.pending:
 			_open_battle()
 		else:
 			_open_encounter()
-	if not state.pending_recruit.is_empty() and _free():
+	if not state.pending_recruit.is_empty() and _calm():
 		_open_recruit_popup()
-	if not state.pending_rare.is_empty() and _free():
+	if not state.pending_rare.is_empty() and _calm():
 		_open_rare_popup()
 	_pump_liberations()
 	_pump_losses()
-	if not state.card_offer.is_empty() and _free():
+	if not state.card_offer.is_empty() and _calm():
 		_open_cards(true)
 	if state.game_over != "" and _free():
 		_open_end_screen()
@@ -224,7 +232,7 @@ func _process(delta: float) -> void:
 		for n in state.notices:
 			_note(n)
 		state.notices.clear()
-	if not state.daily_ledger.is_empty() and _free():
+	if not state.daily_ledger.is_empty() and _calm():
 		_note(state.noon_report)
 		Sound.event("noon_ledger")  # the user's sound (perhaps a cash register); silent until the file is in
 		if bool(options.get("show_daily_ledger", true)):
@@ -1013,13 +1021,17 @@ func _open_edit(cell := -1) -> void:
 ## dismissed it never shows again.
 func _offer_tip(moment: String, host: Control) -> void:
 	var id := PlayerTips.due(data, options, moment, _tip_mode(), _tip_facts())
-	if id == "":
+	if id == "" or _tips_waiting.has(id) or (is_instance_valid(_tip) and _tip.get_meta("id", "") == id):
 		return
+	_tips_waiting[id] = true
 	await get_tree().process_frame  # let the host lay itself out, so the anchor's rect is real
 	await get_tree().process_frame
-	while is_instance_valid(host) and not host.is_visible_in_tree():
+	# Wait for the host to show and any tip up to be closed (round 21: a new tip used to
+	# replace it). If the host goes first, the tip isn't seen: it comes at its next moment.
+	while is_instance_valid(host) and (not host.is_visible_in_tree() or _tips_on(host) or (host == hud and _tip_up())):
 		await get_tree().process_frame
-	if not is_instance_valid(host):
+	_tips_waiting.erase(id)
+	if not is_instance_valid(host) or PlayerTips.due(data, options, moment, _tip_mode(), _tip_facts()) != id:
 		return
 	var t: Dictionary = data.tips["tips"][id]
 	var town := _garrison_town()
@@ -1032,9 +1044,9 @@ func _offer_tip(moment: String, host: Control) -> void:
 		at = _hex_rect(hex)
 		if not get_viewport().get_visible_rect().encloses(at):
 			return  # off screen (the map was moved): left for the next time the map opens
-	if is_instance_valid(_tip):
-		_tip.queue_free()  # a newer tip replaces it (it counts as seen)
 	var tip := TipPopup.new()
+	tip.set_meta("id", id)
+	tip.add_to_group("player_tips")
 	_tip = tip
 	_tip_hex = hex
 	host.add_child(tip)
@@ -1203,7 +1215,7 @@ func _close_recruit_popup() -> void:
 
 ## Shows the next unshown liberation (§6.5), if any.
 func _pump_liberations() -> void:
-	if state.liberations.is_empty() or not _free():
+	if state.liberations.is_empty() or not _calm():
 		return
 	if Time.get_ticks_msec() < _next_liberation or Sound.quiet_in() > 0.0:
 		return  # a beat after the last one, its sound finished, so each plays with its own window (round 18)
@@ -1229,7 +1241,7 @@ func _liberation_beat() -> void:
 
 ## A building of yours the enemy retook: a modal over the place (playtest round 9).
 func _pump_losses() -> void:
-	if state.losses.is_empty() or not _free():
+	if state.losses.is_empty() or not _calm():
 		return
 	var entry: Dictionary = state.losses.pop_front()
 	Sound.event("building_lost")
@@ -1263,7 +1275,7 @@ func _open_ledger(entry: Dictionary) -> void:
 ## The home base tip (round 17): once time runs, the first moment the Player Base is on
 ## screen with nothing else open or showing. Asked once a session.
 func _base_tip() -> void:
-	if _base_tip_asked or _awaiting_start or state.clock.paused or is_instance_valid(_tip) or not _free():
+	if _base_tip_asked or _awaiting_start or state.clock.paused or not _calm() or _world_waiting():
 		return
 	if not get_viewport().get_visible_rect().encloses(_hex_rect(state.map.player_base)):
 		return
@@ -1273,7 +1285,7 @@ func _base_tip() -> void:
 
 ## The Portal tip (round 19): the first time you hold two temples at once, once the map is free.
 func _portal_tip() -> void:
-	if _portal_tip_asked or is_instance_valid(_tip) or not _free() or state.temples_held() < 2:
+	if _portal_tip_asked or not _calm() or _world_waiting() or state.temples_held() < 2:
 		return
 	_portal_tip_asked = true
 	_offer_tip("portal_ready", hud)
@@ -1282,7 +1294,7 @@ func _portal_tip() -> void:
 ## The squad list tip (round 21): the first time a squad of yours stops somewhere that
 ## isn't a building to liberate, once the map is free.
 func _drawer_tip() -> void:
-	if not state.stopped_in_open or is_instance_valid(_tip) or not _free():
+	if not state.stopped_in_open or not _calm() or _world_waiting():
 		return
 	state.stopped_in_open = false
 	_offer_tip("squad_stopped", hud)
@@ -1438,6 +1450,30 @@ func _can_open() -> bool:
 ## whether the player asked for it or the world brought it (a fight, a liberation, a card).
 func _free() -> bool:
 	return _can_open() and _selected == null
+
+
+## The free map, a beat after the last window closed, with no player tip up (round 21):
+## only then does the world open its next window, so two at once come one after the other
+## instead of bouncing the camera between them.
+func _calm() -> bool:
+	return _free() and Time.get_ticks_msec() >= _calm_at and not _tip_up()
+
+
+## Whether any player tip is showing. A window's tip doesn't wait behind one on the map
+## (the window covers it); a map tip waits for any (round 21).
+func _tip_up() -> bool:
+	return get_tree().get_nodes_in_group("player_tips").any(func(t: Node): return not t.is_queued_for_deletion())
+
+
+func _tips_on(host: Node) -> bool:
+	return get_tree().get_nodes_in_group("player_tips").any(func(t: Node): return t.get_parent() == host and not t.is_queued_for_deletion())
+
+
+## Something the world brought is waiting for its window: a map tip waits behind it.
+func _world_waiting() -> bool:
+	return state.pending != null or not state.pending_recruit.is_empty() or not state.pending_rare.is_empty() \
+			or not state.liberations.is_empty() or not state.losses.is_empty() or not state.card_offer.is_empty() \
+			or not state.daily_ledger.is_empty() or state.game_over != ""
 
 
 ## Time stops whenever anything but the bare map has the player's attention. Worked out

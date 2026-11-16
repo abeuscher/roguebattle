@@ -342,7 +342,7 @@ The open questions were settled with the user on 2026-11-15 (row 10's display of
 | 4 | **Heal greyed when there's nothing to do** (away from the Player Base and temples, with no supply that helps), saying why | §14 | Test | Done (session 105); standing on the Player Base now offers healing for gold too |
 | 5 | **A victory screen to pause on:** the run's stats, a gold reward (a day's income and more for places held), the user's video (plays, then loops) | §4, §6.8 | Test; screenshot | Done (session 105) |
 | 6 | **Squad list tip** the first time a squad stops somewhere that isn't a building to liberate | §19.4 | Test of the trigger | Done (session 105) |
-| 7 | **Tips that collide** (a liberation and a first neutral band at once) | §19.4 | | To discuss: a proposal is with the user |
+| 7 | **Tips that collide** (a liberation and a first neutral band at once) | §19.4 | Scripted run of that case | Done (session 105): the world's windows wait a beat after the last one and for any tip to be closed; tips wait their turn instead of replacing each other |
 | 8 | **Version and stamp on the title screen:** "Working copy", 0.<session>, the time | §4 | Test | Done (session 105): `tools/stamp_version.py` writes `data/version.json` |
 | 9 | **The tech tree's place** in single map and campaign play, and its balance | §14 | | To discuss before any work |
 | 10 | **Leaderless squads only head home,** can't take buildings, step round the other side's squads only if it's not far out of the way | §11.3 | Tests | Done (session 105): the enemy's went to its nearest town and either side's could take a building it stopped on; both fixed |
