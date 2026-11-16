@@ -392,6 +392,7 @@ func refresh(state: GameState) -> void:
 	_phase.tooltip_text = phase.capitalize()
 	_phase.modulate = tint
 	_clock_panel.position.x = size.x - _clock_panel.size.x - 16  # it grows with its text: keep its right edge put
+	minimap.position.x = _clock_panel.position.x + (_clock_panel.size.x - minimap.size.x) / 2.0  # centred over the bar
 	_clock.add_theme_color_override("font_color", tint)
 	_calendar.modulate = tint
 	if _speed_pick.item_count == 0:
@@ -483,9 +484,9 @@ func place() -> void:
 	_drawer.position = Vector2(0, (size.y - _drawer.size.y) / 2.0)
 	_clock_panel.custom_minimum_size.x = minimap.size.x
 	_clock_panel.reset_size()
-	# Right-aligned with the minimap: if the row needs more than its width, the extra goes left.
+	# The bar at the right margin; the minimap centred over it (user, 2026-11-15).
 	_clock_panel.position = Vector2(size.x - _clock_panel.size.x - 16, size.y - _clock_panel.size.y - BOTTOM)
-	minimap.position = Vector2(size.x - minimap.size.x - 16, _clock_panel.position.y - minimap.size.y - 6)
+	minimap.position = Vector2(_clock_panel.position.x + (_clock_panel.size.x - minimap.size.x) / 2.0, _clock_panel.position.y - minimap.size.y - 6)
 	_toolbar.reset_size()
 	_toolbar.position = Vector2((size.x - _toolbar.size.x) / 2.0, size.y - _toolbar.size.y - BOTTOM)
 	_info.reset_size()
