@@ -46,6 +46,8 @@ var _tip: TipPopup  # the player tip showing, if any (one at a time)
 var _tips_waiting := {}  # tip id -> true: due, waiting for the tip showing to be closed (round 21)
 var _was_free := false  # the map was free last frame (for the beat after a window closes)
 var _calm_at := 0  # msec: the world's next window or map tip waits till then (rules.json event_beat)
+var _music_want := ""  # the music the map wants now, and since when (msec), for _settle_music
+var _music_since := 0
 var _last_temple := -1  # hex of the last temple you took, for the portal tip's camera (round 22)
 var _tip_hex := -1  # the map hex it points at, for a tip anchored on the map; else -1
 var _next_liberation := 0  # msec before which the next queued liberation waits (a beat between two)
@@ -242,7 +244,7 @@ func _process(delta: float) -> void:
 			hud.show_banner(state.noon_report, 5.0)
 		state.daily_ledger = {}
 	_prompt_start()
-	Sound.music(_music())
+	_settle_music()
 	Sound.ambience_zoom(camera.zoom_share())  # louder close up (round 20)
 	if _tokens.size() != state.squads.size():  # a squad went into the base, or left the map
 		_sync_tokens()
@@ -919,6 +921,16 @@ func _fly_to_ranged_attack() -> void:
 			_open_battle())
 
 
+## A window about a place: the camera glides there (keeping its zoom) with the window
+## hidden until it lands, so you see where you've been taken (round 22's watch runs: it
+## cut across the map at once, every few seconds with many squads out).
+func _glide_to_place(hex: int, popup: Control) -> void:
+	popup.hide()
+	camera.fly_to(MapView.hex_center(state.map, hex), 1.0, float(data.rules["event_beat"]["glide_seconds"])).finished.connect(func():
+		if is_instance_valid(popup):
+			popup.show())
+
+
 ## Glides the camera to two squads that just met (zooming in, never out), with the
 ## popup hidden until it lands.
 func _fly_to_meeting(a: Squad, b: Squad, popup: Control) -> void:
@@ -1195,10 +1207,10 @@ func _open_recruit_popup() -> void:
 
 ## A rare recruit asks to join (round 10): the map centres on the site; Recruit or Leave.
 func _open_rare_popup() -> void:
-	camera.center_on(MapView.hex_center(state.map, state.pending_rare["building"]["hex"]))
 	_rare_popup = RareRecruitPopup.new()
 	_ui.add_child(_rare_popup)
 	_rare_popup.setup(state)
+	_glide_to_place(state.pending_rare["building"]["hex"], _rare_popup)
 	_rare_popup.answered.connect(func(take: bool):
 		if take:
 			Sound.event("recruit_joined")
@@ -1249,10 +1261,10 @@ func _pump_losses() -> void:
 		return
 	var entry: Dictionary = state.losses.pop_front()
 	Sound.event("building_lost")
-	camera.center_on(MapView.hex_center(state.map, entry["building"]["hex"]))
 	_lost_popup = TownLostPopup.new()
 	_ui.add_child(_lost_popup)
 	_lost_popup.setup(state, entry)
+	_glide_to_place(entry["building"]["hex"], _lost_popup)
 	_lost_popup.closed.connect(func():
 		_lost_popup.queue_free()
 		_lost_popup = null)
@@ -1332,10 +1344,10 @@ func _prompt_start() -> void:
 
 
 func _open_liberation_popup(entry: Dictionary) -> void:
-	camera.center_on(MapView.hex_center(state.map, entry["building"]["hex"]))
 	_liberation_popup = LiberationPopup.new()
 	_ui.add_child(_liberation_popup)
 	_liberation_popup.setup(state, entry["building"], entry["card"], options, entry.get("recruits", []), entry.get("offer", false), int(entry.get("times", 1)))
+	_glide_to_place(entry["building"]["hex"], _liberation_popup)
 	_offer_tip(str(entry["building"]["type"]) + "_liberated", _liberation_popup)
 	var hex: int = entry["building"]["hex"]
 	_liberation_popup.closed.connect(func():
@@ -1351,6 +1363,19 @@ func _close_liberation_popup() -> void:
 
 ## The music for what's on screen (SPEC §24): the end screen's, the battle's (by its
 ## terrain), the army theme in Edit Units, else the map's by the time of day.
+## Battle, the build-up and the army's music start at once; the map's own comes back only
+## once it has been wanted for rules.json event_beat music_settle seconds (round 22: back-to-
+## back fights flipped it to the map and back every few seconds).
+func _settle_music() -> void:
+	var want := _music()
+	if want != _music_want:
+		_music_want = want
+		_music_since = Time.get_ticks_msec()
+	var map_music := want in [Sound.music_for(data.audio, "day"), Sound.music_for(data.audio, "night")]
+	if not map_music or Time.get_ticks_msec() - _music_since >= roundi(float(data.rules["event_beat"]["music_settle"]) * 1000.0):
+		Sound.music(want)
+
+
 func _music() -> String:
 	if _end_screen:
 		return Sound.music_for(data.audio, state.game_over)

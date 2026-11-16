@@ -21,17 +21,19 @@ func setup(state: GameState) -> void:
 	var won: bool = summary["outcome"] == "victory"
 	var look: Dictionary = state.data.rules["end_screen"]
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
-	if won and ResourceLoader.exists(str(look["victory_video"])):
-		_victory(summary, look)
+	var clip := str(look["victory_video" if won else "defeat_video"])
+	if ResourceLoader.exists(clip):
+		_filmed(summary, look, won)
 	else:
 		_plain(summary, won)
 	if won:
 		_fireworks(int(look["fireworks"]))
 
 
-## A victory: the user's video fills the screen (it says "Victory" itself), and the numbers
-## sit in a dark see-through box along the bottom, below the castle of its closing loop.
-func _victory(summary: Dictionary, look: Dictionary) -> void:
+## The user's video for the outcome fills the screen (it says "Victory" or "Defeat"
+## itself), and the numbers sit in a dark see-through box along the bottom, below the
+## castle of its closing loop (both films frame it alike). A defeat says why above them.
+func _filmed(summary: Dictionary, look: Dictionary, won: bool) -> void:
 	var back := ColorRect.new()
 	back.color = Color.BLACK
 	back.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
@@ -42,7 +44,8 @@ func _victory(summary: Dictionary, look: Dictionary) -> void:
 	fit.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	fit.clip_contents = true
 	add_child(fit)
-	fit.add_child(_video(str(look["victory_video"]), str(look["victory_loop"])))
+	var which := "victory" if won else "defeat"
+	fit.add_child(_video(str(look[which + "_video"]), str(look[which + "_loop"])))
 	var panel := PanelContainer.new()
 	panel.add_theme_stylebox_override("panel", UiStyle.box(Color(0, 0, 0, float(look["stats_shade"])), 24))
 	panel.anchor_left = 0.5
@@ -57,6 +60,8 @@ func _victory(summary: Dictionary, look: Dictionary) -> void:
 	var numbers := VBoxContainer.new()
 	numbers.add_theme_constant_override("separation", 8)
 	row.add_child(numbers)
+	if not won:  # why it was lost (the film can't say)
+		numbers.add_child(UiStyle.label(str(summary["reason"]), 20, Color("#ffb4a8")))
 	numbers.add_child(UiStyle.section("The map in numbers"))
 	var grid := _grid(4)
 	numbers.add_child(grid)
@@ -69,12 +74,16 @@ func _victory(summary: Dictionary, look: Dictionary) -> void:
 		var pay := _grid(2)
 		right.add_child(pay)
 		_pay(pay, summary)
+	else:
+		var purse := _grid(2)
+		right.add_child(purse)
+		_row(purse, "Gold at the end", int(summary["gold"]), " g", "", UiStyle.ACCENT, 26)
 	var go := _to_title_button()
 	go.size_flags_vertical = SIZE_SHRINK_END | SIZE_EXPAND
 	right.add_child(go)
 
 
-## A defeat (or a victory without its video): the title and why, over the frozen map.
+## Without its video: the title and why, over the frozen map.
 func _plain(summary: Dictionary, won: bool) -> void:
 	var shade := ColorRect.new()
 	shade.color = Color(0, 0, 0, 0.75)

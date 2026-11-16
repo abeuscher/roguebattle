@@ -133,4 +133,4 @@ func test_battle_sounds_fit_the_attacker() -> void:
 		if str(d.audio["cues"][cue]["file"]).begins_with("res://data/audio/battle/"):
 			check(load(d.audio["cues"][cue]["file"]) is AudioStreamWAV, "%s loads" % cue)
 			played += 1
-	check_eq(played, 16, "the 16 sounds supplied so far play (holy and dark magic in round 22)")
+	check_eq(played, 21, "the 21 sounds supplied so far play (holy, dark, earth, lightning and plain magic, miss and fall in round 22)")

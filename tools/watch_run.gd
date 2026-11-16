@@ -54,6 +54,7 @@ func _initialize() -> void:
 func _begin(args: PackedStringArray) -> void:
 	var data := GameData.load_dir()
 	var options := PlayerOptions.load_values(data, "user://__watch_defaults.json")  # the defaults: every tip shows
+	options["pause_on_focus_loss"] = false  # it runs in the background while the player works
 	if "loud" not in args:
 		options["master_volume"] = 0  # silent unless asked: the sounds still start, so they're still recorded
 	Sound.start(root, data.audio, options)
@@ -165,8 +166,9 @@ func _pilot(st: GameState) -> void:
 		if not open.has(w) or _now() - int(open[w]) < READ_MS:
 			return
 		if w == "_battle":
-			_press(node)  # Fight, then Continue at the end (it plays out between)
-			return
+			if not _press(node) and node._paused and not node._waiting:
+				node._toggle_pause()  # a tip (the Tactic menu) paused it: play on
+			return  # Fight, then Continue at the end (it plays out between)
 		if w == "_edit":  # the opening Edit Units: the army as Auto pick army sorted it
 			node.emit_signal("closed")
 			return

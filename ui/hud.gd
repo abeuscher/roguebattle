@@ -52,6 +52,10 @@ var _pause_mark := PanelContainer.new()  # a large pause sign at the top left wh
 var _banner := PanelContainer.new()  # one line of labels, with place names as links
 var _banner_line := HBoxContainer.new()
 var _banner_text := ""
+var _banner_at := 0  # msec the banner last changed
+var _banner_timed := false  # it goes by itself (news), not one that stays (a prompt)
+var _banner_links := {}  # its place names -> hex
+var _banner_fresh_ms := 2000  # news within this long of the last joins it (rules.json event_beat banner_fresh; set in refresh)
 var _flash_until := 0
 var _toolbar := HBoxContainer.new()
 var _cards_button: Button
@@ -336,6 +340,20 @@ func show_banner(text: String, seconds := 0.0) -> void:
 ## A banner whose place names (`links`: name -> hex) are links: clicking one sends
 ## place_pressed, and the map centres on it (playtest round 9).
 func show_banner_links(text: String, seconds: float, links: Dictionary) -> void:
+	# News that comes while the last timed banner is still fresh joins it instead of
+	# replacing it before it can be read (round 22's watch runs: half the banners went in
+	# under 2 s); the latest three at most.
+	var now := Time.get_ticks_msec()
+	if text != "" and seconds > 0.0 and _banner_timed and _banner_text != "" and now - _banner_at < _banner_fresh_ms:
+		var parts := Array(_banner_text.split("  ·  ")) + Array(text.split("  ·  "))
+		text = "  ·  ".join(parts.slice(maxi(0, parts.size() - 3)))
+		var merged := _banner_links.duplicate()
+		merged.merge(links, true)
+		links = merged
+		seconds = maxf(seconds, (_flash_until - now) / 1000.0)
+	_banner_at = now
+	_banner_timed = seconds > 0.0
+	_banner_links = links
 	_banner_text = text
 	for c in _banner_line.get_children():
 		_banner_line.remove_child(c)
@@ -385,6 +403,7 @@ func set_help(text: String) -> void:
 
 
 func refresh(state: GameState) -> void:
+	_banner_fresh_ms = roundi(float(state.data.rules["event_beat"]["banner_fresh"]) * 1000.0)
 	var tint := DAY if state.clock.is_day() else NIGHT
 	_clock.text = state.clock.time_text()
 	var phase := GameClock.phase(state.clock.minute_of_day())

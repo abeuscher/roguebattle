@@ -35,6 +35,8 @@ var _rng := RandomNumberGenerator.new()  # the sound player's own, apart from th
 var queue := {}  # audio.json "queue"
 var _queue_free_at := 0.0  # when the last queued stinger or voice line ends (seconds, engine time)
 var _sounding := {}  # cue -> true while it plays or waits its turn
+var _turns: Array = []  # ducking cues waiting their turn: [cue, its data, stream], in order (round 22)
+var _turn_busy := false  # one of them is playing
 
 
 ## Makes the one instance under `parent`, with the sound data and the player's options.
@@ -215,10 +217,24 @@ func play(cue: String) -> void:
 		return
 	_queue_free_at = at + stream.get_length()
 	_sounding[cue] = true
-	if at <= now:
-		_start(cue, c, stream)
-	else:
-		get_tree().create_timer(at - now).timeout.connect(_start.bind(cue, c, stream))
+	# Each starts when the one before it finishes, not on a timer: timers ran late when the
+	# game was busy, and a late line then played over the next one (round 22's watch runs).
+	_turns.append([cue, c, stream])
+	if not _turn_busy:
+		_next_turn()
+
+
+func _next_turn() -> void:
+	if _turns.is_empty():
+		_turn_busy = false
+		return
+	_turn_busy = true
+	var t: Array = _turns.pop_front()
+	var left := 0.0
+	for k in [t] + _turns:
+		left += (k[2] as AudioStream).get_length()
+	_queue_free_at = Time.get_ticks_msec() / 1000.0 + left  # what's queued, from now
+	_start(t[0], t[1], t[2], _next_turn)
 
 
 ## When a queued cue asked for at `now` starts: at once if the queue is free, else when
@@ -228,7 +244,7 @@ static func queue_slot(now: float, free_at: float, max_wait: float) -> float:
 	return -1.0 if at - now > max_wait else at
 
 
-func _start(cue: String, c: Dictionary, stream: AudioStream) -> void:
+func _start(cue: String, c: Dictionary, stream: AudioStream, then := Callable()) -> void:
 	_sounding[cue] = true
 	var p := AudioStreamPlayer.new()
 	p.stream = stream
@@ -237,7 +253,9 @@ func _start(cue: String, c: Dictionary, stream: AudioStream) -> void:
 	add_child(p)
 	p.finished.connect(func():
 		_sounding.erase(cue)
-		p.queue_free())
+		p.queue_free()
+		if then.is_valid():
+			then.call())
 	p.play()
 	if c.get("duck", false):
 		_duck()

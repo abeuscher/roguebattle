@@ -46,15 +46,15 @@ Ice magic,Battle,One-shot,,,,battle_ice; source data/audio/battle_src/ice.wav,,D
 Water magic,Battle,One-shot,,,,battle_water; source data/audio/battle_src/water.wav,,Done (supplied 2026-11-14; prepared by tools/prepare_battle_sounds.py)
 Wind magic,Battle,One-shot,,,,battle_wind; source data/audio/battle_src/wind.wav,,Done (supplied 2026-11-14; prepared by tools/prepare_battle_sounds.py)
 Heal (for now every support skill),Battle,One-shot,,,,battle_heal; source data/audio/battle_src/heal.wav,,Done (supplied 2026-11-14; prepared by tools/prepare_battle_sounds.py)
-Earth magic,Battle,One-shot,,,,battle_earth,,To come (the user); silent until then
-Lightning magic,Battle,One-shot,,,,battle_lightning,,To come (the user); silent until then
+Earth magic,Battle,One-shot,,,,battle_earth,,Done (the user's sound, 2026-11-16)
+Lightning magic,Battle,One-shot,,,,battle_lightning,,Done (the user's sound, 2026-11-16)
 Holy magic,Battle,One-shot,,,,battle_holy,,Done (the user's sound, 2026-11-16)
 Dark magic,Battle,One-shot,,,,battle_dark,,Done (the user's sound, 2026-11-16)
-Plain magic (no element),Battle,One-shot,,,,battle_magic,,To come (the user); silent until then
-A miss (whoosh),Battle,One-shot,,,,battle_miss,,To come (the user); silent until then
-A unit falling,Battle,One-shot,,,,battle_fall,,To come (the user); silent until then
+Plain magic (no element),Battle,One-shot,,,,battle_magic,,Done (the user's sound, 2026-11-16)
+A miss (whoosh),Battle,One-shot,,,,battle_miss,,Done (the user's sound, 2026-11-16)
+A unit falling,Battle,One-shot,,,,battle_fall,,Done (the user's sound, 2026-11-16)
 "Buff, debuff, ward and dispel sounds (the user will supply)",Battle,One-shot,,,,kind map in audio.json battle_sounds,,To come (the user); silent until then
 Map ambience: conditional one-shots,Ambience,One-shot,,,,"Hooves (a mounted unit moving in sight), waves (near the sea), a river (beside one): any time of day, only while the condition holds",,"Drafts in (synthesized, 2026-11-14); the user may replace them"
 """All better!""",Voice,One-shot,,,,"Spoken line (Al records): when healing before a fight brings everyone to full HP",,"To come (the user); wired as cue all_better in audio.json, silent until the file is in"
-Noon ledger (perhaps a cash register),Effect,One-shot,,,,"When the noon ledger opens: the daily tally",,"To come (the user); wired as cue noon_ledger in audio.json, silent until the file is in"
+Noon ledger (perhaps a cash register),Effect,One-shot,,,,"When the noon ledger opens: the daily tally",,"Done (the user's sound, 2026-11-16; cue noon_ledger)"
 An enemy squad wiped out (possible voice line),Voice,One-shot,,,,"Maybe: when an enemy squad is wiped out and leaves the board; not decided",,Possible (the user)
