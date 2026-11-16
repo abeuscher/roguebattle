@@ -26,8 +26,8 @@
    "where": "battle",
    "effect": "buff",
    "stat": "STR",
-   "mult": 1.3,
-   "text": "+30% STR for your squad for the rest of the battle."
+   "mult": 1.6,
+   "text": "+60% STR for your squad for the rest of the battle."
   },
   "elephant": {
    "name": "Elephant",
@@ -43,8 +43,8 @@
    "where": "battle",
    "effect": "buff",
    "stat": "INT",
-   "mult": 1.3,
-   "text": "+30% INT for your squad for the rest of the battle."
+   "mult": 1.6,
+   "text": "+60% INT for your squad for the rest of the battle."
   },
   "cheetah": {
    "name": "Cheetah",
@@ -61,8 +61,8 @@
    "where": "battle",
    "effect": "buff",
    "stat": "AGI",
-   "mult": 1.3,
-   "text": "+30% AGI for your squad for the rest of the battle."
+   "mult": 1.6,
+   "text": "+60% AGI for your squad for the rest of the battle."
   },
   "turtle": {
    "name": "Turtle",
@@ -70,8 +70,8 @@
    "where": "battle",
    "effect": "buff",
    "stat": "PDEF",
-   "mult": 1.3,
-   "text": "+30% PDEF for your squad for the rest of the battle."
+   "mult": 1.6,
+   "text": "+60% PDEF for your squad for the rest of the battle."
   },
   "hippo": {
    "name": "Hippo",
@@ -79,8 +79,8 @@
    "where": "battle",
    "effect": "buff",
    "stat": "MDEF",
-   "mult": 1.3,
-   "text": "+30% MDEF for your squad for the rest of the battle."
+   "mult": 1.6,
+   "text": "+60% MDEF for your squad for the rest of the battle."
   },
   "dolphin": {
    "name": "Dolphin",

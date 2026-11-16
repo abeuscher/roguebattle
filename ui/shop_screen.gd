@@ -370,7 +370,7 @@ func _about(l: Dictionary) -> String:
 			return "A Serf to train up: joins the recruit pool at the Player Base, ready for Edit Units."
 		"supply":
 			var c: Dictionary = data.items["consumables"][l["id"]]
-			return "%s Used %s." % [c["text"], "in battle (the Items button)" if c["where"] == "battle" else "anywhere on the map (the squad menu's Heal)"]
+			return "%s Used %s." % [c["text"], "in battle (the Items button)" if c["where"] == "battle" else ("in battle or on the map" if c["where"] == "any" else "anywhere on the map (the squad menu's Heal)")]
 	var it: Dictionary = data.items["items"][l["id"]]
 	var who: String = {"melee": "Units with a melee attack can use it.", "archer": "Archers can use it."}.get(it["use"], "Anyone can use it.")
 	return "%s, worn as %s. %s%s" % [_stats_text(it["stats"]), it["slot"], who, "  Very rare: only one on the map." if it.get("rare", false) else ""]

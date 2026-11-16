@@ -61,3 +61,38 @@ func test_ranged_attacks_on_the_map_hit_softer() -> void:
 	var share := float(d.rules["ranged_attack"]["damage"])
 	check(dealt[0] > 0.0, "a normal hit lands")
 	check(absf(dealt[1] - dealt[0] * share) <= 1.0, "a ranged attack on the map deals x%s (%s vs %s)" % [share, dealt[1], dealt[0]])
+
+
+func test_poison_lingers_after_a_battle_until_cured() -> void:
+	var st := _state()
+	var ours := st.add_squad("Ours", _at(st.map, 10, 3), [["Knight", "front"], ["Fighter", "front"]])
+	var foe := st.add_squad("Them", _at(st.map, 11, 3), [["Soldier", "front"]], "enemy")
+	var b := st.start_battle(ours, foe, foe)
+	var hurt: Unit = ours.units[1]
+	b._status[hurt]["poison"] = null
+	foe.units[0].hp = 0
+	st.end_battle(b)
+	var cfg: Dictionary = d.rules["lingering_poison"]
+	check_eq(hurt.poison_left, int(cfg["ticks"]), "still poisoned at the end: it lingers")
+	check(not ours.all_well(d), "a poisoned squad isn't well, even at full HP")
+	var before := hurt.hp
+	for i in int(cfg["every"]):
+		st._linger_poison()
+	check(hurt.hp < before, "loses HP on the map")
+	st.army.supplies = {"antidote": 1}
+	check(st.supply_helps(hurt, "antidote"), "an Antidote helps on the map")
+	check(st.use_supply(hurt, "antidote"), "used")
+	check_eq(hurt.poison_left, 0, "cured")
+
+
+func test_poison_can_kill_and_the_squad_heads_home() -> void:
+	var st := _state()
+	var ours := st.add_squad("Ours", _at(st.map, 10, 3), [["Knight", "front"], ["Fighter", "front"]])
+	var lead: Unit = ours.leader
+	lead.hp = 1
+	lead.poison_left = int(d.rules["lingering_poison"]["ticks"])
+	for i in int(d.rules["lingering_poison"]["every"]):
+		st._linger_poison()
+	check(not lead.is_alive(), "it died of poison")
+	check(ours.marching_home, "a squad that loses its leader to poison marches home")
+	check(st.notices.any(func(n: String): return n.contains("poison")), "and you're told")

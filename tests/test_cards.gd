@@ -38,12 +38,12 @@ func test_stat_boost_lasts_the_whole_battle() -> void:
 	var b := _battle([knight, fighter], [_unit("Soldier")])
 	var base := b.stat(fighter, "STR")
 	check(b.play_card("panther"), "play Panther")
-	check(is_equal_approx(b.stat(fighter, "STR"), base * 1.3), "+30% STR")
+	check(is_equal_approx(b.stat(fighter, "STR"), base * float(d.cards["cards"]["panther"]["mult"])), "the card's STR boost")
 	for i in 3:
 		b._act(knight)
 	b.round = 2
 	b._start_round()
-	check(is_equal_approx(b.stat(fighter, "STR"), base * 1.3), "still on after the leader's turns and into round 2")
+	check(is_equal_approx(b.stat(fighter, "STR"), base * float(d.cards["cards"]["panther"]["mult"])), "still on after the leader's turns and into round 2")
 
 
 func test_heals() -> void:

@@ -109,6 +109,7 @@ func step() -> void:
 		_move(s)
 		if s.entering_base and s.hex == map.player_base:
 			return_to_base(s)
+	_linger_poison()
 	_capture()
 	_check_cap()
 	_reveal_sites()
@@ -117,6 +118,56 @@ func step() -> void:
 	if not pending:
 		_enemy_volleys()
 	_check_game_over()
+
+
+## Poison that lingered after a battle (playtest round 22): every rules.json
+## lingering_poison "every" minutes a poisoned unit on the map loses a share of its max HP,
+## until it wears off, is cured, or the unit dies. A squad whose leader dies of it marches
+## home as after a battle; one with no one left standing leaves the map as if wiped out.
+func _linger_poison() -> void:
+	var cfg: Dictionary = data.rules["lingering_poison"]
+	for s in squads.duplicate():
+		var fell := false
+		for u in s.units:
+			if u.poison_left <= 0 or not u.is_alive():
+				u.poison_left = 0 if not u.is_alive() else u.poison_left
+				continue
+			u.poison_left -= 1
+			if (int(cfg["ticks"]) - u.poison_left) % int(cfg["every"]) != 0:
+				continue
+			u.hp = maxi(0, u.hp - maxi(1, ceili(u.max_hp(data) * float(cfg["share"]))))
+			if not u.is_alive():
+				u.poison_left = 0
+				fell = true
+				log.add(clock.tick, "battle", "%s of %s dies of poison." % [u.name, s.name], s.id)
+				if s.side == "player":
+					notices.append("%s of %s has died of poison." % [u.name, s.name])
+		if fell:
+			_after_losses(s)
+
+
+## A squad lost units off the battlefield (poison): with no one standing it leaves the map
+## as a wiped-out squad does; with its leader gone it marches home.
+func _after_losses(s: Squad) -> void:
+	s.refresh(data)
+	if s.living().is_empty():
+		s.path.clear()
+		s.rally.clear()
+		if s.side == "player":
+			_leave_map(s)
+		else:
+			squads.erase(s)
+			if s.side == "enemy":
+				_wiped_out(s)
+		return
+	if s.side != "neutral" and s.leader and not s.leader.is_alive() and not s.marching_home:
+		s.marching_home = true
+		log.add(clock.tick, "battle", "%s lost its leader and marches home." % s.name, s.id)
+		if s.side == "enemy":
+			_fall_back(s)
+		else:
+			_crawl_home(s)
+		s.entering_base = s.side == "player"
 
 
 ## Daily rest, nomads every half day, the noon ledger (§7).
@@ -1463,6 +1514,8 @@ func supply_helps(u: Unit, id: String) -> bool:
 	var item: Dictionary = data.items["consumables"][id]
 	if item.get("revive", false):
 		return not u.is_alive()
+	if item.get("cures", "") == "poison":  # on the map, poison that lingered after a battle (round 22)
+		return u.is_alive() and u.poison_left > 0
 	return item.has("heal") and u.is_alive() and u.hp < u.max_hp(data)
 
 
@@ -1481,6 +1534,10 @@ func use_supply(u: Unit, id: String) -> bool:
 			s.entering_base = false
 			s.path.clear()
 			s.rally.clear()
+		return true
+	if item.get("cures", "") == "poison":
+		u.poison_left = 0
+		log.add(clock.tick, "economy", "%s is cured of poison with an %s." % [u.name, item["name"]])
 		return true
 	u.hp = mini(u.max_hp(data), u.hp + int(item["heal"]))
 	log.add(clock.tick, "economy", "%s uses a %s." % [u.name, item["name"]])
@@ -1673,14 +1730,14 @@ func heal_blocked(s: Squad, paid := true) -> String:
 		return ""
 	var stocked := false
 	for id in data.items["consumables"]:
-		if data.items["consumables"][id]["where"] != "map" or int(army.supplies.get(id, 0)) <= 0:
+		if data.items["consumables"][id]["where"] not in ["map", "any"] or int(army.supplies.get(id, 0)) <= 0:
 			continue
 		stocked = true
 		for u in s.units:
 			if supply_helps(u, id):
 				return ""
 	if stocked:
-		return "No supply you have helps: herbs heal the hurt, Revival Draughts raise the fallen. Buy at a shop, or stand in a temple or at the Player Base."
+		return "No supply you have helps: herbs heal the hurt, Revival Draughts raise the fallen, Antidotes cure poison. Buy at a shop, or stand in a temple or at the Player Base."
 	return "Out of herbs and revivals: buy them at a shop, or stand in a temple or at the Player Base to heal for gold."
 
 
@@ -1692,7 +1749,7 @@ func can_service(u: Unit) -> bool:
 
 
 func heal_cost(u: Unit) -> int:
-	return int(data.rules["services"]["heal"]) if u.is_alive() and u.hp < u.max_hp(data) else 0
+	return int(data.rules["services"]["heal"]) if u.is_alive() and (u.hp < u.max_hp(data) or u.poison_left > 0) else 0
 
 
 func revive_cost(u: Unit) -> int:
@@ -1708,6 +1765,7 @@ func restore(u: Unit) -> bool:
 	var revived := not u.is_alive()
 	_pay(-cost, "%s %s" % ["Revived" if revived else "Healed", u.name])
 	u.hp = u.max_hp(data)
+	u.poison_left = 0  # healing for gold cures lingering poison too (round 22)
 	var s := army.squad_of(u)
 	if s:
 		s.refresh(data)
@@ -2849,6 +2907,10 @@ func start_battle(player: Squad, enemy: Squad, defender: Squad) -> Battle:
 	b.worn = [worn(player), worn(enemy)]
 	b.defense = [0.0 if b.broken[0] else building_defense(player), 0.0 if b.broken[1] else building_defense(enemy)]
 	b.odds = Threat.label(data, player, enemy)
+	for side in 2:  # poison that lingered since the last battle carries into this one (round 22)
+		for u in b.sides[side].units:
+			if u.is_alive() and u.poison_left > 0:
+				b._status[u]["poison"] = null
 	if player.side == "player":
 		b.tech[0] = tech
 		b.refresh_side(0)  # attack counts again, now with tech (Drill was missed in fights fought off screen; round 21)
@@ -2893,7 +2955,10 @@ func use_supply_before_battle(b: Battle, u: Unit, id: String) -> bool:
 func end_battle(b: Battle) -> Dictionary:
 	for e in b.events:
 		log.add(clock.tick, "battle", b.log_line(e), b.sides[0].id, e.get("hidden", {}))
-	var out := b.finish()
+	for side in 2:  # still poisoned at the end: it lingers on the map (round 22); cured in battle, it's gone
+		for u in b.sides[side].units:
+			u.poison_left = int(data.rules["lingering_poison"]["ticks"]) if u.is_alive() and b.has_status(u, "poison") else 0
+	var out := b.finish()  # (clears the battle's statuses)
 	for side in 2:
 		var s := b.sides[side]
 		var enemy := b.sides[1 - side]

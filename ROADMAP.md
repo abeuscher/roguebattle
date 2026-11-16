@@ -353,12 +353,12 @@ The open questions were settled with the user on 2026-11-15 (row 10's display of
 | # | Session | Spec | Verify | Status |
 |---|---|---|---|---|
 | 1 | **"Round 1" and "Ranged Battle" as the battle window opens,** not when the fight starts | §11 | By eye | Done (session 106) |
-| 2 | **Buffs, debuffs and potions don't matter enough** to use; a modest change | §13, §15 | | To discuss |
-| 3 | **Add back 4x speed** | §5 | | Asked: which screen (the map has x4; battles have x1, x2, x4 since they were halved) |
+| 2 | **Buffs, debuffs and potions don't matter enough** to use; a modest change | §13, §15 | Tests | Done (session 106): poison lingers after battle (10% every half hour for 8 hours, cured by an Antidote or healing for gold); the other buffs and debuffs, the cards' boosts and Troll regeneration doubled; weak to physical or magic unchanged |
+| 3 | **Add back 4x speed** | §5 | | Dropped: the user's note was out of date |
 | 4 | **Skip to action didn't work** | §5 | Test | Done (session 106): it was grey whenever any squad stood still (nearly always); now only squads on the move are watched. Pausing stops it (it ran on while paused) |
 | 5 | **A card's sound as it starts to grow and fade** | M5 | By ear | Done (session 106): in battle it played on Play, before the card showed |
 | 6 | **Music for a battle that's coming:** from the announcement until Begin Battle, a build-up, not the battle theme | M5 | By ear | Done (session 106): a first draft (`tools/midi_draft.py` battle_intro) |
-| 7 | **Playthroughs listening for collisions** (battles, liberations, tips at once): keep the player feeling in control | §19.4 | Scripted runs | To plan with the user |
+| 7 | **Playthroughs listening for collisions** (battles, liberations, tips at once): keep the player feeling in control | §19.4 | Scripted runs | Agreed: on a map bigger than the starter, 6+ squads in the field; next |
 | 8 | **The temple tip came over a town taken just after** | §19.4 | By eye | Done (session 106): the camera goes back to the temple before its tip |
 | 9 | **Ranged attacks on the map: nerf them and see** | §11.2 | Test | Done (session 106): half damage, a 4-hour reload (was 2) |
 | 10 | **How far hidden sites are seen** | §8.5 | Code | Answered: a squad sees 5 to 10 hexes (7 base), and places you hold see too: a town 8, a temple 12, a tower 16 |

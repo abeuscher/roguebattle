@@ -59,7 +59,7 @@ func _refresh(acted := false) -> void:
 	var kinds := []
 	for id in state.data.items["consumables"]:
 		var item: Dictionary = state.data.items["consumables"][id]
-		if item["where"] != "map":
+		if item["where"] not in ["map", "any"]:
 			continue
 		kinds.append(id)
 		var have := HBoxContainer.new()

@@ -53,7 +53,7 @@ func test_poison_burn_regen() -> void:
 	var dmg := b.expected_damage(f, k, "Melee")
 	b._status[f] = {}
 	b.add_status(f, "burn")
-	check_eq(b.expected_damage(f, k, "Melee"), maxf(1.0, f.stats["STR"] * 1.15 * 0.9 - k.stats["PDEF"]), "burn: -10% physical damage")
+	check(is_equal_approx(b.expected_damage(f, k, "Melee"), maxf(1.0, f.stats["STR"] * 1.15 * float(d.battle["statuses"]["burn"]["physical_dealt"]) - k.stats["PDEF"])), "burn: less physical damage")
 	check(b.expected_damage(f, k, "Melee") < dmg, "burned hits are weaker")
 
 
@@ -72,7 +72,7 @@ func test_speed_statuses() -> void:
 	var b := _battle([a], [z])
 	check_eq(b.turn_order()[0], a, "faster first")
 	b.add_status(a, "freeze")
-	check_eq(b.stat(a, "SPD"), 5.0, "freeze halves speed")
+	check_eq(b.stat(a, "SPD"), 10.0 * float(d.battle["statuses"]["freeze"]["stats"]["SPD"]), "freeze slows")
 	check_eq(b.turn_order()[0], z, "frozen unit acts later")
 	b.add_status(z, "haste")
 	check_eq(b.stat(z, "SPD"), 12.0, "haste +50%")
@@ -142,7 +142,7 @@ func test_shock_loses_attacks() -> void:
 		b._turn(a)
 		if b.events[-1]["text"].contains("shock"):
 			lost += 1
-	check(absf(lost / 400.0 - 0.3) < 0.06, "shock loses about 30%% of attacks (%d)" % lost)
+	check(absf(lost / 400.0 - float(d.battle["statuses"]["shock"]["lose_attack"])) < 0.06, "shock loses its share of attacks (%d)" % lost)
 
 
 func test_charm() -> void:
@@ -163,7 +163,7 @@ func test_buff_lasts_until_buffers_next_turn() -> void:
 	var b := _battle([k, faerie], [_unit("Fighter")])
 	b._turn(faerie)
 	check(b.has_status(k, "mdef_up"), "the faerie raises the squad's MDEF")
-	check_eq(b.stat(k, "MDEF"), k.stats["MDEF"] * 1.1, "by 10%")
+	check_eq(b.stat(k, "MDEF"), k.stats["MDEF"] * float(d.battle["statuses"]["mdef_up"]["stats"]["MDEF"]), "by the status's share")
 	b._end_buffs_from(faerie)
 	check(not b.has_status(k, "mdef_up"), "it ends at the faerie's next turn")
 	var ench := _unit("Enchantress", "back")

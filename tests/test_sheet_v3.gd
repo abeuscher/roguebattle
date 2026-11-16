@@ -280,7 +280,7 @@ func test_riposte_drain_regenerate() -> void:
 	var t := _battle([troll], [_unit("Fighter")])
 	var hp := troll.hp
 	t._start_round()
-	check_eq(troll.hp, hp + roundi(troll.max_hp(d) * 0.05), "regenerate: 5% per round")
+	check_eq(troll.hp, hp + roundi(troll.max_hp(d) * float(d.battle["traits"]["Regenerate"]["regen"])), "regenerate: its share per round")
 
 
 func test_evasion_mirage_petrify() -> void:

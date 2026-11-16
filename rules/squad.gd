@@ -116,7 +116,7 @@ func living(alive := true) -> Array[Unit]:
 
 ## Whether every unit is at full HP, none hurt or fallen: nothing for Heal to do (round 19).
 func all_well(data: GameData) -> bool:
-	return units.all(func(u: Unit): return u.hp >= u.max_hp(data))
+	return units.all(func(u: Unit): return u.hp >= u.max_hp(data) and u.poison_left <= 0)
 
 
 func next_col(which: String) -> int:

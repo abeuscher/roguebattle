@@ -4,7 +4,7 @@
  "consumables": {
   "herb":       {"name": "Herb", "price": 15, "heal": 30, "stock": 5, "where": "map", "text": "Heals a unit 30 HP."},
   "revive":     {"name": "Revival Draught", "price": 80, "revive": true, "stock": 2, "where": "map", "text": "Brings a fallen unit back at full HP."},
-  "antidote":   {"name": "Antidote", "price": 12, "cures": "poison", "stock": 3, "where": "battle", "text": "Cures poison."},
+  "antidote":   {"name": "Antidote", "price": 12, "cures": "poison", "stock": 3, "where": "any", "text": "Cures poison, in battle or on the map (poison lingers after a battle)."},
   "burn_salve": {"name": "Burn Salve", "price": 12, "cures": "burn", "stock": 3, "where": "battle", "text": "Cures burn."},
   "thaw_tonic": {"name": "Thaw Tonic", "price": 12, "cures": "freeze", "stock": 3, "where": "battle", "text": "Cures freeze."},
   "insulator":  {"name": "Insulating Balm", "price": 12, "cures": "shock", "stock": 3, "where": "battle", "text": "Cures shock."},
