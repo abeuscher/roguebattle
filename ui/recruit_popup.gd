@@ -20,7 +20,9 @@ var _title_row: Control  # the title's bar, kept when the result replaces the qu
 var _beaten := false
 
 
-func setup(class_name_: String, beaten := false) -> void:
+## `odds` (GameState.band_odds, round 20): when your leader shares the band's home terrain,
+## the chances of Recruit and Sneak past, shown on their buttons.
+func setup(class_name_: String, beaten := false, odds := {}) -> void:
 	_beaten = beaten
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	var shade := ColorRect.new()
@@ -45,11 +47,16 @@ func setup(class_name_: String, beaten := false) -> void:
 	ask.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	ask.custom_minimum_size.x = 280
 	_col.add_child(ask)
-	var recruit_button := UiStyle.button("Recruit", 280)
+	if not odds.is_empty():
+		var knows := UiStyle.label("%s knows the beasts of the %s: the chances are shown." % [odds["leader"], str(odds["terrain"]).to_lower()], 14, UiStyle.ACCENT)
+		knows.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		knows.custom_minimum_size.x = 280
+		_col.add_child(knows)
+	var recruit_button := UiStyle.button("Recruit" + (" (%d%%)" % roundi(float(odds["recruit"]) * 100) if odds.has("recruit") else ""), 280)
 	recruit_button.pressed.connect(func(): recruit.emit())
 	_col.add_child(recruit_button)
 	if not beaten:
-		var sneak_button := UiStyle.button("Sneak past", 280)
+		var sneak_button := UiStyle.button("Sneak past" + (" (%d%%)" % roundi(float(odds["sneak"]) * 100) if odds.has("sneak") else ""), 280)
 		sneak_button.tooltip_text = "Slip by unseen: the better your squad's agility against theirs, the likelier.
 Spotted, they strike first."
 		sneak_button.pressed.connect(func(): sneak.emit())

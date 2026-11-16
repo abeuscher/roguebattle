@@ -233,6 +233,7 @@ func _process(delta: float) -> void:
 		state.daily_ledger = {}
 	_prompt_start()
 	Sound.music(_music())
+	Sound.ambience_zoom(camera.zoom_share())  # louder close up (round 20)
 	if _tokens.size() != state.squads.size():  # a squad went into the base, or left the map
 		_sync_tokens()
 		hud.set_squads(state.player_squads())
@@ -1149,7 +1150,7 @@ func _close_debug_panel() -> void:
 func _open_recruit_popup() -> void:
 	_recruit_popup = RecruitPopup.new()
 	_ui.add_child(_recruit_popup)
-	_recruit_popup.setup(state.recruit_class(), state.pending_recruit.get("beaten", false))
+	_recruit_popup.setup(state.recruit_class(), state.pending_recruit.get("beaten", false), state.band_odds(state.pending_recruit))
 	_fly_to_meeting(state.pending_recruit["player"], state.pending_recruit["neutral"], _recruit_popup)
 	_offer_tip("neutral_met", _recruit_popup)
 	_recruit_popup.recruit.connect(func():

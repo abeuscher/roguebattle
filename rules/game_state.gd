@@ -1045,7 +1045,7 @@ func price(base: int, s: Squad = null) -> int:
 func sneak_chance(s: Squad, neutral: Squad) -> float:
 	var c: Dictionary = data.neutrals["sneak"]
 	var gap := _average_agi(s) - _average_agi(neutral)
-	return clampf(gap * float(c["per_agi"]), float(c["min"]), float(c["max"]))
+	return clampf(float(c["base"]) + gap * float(c["per_agi"]), float(c["min"]), float(c["max"]))
 
 
 func _average_agi(s: Squad) -> float:
@@ -1080,6 +1080,22 @@ func sneak_past() -> Dictionary:
 	pending = start_battle(player, neutral, neutral)
 	pending.first_side = 1
 	return result
+
+
+## The chances shown when meeting a band (round 20): a leader whose home terrain is the
+## band's knows those beasts, so the window gives the odds of Recruit and Sneak past.
+## Empty otherwise (and Sneak past only at a first meeting).
+func band_odds(enc: Dictionary) -> Dictionary:
+	var player: Squad = enc["player"]
+	var neutral: Squad = enc["neutral"]
+	if player.leader == null or not player.leader.is_alive() or neutral.units.is_empty() 			or player.leader.terrain(data) != neutral.units[0].terrain(data):
+		return {}
+	var large: bool = neutral.units[0].info(data)["size"] == "Large"
+	var out := {"recruit": recruit_chance(player, neutral.living().size(), neutral.alignment(), large),
+			"terrain": player.leader.terrain(data), "leader": player.leader.name.get_slice(" ", 0)}
+	if not enc.get("beaten", false):
+		out["sneak"] = sneak_chance(player, neutral)
+	return out
 
 
 ## A neutral squad's chance to join you (§16): 0.60 × (10 − units)/9 × (1 − alignment
@@ -1451,6 +1467,13 @@ func field_cap(side := "player") -> int:
 	var per := float(g["buildings_per_squad"]) * (float(g["enemy_mult"]) if side == "enemy" else 1.0)
 	var held := map.buildings.filter(func(b): return b.get("owner", "") == side and b["type"] in ["town", "tower", "temple"]).size()
 	return (squad_cap() if side == "player" else enemy_start_squads) + floori(held / per)
+
+
+## How many more towns, towers and temples you need to hold to field one more squad (round 20).
+func buildings_to_next_squad() -> int:
+	var per := int(data.rules["cap_growth"]["buildings_per_squad"])
+	var held := map.buildings.filter(func(b): return b.get("owner", "") == "player" and b["type"] in ["town", "tower", "temple"]).size()
+	return per - held % per
 
 
 ## Says when your cap changes, and makes room in the army for the squads it allows.

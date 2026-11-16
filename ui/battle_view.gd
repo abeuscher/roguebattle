@@ -22,6 +22,7 @@ const ROW_GAP := 34.0  # between a squad's back and front rows
 const SIDE_COLORS := [Color("#3b6fd6"), Color("#c8402f")]
 const LOG_COLORS := ["#a8c4ff", "#ffaa9a"]
 const TACTIC_WORDS := {"best": "best targets", "strong": "the strongest", "weak": "the weakest", "leader": "the leader"}
+const RESULT_VERBS := {"won": "defeats", "lost": "loses to", "retreated": "retreats from", "even": "draws with"}  # between the two sides (round 20)
 const RESULT_WORDS := {"won": "Won", "lost": "Lost", "retreated": "Retreated", "even": "Draw"}
 const RESULT_COLORS := {"won": Color("#7ee08a"), "lost": Color("#ff7a66"), "retreated": Color("#e0b03a"), "even": Color("#e8e0c8")}
 const TACTIC_TIPS := {"best": "Each unit hits the target it hurts most", "strong": "Focus the strongest enemy",
@@ -778,13 +779,14 @@ func _finish() -> void:
 		var l := UiStyle.label(line, 17, Color(0.8, 0.82, 0.86))
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		col.add_child(l)
-	var sides := HBoxContainer.new()
-	sides.add_theme_constant_override("separation", 14)
+	# Your squad over the enemy, the outcome as a word between them (round 20; "vs." side by side before).
+	var sides := VBoxContainer.new()
+	sides.add_theme_constant_override("separation", 6)
 	col.add_child(sides)
 	sides.add_child(_side_stats(0, out))
-	var vs := UiStyle.label("vs.", 26, UiStyle.ACCENT)
-	vs.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	sides.add_child(vs)
+	var verb := UiStyle.label(RESULT_VERBS[result], 24, UiStyle.ACCENT)
+	verb.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sides.add_child(verb)
 	sides.add_child(_side_stats(1, out))
 	if not out.get("xp", {}).is_empty():
 		var amounts: Array = out["xp"].values()

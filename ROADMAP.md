@@ -314,3 +314,20 @@ The open questions were settled with the user on 2026-11-15 (row 10's display of
 | 18 | **Field promotion:** promotion anywhere on the map, not only at the Player Base (it still needs the squad to fit its slots afterward) | §8 | Test | Done (session 103) |
 | 19 | **Best aims for wins.** Best picked the target each hit hurts most, counting damage past a unit's last HP and not preferring a kill. **Settled 2026-11-15:** count damage only up to the target's remaining HP, so Best prefers finishing units off | §11.3 | Test: Best takes the kill over a bigger wasted hit | Done (session 103): an expected kill comes first (the user, same day), the most dangerous of several |
 | 20 | **Option: "Pause game after losing battle?"**, off by default; when on, the game pauses after a battle you lose | §19 | Test | Done (session 103) |
+
+
+## Playtest round 20 (user's notes, 2026-11-15)
+
+| # | Session | Spec | Verify | Status |
+|---|---|---|---|---|
+| 1 | **Battles at half speed:** every battle speed half as fast as it was | §11 | By eye | Done (session 104) |
+| 2 | **The result window says who won:** "vs." becomes "defeats" or "loses to" (and "retreats from", "draws with"), the two sides stacked with the word between them | §11 | Screenshot | Done (session 104) |
+| 3 | **A subtler main button colour:** less neon, more autumn; style changes welcome if there's a reason | §19 | Screenshots of candidates | Done (session 104), burnt amber to start, waiting on the user's pick; greyed-out main buttons now grey |
+| 4 | **Heal window rows don't jump:** each tile keeps room for its buttons when they go | §14 | Screenshot | Done (session 104) |
+| 5 | **Heal closes itself everywhere:** once everyone is well, from the squad menu too, back to the view under it with Heal greyed | §14 | Test | Done (session 104) |
+| 6 | **A leader who knows the band's terrain sees the odds:** Recruit and Sneak past show their chances when your leader's home terrain is the band's | §16 | Test | Done (session 104) |
+| 7 | **Buildings to the next squad,** shown compactly in Edit Units' top bar | §17, §19 | Test of the count | Done (session 104) |
+| 8 | **Sneaking past a little easier** | §16 | Test | Done (session 104): a 40% base before the agility gap |
+| 9 | **A neutral meeting shouldn't stop the march** (unless you lose the fight) | §16 | A test reproducing it | Checked (session 104): not reproduced; a test now guards it |
+| 10 | **Ambience louder zoomed in, quieter zoomed out** | M5 | Test of the zoom measure; by ear | Done (session 104) |
+

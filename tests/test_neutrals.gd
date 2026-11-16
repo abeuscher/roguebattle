@@ -212,9 +212,11 @@ func test_sneak_chance_from_the_two_averages() -> void:
 			s.units[i].stats["AGI"] = values[i] - (s.units[i].stat(d, "AGI") - int(s.units[i].stats["AGI"]))  # so stat() reads the value
 	set_agi.call(p, [14, 18])
 	set_agi.call(n, [12])
-	check(is_equal_approx(st.sneak_chance(p, n), 0.4), "16 against 12: 40%% (%.2f)" % st.sneak_chance(p, n))
+	check(is_equal_approx(st.sneak_chance(p, n), 0.8), "16 against 12: 40%% + 40%% (%.2f)" % st.sneak_chance(p, n))
+	set_agi.call(n, [16])
+	check(is_equal_approx(st.sneak_chance(p, n), 0.4), "even: 40% (round 20)")
 	set_agi.call(n, [30])
-	check(is_equal_approx(st.sneak_chance(p, n), 0.1), "a faster band still leaves 10%")
+	check(is_equal_approx(st.sneak_chance(p, n), 0.15), "a much faster band still leaves 15%")
 	set_agi.call(n, [1])
 	check(is_equal_approx(st.sneak_chance(p, n), 1.0), "much slower: a sure thing, never more")
 

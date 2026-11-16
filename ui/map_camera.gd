@@ -21,6 +21,13 @@ func fit() -> void:
 	view_changed.emit()
 
 
+## How far in the camera is, 0 zoomed all the way out to 1 all the way in, on a log scale
+## (each wheel step counts the same). For the ambience's volume (round 20).
+func zoom_share() -> float:
+	var lo := _fit_zoom * 0.5
+	return clampf(log(zoom.x / lo) / log(MAX_ZOOM / lo), 0.0, 1.0) if MAX_ZOOM > lo else 1.0
+
+
 func center_on(world_point: Vector2) -> void:
 	position = world_point
 	view_changed.emit()

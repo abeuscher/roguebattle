@@ -41,11 +41,15 @@ func setup(game_state: GameState, s: Squad, before: Battle = null) -> void:
 	_refresh()
 
 
-func _refresh() -> void:
+## `acted`: after a supply or a temple heal was used. Once that leaves everyone well, the
+## window closes and the view under it comes back with Heal greyed (round 19 before a
+## fight; round 20 wherever it was opened from).
+func _refresh(acted := false) -> void:
 	for c in _list.get_children():
 		c.queue_free()
-	if battle and squad.all_well(state.data):  # round 19: healed up before the fight, back to it
-		Sound.event("all_better")
+	if acted and squad.all_well(state.data):
+		if battle:
+			Sound.event("all_better")
 		closed.emit()
 		return
 	# What's left, as icon × count (round 19).
@@ -89,7 +93,9 @@ func _refresh() -> void:
 func _tile(u: Unit, kinds: Array, temple: bool) -> Control:
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 4)
-	col.custom_minimum_size.x = 148
+	# Room for the most buttons a tile can have (a supply, and in a temple its healing), kept
+	# when they go, so the rows below don't jump up after a heal (round 20).
+	col.custom_minimum_size = Vector2(148, 122 + (2 if temple else 1) * (44 + 4))
 	if u == null:
 		var empty := Panel.new()
 		var style := UiStyle.box(Color(0.09, 0.1, 0.12), 3)
@@ -118,7 +124,7 @@ func _tile(u: Unit, kinds: Array, temple: bool) -> Control:
 				state.use_supply_before_battle(battle, u, id)
 			else:
 				state.use_supply(u, id)
-			_refresh())
+			_refresh(true))
 		col.add_child(b)
 	var cost := state.heal_cost(u) + state.revive_cost(u) if temple else 0
 	if cost > 0:
@@ -128,7 +134,7 @@ func _tile(u: Unit, kinds: Array, temple: bool) -> Control:
 		b.tooltip_text = "Not enough gold." if b.disabled else "The temple heals or revives them to full HP."
 		b.pressed.connect(func():
 			state.restore(u)
-			_refresh())
+			_refresh(true))
 		col.add_child(b)
 	return col
 

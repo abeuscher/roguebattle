@@ -5,7 +5,8 @@ const BACKGROUND := Color("#12161c")
 const PANEL := Color(0.1, 0.12, 0.15)
 const ACCENT := Color("#ffe08a")
 const TITLE := Color("#f4ead2")  # window titles
-const ACTION := Color("#f2a93b")  # the main way forward on a screen
+static var ACTION := Color("#b8732e")  # the main way forward on a screen: burnt amber (round 20; was a bright orange, #f2a93b)
+static var ACTION_TEXT := Color("#fbf1de")  # its label, cream on the amber
 const OUTLINE := Color(0.42, 0.46, 0.53)
 const ICON_SIZE := 20
 
@@ -231,16 +232,18 @@ static func button(text: String, min_width := 220.0, action := false, icon_kind 
 	b.add_theme_font_size_override("font_size", 18)
 	var fill := ACTION if action else Color(0.15, 0.17, 0.21)
 	var edge := ACTION.lightened(0.25) if action else OUTLINE
-	var text_color := Color(0.1, 0.08, 0.04) if action else Color.WHITE
+	var text_color := ACTION_TEXT if action else Color.WHITE
 	b.add_theme_stylebox_override("normal", _outlined(fill, edge))
 	b.add_theme_stylebox_override("hover", _outlined(fill.lightened(0.12), ACCENT))
 	b.add_theme_stylebox_override("pressed", _outlined(fill.darkened(0.2), ACCENT))
 	b.add_theme_stylebox_override("focus", _outlined(Color(0, 0, 0, 0), ACCENT))
-	b.add_theme_stylebox_override("disabled", _outlined(fill.darkened(0.4), edge.darkened(0.4)))
+	# Greyed out reads as greyed out, even on the main button (round 20: a dimmed amber looked active).
+	var grey := Color(0.2, 0.21, 0.24)
+	b.add_theme_stylebox_override("disabled", _outlined(fill.lerp(grey, 0.75) if action else fill.darkened(0.4), edge.lerp(grey, 0.6).darkened(0.2)))
 	for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color",
 			"icon_normal_color", "icon_hover_color", "icon_pressed_color", "icon_focus_color"]:
 		b.add_theme_color_override(state, text_color)
-	b.add_theme_color_override("font_disabled_color", text_color.darkened(0.5) if not action else text_color)
+	b.add_theme_color_override("font_disabled_color", Color(text_color if not action else Color.WHITE, 0.4))
 	if icon_kind != "":
 		b.icon = icon(icon_kind)
 	return b

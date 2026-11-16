@@ -19,6 +19,7 @@ var _dip_tween: Tween
 var music_cue := ""  # what's playing (or fading in)
 var _music_player: AudioStreamPlayer
 var _fade := 2.0
+const AMBIENCE_BUS := "Ambience"  # the map's bed and one-shots, into Effects; its volume follows the zoom
 var amb := {}  # audio.json map_ambience: the phrase pools and the map's environmental sound
 var _pool := ""  # the phrase pool playing, or "" for a plain music cue
 var _pool_gen := 0  # changes with the music, so a pending gap for older music does nothing
@@ -97,6 +98,14 @@ static func battle_cue(audio: Dictionary, info: Dictionary, kind: String) -> Str
 
 ## What's true on the map now (GameState.ambience_facts), for the one-shots that only play
 ## under a condition (audio.json map_ambience shot_needs).
+## How far the map is zoomed in, 0-1 (MapCamera.zoom_share): the ambience is louder close
+## up, quieter far out (audio.json map_ambience zoom_db; round 20).
+static func ambience_zoom(share: float) -> void:
+	if _it and AudioServer.get_bus_index(AMBIENCE_BUS) >= 0:
+		var r: Array = _it.amb.get("zoom_db", [0.0, 0.0])
+		AudioServer.set_bus_volume_db(AudioServer.get_bus_index(AMBIENCE_BUS), lerpf(float(r[0]), float(r[1]), share))
+
+
 static func ambience_facts(facts: Array) -> void:
 	if _it:
 		_it._facts = facts
@@ -140,6 +149,10 @@ func _setup(audio: Dictionary, options: Dictionary) -> void:
 ## panning for depth): map_ambience pan_steps of them, evenly from -shot_pan to +shot_pan,
 ## each an AudioEffectPanner feeding the Effects bus. A one-shot goes through one at random.
 func _pan_buses() -> void:
+	if AudioServer.get_bus_index(AMBIENCE_BUS) < 0:
+		AudioServer.add_bus()
+		AudioServer.set_bus_name(AudioServer.bus_count - 1, AMBIENCE_BUS)
+		AudioServer.set_bus_send(AudioServer.bus_count - 1, "Effects")
 	var steps := int(amb.get("pan_steps", 0))
 	var width := float(amb.get("shot_pan", 0.0))
 	for k in steps:
@@ -150,7 +163,7 @@ func _pan_buses() -> void:
 		AudioServer.add_bus()
 		var i := AudioServer.bus_count - 1
 		AudioServer.set_bus_name(i, bus)
-		AudioServer.set_bus_send(i, "Effects")
+		AudioServer.set_bus_send(i, AMBIENCE_BUS)
 		var panner := AudioEffectPanner.new()
 		panner.pan = lerpf(-width, width, k / float(maxi(1, steps - 1)))
 		AudioServer.add_bus_effect(i, panner)
@@ -398,7 +411,7 @@ func _ambience(state: String) -> void:
 				bed.loop_end = int(bed.get_length() * bed.mix_rate)
 				_bed = AudioStreamPlayer.new()
 				_bed.stream = bed
-				_bed.bus = "Effects"
+				_bed.bus = AMBIENCE_BUS
 				_bed.volume_db = -60.0
 				add_child(_bed)
 				_bed.play()
@@ -419,7 +432,7 @@ func _shot(shots: Array, gen: int) -> void:
 		if not ready.is_empty():
 			var p := AudioStreamPlayer.new()
 			p.stream = _stream(ready[_rng.randi() % ready.size()])
-			p.bus = _pans[_rng.randi() % _pans.size()] if not _pans.is_empty() else "Effects"
+			p.bus = _pans[_rng.randi() % _pans.size()] if not _pans.is_empty() else AMBIENCE_BUS
 			var v: Array = amb.get("shot_db", [-10, -10])
 			p.volume_db = _rng.randf_range(float(v[0]), float(v[1]))
 			var pitch := float(amb.get("shot_pitch", 0.0))

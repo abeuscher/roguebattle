@@ -2,5 +2,5 @@
   "_about": "Neutral squads (SPEC §6.7, §16): one race line (the sheet's R, N, L and T lines) native to a lair's home terrain. Danger (0..1, set at placement by distance from the Player Base) picks how far along that line's stages the squad is and adds levels on top. 1-9 units of that one class try to join, however many the squad's slots (§8.2) actually fit.",
   "level_span": 12,
   "patrol_radius": 4,
-  "sneak": {"per_agi": 0.1, "min": 0.1, "max": 1.0, "safe_ticks": 120, "_note": "Sneak past a band (playtest round 14, settled 2026-11-14): the chance is (your squad's average AGI - the band's) x per_agi, at least min and at most max. On success the two don't meet again for safe_ticks; on failure the band strikes first, and beating it still offers the recruit chance."}
+  "sneak": {"base": 0.4, "per_agi": 0.1, "min": 0.15, "max": 1.0, "safe_ticks": 120, "_note": "Sneak past a band (playtest round 14, settled 2026-11-14; base added in round 20, when the user found it too hard to be worth trying: bands are nearly always a little quicker, so the old floor of 10% was all anyone saw): the chance is base + (your squad's average AGI - the band's) x per_agi, at least min and at most max. On success the two don't meet again for safe_ticks; on failure the band strikes first, and beating it still offers the recruit chance."}
 }

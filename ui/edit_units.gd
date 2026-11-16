@@ -56,6 +56,7 @@ static var _sort := "leader"  # the Recruits order; kept while the game runs
 var _targets: Array = []  # [Control, Unit] that take items, dimmed while an item they can't wear is dragged
 var _status := UiStyle.label("", 16, UiStyle.ACCENT)
 var _gold := UiStyle.label("", 18, UiStyle.ACCENT)
+var _next_squad := UiStyle.label("", 18, UiStyle.ACCENT)  # "+1 in 3": buildings to hold for one more squad (round 20)
 var _done: Button  # the overview's way back to the map
 var _close: Button  # the squad view's X
 var _crumb := HBoxContainer.new()  # the squad view's title: "Edit Units > Edit Squad: …"
@@ -109,6 +110,18 @@ func setup(game_state: GameState, cell := -1) -> void:
 	_crumb.add_child(_crumb_squad)
 	top.add_child(_crumb)
 	top.add_child(_gold)
+	var next := HBoxContainer.new()
+	next.add_theme_constant_override("separation", 6)
+	next.mouse_filter = MOUSE_FILTER_PASS
+	var flag := TextureRect.new()
+	flag.texture = UiStyle.svg("users", 20, UiStyle.ACCENT)
+	flag.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+	flag.mouse_filter = MOUSE_FILTER_PASS
+	next.add_child(flag)
+	next.add_child(_next_squad)
+	_next_squad.mouse_filter = MOUSE_FILTER_PASS
+	next.tooltip_text = "One more squad on the map for every %d towns, towers and temples you hold." % int(data.rules["cap_growth"]["buildings_per_squad"])
+	top.add_child(next)
 	_done = UiStyle.button("Done (U)", 170, true)
 	_done.pressed.connect(func(): closed.emit())
 	top.add_child(_done)
@@ -236,7 +249,11 @@ func _refresh() -> void:
 	_crumb.visible = _squad != null
 	_done.visible = _squad == null
 	_close.visible = _squad != null
-	_gold.text = "Gold %d  ·  Upkeep %d a day  ·  On the map %d / %d" % [state.gold, state.army_upkeep(), state.player_squads().size(), state.field_cap()]
+	_gold.text = "Gold %d  ·  Upkeep %d a day  ·  On the map %d / %d  · " % [state.gold, state.army_upkeep(), state.player_squads().size(), state.field_cap()]
+	var more := state.buildings_to_next_squad()
+	_next_squad.text = "+1 in %d" % more
+	_next_squad.get_parent().tooltip_text = "Hold %d more building%s (towns, towers, temples) to field one more squad: one for every %d you hold." % [
+			more, "" if more == 1 else "s", int(data.rules["cap_growth"]["buildings_per_squad"])]
 	if _squad:
 		_crumb_squad.text = "Edit Squad: %s" % ("%s (%s)" % [_squad.leader.name.get_slice(" ", 0), _squad.leader.unit_class] if _squad.leader else _squad.name)
 	if _squad:

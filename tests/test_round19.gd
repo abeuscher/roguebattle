@@ -163,7 +163,7 @@ func test_heal_before_a_fight_closes_at_full_health() -> void:
 	menu.setup(st, ours, b)
 	check(not closed[0], "someone is hurt: it stays open")
 	st.use_supply_before_battle(b, ours.units[0], "herb")
-	menu._refresh()
+	menu._refresh(true)
 	check(closed[0], "everyone at full HP: it closes (and All better! plays)")
 	check(ours.all_well(d), "all well")
 	menu.free()
