@@ -62,7 +62,7 @@
   "card_elephant": {"file": "res://data/audio/card_effects/elephant.wav", "bus": "Effects"},
   "card_owl": {"file": "res://data/audio/card_effects/owl.wav", "bus": "Effects"},
   "card_cheetah": {"file": "res://data/audio/card_effects/cheetah.wav", "bus": "Effects"},
-  "card_raccoon": {"file": "", "bus": "Effects"},
+  "card_raccoon": {"file": "res://data/audio/card_effects/raccoon.wav", "bus": "Effects"},
   "card_turtle": {"file": "res://data/audio/card_effects/turtle.wav", "bus": "Effects"},
   "card_hippo": {"file": "res://data/audio/card_effects/hippo.wav", "bus": "Effects"},
   "card_dolphin": {"file": "res://data/audio/card_effects/dolphin.wav", "bus": "Effects"},
@@ -79,7 +79,7 @@
   "card_rooster": {"file": "res://data/audio/card_effects/rooster.wav", "bus": "Effects"},
   "card_fox": {"file": "res://data/audio/card_effects/fox.wav", "bus": "Effects"},
   "card_chameleon": {"file": "res://data/audio/card_effects/chameleon.wav", "bus": "Effects"},
-  "card_sloth": {"file": "", "bus": "Effects"},
+  "card_sloth": {"file": "res://data/audio/card_effects/sloth.wav", "bus": "Effects"},
   "card_unicorn": {"file": "res://data/audio/card_effects/unicorn.wav", "bus": "Effects"},
   "card_phoenix": {"file": "res://data/audio/card_effects/phoenix.wav", "bus": "Effects"},
   "card_gazelle": {"file": "res://data/audio/card_effects/gazelle.wav", "bus": "Effects"}

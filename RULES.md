@@ -256,7 +256,7 @@ Sound is coming in (ROADMAP M5). In so far:
 
 - **A click** on every button.
 - **Battles:** "Fight!" as a battle starts playing; on a win, the victory fanfare and "Victory!"; on a loss, just "Defeat!" (no trombone since 2026-11-14). A retreat or a draw has no sound.
-- **Tarot cards:** each card plays its own sound as it grows and fades away, on the map or in battle (Raccoon and Sloth are silent until their sounds are in).
+- **Tarot cards:** each card plays its own sound as it grows and fades away, on the map or in battle.
 - **A battle is coming:** from the moment a fight is announced until the battle opens (while the dialog is up, or you heal, edit the squad or look at the map first), the music turns to a tense build-up (a draft); the battle theme starts with the battle.
 - **Hidden sites:** "Hidden Location!" when one comes into view; a short glockenspiel-and-trumpet sound when you claim a treasure, card cache or rare recruit. When a site comes into view, gold rings spread from it for a few seconds, and if it's off screen the map glides there (keeping its zoom).
 - **The map's ambience:** under the piano, a very quiet bed of wind and grass by day, crickets and low wind by night, crossfading at dusk and dawn; now and then (about once a minute or so) a sound: songbirds, a banner, a gust by day; an owl, a crow, creaking timber, a gust by night. Some only when they fit: hooves while a mounted unit is on the move in sight, waves when a squad of yours is near the sea, a river when one is beside a river. Each sound comes from a little to the left or right, for depth; the bed stays in the middle. Only on the map, not in the menus, Edit Units or battles. These are first drafts, to be replaced.
