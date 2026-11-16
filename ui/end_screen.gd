@@ -1,9 +1,9 @@
 class_name EndScreen
 extends Control
 ## The victory/defeat screen (SPEC §4, §6.8). Since playtest round 21 a screen to pause
-## on: why the map ended, the run in numbers counting up, and on a victory the reward
-## paid (a day's income and a sum per place held), the user's video (played once, then
-## its loop clip over and over) and a few fireworks. A modal over the frozen map. The
+## on: the run in numbers counting up and, on a victory, the reward paid (a day's income
+## and a sum per place held) over the user's video filling the screen (played once, then
+## its loop clip over and over); a defeat shows the title and why instead. A modal over the frozen map. The
 ## only way out is back to the title; there's no further map to continue to yet.
 
 signal to_title
@@ -21,6 +21,61 @@ func setup(state: GameState) -> void:
 	var won: bool = summary["outcome"] == "victory"
 	var look: Dictionary = state.data.rules["end_screen"]
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	if won and ResourceLoader.exists(str(look["victory_video"])):
+		_victory(summary, look)
+	else:
+		_plain(summary, won)
+	if won:
+		_fireworks(int(look["fireworks"]))
+
+
+## A victory: the user's video fills the screen (it says "Victory" itself), and the numbers
+## sit in a dark see-through box along the bottom, below the castle of its closing loop.
+func _victory(summary: Dictionary, look: Dictionary) -> void:
+	var back := ColorRect.new()
+	back.color = Color.BLACK
+	back.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	add_child(back)
+	var fit := AspectRatioContainer.new()
+	fit.ratio = 16.0 / 9.0
+	fit.stretch_mode = AspectRatioContainer.STRETCH_COVER  # fills any window shape, cropping the edges
+	fit.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	fit.clip_contents = true
+	add_child(fit)
+	fit.add_child(_video(str(look["victory_video"]), str(look["victory_loop"])))
+	var panel := PanelContainer.new()
+	panel.add_theme_stylebox_override("panel", UiStyle.box(Color(0, 0, 0, float(look["stats_shade"])), 24))
+	panel.anchor_left = 0.5
+	panel.anchor_right = 0.5
+	panel.anchor_top = float(look["stats_top"])
+	panel.anchor_bottom = float(look["stats_top"])
+	panel.grow_horizontal = GROW_DIRECTION_BOTH
+	add_child(panel)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 48)
+	panel.add_child(row)
+	var numbers := VBoxContainer.new()
+	numbers.add_theme_constant_override("separation", 8)
+	row.add_child(numbers)
+	numbers.add_child(UiStyle.section("The map in numbers"))
+	var grid := _grid(4)
+	numbers.add_child(grid)
+	_stats(grid, summary)
+	var right := VBoxContainer.new()
+	right.add_theme_constant_override("separation", 8)
+	row.add_child(right)
+	if not summary["reward"].is_empty():
+		right.add_child(UiStyle.section("Victory reward"))
+		var pay := _grid(2)
+		right.add_child(pay)
+		_pay(pay, summary)
+	var go := _to_title_button()
+	go.size_flags_vertical = SIZE_SHRINK_END | SIZE_EXPAND
+	right.add_child(go)
+
+
+## A defeat (or a victory without its video): the title and why, over the frozen map.
+func _plain(summary: Dictionary, won: bool) -> void:
 	var shade := ColorRect.new()
 	shade.color = Color(0, 0, 0, 0.75)
 	shade.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
@@ -44,21 +99,35 @@ func setup(state: GameState) -> void:
 	var reason := UiStyle.label(str(summary["reason"]), 22, UiStyle.TITLE)
 	reason.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col.add_child(reason)
-	var body := HBoxContainer.new()
-	body.add_theme_constant_override("separation", 36)
-	col.add_child(body)
-	if won and ResourceLoader.exists(str(look["victory_video"])):
-		body.add_child(_video(str(look["victory_video"]), str(look["victory_loop"])))
 	var facts := VBoxContainer.new()
 	facts.add_theme_constant_override("separation", 10)
 	facts.custom_minimum_size.x = 520
-	body.add_child(facts)
+	col.add_child(facts)
 	facts.add_child(UiStyle.section("The map in numbers"))
-	var grid := GridContainer.new()
-	grid.columns = 2
-	grid.add_theme_constant_override("h_separation", 40)
-	grid.add_theme_constant_override("v_separation", 8)
+	var grid := _grid(2)
 	facts.add_child(grid)
+	_stats(grid, summary)
+	if won and not summary["reward"].is_empty():
+		facts.add_child(UiStyle.section("Victory reward"))
+		var pay := _grid(2)
+		facts.add_child(pay)
+		_pay(pay, summary)
+	else:
+		_row(grid, "Gold", int(summary["gold"]), " g")
+	var go := _to_title_button()
+	go.size_flags_horizontal = SIZE_SHRINK_CENTER
+	col.add_child(go)
+
+
+func _grid(columns: int) -> GridContainer:
+	var g := GridContainer.new()
+	g.columns = columns
+	g.add_theme_constant_override("h_separation", 40)
+	g.add_theme_constant_override("v_separation", 8)
+	return g
+
+
+func _stats(grid: GridContainer, summary: Dictionary) -> void:
 	_row(grid, "Days", int(summary["day"]))
 	_row(grid, "Battles won", int(summary["battles_won"]))
 	_row(grid, "Battles lost", int(summary["battles_lost"]))
@@ -69,47 +138,34 @@ func setup(state: GameState) -> void:
 	_row(grid, "Units in the army", int(summary["army_size"]))
 	_row(grid, "Reputation", int(summary["reputation"]))
 	_row(grid, "Tech points", int(summary["tech_points"]))
+
+
+func _pay(pay: GridContainer, summary: Dictionary) -> void:
 	var reward: Dictionary = summary["reward"]
-	if won and not reward.is_empty():
-		facts.add_child(UiStyle.section("Victory reward"))
-		var pay := GridContainer.new()
-		pay.columns = 2
-		pay.add_theme_constant_override("h_separation", 40)
-		pay.add_theme_constant_override("v_separation", 8)
-		facts.add_child(pay)
-		_row(pay, "A day's income", int(reward["income"]), " g", "+")
-		_row(pay, "%d places held × %d g" % [int(reward["buildings"]), int(reward["per_building"])],
-				int(reward["buildings"]) * int(reward["per_building"]), " g", "+")
-		_row(pay, "Gold at the end", int(summary["gold"]), " g", "", UiStyle.ACCENT, 26)
-	else:
-		_row(grid, "Gold", int(summary["gold"]), " g")
+	_row(pay, "A day's income", int(reward["income"]), " g", "+")
+	_row(pay, "%d places held × %d g" % [int(reward["buildings"]), int(reward["per_building"])],
+			int(reward["buildings"]) * int(reward["per_building"]), " g", "+")
+	_row(pay, "Gold at the end", int(summary["gold"]), " g", "", UiStyle.ACCENT, 26)
+
+
+func _to_title_button() -> Button:
 	var go := UiStyle.button("Return to title", 300, true)
-	go.size_flags_horizontal = SIZE_SHRINK_CENTER
 	go.pressed.connect(func(): to_title.emit())
-	col.add_child(go)
-	if won:
-		_fireworks(int(look["fireworks"]))
+	return go
 
 
 ## The user's video: the full piece once, then its loop clip over and over.
 func _video(full: String, loop_clip: String) -> Control:
-	var box := PanelContainer.new()
-	var edge := UiStyle.box(Color.BLACK, 0)
-	edge.set_border_width_all(2)
-	edge.border_color = Color(VICTORY, 0.5)
-	box.add_theme_stylebox_override("panel", edge)
 	var player := VideoStreamPlayer.new()
 	player.stream = load(full)
 	player.expand = true
-	player.custom_minimum_size = Vector2(720, 540)
-	box.add_child(player)
 	player.finished.connect(func():
 		if ResourceLoader.exists(loop_clip):
 			player.stream = load(loop_clip)
 			player.loop = true
 			player.play())
 	player.ready.connect(player.play)
-	return box
+	return player
 
 
 ## A label and a number that counts up to `value`, a beat after the one before it.
