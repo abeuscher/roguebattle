@@ -85,7 +85,8 @@ func _refresh() -> void:
 	for id in counts:
 		var on_map: bool = cards[id]["where"] == "map" and not view_only
 		_row(id, "Play" if on_map else "In battle", on_map, func():
-			state.play_map_card(id)
+			if state.play_map_card(id):
+				Sound.event("card_" + id)  # the card's own sound (audio.json)
 			_refresh(), counts[id], on_map)
 	_fit()
 

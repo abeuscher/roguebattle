@@ -42,6 +42,7 @@ var card_offer: Array[String] = []  # cards to choose one from (a Seer or Oracle
 var offers_waiting: Array = []  # later offers, each an Array of card ids, behind card_offer (round 19: a second draw had overwritten the first)
 var tech: Array[String] = []  # tech nodes bought (§14), shared with the army and its squads
 var tech_points := 0
+var tech_wins := 0  # battles won toward the next tech award (tech.json points wins_per_award)
 var debt_noons := 0  # noons in a row that ended in debt (§15.1, round 9): 3 is a defeat
 var game_over := ""  # "", "victory" or "defeat" (§6.8), once a condition is met
 var game_over_reason := ""  # the sentence the end screen shows
@@ -827,6 +828,7 @@ func tech_nodes() -> Dictionary:
 	for terrain in data.tech["terrains"]:
 		for t in range(1, 5):
 			out["terrain_%s_%d" % [terrain, t]] = {"name": "%s %s" % [terrain, ["I", "II", "III", "IV"][t - 1]], "branch": "", "tier": t,
+					"cost": t * int(data.tech["terrain_cost"]),
 					"text": "Units native to %s: +%d STR, INT, PDEF and MDEF." % [terrain.to_lower(), t]}
 	return out
 
@@ -847,17 +849,23 @@ func tech_blocker(id: String) -> String:
 		return "Already learned."
 	if not tier_open(int(node["tier"])):
 		return "Tier %d opens with 80%% of tier %d's branch nodes." % [int(node["tier"]), int(node["tier"]) - 1]
-	if tech_points < int(node["tier"]):
-		return "Needs %d point%s." % [int(node["tier"]), "" if int(node["tier"]) == 1 else "s"]
+	var cost := tech_cost(node)
+	if tech_points < cost:
+		return "Needs %d point%s." % [cost, "" if cost == 1 else "s"]
 	return ""
 
 
-## Buys a node for its tier in points (§14).
+## What a node costs in points: its tier, or for a terrain node its tier x tech.json terrain_cost.
+static func tech_cost(node: Dictionary) -> int:
+	return int(node.get("cost", node["tier"]))
+
+
+## Buys a node for its cost in points (§14).
 func buy_tech(id: String) -> bool:
 	if tech_blocker(id) != "":
 		return false
 	var node: Dictionary = tech_nodes()[id]
-	tech_points -= int(node["tier"])
+	tech_points -= tech_cost(node)
 	tech.append(id)
 	_apply_tech()
 	log.add(clock.tick, "progression", "Tech learned: %s. %s" % [node["name"], node["text"]])
@@ -1054,7 +1062,11 @@ func _battle_standing(b: Battle, out: Dictionary) -> void:
 	change_alignment(units, int(st["battle_alignment"]) * (-1 if weaker else 1), "fighting a %s enemy" % b.odds.to_lower())
 	var won := _won(out, 0)
 	if won:
-		earn_tech_points(int(data.tech["points"]["battle_win"]), "a battle won")
+		tech_wins += 1
+		var per := maxi(1, int(data.tech["points"].get("wins_per_award", 1)))
+		if tech_wins >= per:
+			tech_wins = 0
+			earn_tech_points(int(data.tech["points"]["battle_win"]), "%d battles won" % per if per > 1 else "a battle won")
 	if won and b.odds in ["Stronger", "Dangerous"]:
 		change_charisma(units, int(st["battle_charisma"]), "beating a stronger squad")
 	elif won and b.odds == "Much weaker":

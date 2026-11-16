@@ -399,7 +399,11 @@ func _card_tile(id: String, count: int) -> Control:
 	var tile := CardFace.make(state.data, id, count, play)
 	play.pressed.connect(func():
 		_close_picker()
-		_now(func(): return state.play_battle_card(battle, id))
+		_now(func():
+			var played := state.play_battle_card(battle, id)
+			if played:
+				Sound.event("card_" + id)  # the card's own sound (audio.json)
+			return played)
 		_update_cards())
 	return tile
 

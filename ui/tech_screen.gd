@@ -2,7 +2,7 @@ class_name TechScreen
 extends Control
 ## The Tech screen (SPEC §4, §14): the six branches by tier, and the terrain nodes. Click
 ## a node to learn it; its tier must be open (80% of the previous tier's branch nodes)
-## and it costs its tier in points. A modal: 50% dark overlay.
+## and it costs its tier in points (a terrain node more: tech.json terrain_cost). A modal: 50% dark overlay.
 
 signal closed
 
@@ -42,7 +42,7 @@ func setup(game_state: GameState) -> void:
 func _refresh() -> void:
 	for c in _body.get_children():
 		c.queue_free()
-	_points.text = "%d point%s to spend  ·  earn them from liberations and battles won" % [state.tech_points, "" if state.tech_points == 1 else "s"]
+	_points.text = "%d point%s to spend  ·  earn them by winning battles" % [state.tech_points, "" if state.tech_points == 1 else "s"]
 	var nodes := state.tech_nodes()
 	var grid := GridContainer.new()
 	grid.columns = 5
@@ -65,7 +65,7 @@ func _refresh() -> void:
 	var side := VBoxContainer.new()
 	side.add_theme_constant_override("separation", 6)
 	_body.add_child(side)
-	var note := UiStyle.label("Terrain: units native to it get +1 to +4\nSTR, INT, PDEF and MDEF (the highest tier counts)", 15, Color(0.75, 0.78, 0.82))
+	var note := UiStyle.label("Terrain: units native to it get +1 to +4\nSTR, INT, PDEF and MDEF (the highest tier counts);\nlevel I costs %d points, II %d, III %d, IV %d" % [1, 2, 3, 4].map(func(t: int): return t * int(state.data.tech["terrain_cost"])), 15, Color(0.75, 0.78, 0.82))
 	side.add_child(note)
 	var tgrid := GridContainer.new()
 	tgrid.columns = 5
@@ -91,7 +91,8 @@ func _node(id: String, node: Dictionary, size: Vector2, short := "") -> Control:
 	style.set_border_width_all(2)
 	style.border_color = OWNED.lightened(0.3) if owned else (UiStyle.ACTION if why == "" else Color(0.25, 0.27, 0.32))
 	cell.add_theme_stylebox_override("panel", style)
-	cell.tooltip_text = "%s (tier %d): %s%s" % [node["name"], int(node["tier"]), node["text"], "" if owned or why == "" else "\n" + why]
+	var cost := GameState.tech_cost(node)
+	cell.tooltip_text = "%s (tier %d, %d point%s): %s%s" % [node["name"], int(node["tier"]), cost, "" if cost == 1 else "s", node["text"], "" if owned or why == "" else "\n" + why]
 	var col := VBoxContainer.new()
 	col.mouse_filter = MOUSE_FILTER_IGNORE
 	col.add_theme_constant_override("separation", 2)

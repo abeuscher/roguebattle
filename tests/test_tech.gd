@@ -24,7 +24,7 @@ func _at(m: MapData, col: int, row: int) -> int:
 
 func _learn(st: GameState, ids: Array) -> void:
 	for id in ids:
-		st.tech_points += st.tech_nodes()[id]["tier"]
+		st.tech_points += GameState.tech_cost(st.tech_nodes()[id])
 		check(st.buy_tech(id), "learn %s" % id)
 
 
@@ -67,7 +67,7 @@ func test_points_and_costs() -> void:
 	st.player_squads()[0].hex = st.map.buildings[0]["hex"]
 	for i in int(d.rules["capture"]["ticks"]):
 		st.step()
-	check_eq(st.tech_points, 3, "+1 for a liberation")
+	check_eq(st.tech_points, 2, "a liberation pays no tech points (user, 2026-11-16)")
 
 
 func test_tier_gate() -> void:
@@ -96,7 +96,22 @@ func test_battle_win_earns_a_point() -> void:
 	foe.units[0].hp = 0
 	var points := st.tech_points
 	st.end_battle(b)
-	check_eq(st.tech_points, points + 1, "+1 for a win")
+	var per := int(d.tech["points"]["wins_per_award"])
+	check_eq(st.tech_points, points + (1 if per <= 1 else 0), "a win counts toward the next award")
+	for i in per - 1:
+		b = st.start_battle(ours, foe, foe)
+		foe.units[0].hp = 0
+		st.end_battle(b)
+	check_eq(st.tech_points, points + 1, "+1 for every %d wins" % per)
+
+
+func test_terrain_nodes_cost_more() -> void:
+	var st := _state()
+	var node: Dictionary = st.tech_nodes()["terrain_Plains_2"]
+	check_eq(GameState.tech_cost(node), 2 * int(d.tech["terrain_cost"]), "tier x terrain_cost")
+	st.tech_points = GameState.tech_cost(st.tech_nodes()["terrain_Plains_1"])
+	check(st.buy_tech("terrain_Plains_1"), "bought for its cost")
+	check_eq(st.tech_points, 0, "all of it spent")
 
 
 func test_arms() -> void:
@@ -147,10 +162,9 @@ func test_archery() -> void:
 	var e1 := _unit("Soldier")
 	var e2 := _unit("Soldier")
 	var v := _battle([_unit("Knight"), a], [e1, e2], ["volley"])
-	v._strike(a, "Ranged", 0)
-	var hits := v.events.filter(func(ev): return ev["type"] == "attack" and ev["unit"] == a)
-	check_eq(hits.size(), 2, "Volley: one shot becomes two")
-	check(hits[0]["target"] != hits[1]["target"], "at two targets")
+	var no_volley := _battle([_unit("Knight"), _unit("Archer", "back")], [_unit("Soldier"), _unit("Soldier")], [])
+	check_eq(v.attack_count(a), no_volley.attack_count(no_volley.sides[0].units[1]) + 1, "Volley: archers +1 shot")
+	check_eq(v.attack_count(v.sides[0].units[0]), no_volley.attack_count(no_volley.sides[0].units[0]), "not the Knight")
 
 
 func test_arcana() -> void:

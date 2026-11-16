@@ -249,6 +249,9 @@ func attack_count(u: Unit) -> int:
 	var drill := _tech(side_of(u), "drill")
 	if drill and int(u.info(data)["stage"]) >= 3 and base_kind(attack_kind(u)) == "Melee":
 		n += int(drill["attacks"])
+	var volley := _tech(side_of(u), "volley")
+	if volley and u.has_tag(data, "archer") and base_kind(attack_kind(u)) == "Ranged":
+		n += int(volley["attacks"])
 	return n
 
 
@@ -427,13 +430,6 @@ func _strike(u: Unit, kind: String, side: int) -> void:
 		group = "row"
 	var t := pick_target(u, base, targets, tactics[side])
 	var enemy := sides[1 - side]
-	var volley := _tech(side, "volley")
-	if volley and base == "Ranged" and group == "" and u.has_tag(data, "archer") and targets.size() > 1:
-		var other: Unit = targets.filter(func(o: Unit): return o != t)[rng.randi() % (targets.size() - 1)]
-		_attack(u, base, _guarded(enemy, t), float(volley["split"]))
-		_attack(u, base, _guarded(enemy, other), float(volley["split"]))
-		_used["first:%d" % u.get_instance_id()] = true
-		return
 	match group:
 		"row":
 			for o in enemy.row(t.row):
