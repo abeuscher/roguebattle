@@ -5,6 +5,7 @@ extends RefCounted
 ## a map plays out, only how it's shown.
 
 const PATH := "user://options.json"
+static var save_path := PATH  # where they're saved; a tool can point it elsewhere (tools/watch_run.gd)
 
 
 ## Option id -> value: every option in the data, saved values where there are any.
@@ -21,7 +22,7 @@ static func load_values(data: GameData, path := PATH) -> Dictionary:
 	return out
 
 
-static func save_values(values: Dictionary, path := PATH) -> void:
-	var f := FileAccess.open(path, FileAccess.WRITE)
+static func save_values(values: Dictionary, path := "") -> void:
+	var f := FileAccess.open(path if path != "" else save_path, FileAccess.WRITE)
 	if f:
 		f.store_string(JSON.stringify(values))
