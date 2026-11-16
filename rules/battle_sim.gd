@@ -24,7 +24,7 @@ static func roll_squad(data: GameData, build: Array, rng: RandomNumberGenerator,
 ## Returns win shares, the first battle's HP loss for the eventual loser and winner,
 ## and the average number of battles to rout.
 static func run(data: GameData, build_a: Array, build_b: Array, trials: int, seed: int,
-		terrain := "plains", daytime := true, levels := [1, 1]) -> Dictionary:
+		terrain := "plains", daytime := true, levels := [1, 1], tech_a: Array = []) -> Dictionary:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed
 	var wins := [0, 0]
@@ -44,6 +44,8 @@ static func run(data: GameData, build_a: Array, build_b: Array, trials: int, see
 		var winner := -1
 		while battles < MAX_BATTLES:
 			var b := Battle.new(data, sides[0], sides[1], terrain, daytime, rng)
+			b.tech[0] = tech_a  # side A's tech nodes (round 21: measuring the tree)
+			b.refresh_side(0)
 			b.attacker = trial % 2  # alternate who starts, so Charge-type effects even out
 			b.run()
 			var out := b.finish()

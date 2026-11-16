@@ -135,3 +135,15 @@ func test_stopping_in_the_open_asks_for_the_squad_list_tip() -> void:
 func test_the_version_is_stamped() -> void:
 	check(str(d.version.get("version", "")).begins_with("0."), "a 0.<session> version for the title screen")
 	check(str(d.version.get("stamp", "")) != "", "and when it was stamped")
+
+
+func test_drill_counts_in_a_battle_fought_off_screen() -> void:
+	var st := _state()
+	var ours := st.add_squad("Ours", _at(st.map, 10, 3), [["Knight", "front"]])
+	var foe := st.add_squad("Them", _at(st.map, 11, 3), [["Soldier", "front"]], "enemy")
+	var plain := st.start_battle(ours, foe, foe)
+	var n: int = plain._attacks[ours.units[0]]
+	st.pending = null
+	st.tech.append("drill")
+	var drilled := st.start_battle(ours, foe, foe)
+	check_eq(drilled._attacks[ours.units[0]], n + 1, "the extra attack is in the count the battle uses")

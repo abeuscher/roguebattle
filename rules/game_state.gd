@@ -2827,6 +2827,7 @@ func start_battle(player: Squad, enemy: Squad, defender: Squad) -> Battle:
 	b.odds = Threat.label(data, player, enemy)
 	if player.side == "player":
 		b.tech[0] = tech
+		b.refresh_side(0)  # attack counts again, now with tech (Drill was missed in fights fought off screen; round 21)
 		b.tactics[0] = player.tactic  # the squad's last tactic (round 11)
 	for side in 2:  # an enemy squad fights with the tactic it rolled once (ai.json battle)
 		var s: Squad = b.sides[side]

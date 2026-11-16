@@ -35,7 +35,7 @@ static func run(data: GameData, width: int, height: int, seed: int, days: float,
 	var away := {}  # squad -> the tick it left the map (wiped out, or home leaderless)
 	var places := map.buildings.filter(func(b): return b["type"] in KINDS)
 	var out := {"size": "%dx%d" % [width, height], "places": places.size(), "your_squads": 0, "enemy_squads": 0,
-			"samples": [], "battles": 0, "first_battle": -1, "gaps": [], "held": 0, "lost": 0, "spots": {}, "end": ""}
+			"samples": [], "battles": 0, "first_battle": -1, "gaps": [], "held": 0, "lost": 0, "spots": {}, "end": "", "tech": []}
 	var t := 0
 	var started := {}  # building hex -> true while the enemy is mid-capture of it (so each attempt counts once)
 	while t < days * GameClock.TICKS_PER_DAY and st.game_over == "":
@@ -85,6 +85,8 @@ static func run(data: GameData, width: int, height: int, seed: int, days: float,
 				started.erase(h)
 		if t % SAMPLE_TICKS == 0:
 			out["samples"].append(_shares(places))
+		if t % GameClock.TICKS_PER_DAY == 0:
+			out["tech"].append(st.tech_points)  # tech points earned by each day's end (none spent)
 	out["your_squads"] = st.player_squads().size()
 	out["enemy_squads"] = st.squads.filter(func(s: Squad): return s.side == "enemy").size()
 	out["end"] = st.game_over_reason
