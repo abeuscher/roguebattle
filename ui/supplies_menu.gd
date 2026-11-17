@@ -48,8 +48,6 @@ func _refresh(acted := false) -> void:
 	for c in _list.get_children():
 		c.queue_free()
 	if acted and squad.all_well(state.data):
-		if battle:
-			Sound.event("all_better")
 		closed.emit()
 		return
 	# What's left, as icon × count (round 19).

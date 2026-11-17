@@ -55,6 +55,5 @@ A miss (whoosh),Battle,One-shot,,,,battle_miss,,Done (the user's sound, 2026-11-
 A unit falling,Battle,One-shot,,,,battle_fall,,Done (the user's sound, 2026-11-16)
 "Buff, debuff, ward and dispel sounds (the user will supply)",Battle,One-shot,,,,kind map in audio.json battle_sounds,,To come (the user); silent until then
 Map ambience: conditional one-shots,Ambience,One-shot,,,,"Hooves (a mounted unit moving in sight), waves (near the sea), a river (beside one): any time of day, only while the condition holds",,"Drafts in (synthesized, 2026-11-14); the user may replace them"
-"""All better!""",Voice,One-shot,,,,"Spoken line (Al records): when healing before a fight brings everyone to full HP",,"To come (the user); wired as cue all_better in audio.json, silent until the file is in"
-Noon ledger (perhaps a cash register),Effect,One-shot,,,,"When the noon ledger opens: the daily tally",,"Done (the user's sound, 2026-11-16; cue noon_ledger)"
-An enemy squad wiped out (possible voice line),Voice,One-shot,,,,"Maybe: when an enemy squad is wiped out and leaves the board; not decided",,Possible (the user)
+Noon ledger (perhaps a cash register),Effect,One-shot,,,,When the noon ledger opens: the daily tally,,"Done (the user's sound, 2026-11-16; cue noon_ledger)"
+An enemy squad wiped out (possible voice line),Voice,One-shot,,,,Maybe: when an enemy squad is wiped out and leaves the board; not decided,,Possible (the user)

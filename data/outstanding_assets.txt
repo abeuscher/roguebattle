@@ -1,0 +1,54 @@
+OUTSTANDING ASSETS
+==================
+What the game still needs from you, and where each file goes. When a file lands, tell
+Claude: it gets trimmed, levelled and wired in, and the line here comes off.
+(Updated 2026-11-16.)
+
+
+NEEDED
+------
+
+Battle: the support-magic sounds
+  Folder: data/audio/battle_src/
+  Files:  buff.wav     a unit strengthens an ally (Defence up, Agility up, Magic defence up)
+          debuff.wav   a unit weakens an enemy (Strength down, Agility down, poison and the like)
+          ward.wav     a protective spell (Ward attacks)
+          dispel.wav   a spell that strips buffs or curses (Dispel attacks)
+  Any length; the game shortens battle sounds to 1.2 seconds so they don't run over the
+  next action at fast speeds. Until these are in, all four borrow the heal sound.
+
+
+MAYBE (only if you decide you want them)
+----------------------------------------
+
+Voice: an enemy squad wiped out
+  Folder: data/audio/voice/
+  A short line for when an enemy squad is wiped out and leaves the board. Not decided.
+
+Extra takes, for variety
+  Folder: next to the file it varies (for example data/audio/voice/victory_2.wav)
+  A second or third take of a sound that plays often (the victory fanfare, "Victory!",
+  "Defeat!", battle hits), so the game never plays the same take twice in a row. The
+  game can't pick between takes yet; that gets built once there are takes to pick from.
+
+
+PLACEHOLDERS YOU MAY REPLACE
+----------------------------
+These play now, made by Claude; swap in your own any time.
+
+Map ambience (the background sound under the map's music)
+  Folder: data/audio/ambience_src/day/, .../night/ and .../any/ (any time of day)
+  A looping bed per time of day (a file whose name starts with "bed") and short one-shots
+  (birds, wind, distant bells...). One-shots named for a condition only play when it's
+  true: hooves (a mounted squad moving in sight), waves (near the sea), river (beside one).
+  See data/audio/ambience_src/README.md.
+
+Battle build-up music (before a fight, while the warning is up)
+  File: data/audio/music/battle_intro.wav (a MIDI draft; the source is
+  data/audio/midi/battle_intro.mid)
+
+
+OTHER ASSETS
+------------
+None promised at present. (Unit cards in data/unit_art/ are yours to add as you like:
+a class without one shows its icon.)
