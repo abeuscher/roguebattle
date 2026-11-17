@@ -223,7 +223,10 @@ func _process(delta: float) -> void:
 		_open_rare_popup()
 	_pump_liberations()
 	_pump_losses()
-	if not state.card_offer.is_empty() and _calm():
+	# A Seer's or Oracle's choice from a liberation shows in that liberation's window, so the
+	# chooser waits while one is queued (user, 2026-11-16: it opened first, in the beat
+	# before the liberation window); an offer from elsewhere (a hidden site) opens here.
+	if not state.card_offer.is_empty() and _calm() and not state.liberations.any(func(e: Dictionary): return e.get("offer", false)):
 		_open_cards(true)
 	if state.game_over != "" and _free():
 		_open_end_screen()
@@ -1237,6 +1240,8 @@ func _open_rare_popup() -> void:
 	_rare_popup.setup(state)
 	_glide_to_place(state.pending_rare["building"]["hex"], _rare_popup)
 	_rare_popup.answered.connect(func(take: bool):
+		if _rare_popup.has_meta("closing"):
+			return  # answered already: it's shrinking away
 		if take:
 			Sound.event("recruit_joined")
 		state.resolve_rare(take)
