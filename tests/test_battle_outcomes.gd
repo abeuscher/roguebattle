@@ -53,7 +53,8 @@ func test_poison_burn_regen() -> void:
 	var dmg := b.expected_damage(f, k, "Melee")
 	b._status[f] = {}
 	b.add_status(f, "burn")
-	check(is_equal_approx(b.expected_damage(f, k, "Melee"), maxf(1.0, f.stats["STR"] * 1.15 * float(d.battle["statuses"]["burn"]["physical_dealt"]) - k.stats["PDEF"])), "burn: less physical damage")
+	var home := 1.0 - float(d.battle["home_terrain_defense"]) if b.on_home_terrain(k) else 1.0  # home ground defends (round 23)
+	check(is_equal_approx(b.expected_damage(f, k, "Melee"), maxf(1.0, f.stats["STR"] * 1.15 * float(d.battle["statuses"]["burn"]["physical_dealt"]) - k.stats["PDEF"]) * home), "burn: less physical damage")
 	check(b.expected_damage(f, k, "Melee") < dmg, "burned hits are weaker")
 
 
@@ -95,7 +96,8 @@ func test_skip_statuses() -> void:
 	check_eq(hurt.hp, 10, "petrified units can't be healed")
 	var brute := _unit("Fighter")
 	brute.stats["STR"] = 40
-	check_eq(c.expected_damage(brute, hurt, "Melee"), (40 * 1.15 - hurt.stats["PDEF"]) * 0.5, "petrified units take half damage")
+	var home := 1.0 - float(d.battle["home_terrain_defense"]) if c.on_home_terrain(hurt) else 1.0  # home ground defends (round 23)
+	check(is_equal_approx(c.expected_damage(brute, hurt, "Melee"), (40 * 1.15 - hurt.stats["PDEF"]) * 0.5 * home), "petrified units take half damage")
 	var s := _battle([_unit("Knight", "front", "S")], [_unit("Fighter", "front", "F")], "plains", 3)
 	var sleeper := s.sides[0].units[0]
 	s.add_status(sleeper, "sleep")

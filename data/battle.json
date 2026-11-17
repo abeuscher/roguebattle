@@ -16,6 +16,7 @@
  "heal_int_share": 0.3,
  "home_terrain_bonus": 0.15,
  "hard_terrain_penalty": 0.15,
+ "home_terrain_defense": 0.10, "_home_terrain_defense": "Playtest round 23 (user, 2026-11-16): a unit on its home terrain also takes 10% less damage (not while its squad has lost heart).",
  "day_night_bonus": 0.15,
  "element_opposite": 1.5,
  "element_same": 0.75,

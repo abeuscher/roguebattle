@@ -264,3 +264,15 @@ func test_longbow_adds_a_back_row_attack() -> void:
 	var front := b.attack_count(a)
 	a.items.erase("weapon")
 	check_eq(b.attack_count(a), front, "not from the front row")
+
+
+## Home ground defends too (user, playtest round 23): a unit on its home terrain takes
+## battle.json home_terrain_defense (10%) less damage.
+func test_home_terrain_cuts_damage_taken() -> void:
+	var home := _battle([_unit("Knight")], [_unit("Soldier")], [], "plains")
+	var away := _battle([_unit("Knight")], [_unit("Soldier")], [], "forest")
+	var t_home: Unit = home.sides[1].units[0]
+	var t_away: Unit = away.sides[1].units[0]
+	check(home.on_home_terrain(t_home) and not away.on_home_terrain(t_away), "a Soldier is at home on plains")
+	var ratio := home._taken_multiplier(home.sides[0].units[0], t_home, "Melee") / away._taken_multiplier(away.sides[0].units[0], t_away, "Melee")
+	check(is_equal_approx(ratio, 1.0 - float(d.battle["home_terrain_defense"])), "10%% less taken at home (%s)" % ratio)

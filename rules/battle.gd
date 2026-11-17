@@ -1166,6 +1166,8 @@ func _taken_multiplier(u: Unit, t: Unit, base: String) -> float:
 		return maxf(1.0, _taken_raw(u, t, base))
 	if t.row == "front":  # the front row takes the brunt, so it takes less of each blow
 		m *= 1.0 - float(cfg["front_row_damage_cut"])
+	if on_home_terrain(t):  # home ground defends too (user, playtest round 23)
+		m *= 1.0 - float(cfg["home_terrain_defense"])
 	for s in _status.get(t, {}):
 		m *= float(cfg["statuses"][s].get(key, 1.0)) * float(cfg["statuses"][s].get("damage_taken", 1.0))
 	for name in t.info(data)["traits"]:
@@ -1231,11 +1233,15 @@ func morale_modifier(u: Unit) -> float:
 	return 1.0 - float(m["damage_penalty"]) if sides[side_of(u)].morale < int(m["damage_penalty_below"]) else 1.0
 
 
+## Whether the battle's ground is the unit's home terrain.
+func on_home_terrain(u: Unit) -> bool:
+	var home: String = data.rules["travel_types"].get(u.terrain(data), "")
+	return home != "" and (terrain["key"] == home or terrain.get("native_as", "") == home or (home == "shallow" and terrain.get("water", false)))
+
+
 ## +15% on the unit's home terrain, −15% on other difficulty-3 terrain (not for flyers).
 func terrain_modifier(u: Unit) -> float:
-	var sheet := u.terrain(data)
-	var home: String = data.rules["travel_types"].get(sheet, "")
-	if home != "" and (terrain["key"] == home or terrain.get("native_as", "") == home or (home == "shallow" and terrain.get("water", false))):
+	if on_home_terrain(u):
 		return 1.0 + float(cfg["home_terrain_bonus"])
 	if int(terrain.get("difficulty", 0)) == 3 and not u.has_tag(data, "flyer"):
 		return 1.0 - float(cfg["hard_terrain_penalty"])
