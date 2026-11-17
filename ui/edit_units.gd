@@ -18,6 +18,10 @@ signal deploy(squad: Squad)  # lay its route on the map, then confirm the cost
 const KIND_COLORS := {"Melee": Color("#8a4a3a"), "Ranged": Color("#4f7a3a"), "Magic": Color("#3d5a9a"),
 		"Breath": Color("#8a5a2a"), "Heal": Color("#9a8a3a"), "Buff": Color("#9a8a3a"), "Debuff": Color("#6a4a8a"),
 		"Ward": Color("#3a7a8a"), "Dispel": Color("#3d5a9a")}
+## An icon per kind of attack (user, 2026-11-16: the usual RPG shorthand instead of the word),
+## from the interface's Lucide set: sword, bow, wand, red cross, shield, skull, flame.
+const KIND_ICONS := {"Melee": "sword", "Ranged": "bow-arrow", "Magic": "wand-sparkles", "Breath": "flame",
+		"Heal": "medical-cross", "Buff": "shield", "Debuff": "skull", "Ward": "shield", "Dispel": "wand-sparkles"}
 ## The Recruits color key (user's notes, 2026-11-10): one swatch per color in use.
 const KEY := [["Melee", "Melee"], ["Ranged", "Ranged"], ["Magic", "Magic"], ["Heal", "Heal / buff"],
 		["Debuff", "Debuff"], ["Ward", "Ward"], ["Breath", "Breath"]]
@@ -192,9 +196,8 @@ func _gutter() -> Control:
 	for k in KEY:
 		var item := HBoxContainer.new()
 		item.add_theme_constant_override("separation", 4)
-		var swatch := ColorRect.new()
-		swatch.color = KIND_COLORS[k[0]]
-		swatch.custom_minimum_size = Vector2(10, 10)
+		var swatch := TextureRect.new()  # the kind's icon in its colour (round 23)
+		swatch.texture = UiStyle.svg(KIND_ICONS[k[0]], 14, KIND_COLORS[k[0]].lightened(0.35))
 		swatch.size_flags_vertical = SIZE_SHRINK_CENTER
 		item.add_child(swatch)
 		item.add_child(UiStyle.label(k[1], 12, Color(0.7, 0.73, 0.78)))
@@ -1076,8 +1079,8 @@ func _chip(u: Unit, mode: String, draggable: bool, cell: int, r: String, c: int)
 	if draggable:
 		chip.set_drag_forwarding(_drag.bind(u), _can_drop_on_chip.bind(u, cell, r, c), _drop_on_chip.bind(u, cell, r, c))
 		_targets.append([chip, u, ""])
-	chip.tooltip_text = "%s (%s), level %d. HP %d/%d.%s" % [u.name, u.unit_class, u.level, u.hp, u.max_hp(data),
-			" Drag to move." if draggable else ""]
+	chip.tooltip_text = "%s (%s), level %d. HP %d/%d. %s ×%d.%s" % [u.name, u.unit_class, u.level, u.hp, u.max_hp(data),
+			chip.attack_name, chip.attacks, " Drag to move." if draggable else ""]
 	chip.gui_input.connect(func(e: InputEvent):
 		if not (e is InputEventMouseButton and e.button_index == MOUSE_BUTTON_LEFT and not e.pressed):
 			return  # on release, so pressing to drag doesn't rebuild the screen under the drag
@@ -1249,6 +1252,9 @@ class Chip extends Control:
 	var max_hp := 1
 	var color := Color.GRAY
 	var line := ""
+	var attack_name := ""  # the attack of the row it's in (or would be placed in), and how many times
+	var attacks := 1
+	var kind_icon: Texture2D  # that attack's kind as an icon (KIND_ICONS)
 	var selected := false
 	var promotable := false  # shows a green arrow (§4: a badge on any unit ready to promote)
 	var can_lead := false  # in the pool, a unit that can lead shows a gray star (user's notes, 2026-11-10)
@@ -1267,6 +1273,9 @@ class Chip extends Control:
 		var attack: String = c["front_attack" if row == "front" else "back_attack"]
 		color = colors.get(Battle.base_kind(attack), Color.GRAY)
 		line = "Lv %d  ·  %s" % [u.level, attack]
+		attacks = int(c["front_count" if row == "front" else "back_count"])
+		kind_icon = UiStyle.svg(EditUnits.KIND_ICONS.get(Battle.base_kind(attack), "sword"), 16, color.lightened(0.45))
+		attack_name = attack
 		custom_minimum_size = {"compact": Vector2(72, 48), "wide": Vector2(272, 58), "slot": Vector2(148, 122), "menu": Vector2(104, 70)}[mode]
 		mouse_default_cursor_shape = CURSOR_DRAG
 
@@ -1306,9 +1315,10 @@ class Chip extends Control:
 					_star(Vector2(size.x - 14, 16), 7.5)
 				if promotable:
 					_arrow(Vector2(size.x - 14, 38 if leader else 16), 6.5)
-				var kind := line.get_slice("  ·  ", 1)
 				draw_string(font, Vector2(76, 24), "Lv %d" % unit.level, HORIZONTAL_ALIGNMENT_LEFT, size.x - 100, 13, ink.darkened(0.1))
-				draw_string(font, Vector2(76, 44), kind, HORIZONTAL_ALIGNMENT_LEFT, size.x - 100, 11, ink.darkened(0.25))
+				if kind_icon:  # the attack as an icon and its count, not the word (round 23)
+					draw_texture(kind_icon, Vector2(76, 31), Color.WHITE if not dead else Color(1, 1, 1, 0.4))
+				draw_string(font, Vector2(96, 44), "×%d" % attacks, HORIZONTAL_ALIGNMENT_LEFT, size.x - 120, 12, ink.darkened(0.15))
 				draw_string(font, Vector2(10, 88), unit.name, HORIZONTAL_ALIGNMENT_LEFT, size.x - 20, 14, ink)
 				draw_string(font, Vector2(10, 105), unit.unit_class, HORIZONTAL_ALIGNMENT_LEFT, size.x - 72, 12, ink.darkened(0.2))
 				draw_string(font, Vector2(size.x - 80, 105), "%d/%d" % [unit.hp, max_hp] if not dead else "Fallen",
@@ -1327,7 +1337,9 @@ class Chip extends Control:
 					_star(Vector2(size.x - 16, 16), 8.0, true)
 				if promotable:
 					_arrow(Vector2(size.x - (36 if starred else 16), 16), 7.0)
-				draw_string(font, Vector2(x, 38), unit.name, HORIZONTAL_ALIGNMENT_LEFT, w - 70, 12, ink.darkened(0.25))
+				if kind_icon:
+					draw_texture(kind_icon, Vector2(x, 25), Color.WHITE if not dead else Color(1, 1, 1, 0.4))
+				draw_string(font, Vector2(x + 20, 38), unit.name, HORIZONTAL_ALIGNMENT_LEFT, w - 90, 12, ink.darkened(0.25))
 				draw_string(font, Vector2(size.x - 80, 38), "%d/%d" % [unit.hp, max_hp] if not dead else "Fallen",
 						HORIZONTAL_ALIGNMENT_RIGHT, 68, 11, ink.darkened(0.2))
 				draw_rect(Rect2(x, size.y - 12, size.x - x - 12, 5), Color(0.05, 0.05, 0.06))
