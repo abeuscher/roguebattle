@@ -412,3 +412,24 @@ func test_following_survives_a_won_battle() -> void:
 		st.step()
 	check(p.follow == e and p.is_moving(), "and after it as it moves off")
 
+
+
+## Playtest bug (2026-11-17): a squad nearly done taking a tower when an enemy came up
+## finished it on the very minute the fight began; its window waited behind the fight and
+## opened once the map was free, paused. A squad that meets an enemy doesn't finish a
+## capture that minute: the count waits, kept, for after the fight.
+func test_no_capture_on_the_minute_a_fight_starts() -> void:
+	var st := _state()
+	var tower := {"type": "tower", "hex": _at(st.map, 15, 4), "shop": false, "hint": false, "hidden": false, "kind": "", "road": false, "owner": "enemy", "away": false}
+	st.map.buildings.append(tower)
+	st._building_at[tower["hex"]] = st.map.buildings.size() - 1
+	var o := _ours(st, 15)
+	st.debug_freeze_ai = true
+	var t := _theirs(st, 17)
+	o.capture_ticks = float(d.rules["capture"]["ticks"]) - 0.5
+	t.hex = _at(st.map, 16, 4)  # it steps up next to the tower
+	st.step()
+	check(st.pending != null, "the fight starts")
+	check_eq(tower["owner"], "enemy", "the tower isn't taken that minute")
+	check(st.liberations.is_empty(), "and no liberation waits behind the fight")
+	check(o.capture_ticks > 0.0, "the count is kept")

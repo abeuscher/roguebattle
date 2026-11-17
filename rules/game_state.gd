@@ -111,11 +111,11 @@ func step() -> void:
 		if s.entering_base and s.hex == map.player_base:
 			return_to_base(s)
 	_linger_poison()
-	_capture()
-	_check_cap()
 	_reveal_sites()
 	_claim_sites()
-	_check_contact()
+	_check_contact()  # before capture: a squad that meets an enemy this minute doesn't finish a capture (bug, 2026-11-17)
+	_capture()
+	_check_cap()
 	_check_game_over()
 
 
@@ -379,7 +379,7 @@ func _capture() -> void:
 				or not s.living().any(func(u: Unit): return not u.has_tag(data, "flyer")):
 			s.capture_ticks = 0.0
 			continue
-		if clock.tick < s.capture_wait:  # just fought: the count waits, keeping what it has (user, 2026-11-13)
+		if clock.tick < s.capture_wait or _meeting(s):  # just fought, or about to: the count waits, keeping what it has (user, 2026-11-13)
 			continue
 		var sapper := s.living().any(func(u: Unit): return u.has_tag(data, "sapper"))
 		s.capture_ticks += float(c["sapper_speed"]) if sapper else 1.0
@@ -572,6 +572,11 @@ static func _swing(aligned: String, band: String) -> int:
 	if band == "neutral" or aligned == "":
 		return 0
 	return 1 if band == aligned else -1
+
+
+## Whether `s` is in the fight or Recruit-or-Fight choice waiting to open.
+func _meeting(s: Squad) -> bool:
+	return (pending != null and s in pending.sides) or s in [pending_recruit.get("player"), pending_recruit.get("neutral")]
 
 
 ## Share of the capture done by squads on a building's hex (0 if none).
