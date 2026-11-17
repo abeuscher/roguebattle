@@ -4,9 +4,10 @@ extends Control
 ## on: the run in numbers counting up and, on a victory, the reward paid (a day's income
 ## and a sum per place held) over the user's video filling the screen (played once, then
 ## its loop clip over and over); a defeat shows the title and why instead. A modal over the frozen map. The
-## only way out is back to the title; there's no further map to continue to yet.
+## way out is back to the title, or in a campaign on to its next step.
 
 signal to_title
+signal campaign_go  # a campaign's next step: the next chapter, its end, or the map again (SPEC §25.2)
 
 const VICTORY := Color("#7ee08a")
 const DEFEAT := Color("#c8402f")
@@ -14,9 +15,12 @@ const SOFT := Color(0.8, 0.82, 0.86)
 const COUNT_SECONDS := 1.4  # how long each number takes to count up
 
 var _counted := 0  # numbers started counting, for their stagger
+var _campaign := ""  # in a campaign: "next", "finish" or "retry", the button over Return to title
 
 
-func setup(state: GameState) -> void:
+## `campaign_step`: in a campaign, what its button does ("next", "finish" or "retry").
+func setup(state: GameState, campaign_step := "") -> void:
+	_campaign = campaign_step
 	var summary := state.end_summary()
 	var won: bool = summary["outcome"] == "victory"
 	var look: Dictionary = state.data.rules["end_screen"]
@@ -157,10 +161,19 @@ func _pay(pay: GridContainer, summary: Dictionary) -> void:
 	_row(pay, "Gold at the end", int(summary["gold"]), " g", "", UiStyle.ACCENT, 26)
 
 
-func _to_title_button() -> Button:
-	var go := UiStyle.button("Return to title", 300, true)
+func _to_title_button() -> Control:
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 10)
+	if _campaign != "":
+		var on := UiStyle.button({"next": "Next chapter", "finish": "Finish the campaign", "retry": "Try again"}[_campaign], 300, true)
+		on.tooltip_text = {"next": "On to the next map, with your army.", "finish": "The campaign's ending.",
+				"retry": "This map again from its start, with the army you brought into it."}[_campaign]
+		on.pressed.connect(func(): campaign_go.emit())
+		col.add_child(on)
+	var go := UiStyle.button("Return to title", 300, _campaign == "")
 	go.pressed.connect(func(): to_title.emit())
-	return go
+	col.add_child(go)
+	return col
 
 
 ## The user's video: the full piece once, then its loop clip over and over.

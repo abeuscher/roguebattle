@@ -9,6 +9,7 @@ signal to_title
 signal quit_game
 signal save_settings
 signal regenerate(seed: int)  # debug panel: a fresh map from this seed, same settings
+signal campaign_go  # the end screen's campaign button: next chapter, the ending, or Try again (SPEC §25.2)
 
 const NIGHT := Color(0.45, 0.5, 0.78)  # map tint at night
 const ENEMY := Color("#c8402f")
@@ -60,6 +61,7 @@ var _base_tip_asked := false  # the home base tip has been offered this session
 ## encounter popup. Tied to that battle, so a recruit that ends in no fight can't make
 ## the next enemy contact skip its popup.
 var _announced: Battle
+var campaign: Campaign  # the campaign this map is a chapter of, or null (SPEC §25)
 var _set_aside: Battle  # a fight whose dialog the player put aside (View Squad and Map): it waits while time is paused
 var _edit: EditUnits
 var _deploy_menu: DeployMenu
@@ -101,8 +103,11 @@ func start(game_data: GameData, game_log: GameLog, game_config: GameConfig, map:
 	var started := Time.get_ticks_msec()
 	if map == null:
 		map = MapGen.generate(data, config.seed, config.map_overrides())
-	state = GameState.new(data, map, log, config.game_settings())
-	state.setup_army(_wide_roster_count())
+	state = GameState.new(data, map, log, campaign.settings(data) if campaign else config.game_settings())
+	if campaign:
+		campaign.set_up(state)  # chapter 1's start, or the army carried in (SPEC §25.4)
+	else:
+		state.setup_army(_wide_roster_count())
 	state.place_enemies()
 	state.place_neutrals()
 	_show_state()
@@ -1435,8 +1440,12 @@ func _music() -> String:
 func _open_end_screen() -> void:
 	_end_screen = EndScreen.new()
 	_ui.add_child(_end_screen)
-	_end_screen.setup(state)
+	var step := ""
+	if campaign:
+		step = "retry" if state.game_over != "victory" else ("finish" if campaign.is_last() else "next")
+	_end_screen.setup(state, step)
 	_end_screen.to_title.connect(func(): to_title.emit())
+	_end_screen.campaign_go.connect(func(): campaign_go.emit())
 
 
 func _open_main_menu() -> void:

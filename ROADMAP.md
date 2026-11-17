@@ -193,8 +193,8 @@ The design is SPEC §25 (written 2026-11-17 from the notes below and the user's 
 
 | # | Session | Spec | Verify | Status |
 |---|---|---|---|---|
-| 1 | **The campaign loop:** campaigns as data files; Start Campaign; the pages between maps (text, picture, video, sound); a win goes to the next chapter with the army carried; Try again after a loss; the campaign save at each chapter's start. Trifectus's three chapters with placeholder settings and text | §25.1-25.5 | Tests; play through on debug wins | Next |
-| 2 | **Bosses and story moments:** named squads (bosses), the Opinion Leader's party must beat the boss, the reversed name that follows a rename, squads joining between maps, Trifectus's starting army | §25.6, 25.7 | Tests; play map 1 | |
+| 1 | **The campaign loop:** campaigns as data files; Start Campaign; the pages between maps (text, picture, video, sound); a win goes to the next chapter with the army carried; Try again after a loss; the campaign save at each chapter's start. Trifectus's three chapters with placeholder settings and text | §25.1-25.5 | Tests; play through on debug wins | Done (session 109): `data/campaigns/trifectus.json` and `rules/campaign.gd`; pages (StoryPages); the end screen's Next chapter, Finish the campaign and Try again; the debug panel's Win map and Lose map. Walked through in a window: pages, map 1, a win, map 2 with all 40 units carried, a loss and Try again on the same map |
+| 2 | **Bosses and story moments:** named squads (bosses), the Opinion Leader's party must beat the boss, the reversed name that follows a rename, squads joining between maps, Trifectus's starting army | §25.6, 25.7 | Tests; play map 1 | Next |
 | 3 | **The new map shapes:** the coastline round a central ocean with an island fortress (map 2); the 500 × 100 valley with the lava river and three crossings, and the moated castle with one bridge (map 3) | §25.7 | Map previews | |
 | 4 | **Lines allowed per campaign** (the first step of `docs/campaign-gating.md`) | §25.6 | Tests | |
 | 5 | **Tuning Trifectus** by playtest | §25.7 | Playtest | |

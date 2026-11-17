@@ -246,6 +246,15 @@ The enemy fields its Warlord and Base guard plus as many squads as you may have 
 
 ---
 
+## Campaigns
+
+- **Start Campaign** on the Start screen lists the campaigns (the Kingdom of Trifectus, three maps) and asks your name, which your Opinion Leader takes. Then a few pages of story, then the first map.
+- **Each map is a single map** with the campaign's own settings (size, map type, chokepoints, difficulty), played by the single map's rules.
+- **Pages between maps:** a title and text, perhaps a picture, a video or a sound. Click, Space or Enter goes on; Esc skips the rest.
+- **Winning a map** shows its closing pages and the next map's opening ones, then the next map. Your whole army comes along: every unit with its level, XP and items, the squads as you had them, the recruit pool, tech and unspent tech points, your cards and your reputation. Everyone is healed, the fallen revived, poison gone. Gold starts again at the map's starting amount. Your squads start at the Player Base with Edit Units open, the Opinion Leader's on the map.
+- **Losing a map:** the defeat screen's **Try again** plays the same map again from its start with the army you brought into it; Return to title leaves it for later.
+- **Saving:** the campaign saves itself at the start of each map; Continue picks it up if it's newer than your latest save slot. The save slots work inside a campaign map as usual and remember the campaign. Finishing the campaign shows its ending pages and clears its save.
+
 ## Saving and loading
 
 - **Save game** in the Esc menu opens 3 slots, each showing its day and time, gold, squads on the map and when it was saved (or "Empty"). Saving over a slot in use asks first. There's no autosave.
@@ -312,6 +321,7 @@ Sound is coming in (ROADMAP M5). In so far:
 
 Backtick opens the debug panel. It's for testers only and isn't part of the game. Each tab groups its tools in labelled sections; close it with the X, backtick or Esc. "At the cursor" means the hex under the mouse when you opened the panel.
 
+- **Win map / Lose map** (Map tab, End the map) end the map at once, to walk a campaign through.
 - **Map:** reveal every enemy and hidden site; a fresh map from any seed with the same settings; map overlays (terrain, movement cost, roads, buildings per quadrant, lair danger), the hex grid, and your squads' sight radius.
 - **Time:** jump to any hour, run the map on for N hours, or freeze the time of day while everything else keeps going.
 - **Units:** *Build a squad*: an empty squad is shown in front and back rows; pick a class and a level and Add puts a freshly rolled unit of it into the squad (any mix of classes, up to a full squad, each in its usual row; the first that can lead leads). Click a unit to select it, then Remove. Pick a side and Place at cursor puts a copy on the map; the built squad stays in the panel, even after closing, to place again, until Clear. *A squad on the map*: pick one, then set its alignment, teleport it to the cursor or remove it. *Your army*: heal and revive all your units; the Wide roster button (16 varied squads).
@@ -327,4 +337,5 @@ Outside the panel: O cycles overlays, G the grid, H hidden sites, F8 a squad's t
 These are named in the design but not working yet — don't expect them when testing. See `ROADMAP.md` for the plan and `STATUS.md` for current session.
 
 - **Morale and loyalty portraits.** Both are fully working and logged (see "Units" above), but the spec's visual signs — a leader's portrait shifting from confident to shaken, an uneasy portrait at low loyalty — have no portraits to shift yet.
-- **Maps 2 and 3, the campaign layer, difficulty settings, and final art** are all explicitly out of scope for this build (`SPEC.md` §2).
+- **The campaign's bosses, story moments and special maps** (the Kingdom of Trifectus's named bosses, the squads that join between maps, its starting army, the ocean coastline and the moated castle) come next; for now its maps are ordinary single maps with placeholder text. Unit lines limited per campaign come after.
+- **Final art** is out of scope for this build.

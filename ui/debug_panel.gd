@@ -118,6 +118,12 @@ func _map_tab() -> Control:
 	var gen := _section(tab, "New map")
 	var seed_box := _spin(0, 999999999, state.map.seed, 160)
 	gen.add_child(_row("Seed", [seed_box, _button("Regenerate", func(): regenerate.emit(int(seed_box.value)))]))
+	var end := _section(tab, "End the map")  # to walk a campaign through (SPEC §25)
+	end.add_child(_row("", [_button("Win map", func():
+		state._end_game("victory", "Won from the debug panel.")
+		_done("Map won.")), _button("Lose map", func():
+		state._end_game("defeat", "Lost from the debug panel.")
+		_done("Map lost."))]))
 	return tab
 
 

@@ -1,0 +1,31 @@
+{
+ "_note": "The Kingdom of Trifectus (SPEC §25.7; user's notes 2026-11-16). Placeholder text and map settings: the bosses, joining squads and starting army come in campaign step 2, the coastline and the valley's castle in step 3. A page is {title, text, image, video, sound}, every part optional; files are in data/campaigns/trifectus/. Map heights go in steps of 15 (configurator), so 75 and 105 stand for the notes' 70 and 100.",
+ "name": "The Kingdom of Trifectus",
+ "description": "Three maps. Carve out a kingdom, one rival at a time.",
+ "opening": [
+  {"title": "The Kingdom of Trifectus", "text": "A land of three crowns, and none of them worn well. You arrive with a small company and a long road ahead.\n\n(Placeholder story text.)"}
+ ],
+ "ending": [
+  {"title": "Trifectus is yours", "text": "The last of the three thrones is empty, and the kingdom waits to see what kind of ruler you will be.\n\n(Placeholder story text.)"}
+ ],
+ "chapters": [
+  {
+   "name": "The First Crown",
+   "map": {"preset": "continent", "width": 150, "height": 75, "difficulty": "normal"},
+   "before": [{"title": "Chapter 1: The First Crown", "text": "Your Opinion Leader sets out with a handful of loyal squads. Somewhere across this valley waits a rival who looks oddly familiar.\n\n(Placeholder story text.)"}],
+   "after": [{"title": "The first crown falls", "text": "Word spreads. Three squads ride in to join your cause, two of them at home on the water and one in the high sky.\n\n(Placeholder story text.)"}]
+  },
+  {
+   "name": "The Sea Between",
+   "map": {"preset": "continent", "width": 250, "height": 135, "difficulty": "normal"},
+   "before": [{"title": "Chapter 2: The Sea Between", "text": "A coastline wraps around a great inland sea. On an island at its heart, the Evil Mr. Bosstoo waits in his fortress.\n\n(Placeholder story text.)"}],
+   "after": [{"title": "The fortress falls", "text": "Mr. Bosstoo's fortress is quiet at last. One crown remains, beyond a river of fire.\n\n(Placeholder story text.)"}]
+  },
+  {
+   "name": "The River of Fire",
+   "map": {"preset": "volcanic", "width": 500, "height": 105, "section_pct": 50, "crossings": 3, "difficulty": "normal"},
+   "before": [{"title": "Chapter 3: The River of Fire", "text": "A long valley, cut in two by a river of lava with only three ways across. On the far side, the Beastmaster's castle and his dragons.\n\n(Placeholder story text.)"}],
+   "after": [{"title": "The Beastmaster falls", "text": "The dragons scatter into the mountains, and the castle gates open.\n\n(Placeholder story text.)"}]
+  }
+ ]
+}
