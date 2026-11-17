@@ -28,7 +28,9 @@ Where this spec and the spreadsheet disagree, this spec wins (see §21).
 
 **Next after map 1:** audio (§24; ROADMAP M5).
 
-**Out of scope for now:** maps 2 and 3, the between-map army turn, the campaign layer, a full tutorial (player tips are in; see §19.4), difficulty settings, magic items, final art.
+**Now in scope (2026-11-17):** the campaign layer (§25), starting with the Kingdom of Trifectus; difficulty settings (§12.3).
+
+**Out of scope for now:** a full tutorial (player tips are in; see §19.4), magic items, final art.
 
 ## 3. Terminology
 
@@ -511,7 +513,7 @@ These apply to both sides by default. A configurator toggle makes them player-on
 ### 12.3 AI and difficulty
 
 - AI weights (target priority, retreat threshold, how roles value buildings versus squads) live in a data file.
-- No dynamic difficulty. Difficulty settings come later.
+- No dynamic difficulty. A Difficulty setting (Easy, Normal, Hard, Brutal; user, 2026-11-17) sets the enemy's field squads, starting levels, how many of its units start a class up their line and, on Easy, its squad size. Numbers in `rules.json` difficulty.
 
 ### 12.4 Balance metrics (developer only)
 
@@ -747,6 +749,7 @@ The player tests only at milestones. Between them, the developer checks its own 
 | M3: Army | Edit Units, deployment, buildings, liberation, economy, shops, cards, tech, reputation, progression | Short session |
 | M4: Map 1 | Full map 1: 6 squads, enemy AI roles, neutrals and recruiting, hidden mechanics, victory and defeat, debug panel complete | First real playtest |
 | M5: Audio | Music (map day and night, army, battle by terrain, title, end of map), stingers, voice lines, a few effects, volume options | A play session with sound |
+| M6: Campaign | The campaign layer (§25) and the Kingdom of Trifectus, three maps start to finish | Play the campaign through |
 
 After each real playtest the player notes: what felt good, what dragged, what confused, and one change.
 
@@ -761,4 +764,59 @@ Added 2026-11-12 (user). The cue list is `data/audio-asset-list.csv`.
 - **Effects:** a few, minimal: a click for buttons and the like (to be listed).
 - **Audio options:** a master volume, a volume each for Music, Effects and Voice, and mute, in Options, kept between games.
 - **Making it:** music is written as General MIDI and rendered to audio files with a General MIDI soundfont (the map phrases can also render through a better piano: Pianoteq or a VST3 instrument, and a room; `docs/map-ambience.md`); the game plays the rendered files. Which game event plays which cue lives in data.
+
+## 25. Campaign
+
+Added 2026-11-17 (user). A campaign is a run of maps with a thin story between them. The single map stays as it is; a campaign reuses everything in it.
+
+### 25.1 Campaigns are data
+
+- Each campaign is a file, `data/campaigns/<id>.json`, with a folder of the same name for its pictures, videos and sounds. No campaign needs its own code, so later campaigns and a campaign editor are more files.
+- A campaign file holds its name, a short description, its opening and ending pages (§25.3), and its chapters in order.
+- **A chapter is one map:** its map settings (the configurator's values, as a share code holds them: size, map type, terrain, chokepoints, buildings, difficulty, victory and defeat), the pages shown before it and after it is won, its special pieces (§25.6), and its starting gold.
+
+### 25.2 Playing one
+
+- **Start Campaign** on the Start screen lists the campaigns (one for now) and asks for your name, as the Game summary does; then the opening pages, then chapter 1's pages, then its map.
+- **Winning a map:** its after pages, then the next chapter's before pages, then the next map. After the last chapter, the campaign's ending pages, then the end screen.
+- **Losing a map:** the defeat screen offers Try again (the map from its start, with the army you brought into it) or Return to title.
+
+### 25.3 Pages between maps
+
+Kept simple (user, 2026-11-17). A page is any of:
+
+- a title and some text;
+- a picture (PNG or JPG), shown large, with any text under it;
+- a video (Ogg Theora `.ogv`, which Godot plays), shown large;
+- a sound (a voice line or music, WAV or OGG) that plays while the page is up; a page without its own sound keeps the map music's menu tune.
+
+Click, Space or Enter goes to the next page (a video goes on by itself when it ends); Esc skips the rest. Nothing else: no choices, no animation beyond a fade between pages.
+
+### 25.4 What carries from map to map
+
+- **Carries:** the whole army (every unit with its class, level, XP, stats, items and squad), the recruit pool, the Opinion Leader, tech owned and unspent tech points, cards in hand, reputation.
+- **Restored between maps:** every unit back to full HP, the fallen revived, morale back to its start, statuses cleared.
+- **Resets:** gold (to the chapter's starting gold, so a hoard can't carry), buildings (a new map), squads on the map (the next map starts with everyone at the Player Base, as Edit Units sets them).
+
+### 25.5 Saving
+
+- The campaign saves itself at the start of each chapter, in one campaign slot; that save is what Try again goes back to. Continue resumes the latest save, map or campaign.
+- The three save slots work inside a campaign map as they do now, and remember the campaign.
+
+### 25.6 Special pieces (per chapter, in the data)
+
+- **Named squads:** a squad with a name, its units by class, level and row (with items if given), where it stands (the Enemy Base, a town, a hex picked by rule), and a role (the Warlord, a garrison, a field squad). Bosses are named squads.
+- **Joining squads:** squads that join your army when a chapter is won, built the same way, waiting at the Player Base on the next map.
+- **Names from the player's:** a named squad or unit may take its name from the Opinion Leader's (for Trifectus, spelled backwards). If the Opinion Leader is renamed, it follows, with a banner saying so.
+- **Victory:** the configurator's conditions, plus "the Opinion Leader's party beats the boss": the boss's squad must be beaten in a battle by the Opinion Leader's squad.
+- **Pictures:** a chapter may replace the Enemy Base's picture (a castle, a fortress) and a named unit's icon.
+- **Lines allowed** (the first step of `docs/campaign-gating.md`): a campaign may list the unit lines that exist in it; the rest can't be recruited, promoted into, fielded by the enemy or seen in the glossary. The sheet columns, filters and per-map unlocks in that proposal come later.
+
+### 25.7 The Kingdom of Trifectus (the first campaign)
+
+The small campaign (it replaces the Rogue Army story). Three maps, each larger than the last.
+
+1. **Map 1:** about 1.5 times the Quick start map (about 150 × 70). About 3 squads made up, and the Opinion Leader alone in a party with a small recruit pool to pick companions from (a tip says so, and that the Opinion Leader's party must beat the boss at the end). The boss's name is the Opinion Leader's spelled backwards.
+2. **Map 2:** 3 squads join after map 1: 2 that travel on water and 1 that flies high. A large coastline around an ocean in the middle, deep and shallow water mixed, with the boss's fortress on an island in the middle. **The Evil Mr. Bosstoo:** the Opinion Leader's class, a strong fighting class at its third stage, a level above your army's average, his squad 7 strong with at least 2 healers in the back row and a wizard. Neutrals and conscripts that suit water, and plenty of places to take.
+3. **Map 3:** a valley, one piece of land 500 × 100, cut across by a lava river with three crossings, leaning on mountains, rivers and forest. The castle has a moat with one bridge at the front to its small island. **The final boss:** a Beastmaster with a fairly high-level dragon of each type and 2 Centaurs for healing (to be tuned down if too hard).
 

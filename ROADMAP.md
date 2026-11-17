@@ -187,9 +187,19 @@ Later, not before the campaign: variant takes of sounds, another round of collis
 | 7 | **"All better!" voice line** | M5 | | Dropped (user): no longer makes sense |
 | 8 | **A list of outstanding assets** | M5 | | Done (session 107): `data/outstanding_assets.txt` |
 
-## M6: Campaign (outline, user's notes 2026-11-12)
+## M6: Campaign (user's notes 2026-11-12; planned 2026-11-17)
 
-Shaping only: no sessions yet. Sessions get planned once the thin story is written, so each map's settings hang on its chapter. Replaces the three-map plan parked after M4.
+The design is SPEC §25 (written 2026-11-17 from the notes below and the user's answers: Trifectus replaces the Rogue Army; the army, recruit pool, tech, cards and reputation carry between maps, gold resets to the chapter's, everyone healed; a lost map is retried from its start; a short run of pages between maps, each with text, a picture, a video or a sound, kept simple). Each step playable when done:
+
+| # | Session | Spec | Verify | Status |
+|---|---|---|---|---|
+| 1 | **The campaign loop:** campaigns as data files; Start Campaign; the pages between maps (text, picture, video, sound); a win goes to the next chapter with the army carried; Try again after a loss; the campaign save at each chapter's start. Trifectus's three chapters with placeholder settings and text | §25.1-25.5 | Tests; play through on debug wins | Next |
+| 2 | **Bosses and story moments:** named squads (bosses), the Opinion Leader's party must beat the boss, the reversed name that follows a rename, squads joining between maps, Trifectus's starting army | §25.6, 25.7 | Tests; play map 1 | |
+| 3 | **The new map shapes:** the coastline round a central ocean with an island fortress (map 2); the 500 × 100 valley with the lava river and three crossings, and the moated castle with one bridge (map 3) | §25.7 | Map previews | |
+| 4 | **Lines allowed per campaign** (the first step of `docs/campaign-gating.md`) | §25.6 | Tests | |
+| 5 | **Tuning Trifectus** by playtest | §25.7 | Playtest | |
+
+The notes below are the background; where they and SPEC §25 differ, §25 is what was settled.
 
 **Lengths:** Short (3 maps), Medium (6) and Long (10). The user will provide a structure for each; how the levels progress gets settled around the story.
 
@@ -241,7 +251,7 @@ Shaping only: no sessions yet. Sessions get planned once the thin story is writt
 
 **Unit grouping and gating (user's proposal, 2026-11-17): `docs/campaign-gating.md`.** Gate the roster by promotion line (61 lines, not 190 units): each campaign declares the lines that exist in it (a tier cap 0-4, terrain packs, explicit player-only and enemy-only lines, one line unlocked per map won, chosen from two or three); everything else is hidden (not recruitable, promotable, fielded or in the glossary). Five new sheet columns (Tier, Pack, Side, Role group, Movement), filters in Edit Units and the glossary, the enemy shows a line before the player is offered it. Four campaign sketches (elemental, Beastmaster's Road, Tides, Caravan). For when the campaign is built; the first use is the three-map small campaign.
 
-**Asked 2026-11-16, the user is considering:** whether the Kingdom of Trifectus replaces the Rogue Army as the small campaign's story; whether the Elf Lords are the gods' avatars and the Holy Items their trophies; whether the valley map is 500 × 100 hexes; whether the army carries from map to map (and what else: gold, cards, tech). The campaign waits for "Before the campaign" above.
+**Asked 2026-11-16 (answered 2026-11-17 for Trifectus: it replaces the Rogue Army; the army carries, with tech, cards and reputation; gold resets; see SPEC §25), the user was considering:** whether the Kingdom of Trifectus replaces the Rogue Army as the small campaign's story; whether the Elf Lords are the gods' avatars and the Holy Items their trophies; whether the valley map is 500 × 100 hexes; whether the army carries from map to map (and what else: gold, cards, tech). The campaign waits for "Before the campaign" above.
 
 **Open questions on these (for when the campaign is planned):**
 - Quest of the Gods: what carries between realms (the army, gold, cards, tech, items), and how the valley map is shown and travelled.
