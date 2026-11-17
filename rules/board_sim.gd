@@ -12,6 +12,8 @@ extends RefCounted
 ## - how many battles the player fought;
 ## - the response gap: whenever the enemy starts taking a building of yours, how many hexes
 ##   away your nearest squad was.
+## With `guard`, your first squads stand on the crossings out of your base's section instead
+## of scrambling (zone of control, user 2026-11-16).
 
 const SAMPLE_TICKS := 360  # every 6 game hours
 const KINDS := ["town", "tower", "temple"]
@@ -19,7 +21,7 @@ const RETURN_TICKS := 720  # half a game day to revive and redeploy
 const AREA := 50  # hexes on a side of the squares battles are counted in (the spread of the fighting)
 
 
-static func run(data: GameData, width: int, height: int, seed: int, days: float, overrides := {}, respond := true) -> Dictionary:
+static func run(data: GameData, width: int, height: int, seed: int, days: float, overrides := {}, respond := true, guard := false) -> Dictionary:
 	var cfg := GameConfig.create(data, seed)
 	cfg.set_value("width", width)
 	cfg.set_value("height", height)
@@ -36,13 +38,14 @@ static func run(data: GameData, width: int, height: int, seed: int, days: float,
 	var places := map.buildings.filter(func(b): return b["type"] in KINDS)
 	var out := {"size": "%dx%d" % [width, height], "places": places.size(), "your_squads": 0, "enemy_squads": 0,
 			"samples": [], "battles": 0, "first_battle": -1, "gaps": [], "held": 0, "lost": 0, "spots": {}, "end": "", "tech": []}
+	var posts := _guard_posts(map) if guard else []  # crossings your first squads hold (zone of control)
 	var t := 0
 	var started := {}  # building hex -> true while the enemy is mid-capture of it (so each attempt counts once)
 	while t < days * GameClock.TICKS_PER_DAY and st.game_over == "":
 		_return(st, mine, away, t)
 		if t % SAMPLE_TICKS == 0 and mine.size() < st.field_cap():  # the cap grew with buildings held (round 19): form another
 			mine.append(_field_squad(st, mine.size()))
-		_orders(st, places)
+		_orders(st, places, posts)
 		st.step()
 		t += 1
 		if st.pending:
@@ -168,13 +171,18 @@ static func _defend(st: GameState, hex: int) -> void:
 ## Each idle squad of yours heads for the nearest town, tower or temple you don't hold that
 ## no other squad of yours is going for (one standing on one it doesn't hold waits there,
 ## taking it).
-static func _orders(st: GameState, places: Array) -> void:
+static func _orders(st: GameState, places: Array, posts := []) -> void:
+	var guards := st.player_squads().filter(func(s: Squad): return s.id <= posts.size())
+	for s in guards:  # squad n holds post n: back to it whenever it's idle elsewhere
+		var post: int = posts[s.id - 1]
+		if not s.is_moving() and not s.crawling() and s.hex != post:
+			st.order_move(s, PackedInt32Array([post]))
 	var taken := {}
 	for s in st.player_squads():
 		if s.is_moving():
 			taken[s.path[s.path.size() - 1]] = true
 	for s in st.player_squads():
-		if s.is_moving() or s.crawling():
+		if s.is_moving() or s.crawling() or s in guards:
 			continue
 		var here := st.building_at(s.hex)
 		if not here.is_empty() and here["type"] in KINDS and here["owner"] != "player":
@@ -190,6 +198,16 @@ static func _orders(st: GameState, places: Array) -> void:
 				best_d = d
 		if not best.is_empty() and st.order_move(s, PackedInt32Array([best["hex"]])):
 			taken[best["hex"]] = true
+
+
+## The crossings of the chokepoint border on the enemy's side of your base's section
+## (MapData.crossing_spots), for squads to stand guard on; none on a map without barriers.
+static func _guard_posts(map: MapData) -> Array:
+	if map.section.is_empty():
+		return []
+	var mine := int(map.section[map.player_base])
+	var border := mine + 1 if int(map.section[map.enemy_base]) > mine else mine  # border k lies between sections k - 1 and k
+	return map.crossing_spots.filter(func(c): return int(c[1]) == border).map(func(c): return int(c[0]))
 
 
 ## Which AREA-hex square of the map a hex is in: battles in many squares are spread over

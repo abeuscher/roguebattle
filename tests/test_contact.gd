@@ -67,8 +67,8 @@ func test_adjacency_triggers_battle() -> void:
 	while st.pending == null and ticks < 200:
 		st.step()
 		ticks += 1
-	check(st.pending != null, "moving next to an enemy starts a battle")
-	check_eq(Hex.distance(st.map.hex_at(ours.hex), st.map.hex_at(theirs.hex)), 1, "they're adjacent")
+	check(st.pending != null, "moving up to an enemy starts a battle")
+	check_eq(Hex.distance(st.map.hex_at(ours.hex), st.map.hex_at(theirs.hex)), int(d.rules["zone_of_control"]["range"]), "as it comes into the standing squad's zone of control")
 	check_eq(st.pending.attacker, 0, "the squad that moved in attacks")
 	var tick := st.clock.tick
 	st.step()
@@ -166,7 +166,7 @@ func test_ordered_back_fights_at_once() -> void:
 		st.step()
 		waited += 1
 	check(st.pending != null, "the fight starts before the cooldown ends")
-	check(Hex.distance(st.map.hex_at(o.hex), st.map.hex_at(t.hex)) <= 1, "as soon as they meet (%d ticks)" % waited)
+	check(Hex.distance(st.map.hex_at(o.hex), st.map.hex_at(t.hex)) <= int(d.rules["zone_of_control"]["range"]), "as soon as they meet (%d ticks)" % waited)
 
 
 func test_capture_waits_after_a_battle() -> void:
@@ -472,3 +472,31 @@ func test_difficulty_shapes_the_enemy() -> void:
 	check_eq(by["normal"]["level"], 1.0, "Normal starts at level 1")
 	check_eq(by["brutal"]["level"], 3.0, "Brutal two levels up")
 	check(by["hard"]["stage"] > by["normal"]["stage"] and by["brutal"]["stage"] > by["hard"]["stage"], "more advanced classes the harder it is")
+
+
+## Zone of control (user, 2026-11-16): a squad standing still fights a hostile squad passing
+## within range, not just beside it; two standing squads, or a neutral band, only meet side by side.
+func test_zone_of_control() -> void:
+	var st := _state()
+	st.debug_freeze_ai = true
+	var guard := _theirs(st, 15, 4)
+	var o := _ours(st, 10, 2)
+	st.order_move(o, PackedInt32Array([_at(st.map, 22, 2)]))  # along row 2, passing the guard two rows off
+	var closest := 99
+	while st.pending == null and o.is_moving():
+		st.step()
+		closest = mini(closest, Hex.distance(st.map.hex_at(o.hex), st.map.hex_at(guard.hex)))
+	check(st.pending != null, "passing a standing enemy two hexes off starts a fight")
+	check(closest >= 2, "without coming alongside (closest %d)" % closest)
+	var st2 := _state()
+	var a := _ours(st2, 10)
+	_theirs(st2, 12)
+	st2.step()
+	check(st2.pending == null, "two squads standing two hexes apart don't fight")
+	var st3 := _state()
+	st3.add_squad("Band", _at(st3.map, 15, 4), [["Fighter", "front"]], "neutral")
+	var p := _ours(st3, 10, 2)
+	st3.order_move(p, PackedInt32Array([_at(st3.map, 22, 2)]))
+	while st3.pending_recruit.is_empty() and p.is_moving():
+		st3.step()
+	check(st3.pending_recruit.is_empty(), "a neutral band two hexes off is passed by")

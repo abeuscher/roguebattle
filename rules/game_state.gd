@@ -2520,7 +2520,7 @@ func _check_contact() -> void:
 			var b := squads[j]
 			if not hostile(a, b) or b.living().is_empty():
 				continue
-			if Hex.distance(map.hex_at(a.hex), map.hex_at(b.hex)) > 1:
+			if not _in_contact(a, b):
 				continue
 			if clock.tick < int(_contact_until.get(_pair(a, b), -1)) and not _coming_back(a, b) and not _coming_back(b, a):
 				continue
@@ -2537,6 +2537,19 @@ func _check_contact() -> void:
 			if a.side != "player" and b.side != "player":
 				resolve_pending()
 			return
+
+
+## Two hostile squads meet when they stand side by side, or (the zone of control: user,
+## 2026-11-16) when one standing still has the other pass within zone_of_control range of
+## it, so a few squads can hold a line or guard a crossing. Works for you and the enemy
+## alike; neutral bands only meet side by side.
+func _in_contact(a: Squad, b: Squad) -> bool:
+	var d := Hex.distance(map.hex_at(a.hex), map.hex_at(b.hex))
+	if d <= 1:
+		return true
+	if d > int(data.rules["zone_of_control"]["range"]) or a.side == "neutral" or b.side == "neutral":
+		return false
+	return a.is_moving() != b.is_moving()
 
 
 ## Whether `s`, since its last fight with `o`, was ordered to the hex `o` stands on: the
