@@ -1,5 +1,6 @@
 [
  {"key": "mode", "group": "Game mode", "label": "Mode", "target": "game", "options": ["single", "campaign", "quick"], "labels": ["Single map", "Campaign start", "Quick start"], "default": "single"},
+ {"key": "difficulty", "group": "Game mode", "label": "Difficulty", "target": "game", "options": ["easy", "normal", "hard", "brutal"], "labels": ["Easy", "Normal", "Hard", "Brutal"], "default": "normal", "_note": "How tough the enemy is (rules.json difficulty; user, 2026-11-17)."},
  {"key": "xp_rate", "group": "Game mode", "label": "XP rate % (single map, quick start)", "target": "game", "range": [100, 300, 25], "default": 150},
  {"key": "width", "group": "Size", "label": "Map width (hexes)", "target": "map", "range": [100, 1200, 50]},
  {"key": "height", "group": "Size", "label": "Map height (hexes)", "target": "map", "range": [45, 675, 15]},

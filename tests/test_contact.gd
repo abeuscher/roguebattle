@@ -447,3 +447,28 @@ func test_a_fight_ends_an_enemy_hold() -> void:
 	st.pending = st.start_battle(o, t, t)
 	st.resolve_pending()
 	check(t.think_at <= st.clock.tick, "it weighs where to go again at once")
+
+
+## Difficulty (user, 2026-11-17): the enemy's numbers and makeup. Normal is as it was.
+func test_difficulty_shapes_the_enemy() -> void:
+	var by := {}
+	for level in ["easy", "normal", "hard", "brutal"]:
+		var m := MapGen.generate(d, 11, {"size": "small"})
+		var st := GameState.new(d, m, GameLog.new(), {"mode": "single", "difficulty": level})
+		st.place_enemies()
+		var enemies := st.squads.filter(func(s: Squad): return s.side == "enemy")
+		var units := []
+		for s in enemies:
+			units.append_array(s.units)
+		var stage := 0.0
+		var lv := 0.0
+		for u in units:
+			stage += float(d.units[u.unit_class]["stage"])
+			lv += u.level
+		by[level] = {"squads": enemies.size(), "stage": stage / units.size(), "level": lv / units.size(), "size": units.size() / float(enemies.size())}
+	check(by["easy"]["squads"] < by["normal"]["squads"], "Easy: fewer squads (%s)" % str(by["easy"]))
+	check(by["easy"]["size"] < by["normal"]["size"], "and smaller ones")
+	check(by["hard"]["squads"] > by["normal"]["squads"] and by["brutal"]["squads"] > by["hard"]["squads"], "Hard and Brutal: more squads")
+	check_eq(by["normal"]["level"], 1.0, "Normal starts at level 1")
+	check_eq(by["brutal"]["level"], 3.0, "Brutal two levels up")
+	check(by["hard"]["stage"] > by["normal"]["stage"] and by["brutal"]["stage"] > by["hard"]["stage"], "more advanced classes the harder it is")

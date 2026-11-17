@@ -2,7 +2,7 @@ OUTSTANDING ASSETS
 ==================
 What the game still needs from you, and where each file goes. When a file lands, tell
 Claude: it gets trimmed, levelled and wired in, and the line here comes off.
-(Updated 2026-11-16.)
+(Updated 2026-11-17.)
 
 
 NEEDED
@@ -17,6 +17,15 @@ Battle: the support-magic sounds
   Any length; the game shortens battle sounds to 1.2 seconds so they don't run over the
   next action at fast speeds. Until these are in, all four borrow the heal sound.
 
+
+Voice: leaders answering when selected on the map
+  Folder: data/audio/voice/select/
+  Short replies when you click one of your squads ("Yes?", "Uh huh?", "Orders?",
+  "Ready."). Not one set per leader: about 6-8 voice types, each with 3-4 replies,
+  and each unit class gets a type (a spreadsheet column), so similar units sound alike.
+  Proposed types: young man, older man, woman, gruff warrior, monster, beast, undead.
+  Name them <type>_<n>.wav (for example young_man_1.wav). Cut what you can and we'll
+  settle the types from what you have; nothing is wired in yet.
 
 MAYBE (only if you decide you want them)
 ----------------------------------------

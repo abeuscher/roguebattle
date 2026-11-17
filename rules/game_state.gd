@@ -2222,7 +2222,26 @@ func enemy_squad_count() -> int:
 	for entry in data.enemy["roles"]:
 		if str(entry["count"]) != "rest":
 			home += int(entry["count"])
-	return home + squad_cap()
+	return home + roundi(squad_cap() * float(difficulty()["squads"]))
+
+
+## The chosen difficulty's numbers (rules.json difficulty; the configurator's Difficulty).
+func difficulty() -> Dictionary:
+	var d: Dictionary = data.rules["difficulty"]
+	return d.get(str(settings.get("difficulty", "normal")), d["normal"])
+
+
+## An enemy squad as the difficulty makes it (user, 2026-11-17): each unit may start a stage
+## further up its line, then gains the difficulty's levels.
+func _toughen(s: Squad, r: RandomNumberGenerator) -> void:
+	var d := difficulty()
+	for u in s.units:
+		var next := data.next_classes(u.unit_class)
+		if not next.is_empty() and r.randf() < float(d["promoted"]):
+			Progression.promote(data, u, next[r.randi() % next.size()])
+		for l in int(d["levels"]):
+			Progression.level_up(data, u, r)
+	s.refresh(data)
 
 
 ## An enemy squad's members: one of enemy.json's builds, and in single map mode 1-2 more
@@ -2232,7 +2251,8 @@ func _enemy_members(r: RandomNumberGenerator) -> Array:
 	var members: Array = builds[r.randi() % builds.size()].duplicate()
 	if single_map():
 		var extra: Array = data.rules["single_map"]["enemy_builds"]["extra"]
-		members += Map1Setup.extra_members(data, r, r.randi_range(int(extra[0]), int(extra[1])))
+		var more := int(difficulty()["extra"])
+		members += Map1Setup.extra_members(data, r, maxi(0, r.randi_range(int(extra[0]) + more, int(extra[1]) + more)))
 	return members
 
 
@@ -2250,6 +2270,7 @@ func place_enemies() -> void:
 		for k in count:
 			var title: String = e["names"][entry["role"]]
 			var s := add_squad("%s %d" % [title, k + 1] if count > 1 else title, map.enemy_base, _enemy_members(r), "enemy")
+			_toughen(s, r)
 			if entry["role"] == "field":
 				_warbands = k + 1
 			s.balance_rows(data)
@@ -2273,6 +2294,7 @@ func _place_raiders(r: RandomNumberGenerator) -> void:
 	var members: Array = builds[r.randi() % builds.size()].duplicate()
 	members += Map1Setup.extra_members(data, r, r.randi_range(int(extra[0]), int(extra[1])))
 	var s := add_squad(String(cfg["raider_name"]), map.enemy_base, members, "enemy")
+	_toughen(s, r)
 	s.balance_rows(data)
 	s.role = "raider"
 	s.post = map.enemy_base
@@ -2367,6 +2389,7 @@ func _place_forward(r: RandomNumberGenerator) -> void:
 			town["owner"] = "enemy"
 			_warbands += 1
 			var s := add_squad("%s %d" % [data.enemy["names"]["field"], _warbands], town["hex"], _enemy_members(r), "enemy")
+			_toughen(s, r)
 			s.balance_rows(data)
 			s.role = "field"
 			s.post = map.enemy_base
