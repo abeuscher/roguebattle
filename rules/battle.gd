@@ -237,6 +237,9 @@ func attack_count(u: Unit) -> int:
 	var drill := _tech(side_of(u), "drill")
 	if drill and int(u.info(data)["stage"]) >= 3 and base_kind(attack_kind(u)) == "Melee":
 		n += int(drill["attacks"])
+	if u.row == "back":  # a bow that adds a full back-row attack (the Longbow, Stormbow; user, playtest round 23)
+		for slot in u.items:
+			n += int(data.items["items"][u.items[slot]["id"]].get("back_attacks", 0))
 	var volley := _tech(side_of(u), "volley")
 	if volley and u.has_tag(data, "archer") and base_kind(attack_kind(u)) == "Ranged":
 		n += int(volley["attacks"])

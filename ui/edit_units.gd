@@ -1032,6 +1032,8 @@ func _item_label(id: String) -> String:
 	var parts := []
 	for s in item["stats"]:
 		parts.append("%s %+d" % [s, int(item["stats"][s])])
+	if item.has("back_attacks"):
+		parts.append("+%d attack from the back row" % int(item["back_attacks"]))
 	return "%s: %s" % [item["name"], ", ".join(parts)]
 
 

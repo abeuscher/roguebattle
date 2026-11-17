@@ -96,23 +96,27 @@
    "moment": "move_planning",
    "anchor": "followable",
    "needs": "followable",
-   "text": "You don't have to guess where a moving squad is going. While laying a move, click an enemy or neutral squad that is on the move and choose Follow: your squad keeps after it, changing course as it turns, and fights it when it catches up."
+   "text": "Want to keep an enemy from getting away? Set your squad to follow them by clicking on them as a move destination."
   },
   "shop": {
    "moment": "shop_open",
    "anchor": "center",
-   "text": "Welcome to the shop. Pick something on the left to see what it does and who in this squad can use it, then choose how many and press Buy. Prices drop as your reputation grows, and every shop restocks at noon. New gear goes to the army's stores: put it on a unit in Edit Units. Sell what nobody wears for half its price."
+   "text": "Welcome to the shop. You can buy potions and equipment here to aid your army's conquest. You can also sell items when you are short on cash or just feeling greedy. Items sell for half of their original cost so plan carefully."
   },
   "heal": {
    "moment": "heal_open",
    "anchor": "center",
-   "text": "This is where hurt and fallen units get help. Herbs heal and Revival Draughts bring back the fallen, anywhere; an Antidote cures poison, which otherwise keeps eating at a unit after battle. In a temple or at the Player Base you can also pay gold to heal or revive. Buy more supplies in any shop."
+   "text": "When your squad has taken damage, you can heal and revive them on the heal screen. This will always be available anytime on the map or before a fight. Make sure to keep your army stocked with potions or you'll have nothing to heal with soon enough!"
   },
   "terrain": {
    "moment": "encounter_open",
    "anchor": "panel",
    "needs": "home_ground",
-   "text": "Ground matters. Every unit has a home terrain: fighting on it, a unit hits 15% harder, and on rough ground far from home (mountains, swamps, shallow water) it hits 15% softer. Flyers don't mind rough ground. A squad also moves fastest over its own terrain, so pick your battles where your units are at home."
+   "text": "Every unit has a home terrain that gives them an offensive and defensive bonus as well as a movement bonus on the map.
+
+You can find a unit's terrain preference by inspecting it.
+
+A squad's terrain preference is determined by the units that make it up. So be strategic in your squad composition to take advantage of terrain types."
   },
   "squad_drawer": {
    "moment": "squad_stopped",

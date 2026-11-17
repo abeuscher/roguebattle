@@ -250,3 +250,17 @@ func test_terrain_nodes() -> void:
 	var eagle := _unit("Eagle Knight")
 	var b2 := _battle([eagle], [_unit("Soldier")], ["terrain_Plains_3"])
 	check_eq(b2.terrain_level(0, eagle), 0, "a Sky unit doesn't count as Plains")
+
+
+## Ranged attacks on the map are gone (playtest round 23): the Longbow adds a full attack
+## from the back row instead of map range.
+func test_longbow_adds_a_back_row_attack() -> void:
+	var a := _unit("Archer", "back")
+	var b := _battle([_unit("Knight"), a], [_unit("Soldier"), _unit("Soldier")], [])
+	var before := b.attack_count(a)
+	a.items["weapon"] = {"id": "longbow"}
+	check_eq(b.attack_count(a), before + 1, "one more attack from the back row")
+	a.row = "front"
+	var front := b.attack_count(a)
+	a.items.erase("weapon")
+	check_eq(b.attack_count(a), front, "not from the front row")

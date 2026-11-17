@@ -160,7 +160,7 @@ This describes how the game actually plays right now, not the full design (that'
 ## Tech tree
 
 - One army-wide tree, four tiers, six branches (Arms, Archery, Arcana, Cavalry, Beasts and flyers, Logistics) plus a terrain node per terrain per tier. You start with 3 tech points and earn one for every 2 battles won, plus a bonus for finishing the map in victory. Liberating places pays none.
-- A node costs its tier number in points; a terrain node three times that (3, 6, 9 and 12 points). Volley (Archery, tier 3) gives archers one more shot a battle.
+- A node costs its tier number in points; a terrain node three times that (3, 6, 9 and 12 points). Volley (Archery, tier 3) gives archers one more shot a battle. The Longbow (after Longbow training) and the rare Stormbow give their archer one more attack from the back row.
 - A tier opens once 80% of the previous tier's branch nodes (not counting terrain nodes) are bought. Spend any time from the Tech screen.
 
 ## Your starting army (Map 1 setup)
@@ -297,10 +297,10 @@ Sound is coming in (ROADMAP M5). In so far:
   - The first time a battle's results show, a tip beside them explains healing: Heal (the red cross) in the squad menu uses Herbs and Revival Draughts anywhere, and a temple heals and revives for gold.
   - The first time a battle against a squad with a Spearman starts, the battle pauses with its controls open and a tip points at the Tactic menu: some squads need different tactics; try Leader (focus the enemy leader).
   - The first time Edit Units opens while your army has a flying unit, a tip says flyers can't take buildings: a squad needs a unit on foot.
-  - The first time you lay a squad's move while an enemy or neutral squad on the move is on screen, a tip points at it: click a moving squad while laying a move and choose Follow; your squad keeps after it and fights it when it catches up.
-  - The first time a shop opens, a tip in the middle: pick an item to see what it does and who can use it, choose how many and Buy; prices drop with reputation and shops restock at noon; gear goes to the army's stores, to put on in Edit Units; sell what nobody wears for half.
-  - The first time the Heal window opens, a tip in the middle: Herbs heal and Revival Draughts revive anywhere, an Antidote cures poison (which otherwise lingers after battle), a temple or the Player Base heals and revives for gold, and shops sell more supplies.
-  - The first time a fight is about to start with someone on their home terrain (or on rough ground away from it), a tip beside the encounter dialog: home terrain +15%, rough ground far from home −15% (not flyers), squads move fastest on their own terrain.
+  - The first time you lay a squad's move while an enemy or neutral squad on the move is on screen, a tip points at it: to keep an enemy from getting away, follow them by clicking them as a move destination.
+  - The first time a shop opens, a tip in the middle: buy potions and equipment here; sell items when short on cash; they sell for half their cost.
+  - The first time the Heal window opens, a tip in the middle: heal and revive here, any time on the map or before a fight; keep the army stocked with potions.
+  - The first time a fight is about to start with someone on their home terrain (or on rough ground away from it), a tip beside the encounter dialog: every unit has a home terrain that helps it fight and move; inspect a unit to see it; a squad's terrain comes from its units, so compose squads with terrain in mind.
   - **Reset player tips** (on the Options screen, under Show player tips) asks first, then makes every tip show again the next time its moment comes. It's greyed out while no tip has been seen.
   - A tip counts as seen once it's gone, even if you close the window it was beside first. Tips wait their turn: one that comes due while another is up shows once that one is closed (a window's tip doesn't wait behind one left on the map under it). If its window closes first, it isn't counted as seen and comes again next time.
 
