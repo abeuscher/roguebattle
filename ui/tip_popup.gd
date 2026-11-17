@@ -1,9 +1,10 @@
 class_name TipPopup
 extends Control
 ## A player tip (ROADMAP M4 session 33): a small panel beside a part of the screen with
-## an arrow pointing at it, the tip's text, "Got it", and a ticked "Show player tips"
-## box (unticking turns every tip off). It doesn't block the screen around it, so the
-## player can do what it says while it's up.
+## an arrow pointing at it, the tip's text, "Got it", and a ticked "Don't show this message
+## again" box (user, playtest round 23): closed with it ticked, the tip is seen and never
+## comes back; unticked, it shows again at its next moment. Turning all tips off is in the
+## Options. It doesn't block the screen around it, so the player can do what it says.
 
 signal closed
 
@@ -11,13 +12,14 @@ const COLOR := Color(0.98, 0.84, 0.45)
 const GAP := 26.0  # between the panel and what it points at
 const WIDTH := 380.0
 
+var done_with := true  # the "Don't show this message again" box: read when the player closes it
 var _panel := PanelContainer.new()
 var _target := Rect2()
 
 
 ## Points at `target` (a global rect), placing the panel to its left if there's room,
 ## otherwise to its right.
-func setup(text: String, target: Rect2, options: Dictionary) -> void:
+func setup(text: String, target: Rect2) -> void:
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
 	mouse_filter = MOUSE_FILTER_IGNORE
 	_target = target
@@ -38,16 +40,14 @@ func setup(text: String, target: Rect2, options: Dictionary) -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 12)
 	col.add_child(row)
-	var show := CheckBox.new()
-	show.text = "Show player tips"
-	show.button_pressed = bool(options.get("show_tips", true))
-	show.add_theme_font_size_override("font_size", 15)
-	show.focus_mode = FOCUS_NONE
-	show.size_flags_horizontal = SIZE_EXPAND_FILL
-	show.toggled.connect(func(on: bool):
-		options["show_tips"] = on
-		PlayerOptions.save_values(options))
-	row.add_child(show)
+	var once := CheckBox.new()
+	once.text = "Don't show this message again"
+	once.button_pressed = true
+	once.add_theme_font_size_override("font_size", 15)
+	once.focus_mode = FOCUS_NONE
+	once.size_flags_horizontal = SIZE_EXPAND_FILL
+	once.toggled.connect(func(on: bool): done_with = on)
+	row.add_child(once)
 	var ok := UiStyle.button("Got it", 120, true)
 	ok.pressed.connect(func(): closed.emit())
 	row.add_child(ok)

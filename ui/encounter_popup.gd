@@ -43,7 +43,7 @@ func setup(b: Battle, game_state: GameState) -> void:
 	panel.add_child(col)
 	var ours := b.sides[0]
 	var who := ours.leader.name.get_slice(" ", 0) if ours.leader else ours.name
-	var title := "%s's party is under fire" % who if b.ranged_only else "%s's party has encountered the enemy" % who
+	var title := "%s's party has encountered the enemy" % who
 	col.add_child(UiStyle.title_row(UiStyle.label(title, 22), Callable()))
 	_battle = b
 	_odds = UiStyle.label("", 17, Color(0.8, 0.82, 0.86))
@@ -93,5 +93,5 @@ func refresh() -> void:
 	_heal.disabled = blocked != ""
 	_heal_face.modulate.a = 0.45 if _heal.disabled else 1.0
 	_heal.tooltip_text = blocked if _heal.disabled else "Heal or revive units of this squad before the fight."
-	var lead := "%s fires from range" % _battle.sides[1].name if _battle.ranged_only else _battle.sides[1].name
+	var lead := _battle.sides[1].name
 	_odds.text = "%s  ·  they look %s" % [lead, _battle.odds.to_lower()]

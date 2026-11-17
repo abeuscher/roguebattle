@@ -59,7 +59,6 @@ var _peek: Control  # an enemy unit looked at closely (round 14); the battle hol
 var _results: Control  # the end-of-battle panel, which a player tip points at
 var _items_btn: Button
 var _round := UiStyle.label("", 28, UiStyle.ACCENT)
-var _ranged_tag := UiStyle.label("Ranged Battle", 18, Color.WHITE)  # under the round, in a ranged battle (round 19)
 var _ticker := RichTextLabel.new()
 var _controls := HBoxContainer.new()
 var _speed_btn: Button
@@ -106,22 +105,9 @@ func setup(game_state: GameState, b: Battle, is_replay := false, wait_for_fight 
 	_round.custom_minimum_size.x = 140
 	_round.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_field.add_child(_round)
-	# Placed on the field like the round heading, over it, so nothing else moves (round 19).
-	_ranged_tag.position = Vector2(FIELD.x / 2.0 - 100, 54)
-	_ranged_tag.custom_minimum_size.x = 200
-	_ranged_tag.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_ranged_tag.add_theme_color_override("font_outline_color", Color.BLACK)
-	_ranged_tag.add_theme_constant_override("outline_size", 6)
-	# On a dark band so it reads over any ground (round 21: more contrast).
-	var band := UiStyle.box(Color(0, 0, 0, 0.72), 6)
-	band.content_margin_top = 2
-	band.content_margin_bottom = 2
-	_ranged_tag.add_theme_stylebox_override("normal", band)
-	_field.add_child(_ranged_tag)
 	# Shown from the moment the window opens, not when the fight starts (playtest round 22);
 	# the round events take it from there.
 	_round.text = "Round %d" % maxi(1, battle.round)
-	_ranged_tag.visible = battle.ranged_only
 	for side in 2:
 		for u in battle.sides[side].units:
 			_add_card(u, side)
@@ -246,7 +232,7 @@ func _add_tags() -> void:
 		lines.append(["Replay", 15, Color(0.8, 0.82, 0.86)])
 	lines.append([battle.terrain["name"], 15, Color(0.8, 0.82, 0.86)])
 	lines.append(["Day" if battle.daytime else "Night", 15, Color(0.8, 0.82, 0.86)])
-	lines.append(["%s fires from range" % battle.sides[battle.attacker].name if battle.ranged_only else "%s attacks" % battle.sides[battle.attacker].name, 15, Color(0.8, 0.82, 0.86)])
+	lines.append(["%s attacks" % battle.sides[battle.attacker].name, 15, Color(0.8, 0.82, 0.86)])
 	if battle.sides[1].side == "enemy":  # the enemy's tactic, so you can answer it (ai.json battle)
 		lines.append(["They focus: %s" % TACTIC_WORDS[battle.tactics[1]], 15, Color(0.8, 0.82, 0.86)])
 	var mid := _tag(lines)
@@ -335,9 +321,7 @@ func _update_speed() -> void:
 
 func _update_retreat() -> void:
 	_retreat_btn.text = "Retreat (%d%%)" % roundi(battle.retreat_chance(0) * 100)
-	_retreat_btn.disabled = battle.ranged_only
-	_retreat_btn.tooltip_text = "No retreat from a ranged attack" if battle.ranged_only \
-			else "On success the squad steps back 1 hex and each unit loses 1 charisma. On failure it loses its next action."
+	_retreat_btn.tooltip_text = "On success the squad steps back 1 hex and each unit loses 1 charisma. On failure it loses its next action."
 
 
 ## The battle cards in the hand, counted (§13).
@@ -618,7 +602,6 @@ func _play(e: Dictionary, animate: bool) -> float:
 	match e["type"]:
 		"round":
 			_round.text = "Round %d" % e["round"]
-			_ranged_tag.visible = battle.ranged_only
 			return float(_view["round_pause"])
 		"attack":
 			var card: Card = _cards[e["target"]]
@@ -718,9 +701,6 @@ func _add_card(u: Unit, side: int) -> void:
 	c.concealed = side == 1 and _conceal
 	c.status_info = state.data.battle["statuses"]
 	c.size = CARD
-	if battle.ranged_only and not battle.fires_at_range(u):  # sits a ranged battle out: faded (round 19)
-		c.modulate.a = 0.5
-		c.tooltip_text = "Doesn't fire in a ranged battle: only archers and casters act."
 	# Click any unit to look closer (round 14 for an enemy; round 22 yours too, for its statuses).
 	c.mouse_default_cursor_shape = CURSOR_POINTING_HAND
 	if c.tooltip_text == "":

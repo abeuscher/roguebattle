@@ -51,8 +51,8 @@ var _info := Button.new()  # shows or hides _help
 var _pause_mark := PanelContainer.new()  # a large pause sign at the top left while time is stopped (playtest)
 var _banner := PanelContainer.new()  # lines of labels, with place names as links
 var _banner_box := VBoxContainer.new()
-var _banner_lines: Array = []  # [text, its row, msec it goes (0: it stays)], oldest first
-var _banner_depth := 3  # rules.json banner lines (set in refresh)
+var _banner_lines: Array = []  # [text, its row, msec it goes (0: it stays), how long it has, msec], oldest first
+var _banner_cfg := {}  # rules.json banner (set in refresh)
 var _toolbar := HBoxContainer.new()
 var _cards_button: Button
 var _deploy_button: Button  # off when the squad cap is reached or no squad waits at base
@@ -95,7 +95,6 @@ func _ready() -> void:
 	mark.add_child(word)
 	_pause_mark.visible = false
 	add_child(_pause_mark)
-	_banner.add_theme_stylebox_override("panel", UiStyle.box(Color(0.12, 0.1, 0.04, 0.92), 10))
 	_banner.mouse_filter = MOUSE_FILTER_IGNORE
 	_banner_box.add_theme_constant_override("separation", 2)
 	_banner_box.mouse_filter = MOUSE_FILTER_IGNORE
@@ -351,8 +350,8 @@ func show_banner_links(text: String, seconds: float, links: Dictionary) -> void:
 	if text != "":
 		var row := _banner_row(text, links)
 		_banner_box.add_child(row)
-		_banner_lines.append([text, row, Time.get_ticks_msec() + int(seconds * 1000) if seconds > 0.0 else 0])
-		while _banner_lines.size() > _banner_depth:
+		_banner_lines.append([text, row, Time.get_ticks_msec() + int(seconds * 1000) if seconds > 0.0 else 0, int(seconds * 1000)])
+		while _banner_lines.size() > int(_banner_cfg.get("lines", 3)):
 			_banner_lines.pop_front()[1].queue_free()
 	_place_banner()
 
@@ -395,6 +394,26 @@ func _banner_row(text: String, links: Dictionary) -> HBoxContainer:
 	return row
 
 
+## Older lines are fainter (rules.json banner age_alpha, oldest first), and each fades out
+## gently over the last fade_share of its time; the box fades with its last line (round 23).
+func _fade_banner(now: int) -> void:
+	if _banner_lines.is_empty():
+		return
+	var ages: Array = _banner_cfg.get("age_alpha", [1.0])
+	var fade := float(_banner_cfg.get("fade_share", 0.0))
+	var box := 0.0
+	for i in _banner_lines.size():
+		var line: Array = _banner_lines[i]
+		var a := 1.0
+		if int(line[2]) > 0 and fade > 0.0:
+			var left := float(int(line[2]) - now) / maxf(1.0, float(line[3]))
+			a = clampf(left / fade, 0.0, 1.0)
+		box = maxf(box, a)
+		var rank: int = ages.size() - (_banner_lines.size() - i)  # the newest takes the last
+		(line[1] as Control).modulate.a = a * float(ages[clampi(rank, 0, ages.size() - 1)])
+	_banner.self_modulate.a = box
+
+
 func _place_banner() -> void:
 	_banner.visible = not _banner_lines.is_empty()
 	_banner.reset_size()
@@ -412,7 +431,9 @@ func set_help(text: String) -> void:
 
 
 func refresh(state: GameState) -> void:
-	_banner_depth = int(state.data.rules["banner"]["lines"])
+	if _banner_cfg.is_empty():
+		_banner_cfg = state.data.rules["banner"]
+		_banner.add_theme_stylebox_override("panel", UiStyle.box(Color(0.12, 0.1, 0.04, float(_banner_cfg["shade"])), 10))
 	var tint := DAY if state.clock.is_day() else NIGHT
 	_clock.text = state.clock.time_text()
 	var phase := GameClock.phase(state.clock.minute_of_day())
@@ -485,6 +506,7 @@ func refresh(state: GameState) -> void:
 		_banner_lines.erase(line)
 	if not gone.is_empty():
 		_place_banner()
+	_fade_banner(now)
 
 
 ## Gold top right; the drawer middle left; the minimap bottom right with the clock under

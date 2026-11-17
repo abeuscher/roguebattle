@@ -4,7 +4,6 @@ extends Control
 ## overlay, and the game stays paused while it's open. Clicking the overlay closes it.
 
 signal move
-signal fire
 signal return_to_base
 signal edit
 signal shop
@@ -85,17 +84,6 @@ func setup(state: GameState, s: Squad) -> void:
 				.pressed.connect(func(): portal.emit())
 	if s.is_moving():
 		_button(actions, "flag", "View destination", true, "Show where %s is headed." % s.name).pressed.connect(func(): view_destination.emit())
-	var targets := state.fire_targets(s)
-	var why := ""
-	if state.pending:
-		why = "Not now: a fight is about to start."
-	elif not state.can_fire(s):
-		why = "No ranged or magic units in position."
-	elif state.clock.tick < s.fire_ready:
-		why = "Reloading: ready in %s." % GameState.duration_text(s.fire_ready - state.clock.tick)
-	elif targets.is_empty():
-		why = "No visible enemy within %d hexes." % state.fire_range(s)
-	_button(actions, "crosshair", "Ranged attack", targets.size() > 0, why if why != "" else "Click an enemy squad within %d hexes." % state.fire_range(s)) 			.pressed.connect(func(): fire.emit())
 	_button(actions, "house", "Return to base", not state.in_fight(s), "Not now: a fight is about to start." if state.in_fight(s) else "Go into the Player Base." if at_base else "March to the Player Base and go in on arrival.") 			.pressed.connect(func(): return_to_base.emit())
 
 

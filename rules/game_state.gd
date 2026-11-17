@@ -38,6 +38,7 @@ var ledger: Array = []  # [what, gold +/-] for every gold change since the last 
 var daily_ledger := {}  # set at noon for the UI to show once: {day, lines: [[what, amount]], gold, debt_noons, defeat_noons}
 var cards: Array[String] = []  # the hand: card ids (§13)
 var next_card := ""  # the next card to be drawn, rolled ahead so Foresight can preview it
+var skip_squad: Squad  # the squad of yours the last skip stopped for (skip_ticks), or null
 var card_offer: Array[String] = []  # cards to choose one from (a Seer or Oracle drew), shown by the HUD
 var offers_waiting: Array = []  # later offers, each an Array of card ids, behind card_offer (round 19: a second draw had overwritten the first)
 var tech: Array[String] = []  # tech nodes bought (§14), shared with the army and its squads
@@ -115,8 +116,6 @@ func step() -> void:
 	_reveal_sites()
 	_claim_sites()
 	_check_contact()
-	if not pending:
-		_enemy_volleys()
 	_check_game_over()
 
 
@@ -2615,11 +2614,10 @@ func resolve_pending() -> Dictionary:
 	b.run()
 	var key := _pair(b.sides[0], b.sides[1])
 	var out := end_battle(b)
-	if not b.ranged_only:
-		_contact_until[key] = clock.tick + int(data.enemy["contact_cooldown_ticks"])
-		for s in b.sides:  # the enemy waits before taking a town after a fight; you don't (user, 2026-11-13/14)
-			if s.side == "enemy":
-				s.capture_wait = clock.tick + int(data.rules["capture"]["after_battle_ticks"])
+	_contact_until[key] = clock.tick + int(data.enemy["contact_cooldown_ticks"])
+	for s in b.sides:  # the enemy waits before taking a town after a fight; you don't (user, 2026-11-13/14)
+		if s.side == "enemy":
+			s.capture_wait = clock.tick + int(data.rules["capture"]["after_battle_ticks"])
 	out["text"] = battle_summary(b, out)
 	return out
 
@@ -2666,7 +2664,7 @@ static func battle_summary(b: Battle, out: Dictionary) -> String:
 				"retreated": "retreats from the battle", "even": "fights the enemy to a draw"}[result]]
 	var who := [b.sides[0].name, b.sides[1].name]
 	var text := "%s %s %s: lost %d%% of its HP, took %d%% of theirs." % [who[0],
-			"fired on" if b.ranged_only else "fought", who[1], roundi(out["hp_lost"][0] * 100), roundi(out["hp_lost"][1] * 100)]
+			"fought", who[1], roundi(out["hp_lost"][0] * 100), roundi(out["hp_lost"][1] * 100)]
 	for side in 2:
 		if out["wiped"][side]:
 			text += " %s was wiped out." % who[side]
@@ -2814,86 +2812,6 @@ func _rare_class(r: RandomNumberGenerator, skip: Array) -> String:
 	return options[r.randi() % options.size()]
 
 
-# --- Ranged map attacks (SPEC §11.2) ----------------------------------------------------
-
-func can_fire(s: Squad) -> bool:
-	for u in s.living():
-		var kind: String = u.info(data)["front_attack" if u.row == "front" else "back_attack"]
-		if Battle.base_kind(kind) in data.rules["ranged_attack"]["attack_kinds"]:
-			return true
-	return false
-
-
-## 2 hexes, or 3 from high ground (mountains, towers); a longbow adds its range.
-func fire_range(s: Squad) -> int:
-	var r: Dictionary = data.rules["ranged_attack"]
-	var high: bool = data.terrains[map.terrain[s.hex]]["key"] in r["high_ground_terrains"]
-	for b in map.buildings:
-		if b["hex"] == s.hex and b["type"] in r["high_ground_buildings"]:
-			high = true
-	var extra := 0
-	for u in s.living():
-		for slot in u.items:
-			extra = maxi(extra, int(data.items["items"][u.items[slot]["id"]].get("range", 0)))
-	return (int(r["high_ground_range"]) if high else int(r["range"])) + extra
-
-
-## Visible hostile squads within range, if the squad has ranged units and its cooldown is over.
-func fire_targets(s: Squad) -> Array[Squad]:
-	var out: Array[Squad] = []
-	if not can_fire(s) or clock.tick < s.fire_ready or pending:  # not while a fight waits to start
-		return out
-	for e in squads:
-		if hostile(s, e) and is_visible(e) and not e.living().is_empty() \
-				and Hex.distance(map.hex_at(s.hex), map.hex_at(e.hex)) <= fire_range(s):
-			out.append(e)
-	return out
-
-
-## Enemy squads fire on yours from a distance (ai.json volleys; SPEC §11.2): the first one
-## able, at the nearest of your squads in range (not one beside it: that's contact). The
-## battle is yours against theirs as usual (your squad on the left), theirs attacking.
-func _enemy_volleys() -> void:
-	if not data.ai["volleys"]["on"]:
-		return
-	for s in squads:
-		if s.side != "enemy" or s.marching_home or s.living().is_empty() or clock.tick < s.fire_ready or not can_fire(s):
-			continue
-		var at := map.hex_at(s.hex)
-		var best: Squad = null
-		var best_d := 0
-		for p in player_squads():
-			var dist := Hex.distance(at, map.hex_at(p.hex))
-			if p.living().is_empty() or dist <= 1 or dist > fire_range(s):
-				continue
-			if best == null or dist < best_d:
-				best = p
-				best_d = dist
-		if best == null:
-			continue
-		var b := start_battle(best, s, best)
-		b.ranged_only = true
-		for side in 2:
-			for u in b.sides[side].living():
-				b._join(u)
-		s.fire_ready = clock.tick + int(data.rules["ranged_attack"]["cooldown_ticks"])
-		pending = b
-		log.add(clock.tick, "battle", "%s fires on %s from %d hexes." % [s.name, best.name, best_d], best.id)
-		return
-
-
-## A ranged map attack: only Ranged and Magic units on both sides act, no push-back.
-## Starts the squad's 120-tick cooldown and leaves the battle pending, like contact.
-func fire(s: Squad, target: Squad) -> void:
-	var b := start_battle(s, target, target)
-	b.ranged_only = true
-	for side in 2:
-		for u in b.sides[side].living():
-			b._join(u)
-	s.fire_ready = clock.tick + int(data.rules["ranged_attack"]["cooldown_ticks"])
-	pending = b
-
-
 # --- Battles (SPEC §11) ------------------------------------------------------------
 
 ## Opens a battle between a player squad and an enemy, fought on the defender's hex.
@@ -2996,10 +2914,9 @@ func end_battle(b: Battle) -> Dictionary:
 				stats["battles_won"] = int(stats["battles_won"]) + 1
 			elif out["retreated"] == side or _won(out, 1 - side):
 				stats["battles_lost"] = int(stats["battles_lost"]) + 1
-	if not b.ranged_only:
-		for side in 2:
-			if b.sides[side] in squads and (out["retreated"] == side or _won(out, 1 - side)):
-				_lost_battle(b.sides[side])
+	for side in 2:
+		if b.sides[side] in squads and (out["retreated"] == side or _won(out, 1 - side)):
+			_lost_battle(b.sides[side])
 	for side in 2:  # a fight ends an enemy's chase; once it's free again it may roll to chase anew (ai.json hunt)
 		if b.sides[side].side == "enemy" and b.sides[side].follow == b.sides[1 - side]:
 			b.sides[side].follow = null
@@ -3069,7 +2986,7 @@ func _record_intel(b: Battle) -> void:
 func _neutral_leaves(b: Battle, out: Dictionary) -> void:
 	var s := b.sides[1]
 	if s.side == "neutral" and b.sides[0].side == "player" and s in squads:
-		if not b.ranged_only and battle_result(out) == "won" and not s.living().is_empty() and b.sides[0] in squads:
+		if battle_result(out) == "won" and not s.living().is_empty() and b.sides[0] in squads:
 			pending_recruit = {"player": b.sides[0], "neutral": s, "defender": s, "beaten": true}
 			return
 		squads.erase(s)
@@ -3418,44 +3335,46 @@ func skip_blocker() -> String:
 	return ""  # squads standing in towns no longer block it (round 22: it was nearly always grey)
 
 
-## Runs up to `n` ticks, stopping as soon as something needs you (user, 2026-11-14): a
-## squad of yours arrives or stops, a fight or a meeting starts, a building is taken or
-## lost (or any news for the banner), an enemy comes into sight, a hidden site is found,
-## noon, or the map ends. Returns what stopped it, for the banner, or "" if `n` ran out.
-func skip_ticks(n: int) -> String:
-	var seen := _visible_others()
-	var found := revealed.size()
-	var counts := [liberations.size(), losses.size(), notices.size()]
+## Runs up to `n` ticks, stopping as soon as something needs you: something that opens a
+## window or wants your orders (user, playtest round 23): a fight or a meeting, a rare
+## recruit, a building taken (when its window shows: `stops` liberations, or it has a card
+## to choose) or lost, a card to choose, the noon ledger (`stops` ledger), a squad of yours
+## arriving or stopping, or the map ending. Everything else (the enemy taking places, sites
+## found, squads coming into sight) goes by in the log and the banner. Returns what stopped
+## it, for the banner, or "" if `n` ran out; `skip_squad` is the squad of yours it's about
+## (null if none), for the camera.
+func skip_ticks(n: int, stops := {}) -> String:
+	skip_squad = null
+	var counts := [liberations.size(), losses.size()]
 	for i in n:
 		var minute := clock.minute_of_day()
 		var moving := player_squads().filter(func(s: Squad): return s.is_moving())
 		step()
 		if game_over != "":
 			return "The map is over."
-		if pending or not pending_recruit.is_empty() or not pending_rare.is_empty():
+		if pending:
+			skip_squad = pending.sides[0]
+			return "Something needs you."
+		if not pending_recruit.is_empty() or not pending_rare.is_empty():
+			skip_squad = pending_recruit["player"] if not pending_recruit.is_empty() else pending_rare["squad"]
 			return "Something needs you."
 		for s in moving:
 			if s not in squads:
 				return "%s is back at the base." % s.name
 			if not s.is_moving():
+				skip_squad = s
 				return "%s has stopped at %s." % [s.name, where(s.hex)]
-		if liberations.size() > counts[0] or losses.size() > counts[1]:
-			return "A building has changed hands."
-		if notices.size() > counts[2]:
-			return notices[-1]
-		if revealed.size() > found:
-			return "A hidden site has come into view."
-		for s in _visible_others():
-			if s not in seen:
-				return "%s has come into sight." % s.name
-		if minute < GameClock.NOON and clock.minute_of_day() >= GameClock.NOON:
+		var fresh := liberations.slice(counts[0])
+		counts[0] = liberations.size()
+		if fresh.any(func(e: Dictionary): return bool(stops.get("liberations", true)) or e.get("offer", false)):
+			return "A building has been taken."
+		if losses.size() > counts[1]:
+			return "A building has been lost."
+		if not card_offer.is_empty():
+			return "A card to choose."
+		if bool(stops.get("ledger", true)) and minute < GameClock.NOON and clock.minute_of_day() >= GameClock.NOON:
 			return "Noon."
 	return ""
-
-
-## The enemy and neutral squads you can see now.
-func _visible_others() -> Array:
-	return squads.filter(func(s: Squad): return s.side != "player" and is_visible(s))
 
 
 func toggle_pause() -> void:

@@ -399,15 +399,12 @@ Occultist and Necromancer lines can, once per battle, fill an empty slot with a 
 ### 11.1 When battles happen
 
 - A battle is always one player squad against one enemy or neutral squad. Squads never team up.
-- **Triggers:** two hostile squads on adjacent hexes, or a ranged attack ordered from the squad menu.
+- **Triggers:** two hostile squads on adjacent hexes.
 - The map pauses and the battle view opens. The battle uses the defender's hex terrain.
 
 ### 11.2 Ranged attacks on the map
 
-- A squad with Ranged (or ranged Magic) units can fire at an enemy squad 2 hexes away, or 3 from high ground (mountains, towers).
-- Only ranged units act, and the target answers only with its own ranged units.
-- No push-back. Cooldown of 120 ticks per squad (placeholder).
-- A longbow adds +1 hex of range, and lets its archer fire from the back row at full damage in close battles.
+- **Removed (user, playtest round 23, 2026-11-16):** every playtest found them confusing. Ranged and magic units count in battle, where they strike from the back row. A longbow keeps its stats; it no longer adds map range.
 
 ### 11.3 Flow
 

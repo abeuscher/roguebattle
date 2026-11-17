@@ -25,7 +25,6 @@ var worn := [1.0, 1.0]  # per side: what's left of PDEF and MDEF after its defea
 var broken := [false, false]  # per side: lost heart (too many recent losses): no defensive bonuses (battle.json broken)
 var tactics := ["best", "best"]
 var first_side := -1  # a side that takes its whole first round first (neutrals that resisted recruitment)
-var ranged_only := false  # a ranged map attack: only Ranged and Magic units act, no push-back (§11.2)
 var odds := "Even"  # how the enemy looked to the player at the start (a threat label), for §9.5–9.6
 var card_damage := 0  # enemy HP lost to cards, for the XP share (§9.4)
 var tech := [[], []]  # per side: tech node ids bought (§14); only the player has any
@@ -59,12 +58,6 @@ var inputs: Array = []  # {at: steps taken before it, kind, side, ...}
 var steps := 0
 var context := {}  # where and when, for the report (GameState.start_battle)
 
-
-## Whether the player is warned before this battle opens (the encounter dialog, §11.1):
-## always, except for a ranged attack the player ordered. An enemy firing from range warns
-## like contact (playtest round 19: volleys had opened their battles with no warning).
-func warns() -> bool:
-	return not ranged_only or attacker == 1
 
 
 ## A side's tactic changes mid-battle (the player's Tactic menu).
@@ -119,20 +112,15 @@ func refresh_side(side: int) -> void:
 		_start_hp[side] += u.hp
 		if not _attacks.has(u):
 			_join(u)
-		_attacks[u] = attack_count(u) if not ranged_only or fires_at_range(u) else 0
+		_attacks[u] = attack_count(u)
 
 
 func _join(u: Unit) -> void:
-	_attacks[u] = attack_count(u) if not ranged_only or fires_at_range(u) else 0
+	_attacks[u] = attack_count(u)
 	_misses[u] = 0
 	_since_crit[u] = 0
 	_tiebreak[u] = rng.randf()
 	_status[u] = {}
-
-
-## Whether the unit's current attack works in a ranged map attack.
-func fires_at_range(u: Unit) -> bool:
-	return base_kind(attack_kind(u)) in data.rules["ranged_attack"]["attack_kinds"]
 
 
 ## Plays to the end.
@@ -500,8 +488,6 @@ func _attack(u: Unit, base: String, t: Unit, mult := 1.0, note := "") -> void:
 	var crit := roll_crit(u)
 	var dmg := expected_damage(u, t, base) * mult * (float(cfg["crit_multiplier"]) if crit else 1.0)
 	dmg *= 1.0 + rng.randf_range(-_spread(), _spread())
-	if ranged_only:  # a ranged attack on the map hits softer (playtest round 22: rules.json ranged_attack damage)
-		dmg *= float(data.rules["ranged_attack"].get("damage", 1.0))
 	var amount := maxi(1, roundi(dmg))
 	t.hp = maxi(0, t.hp - amount)
 	event.merge({"crit": crit, "damage": amount, "killed": not t.is_alive()}, true)
@@ -993,7 +979,7 @@ func _add_skeleton(squad: Squad, row: String, col: int) -> void:
 ## the second round, once it has lost retreat_after_loss of the HP it began with and
 ## losing_ratio times the share the other side has lost. The Warlord, base guard and holdfasts never do.
 func _ai_retreat() -> void:
-	if round < 2 or ranged_only:
+	if round < 2:
 		return
 	var c: Dictionary = data.ai["battle"]
 	for side in 2:
@@ -1059,7 +1045,7 @@ func finish() -> Dictionary:
 		if medicine:
 			for u in s.living():
 				u.hp = mini(u.max_hp(data), u.hp + roundi(u.max_hp(data) * float(medicine["heal"])))
-	if retreated < 0 and not ranged_only and not out["wiped"].has(true) and out["hp_lost"][0] != out["hp_lost"][1]:
+	if retreated < 0 and not out["wiped"].has(true) and out["hp_lost"][0] != out["hp_lost"][1]:
 		out["pushed"] = 0 if out["hp_lost"][0] > out["hp_lost"][1] else 1
 	for s in sides:
 		s.refresh(data)

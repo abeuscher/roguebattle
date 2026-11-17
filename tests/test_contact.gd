@@ -6,7 +6,6 @@ var d := GameData.load_dir()
 
 ## A plains strip map with the player base on the left and the enemy base on the right.
 func _state(w := 30, h := 9) -> GameState:
-	d.ai["volleys"]["on"] = false  # these tests are about squads meeting; enemy volleys from range have their own (test_enemy_battle)
 	var m := MapData.new(w, h)
 	for i in m.size():
 		m.terrain[i] = d.terrain_ids["plains"]
@@ -267,60 +266,6 @@ func test_hidden_sites_reveal() -> void:
 	ours.hex = _at(st.map, 15, 4)
 	st.step()
 	check(st.revealed.has(st.map.buildings.size() - 1), "it reveals once in sight")
-
-
-func test_fire_range() -> void:
-	var st := _state()
-	var archers := _ours(st, 10)
-	var near := _theirs(st, 12)
-	var far := _theirs(st, 13)
-	check_eq(st.fire_range(archers), 2, "2 hexes on flat ground")
-	check(near in st.fire_targets(archers) and far not in st.fire_targets(archers), "targets within 2")
-	st.map.terrain[archers.hex] = d.terrain_ids["mountain"]
-	check_eq(st.fire_range(archers), 3, "3 from mountains")
-	check(far in st.fire_targets(archers), "now 3 hexes away is in range")
-	st.map.terrain[archers.hex] = d.terrain_ids["plains"]
-	st.map.buildings.append({"type": "tower", "hex": archers.hex, "shop": false, "hint": false, "hidden": false, "kind": "", "road": false})
-	check_eq(st.fire_range(archers), 3, "3 from a tower")
-	archers.at("back", 0).items["weapon"] = {"uid": 1, "id": "longbow"}
-	check_eq(st.fire_range(archers), 4, "a longbow adds 1 (§11.2)")
-	var melee := _ours(st, 11, 7, [["Knight", "front"], ["Fighter", "front"]])
-	check(not st.can_fire(melee), "a squad without ranged or magic units can't fire")
-	check(st.fire_targets(melee).is_empty(), "so it has no targets")
-
-
-func test_ranged_attack() -> void:
-	var st := _state()
-	var ours := _ours(st, 10)
-	var theirs := _theirs(st, 12)
-	var spot := theirs.hex
-	st.fire(ours, theirs)
-	check(st.pending != null and st.pending.ranged_only, "a ranged attack waits for the battle view like contact")
-	var text: String = st.resolve_pending()["text"]
-	check(text.begins_with(ours.name), "a summary comes back: " + text)
-	check_eq(theirs.hex, spot, "no push-back after a ranged attack")
-	check(st.fire_targets(ours).is_empty(), "the squad must reload")
-	check_eq(ours.fire_ready, st.clock.tick + int(d.rules["ranged_attack"]["cooldown_ticks"]), "120-tick cooldown")
-	for i in int(d.rules["ranged_attack"]["cooldown_ticks"]):
-		st.clock.step()
-	check(not st.fire_targets(ours).is_empty(), "ready again after the cooldown")
-
-
-func test_only_ranged_units_act() -> void:
-	var st := _state()
-	var ours := _ours(st, 10)
-	var theirs := _theirs(st, 12)
-	var b := st.start_battle(ours, theirs, theirs)
-	b.ranged_only = true
-	for side in 2:
-		for u in b.sides[side].living():
-			b._join(u)
-	b.run()
-	for e in b.events:
-		if e["type"] == "attack":
-			check(b.fires_at_range(e["unit"]), "%s (%s) acted in a ranged attack" % [e["unit"].name, e["unit"].unit_class])
-	var out := b.finish()
-	check_eq(out["pushed"], -1, "no push-back")
 
 
 func test_battle_log_lines() -> void:

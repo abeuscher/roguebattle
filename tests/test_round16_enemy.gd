@@ -129,7 +129,6 @@ func test_a_fight_put_aside_keeps_its_squads() -> void:
 	st.send_home(p)
 	check(p in st.squads and p.hex == at and not p.is_moving(), "it can't go home")
 	check(st.portal_targets(p).is_empty(), "or step through a portal")
-	check(st.fire_targets(st.player_squads()[0]).is_empty(), "and no ranged attacks while a fight waits")
 	var tick := st.clock.tick
 	st.step()
 	check_eq(st.clock.tick, tick, "the map waits for the fight")

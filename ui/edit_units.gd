@@ -1032,8 +1032,6 @@ func _item_label(id: String) -> String:
 	var parts := []
 	for s in item["stats"]:
 		parts.append("%s %+d" % [s, int(item["stats"][s])])
-	if item.has("range"):
-		parts.append("range +%d" % int(item["range"]))
 	return "%s: %s" % [item["name"], ", ".join(parts)]
 
 

@@ -1,10 +1,10 @@
 {
- "_note": "Player tips (ROADMAP M4 session 33). Each tip shows once, the first time its moment comes, while the player's \"Show player tips\" option is on; tips seen are remembered in the options, not the save. moment: where the game asks for a tip (edit_units_open: Edit Units opens; map_open: the map shows with nothing over it, after the opening Edit Units, or at the start of a Quick start game; encounter_open: the encounter dialog before a fight shows; squad_menu_open: a squad's menu opens; time_started: time first runs in a game (the player unpauses); battle_over: a battle's results show; fight_started: a battle begins playing (the tip pauses it, its controls showing); town_liberated, tower_liberated: the liberation window for one opens; neutral_met: the window for meeting a neutral band opens, Recruit, Fight or Sneak past; base_in_view: time is running and the Player Base is on screen; portal_ready: you hold two temples at once for the first time, so the Portal can be used (round 19); squad_stopped: a squad of yours stops on the map somewhere that is not a building to liberate (round 21); after:<id>: the tip <id> has just been closed, the next tip following on from it). anchor: the part of the screen the popup points at (center: none, the tip sits in the middle of the screen with no arrow; recruit_pool: the Recruits list in Edit Units; deploy_button: the toolbar's Deploy Squad; garrison_town: the town Quick start's Garrison holds, on the map, framed with your base first; panel: the liberation window, the encounter dialog or the neutral band's window; actions: the squad menu's row of buttons; results: the end-of-battle panel; tactic: the battle's Tactic menu; speed: the game speed menu under the minimap; leader_squad: the Opinion Leader's squad card in Edit Units; player_base: the Player Base, on the map; squad_drawer: the squad list at the left of the map). needs: a fact the tip waits for (flyer: the army has a flying unit; enemy:<class>: that class is in the enemy squad of the battle under way; defeat_leader, defeat_base: that defeat is on for this map). modes: game modes it shows in (single_map, campaign, quick_start); missing means all. {town} in a tip's text is the Garrison's town; {leader} is the Opinion Leader's name. Tips are offered in this order.",
+ "_note": "Player tips (ROADMAP M4 session 33). Each tip shows at its moment until the player closes it with \"Don't show this message again\" ticked (round 23), while the player's \"Show player tips\" option is on; those are remembered in the options, not the save. moment: where the game asks for a tip (edit_units_open: Edit Units opens; map_open: the map shows with nothing over it, after the opening Edit Units, or at the start of a Quick start game; encounter_open: the encounter dialog before a fight shows; squad_menu_open: a squad's menu opens; time_started: time first runs in a game (the player unpauses); battle_over: a battle's results show; fight_started: a battle begins playing (the tip pauses it, its controls showing); town_liberated, tower_liberated: the liberation window for one opens; neutral_met: the window for meeting a neutral band opens, Recruit, Fight or Sneak past; base_in_view: time is running and the Player Base is on screen; portal_ready: you hold two temples at once for the first time, so the Portal can be used (round 19); squad_stopped: a squad of yours stops on the map somewhere that is not a building to liberate (round 21); move_planning: you start laying a squad's move (not a deploy); shop_open: a shop opens; heal_open: the Heal window opens (round 23); after:<id>: the tip <id> has just been closed, the next tip following on from it). anchor: the part of the screen the popup points at (center: none, the tip sits in the middle of the screen with no arrow; recruit_pool: the Recruits list in Edit Units; deploy_button: the toolbar's Deploy Squad; garrison_town: the town Quick start's Garrison holds, on the map, framed with your base first; panel: the liberation window, the encounter dialog or the neutral band's window; actions: the squad menu's row of buttons; results: the end-of-battle panel; tactic: the battle's Tactic menu; speed: the game speed menu under the minimap; leader_squad: the Opinion Leader's squad card in Edit Units; player_base: the Player Base, on the map; squad_drawer: the squad list at the left of the map; followable: an enemy or neutral squad on the move, on screen, that can be followed). needs: a fact the tip waits for (flyer: the army has a flying unit; enemy:<class>: that class is in the enemy squad of the battle under way; defeat_leader, defeat_base: that defeat is on for this map; followable: such a squad is on screen; home_ground: someone in the coming fight is on their home terrain, or on rough ground away from it). modes: game modes it shows in (single_map, campaign, quick_start); missing means all. {town} in a tip's text is the Garrison's town; {leader} is the Opinion Leader's name. Tips are offered in this order.",
  "tips": {
   "edit_units_intro": {
    "moment": "edit_units_open",
    "anchor": "center",
-   "text": "This is the Edit Units screen. Here you can arrange your squads prior to their deployment. By default, your initial squads are assembled for you but feel free to optimize them as you see fit. When you are ready, click the Done button in the top right to return to the main map view."
+   "text": "This is the Edit Units screen. Here you can arrange your squads prior to their deployment. By default, your initial squads are assembled for you but feel free to optimize them as you see fit. When you are ready, click the Done button in the top right to enter the main map view."
   },
   "opinion_leader": {
    "moment": "after:edit_units_intro",
@@ -58,7 +58,7 @@
   "squad_menu": {
    "moment": "squad_menu_open",
    "anchor": "actions",
-   "text": "A squad's orders: edit it, heal it (the red cross), shop, move, fire at a nearby enemy, or send it home. Hover over a button to see what it does, or why it's greyed out."
+   "text": "A squad's orders: edit it, heal it (the red cross), shop, move, or send it home. Hover over a button to see what it does, or why it's greyed out."
   },
   "healing": {
    "moment": "battle_over",
@@ -91,6 +91,28 @@
    "anchor": "player_base",
    "needs": "defeat_base",
    "text": "This is your home base. Defend it with your strongest soldiers, for if it falls, you lose this engagement."
+  },
+  "follow": {
+   "moment": "move_planning",
+   "anchor": "followable",
+   "needs": "followable",
+   "text": "You don't have to guess where a moving squad is going. While laying a move, click an enemy or neutral squad that is on the move and choose Follow: your squad keeps after it, changing course as it turns, and fights it when it catches up."
+  },
+  "shop": {
+   "moment": "shop_open",
+   "anchor": "center",
+   "text": "Welcome to the shop. Pick something on the left to see what it does and who in this squad can use it, then choose how many and press Buy. Prices drop as your reputation grows, and every shop restocks at noon. New gear goes to the army's stores: put it on a unit in Edit Units. Sell what nobody wears for half its price."
+  },
+  "heal": {
+   "moment": "heal_open",
+   "anchor": "center",
+   "text": "This is where hurt and fallen units get help. Herbs heal and Revival Draughts bring back the fallen, anywhere; an Antidote cures poison, which otherwise keeps eating at a unit after battle. In a temple or at the Player Base you can also pay gold to heal or revive. Buy more supplies in any shop."
+  },
+  "terrain": {
+   "moment": "encounter_open",
+   "anchor": "panel",
+   "needs": "home_ground",
+   "text": "Ground matters. Every unit has a home terrain: fighting on it, a unit hits 15% harder, and on rough ground far from home (mountains, swamps, shallow water) it hits 15% softer. Flyers don't mind rough ground. A squad also moves fastest over its own terrain, so pick your battles where your units are at home."
   },
   "squad_drawer": {
    "moment": "squad_stopped",

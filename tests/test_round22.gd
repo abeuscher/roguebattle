@@ -39,30 +39,6 @@ func test_a_new_enemy_squad_never_shares_an_id() -> void:
 	check(c.id >= 100 and n.id >= 100, "above the player's cell numbers")
 
 
-func test_ranged_attacks_on_the_map_hit_softer() -> void:
-	var dealt := []
-	for ranged in [false, true]:
-		var st := _state()
-		var a := st.add_squad("Ours", _at(st.map, 10, 3), [["Knight", "front"], ["Archer", "back"]])
-		var e := st.add_squad("Them", _at(st.map, 12, 3), [["Knight", "front"]], "enemy")
-		var rng := RandomNumberGenerator.new()
-		rng.seed = 9
-		var b := Battle.new(d, a, e, "plains", true, rng)
-		b.ranged_only = ranged
-		var archer: Unit = a.units[1]
-		var hit := {}
-		for i in 40:  # the first hit that lands
-			b._attack(archer, "Ranged", e.units[0])
-			var last: Dictionary = b.events[-1]
-			if last.get("hit", false):
-				hit = last
-				break
-		dealt.append(float(hit.get("damage", 0)))
-	var share := float(d.rules["ranged_attack"]["damage"])
-	check(dealt[0] > 0.0, "a normal hit lands")
-	check(absf(dealt[1] - dealt[0] * share) <= 1.0, "a ranged attack on the map deals x%s (%s vs %s)" % [share, dealt[1], dealt[0]])
-
-
 func test_poison_lingers_after_a_battle_until_cured() -> void:
 	var st := _state()
 	var ours := st.add_squad("Ours", _at(st.map, 10, 3), [["Knight", "front"], ["Fighter", "front"]])

@@ -19,7 +19,7 @@
   "club":     {"name": "Club", "price": 40,     "slot": "weapon",  "use": "melee",  "stats": {"STR": 3, "AGI": -1}},
   "mace":     {"name": "Mace", "price": 60,     "slot": "weapon",  "use": "melee",  "stats": {"STR": 3}},
   "bow":      {"name": "Bow", "price": 50,      "slot": "weapon",  "use": "archer", "stats": {"STR": 2}},
-  "longbow":  {"name": "Longbow", "requires": "longbow_training", "price": 80,  "slot": "weapon",  "use": "archer", "stats": {"STR": 2}, "range": 1},
+  "longbow":  {"name": "Longbow", "requires": "longbow_training", "price": 80,  "slot": "weapon",  "use": "archer", "stats": {"STR": 2}},
   "bronze":   {"name": "Bronze armor", "price": 40, "slot": "armor", "use": "any", "stats": {"PDEF": 2}},
   "iron":     {"name": "Iron armor", "price": 70,   "slot": "armor", "use": "any", "stats": {"PDEF": 4}},
   "steel":    {"name": "Steel armor", "requires": "steelworking", "price": 110,  "slot": "armor", "use": "any", "stats": {"PDEF": 6}},
@@ -28,7 +28,7 @@
   "earring":  {"name": "Earring", "price": 60,  "slot": "jewelry", "use": "any",    "stats": {"AGI": 2}},
   "bracelet": {"name": "Bracelet", "price": 60, "slot": "jewelry", "use": "any",    "stats": {"PDEF": 2}},
   "sunblade":    {"name": "Sunblade",       "rare": true, "price": 400, "slot": "weapon",  "use": "melee",  "stats": {"STR": 6, "AGI": 3}},
-  "stormbow":    {"name": "Stormbow",       "rare": true, "price": 420, "slot": "weapon",  "use": "archer", "stats": {"STR": 5, "AGI": 2}, "range": 1},
+  "stormbow":    {"name": "Stormbow",       "rare": true, "price": 420, "slot": "weapon",  "use": "archer", "stats": {"STR": 5, "AGI": 2}},
   "dragonscale": {"name": "Dragonscale",    "rare": true, "price": 450, "slot": "armor",   "use": "any",    "stats": {"PDEF": 10, "MDEF": 4}},
   "crown":       {"name": "Crown of Ages",  "rare": true, "price": 400, "slot": "jewelry", "use": "any",    "stats": {"CON": 4, "INT": 4}}
  }

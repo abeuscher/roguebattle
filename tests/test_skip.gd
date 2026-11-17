@@ -1,6 +1,6 @@
 extends TestCase
-## Skip to action (playtest round 15, settled 2026-11-14): only while every squad of
-## yours on the map is moving; it runs until something needs you, and no further.
+## Skip to action (playtest round 15, settled 2026-11-14; round 23): it runs until something
+## opens a window or wants your orders, and no further.
 
 var d := GameData.load_dir()
 
@@ -48,17 +48,19 @@ func test_stops_when_a_squad_arrives() -> void:
 	check(not s.is_moving(), "and not a tick on")
 
 
-func test_stops_when_an_enemy_comes_into_sight() -> void:
+func test_goes_past_what_needs_no_answer() -> void:
 	var st := _state()
-	_march(st, 5, 40)
+	var s := _march(st, 5, 33)
 	var foe := st.add_squad("Raiders", _at(st.map, 30, 4), [["Soldier", "front"]], "enemy")
 	foe.role = "garrison"
 	foe.post = foe.hex
+	foe.hex = _at(st.map, 30, 0)  # off the road, out of the way
 	st.debug_freeze_ai = true
-	check(not st.is_visible(foe), "out of sight to begin with")
+	st.notices.append("The enemy has captured Somewhere.")
 	var why := st.skip_ticks(5000)
-	check(why.contains("Raiders") and why.contains("sight"), "it stops when they come into sight: %s" % why)
-	check(st.is_visible(foe), "they're visible now")
+	check(why.contains("has stopped"), "a squad coming into sight or news doesn't stop it, the arrival does (round 23): %s" % why)
+	check(st.is_visible(foe), "they came into sight on the way")
+	check_eq(st.skip_squad, s, "and it names the squad, for the camera")
 
 
 func test_stops_at_noon() -> void:
@@ -68,6 +70,9 @@ func test_stops_at_noon() -> void:
 	var why := st.skip_ticks(5000)
 	check_eq(why, "Noon.", "noon stops it")
 	check_eq(st.clock.minute_of_day(), GameClock.NOON, "at noon exactly")
+	st.clock.tick = 11 * 60 + 50 + GameClock.TICKS_PER_DAY
+	why = st.skip_ticks(30, {"ledger": false})
+	check(why != "Noon.", "not with the noon ledger window off")
 
 
 func test_stops_when_a_fight_starts() -> void:
@@ -78,7 +83,5 @@ func test_stops_when_a_fight_starts() -> void:
 	foe.post = foe.hex
 	st.debug_freeze_ai = true
 	var why := st.skip_ticks(5000)
-	check(st.pending != null or why.contains("sight"), "it stops at the sighting or the fight: %s" % why)
-	if st.pending == null:
-		why = st.skip_ticks(5000)
-		check(st.pending != null and why == "Something needs you.", "then at the fight: %s" % why)
+	check(st.pending != null and why == "Something needs you.", "it runs to the fight, past the sighting: %s" % why)
+	check_eq(st.skip_squad, st.pending.sides[0] if st.pending else null, "the squad in it")

@@ -34,12 +34,12 @@
   },
   "show_tips": {
    "label": "Show player tips",
-   "tip": "Short pointers the first time you reach a part of the game (data/tips.json). Each shows once.",
+   "tip": "Short pointers the first time you reach a part of the game. Each shows until you close it with \"Don't show this message again\" ticked.",
    "default": true
   },
   "tips_seen": {
    "label": "Player tips seen",
-   "tip": "Not on the Options screen: the ids of tips already shown, so each shows once.",
+   "tip": "Not on the Options screen: the ids of tips closed with \"Don't show this message again\" ticked, so they don't show again.",
    "default": [],
    "remembered": true
   },

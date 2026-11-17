@@ -46,6 +46,7 @@ var _tip: TipPopup  # the player tip showing, if any (one at a time)
 var _tips_waiting := {}  # tip id -> true: due, waiting for the tip showing to be closed (round 21)
 var _was_free := false  # the map was free last frame (for the beat after a window closes)
 var _calm_at := 0  # msec: the world's next window or map tip waits till then (rules.json event_beat)
+var _skip_from_pause := false  # time was paused when the skip began: it pauses again at the end
 var _queue_hold := false  # a window closed with more of the world's waiting: time stays stopped (_hold_clock)
 var _hold_was_free := true
 var _music_want := ""  # the music the map wants now, and since when (msec), for _settle_music
@@ -55,7 +56,6 @@ var _tip_hex := -1  # the map hex it points at, for a tip anchored on the map; e
 var _next_liberation := 0  # msec before which the next queued liberation waits (a beat between two)
 var _portal_tip_asked := false  # the Portal tip has been offered this session
 var _base_tip_asked := false  # the home base tip has been offered this session
-var _flying_to_fight := false  # a ranged attack's battle waits while the camera glides to it
 ## A battle the recruit popup already announced (refused, or Fight), which opens with no
 ## encounter popup. Tied to that battle, so a recruit that ends in no fight can't make
 ## the next enemy contact skip its popup.
@@ -78,7 +78,6 @@ var _peek_until := 0
 var _tokens := {}  # squad id -> SquadToken
 var _selected: Squad  # the squad whose menu or move order is open (the game is held meanwhile)
 var _planning := false  # laying rally points for _selected
-var _firing := false  # choosing a ranged-attack target for _selected
 var _skipping := false  # skip to action running (playtest round 15)
 var _amb_clock := 0.0  # seconds to the next update of the ambience's facts
 var _portaling := false  # choosing a glowing temple for _selected to step to (user's notes, 2026-11-11)
@@ -211,9 +210,7 @@ func _process(delta: float) -> void:
 		_calm_at = Time.get_ticks_msec() + roundi(float(data.rules["event_beat"]["seconds"]) * 1000.0)
 	_was_free = free
 	if state.pending and _calm() and not (_set_aside == state.pending and state.clock.paused):
-		if not state.pending.warns():  # a ranged attack you ordered
-			_fly_to_ranged_attack()
-		elif _announced == state.pending:
+		if _announced == state.pending:
 			_open_battle()
 		else:
 			_open_encounter()
@@ -236,7 +233,7 @@ func _process(delta: float) -> void:
 	_drawer_tip()
 	if not state.notices.is_empty():
 		for n in state.notices:  # a line each: the banner stacks them (round 22)
-			hud.show_banner_links(n, 4.0, _place_links(n))
+			hud.show_banner_links(n, float(data.rules["banner"]["news_seconds"]), _place_links(n))
 			_note(n)
 		state.notices.clear()
 	if not state.daily_ledger.is_empty() and _calm():
@@ -586,7 +583,6 @@ func _open_menu() -> void:
 	_menu.setup(state, _selected)
 	_offer_tip("squad_menu_open", _menu)
 	_menu.move.connect(_start_planning)
-	_menu.fire.connect(_start_firing)
 	_menu.view_destination.connect(func():
 		_peek = _selected
 		_peek_until = Time.get_ticks_msec() + PEEK_MSEC
@@ -604,6 +600,7 @@ func _open_menu() -> void:
 		_ui.add_child(screen)
 		screen.setup(state, s, state.shop_at(s))
 		_open_shop(screen)
+		_offer_tip("shop_open", screen)
 		screen.closed.connect(_back_to_menu.bind(s)))
 	_menu.heal.connect(func():
 		var s := _selected
@@ -612,6 +609,7 @@ func _open_menu() -> void:
 		_ui.add_child(screen)
 		screen.setup(state, s)
 		_open_shop(screen)
+		_offer_tip("heal_open", screen)
 		screen.closed.connect(_back_to_menu.bind(s)))
 	_menu.edit.connect(func():
 		var s := _selected
@@ -699,7 +697,6 @@ func _end_selection() -> void:
 	_deploying = false
 	_selected = null
 	_planning = false
-	_firing = false
 	_portaling = false
 	_clear_glow()
 	hud.show_banner("")
@@ -708,24 +705,11 @@ func _end_selection() -> void:
 func _start_planning() -> void:
 	_close_menu()
 	_planning = true
+	if not _deploying:
+		_offer_tip("move_planning", hud)
 	_points.clear()
 	_planned.clear()
 	hud.show_banner("%s %s: left-click hexes to lay rally points, then click the last point again to commit.  Right-click: undo  ·  Esc: back" % ["Deploy" if _deploying else "Move", _selected.name])
-
-
-func _start_firing() -> void:
-	_close_menu()
-	_firing = true
-	hud.show_banner("Ranged attack with %s: click an enemy squad within %d hexes.  Esc: back" % [_selected.name, state.fire_range(_selected)])
-
-
-func _fire_click(world: Vector2) -> void:
-	var target := _squad_at(world)
-	if target == null or target not in state.fire_targets(_selected):
-		hud.show_banner("Pick a visible enemy squad within %d hexes.  Esc: back" % state.fire_range(_selected))
-		return
-	state.fire(_selected, target)
-	_end_selection()
 
 
 ## Clicking an enemy shows what it is and how it compares with your first squad.
@@ -893,6 +877,7 @@ func _open_encounter() -> void:
 		_ui.add_child(screen)
 		screen.setup(state, b.sides[0], b)
 		_open_shop(screen)
+		_offer_tip("heal_open", screen)
 		_encounter.hide()  # its focused Begin Battle would take Enter meant for the menu
 		screen.closed.connect(func():
 			if _encounter:
@@ -909,20 +894,6 @@ func _open_encounter() -> void:
 		_encounter.queue_free()
 		_encounter = null
 		_open_battle())
-
-
-## A ranged attack opens its battle with no encounter popup, so the camera, which may be
-## anywhere (say, on a town a liberation window just showed), first glides to the two
-## squads the way an encounter does, then the battle springs open there.
-func _fly_to_ranged_attack() -> void:
-	_flying_to_fight = true
-	var b := state.pending
-	var at := [b.sides[0], b.sides[1]].map(func(s: Squad): return _tokens[s.id].position if _tokens.has(s.id) else MapView.hex_center(state.map, s.hex))
-	var cam: Dictionary = data.battle["encounter_camera"]
-	camera.fly_to((at[0] + at[1]) / 2.0, float(cam["map_share"]), float(cam["seconds"])).finished.connect(func():
-		_flying_to_fight = false
-		if state.pending == b:
-			_open_battle())
 
 
 ## A window about a place: the camera glides there (keeping its zoom) with the window
@@ -978,8 +949,10 @@ func _tactics_tip() -> void:
 
 ## Skip to action (playtest round 15): S or the clock button runs time fast, a frame's
 ## worth of rules.json skip.ticks_per_frame at a time, until something needs you
-## (GameState.skip_ticks); then the game pauses and the banner says what. Pressing it again,
-## or anything opening over the map, stops it.
+## (GameState.skip_ticks: a window, or a squad wanting orders); the camera glides to the
+## squad it's about, the banner says what, and the game goes on at the speed it had (or
+## stays paused, if it was) (user, playtest round 23: it used to pause). Pressing it again,
+## pausing, or anything opening over the map stops it.
 func _toggle_skip() -> void:
 	if _skipping:
 		_skipping = false
@@ -990,6 +963,7 @@ func _toggle_skip() -> void:
 		hud.show_banner(why if why != "" else "Close what's open first.", 3.0)
 		return
 	_skipping = true
+	_skip_from_pause = state.clock.paused
 	state.clock.paused = false  # skipping runs time: it starts from a pause too
 	hud.show_banner("Skipping to the next thing that needs you...  (S: stop)")
 
@@ -998,10 +972,14 @@ func _skip_frame() -> void:
 	if not _free() or state.skip_blocker() != "" or state.clock.paused:
 		_skipping = false  # pausing stops it (round 22: it ran on, and liberated towns, while paused)
 		return
-	var why := state.skip_ticks(int(data.rules["skip"]["ticks_per_frame"]))
+	var why := state.skip_ticks(int(data.rules["skip"]["ticks_per_frame"]),
+			{"liberations": bool(options.get("show_liberations", true)), "ledger": bool(options.get("show_daily_ledger", true))})
 	if why != "":
 		_skipping = false
-		state.clock.paused = true
+		state.clock.paused = _skip_from_pause
+		var s := state.skip_squad
+		if s and s in state.squads and not state.pending and state.pending_recruit.is_empty() and state.pending_rare.is_empty():
+			camera.fly_to(_tokens[s.id].position if _tokens.has(s.id) else MapView.hex_center(state.map, s.hex), 1.0, float(data.rules["event_beat"]["glide_seconds"]))
 		if not state.pending and state.pending_recruit.is_empty() and state.pending_rare.is_empty():
 			hud.show_banner(why, 4.0)  # (a fight or meeting opens its own window)
 		else:
@@ -1060,7 +1038,8 @@ func _open_edit(cell := -1) -> void:
 ## Shows the player tip due at `moment` (PlayerTips), if any, over `host`, pointing at
 ## the part of it the tip names (or, for "garrison_town", at that town on the map).
 ## Waits while the host is hidden (the encounter dialog, while the camera flies). Once
-## dismissed it never shows again.
+## closed with "Don't show this message again" ticked it never shows again (round 23; a tip
+## whose window closes under it, or closed unticked, comes back at its next moment).
 func _offer_tip(moment: String, host: Control) -> void:
 	var id := PlayerTips.due(data, options, moment, _tip_mode(), _tip_facts())
 	if id == "" or _tips_waiting.has(id) or (is_instance_valid(_tip) and _tip.get_meta("id", "") == id):
@@ -1077,12 +1056,15 @@ func _offer_tip(moment: String, host: Control) -> void:
 		return
 	var t: Dictionary = data.tips["tips"][id]
 	var town := _garrison_town()
-	var at: Rect2 = host.anchor(t["anchor"])
+	var at: Rect2 = host.anchor(t["anchor"]) if host.has_method("anchor") else Rect2()  # none: mid-screen
 	var hex := -1
-	if t["anchor"] in ["garrison_town", "player_base"]:
+	if t["anchor"] in ["garrison_town", "player_base", "followable"]:
 		if t["anchor"] == "garrison_town" and town.is_empty():
 			return
-		hex = town["hex"] if t["anchor"] == "garrison_town" else state.map.player_base
+		var foe := _followable()
+		if t["anchor"] == "followable" and foe == null:
+			return
+		hex = town["hex"] if t["anchor"] == "garrison_town" else foe.hex if t["anchor"] == "followable" else state.map.player_base
 		at = _hex_rect(hex)
 		if not get_viewport().get_visible_rect().encloses(at):
 			return  # off screen (the map was moved): left for the next time the map opens
@@ -1093,12 +1075,14 @@ func _offer_tip(moment: String, host: Control) -> void:
 	_tip_hex = hex
 	host.add_child(tip)
 	var leader := state.opinion_leader.name if state.opinion_leader else "your leader"
-	tip.setup(str(t["text"]).format({"town": town.get("name", "the town"), "leader": leader}), at, options)
-	tip.closed.connect(tip.queue_free)
+	tip.setup(str(t["text"]).format({"town": town.get("name", "the town"), "leader": leader}), at)
+	tip.closed.connect(func():  # seen only when the player closes it with "Don't show this message again" ticked
+		if tip.done_with:
+			PlayerTips.mark_seen(options, id)
+		tip.queue_free())
 	tip.closed.connect(func():  # a tip that follows on from this one (tips.json moment "after:<id>")
 		if is_instance_valid(host):
 			_offer_tip("after:" + id, host))
-	tip.tree_exiting.connect(func(): PlayerTips.mark_seen(options, id))  # seen, even if its window closes first
 
 
 ## A hex's place on screen (a box a little larger than the hex), for a tip pointing at it.
@@ -1118,7 +1102,21 @@ func _tip_facts() -> Array:
 	if state.pending:
 		for u in state.pending.sides[1].units:
 			facts.append("enemy:" + u.unit_class)
+		for side in 2:  # someone in this fight is on their home ground (or rough ground away from it)
+			if state.pending.sides[side].living().any(func(u: Unit): return state.pending.terrain_modifier(u) != 1.0):
+				facts.append("home_ground")
+				break
+	if _followable():
+		facts.append("followable")
 	return facts
+
+
+## A hostile squad on the move that you can see on screen, to follow (the Follow tip), or null.
+func _followable() -> Squad:
+	for s in state.squads:
+		if state.can_follow(s) and get_viewport().get_visible_rect().encloses(_hex_rect(s.hex)):
+			return s
+	return null
 
 
 ## The game mode tips are chosen for (tips.json "modes").
@@ -1416,7 +1414,7 @@ func _music() -> String:
 		return Sound.music_for(data.audio, "battle", str(_battle.battle.terrain["key"]))
 	# A fight announced and not yet begun (you may be healing or editing the squad first):
 	# the build-up, not the battle theme (playtest round 22).
-	if state.pending and state.pending.warns() and (_encounter or _flying_to_fight or _edit or _menu):
+	if state.pending and (_encounter or _edit or _menu):
 		return Sound.music_for(data.audio, "battle_intro")
 	if _edit:
 		return Sound.music_for(data.audio, "army")
@@ -1511,7 +1509,7 @@ func _on_speed_chosen(index: int) -> void:
 ## No menu, popup or dialog is open (a squad order may be under way: its menu, or laying
 ## a route or picking a target, which take map clicks).
 func _can_open() -> bool:
-	return not (_flying_to_fight or _log_panel or _notes_log or _debug_panel or _menu or _main_menu or _battle or _encounter or _rare_popup or _edit or _deploy_menu or _confirm or _building_popup or _enemy_popup \
+	return not (_log_panel or _notes_log or _debug_panel or _menu or _main_menu or _battle or _encounter or _rare_popup or _edit or _deploy_menu or _confirm or _building_popup or _enemy_popup \
 			or _shop or _recruit_popup or _liberation_popup or _end_screen or _chooser or _ledger or _lost_popup)
 
 
@@ -1592,8 +1590,6 @@ func _unhandled_input(event: InputEvent) -> void:
 					_offer_follow(movers[0], hex)
 				else:
 					_plan_click(hex)
-			elif _firing:
-				_fire_click(world)
 			elif _portaling:
 				_portal_click(world)
 			else:
@@ -1611,12 +1607,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.is_pressed()):
 		return
 	var key := (event as InputEventKey).keycode
-	if _planning or _firing or _portaling:
+	if _planning or _portaling:
 		if key == KEY_ESCAPE and _deploying:
 			_end_selection()
 		elif key == KEY_ESCAPE:
 			_planning = false
-			_firing = false
 			_portaling = false
 			_clear_glow()
 			_open_menu()
