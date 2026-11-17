@@ -186,6 +186,16 @@ Shaping only: no sessions yet. Sessions get planned once the thin story is writt
 - **Moral ambiguity:** the story leaves it unclear whether the Rogue Army are the good guys or the bad guys; its choices are morally ambiguous, and there are 3 endings, good, evil and neutral, each simply different, none better or worse than another.
 - **The maps:** 3, each larger than the last; the final map has mountain barriers by default, to restrict travel and force more battles.
 
+**The Land of Twelve Elves: the gods' campaign (user's notes, 2026-11-16; adds to Quest of the Gods).**
+- **Elf Lords:** each realm's enemy Opinion Leader is an Elf Lord, living in their own castle (the realm's Enemy Base, their fortress) on the home terrain of their god. Each Elf Lord holds a Holy Item matching their god.
+- **Scripted with data:** the campaign's narrative "script" names the special pieces: replacement icons (the Elf Lord's, the castle's), the Elf Lords' own icons for their minor specialty units, and specific named units and squads to put on the map. Pictured as a JSON file per campaign, with a configurator that builds from it.
+- **The fire realm is the last and hardest:** it needs either a way to make units immune to fire on that level, or an enemy army filled with enough fire-native units to make it a hard place. A challenge for the big campaign's final level.
+
+**The Kingdom of Trifectus: the small campaign's story (user's notes, 2026-11-16).**
+- **Map 1:** a smaller map, about 1.5 times the Quick start map. The player starts with about 3 squads made up, and the Opinion Leader alone in a party. A tip then says the Opinion Leader picks their companions, and that the Opinion Leader's party must defeat the boss at the end of the map. The boss's name is the Opinion Leader's name spelled backwards; if the player renames the Opinion Leader, the boss's name changes too, with a notification saying so.
+- **Map 2:** after winning map 1, 3 squads join: 2 that travel on water and 1 that flies high. The map is a large coastline around an ocean in the middle (the opposite of the usual layouts), with deep and shallow water mixed, not all shallow. In the middle of the ocean is the second boss's fortress. **The Evil Mr. Bosstoo:** the same class as the Opinion Leader, a strong fighting class at its third stage, starting a level above the player army's average; his squad is one bigger than normal (7 to start with), with at least 2 healers in the back row and one wizard. Emphasis on neutrals and conscripts that suit water, and plenty of places to take.
+- **Map 3, the final level:** a valley, one solid piece of land 500 long and 100 tall, cut across by a lava river with three crossings. Otherwise generated at random, leaning on mountains, rivers and forest more than plains. The final castle has a moat around it and one bridge at the front to its small home island. **The final boss:** a Beastmaster with a fairly high level dragon of each type and 2 Centaurs for healing. Start there and pull back if it's too hard.
+
 **Open questions on these (for when the campaign is planned):**
 - Quest of the Gods: what carries between realms (the army, gold, cards, tech, items), and how the valley map is shown and travelled.
 - How hard each realm is once the order is free: by how many realms you've done, or set per realm.
