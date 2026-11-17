@@ -43,6 +43,8 @@ var tech: Array = []  # the army's tech nodes (the player's squads share GameSta
 var bond_battles := {}  # "id:id" (lowest instance id first) -> battles two units have fought together, toward a bond (§12.2)
 var base_slots := 0  # slots before growth; 0 = rules.json slot_growth.base (single map mode sets 6)
 var bonded_pairs: Array = []  # [Unit, Unit] once bonded; a +5% combat bonus while both live (Battle.gd)
+var boss := false  # a campaign chapter's boss (SPEC §25.6): the Opinion Leader's party must beat it to win the map
+var name_from := ""  # a campaign name that follows the Opinion Leader's, e.g. "{reversed}" (Campaign.fill_name)
 
 
 func _init(squad_id: int, squad_name: String, at_hex: int) -> void:

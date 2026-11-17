@@ -70,7 +70,10 @@ func test_the_army_carries_to_the_next_map() -> void:
 	check_eq(led.level, 2, "at the level earned")
 	check_eq(led.hp, led.max_hp(d), "healed")
 	check_eq(led.poison_left, 0, "poison gone")
-	check_eq(_count(next), units_before, "every unit, in squads and the pool")
+	var joined := 0
+	for sq in run.info["chapters"][0]["join"]:
+		joined += sq["units"].size()
+	check_eq(_count(next), units_before + joined, "every unit, in squads and the pool, and the squads that joined")
 	check(next.tech.has("veterans") and next.tech_points == 4, "tech and tech points")
 	check_eq(next.reputation, 71, "reputation")
 	check_eq(next.cards, cards, "the hand of cards")
@@ -92,3 +95,84 @@ func test_the_campaign_saves_and_resumes() -> void:
 	DirAccess.remove_absolute(Campaign.save_path)
 	check(Campaign.load_saved() == null, "none once removed")
 	Campaign.save_path = "user://saves/campaign.save"
+
+
+## Chapter 1 as Trifectus sets it up, its enemies placed.
+func _chapter_one() -> GameState:
+	var run := Campaign.begin("trifectus", 7, "Alex")
+	var st := _state(run)
+	st.place_enemies()
+	return st
+
+
+func test_trifectus_starts_with_its_own_army_and_a_boss() -> void:
+	var st := _chapter_one()
+	var lead := st.opinion_leader
+	check(st.squads.filter(func(s: Squad): return s.side == "player").size() == 1 and st.army.cells[0].units == [lead], "the Opinion Leader alone, on the map")
+	check_eq(st.army.squads().size(), 4, "and 3 squads waiting at the base")
+	check_eq(st.army.pool.size(), 8, "a small recruit pool to pick companions from")
+	var boss := st.boss_squad()
+	check(boss != null and boss.hex == st.map.enemy_base and boss.role == "leader", "the boss holds the Enemy Base")
+	check_eq(boss.name, "Xela", "named for the Opinion Leader, spelled backwards")
+	check_eq(boss.leader.name, "Xela", "and so is its leader")
+	check(not st.squads.any(func(s: Squad): return s.role == "leader" and not s.boss), "in the Warlord's place")
+
+
+func test_only_the_opinion_leaders_party_beats_the_boss() -> void:
+	var st := _chapter_one()
+	var boss := st.boss_squad()
+	var other: Squad = st.army.cells[1]
+	other.hex = st.map.enemy_base
+	st.squads.append(other)
+	var b := st.start_battle(other, boss, boss)
+	for u in boss.units:
+		u.hp = 0
+	st.end_battle(b)
+	check_eq(st.boss_beaten, "", "another squad's win doesn't count")
+	check(st.notices.any(func(n: String): return n.contains("only Alex's party")), "a banner says who must finish it")
+	check(st.returning.any(func(e: Dictionary): return e["squad"] == boss), "and the boss comes back at its base")
+	var eb := st.building_at(st.map.enemy_base)
+	eb["owner"] = "player"
+	st._check_game_over()
+	check_eq(st.game_over, "", "taking the Enemy Base doesn't win a boss map")
+	st.returning.clear()
+	for u in boss.units:
+		u.hp = u.max_hp(d)
+	st.squads.append(boss)
+	var ol := st.opinion_leader_squad()
+	var b2 := st.start_battle(ol, boss, boss)
+	for u in boss.units:
+		u.hp = 0
+	st.end_battle(b2)
+	st._check_game_over()
+	check_eq(st.game_over, "victory", "the Opinion Leader's party beating it wins the map")
+	check(st.game_over_reason.contains("Xela"), "and says so: %s" % st.game_over_reason)
+
+
+func test_the_boss_name_follows_a_rename() -> void:
+	var st := _chapter_one()
+	check(st.rename_leader("Bob"), "renamed")
+	check_eq(st.boss_squad().name, "Bob", "Bob backwards is Bob")
+	check(st.rename_leader("Marta"), "renamed again")
+	check_eq(st.boss_squad().name, "Atram", "the boss follows")
+	check_eq(st.boss_squad().leader.name, "Atram", "and its leader")
+	check(st.notices.any(func(n: String): return n == "Bob is now known as Atram."), "with a banner")
+
+
+func test_squads_join_after_the_first_map() -> void:
+	var run := Campaign.begin("trifectus", 7, "Alex")
+	var st := _state(run)
+	var before := st.army.squads().size()
+	run.advance(st)
+	var next := _state(run)
+	check_eq(next.army.squads().size(), before + 3, "three squads join")
+	var joined := next.army.squads().slice(before)
+	check_eq(joined.filter(func(s: Squad): return s.sky).size(), 1, "one flies high")
+	check_eq(joined.filter(func(s: Squad): return s.travel_type == str(d.rules["all_water_travel"]) or s.travel_type == str(d.rules["amphibious_travel"])).size(), 2,
+			"two travel on water (%s)" % ", ".join(joined.map(func(s: Squad): return s.travel_type)))
+	check(joined.all(func(s: Squad): return s not in next.squads), "waiting at the Player Base")
+	next.place_enemies()
+	var boss := next.boss_squad()
+	check(boss != null and boss.units.size() == 7 and boss.name == "The Evil Mr. Bosstoo", "the Evil Mr. Bosstoo, 7 strong")
+	check_eq(int(d.units[boss.leader.unit_class]["stage"]), maxi(3, int(d.units[next.opinion_leader.unit_class]["stage"])), "his class from the Opinion Leader's line")
+	check(boss.leader.level > Campaign.army_level(next), "a level above the army's average")

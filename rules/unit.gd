@@ -26,6 +26,7 @@ var luck := 0
 var recruited := false  # joined via Recruit (§16), not rolled for a Serf-line squad; loyalty only applies to these
 var loyalty := 0  # 0-100, recruited units only; set from data.rules.starting_loyalty when one joins
 var loyalty_warned := false  # had a day's notice at very low loyalty; clears once loyalty recovers
+var name_from := ""  # a campaign name that follows the Opinion Leader's, e.g. "{reversed}" (Campaign.fill_name)
 var poison_left := 0  # game minutes of poison left after a battle (round 22: rules.json lingering_poison); 0 = none
 
 

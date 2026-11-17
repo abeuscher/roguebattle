@@ -59,6 +59,7 @@ var debug_force := ""  # "", "win", "loss" or "draw": every battle a player squa
 var debug_fairness := {"two_dice": true, "ramping_crits": true, "streak_breaker": true, "spread": true}
 var intel := {}  # enemy squad id -> what the player saw at their last fight: {"tick", "units": [{class, level, row, alive}]}
 var last_battle := {}  # the last player battle as it began, for DebugTools.replay()
+var boss_beaten := ""  # a campaign chapter's boss, once the Opinion Leader's party has beaten it: its name (SPEC §25.6)
 var _towns_held_since := -1  # tick the player started holding the required share of towns continuously; -1 if not currently
 
 
@@ -607,6 +608,10 @@ func _check_game_over() -> void:
 		if not pb.is_empty() and pb["owner"] != "player":
 			_end_game("defeat", "The Player Base has been captured.")
 			return
+	if settings.get("boss", false):  # a campaign chapter with a boss is won by beating it, and only so (SPEC §25.6)
+		if boss_beaten != "":
+			_end_game("victory", "%s's party beat %s." % [opinion_leader.name if opinion_leader else "Your", boss_beaten])
+		return
 	var eb := building_at(map.enemy_base)  # taking the Enemy Base always wins (user's notes, 2026-11-10)
 	if not eb.is_empty() and eb["owner"] == "player":
 		_end_game("victory", "You took the Enemy Base.")
@@ -1028,6 +1033,7 @@ func rename_leader(new_name: String) -> bool:
 	var s := army.squad_of(opinion_leader)
 	if s:
 		s.refresh(data)
+	Campaign.rename_followers(self)
 	return true
 
 
@@ -2170,7 +2176,7 @@ func _revive_at_enemy_base(s: Squad) -> void:
 func _wiped_out(s: Squad) -> void:
 	var r: Dictionary = data.enemy["return"]
 	var note := "%s is wiped out and leaves the board" % s.name
-	if r["on"] and s.role != "leader":
+	if r["on"] and (s.role != "leader" or s.boss):  # a boss only the Opinion Leader's party can finish comes back
 		var ticks := roundi(return_ticks(s) * float(r["travel_share"]))
 		returning.append({"squad": s, "at": clock.tick + ticks})
 		note += "; the enemy will raise it again at its base in %s" % duration_text(ticks)
@@ -2281,6 +2287,7 @@ func place_enemies() -> void:
 		_place_raiders(r)
 	else:
 		_spread_force(r)
+	Campaign.place_named(self)
 
 
 ## Quick start's Raiders (user, 2026-11-13: some adversity): one more enemy squad, built
@@ -2966,6 +2973,7 @@ func end_battle(b: Battle) -> Dictionary:
 				stats["battles_won"] = int(stats["battles_won"]) + 1
 			elif out["retreated"] == side or _won(out, 1 - side):
 				stats["battles_lost"] = int(stats["battles_lost"]) + 1
+	_check_boss(b, out)
 	for side in 2:
 		if b.sides[side] in squads and (out["retreated"] == side or _won(out, 1 - side)):
 			_lost_battle(b.sides[side])
@@ -2987,6 +2995,27 @@ func end_battle(b: Battle) -> Dictionary:
 	_award_xp(b, out)
 	_neutral_leaves(b, out)
 	return out
+
+
+## A campaign boss beaten (SPEC §25.6): by the Opinion Leader's party, that wins the map;
+## by any other squad, a banner says who must finish it.
+func _check_boss(b: Battle, out: Dictionary) -> void:
+	var foe := b.sides[1]
+	if not foe.boss or b.sides[0].side != "player" or boss_beaten != "" or battle_result(out) != "won":
+		return
+	if b.sides[0] == opinion_leader_squad():
+		boss_beaten = foe.name
+		log.add(clock.tick, "battle", "%s's party beat %s." % [b.sides[0].name, foe.name], b.sides[0].id)
+	else:
+		notices.append("%s is beaten, but only %s's party can finish them." % [foe.name, opinion_leader.name if opinion_leader else "your Opinion Leader"])
+
+
+## The chapter's boss squad, on the map or waiting to come back, or null.
+func boss_squad() -> Squad:
+	for s in squads + returning.map(func(e: Dictionary): return e["squad"]):
+		if (s as Squad).boss:
+			return s
+	return null
 
 
 ## Losing heart (user, 2026-11-13; battle.json broken): a squad that has lost `losses`

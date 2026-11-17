@@ -1090,7 +1090,8 @@ func _offer_tip(moment: String, host: Control) -> void:
 	_tip_hex = hex
 	host.add_child(tip)
 	var leader := state.opinion_leader.name if state.opinion_leader else "your leader"
-	tip.setup(str(t["text"]).format({"town": town.get("name", "the town"), "leader": leader}), at)
+	var boss := state.boss_squad()
+	tip.setup(str(t["text"]).format({"town": town.get("name", "the town"), "leader": leader, "boss": boss.name if boss else "the boss"}), at)
 	tip.closed.connect(func():  # seen only when the player closes it with "Don't show this message again" ticked
 		if tip.done_with:
 			PlayerTips.mark_seen(options, id)
@@ -1111,7 +1112,7 @@ func _hex_rect(hex: int) -> Rect2:
 ## "enemy:<class>" for each class in the enemy squad of the battle under way.
 func _tip_facts() -> Array:
 	var facts := ["flyer"] if state.army.units().any(func(u: Unit): return u.has_tag(data, "flyer")) else []
-	for k in ["defeat_leader", "defeat_base"]:
+	for k in ["defeat_leader", "defeat_base", "boss"]:
 		if state.settings.get(k, false):
 			facts.append(k)
 	if state.pending:

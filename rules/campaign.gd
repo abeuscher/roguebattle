@@ -80,13 +80,18 @@ func settings(data: GameData) -> Dictionary:
 	var out := config(data).game_settings()
 	out["campaign"] = id
 	out["chapter"] = chapter
+	out["named"] = chapter_info().get("named", [])  # the enemy's named squads, placed by place_named
+	out["boss"] = out["named"].any(func(n: Dictionary): return n.get("boss", false))
 	return out
 
 
-## Starts the chapter's army on a fresh state: chapter 1's is the single map's start;
-## later ones, the army carried in (apply_carry). Gold is the chapter's own if it sets one.
+## Starts the chapter's army on a fresh state: chapter 1's is the campaign's own starting
+## army if it gives one (start_army), else the single map's start; later ones, the army
+## carried in (apply_carry). Gold is the chapter's own if it sets one.
 func set_up(state: GameState) -> void:
-	if carry.is_empty():
+	if carry.is_empty() and chapter_info().has("army"):
+		start_army(state, chapter_info()["army"])
+	elif carry.is_empty():
 		state.setup_army()
 	else:
 		apply_carry(state, carry)
@@ -94,8 +99,9 @@ func set_up(state: GameState) -> void:
 		state.gold = int(chapter_info()["gold"])
 
 
-## The chapter was won: the army goes on into the next one.
+## The chapter was won: the squads it promised join (join), and the army goes on into the next one.
 func advance(state: GameState) -> void:
+	join(state, chapter_info().get("join", []))
 	carry = carry_of(state)
 	chapter += 1
 
@@ -196,6 +202,138 @@ static func apply_carry(state: GameState, d: Dictionary) -> void:
 		first.hex = state.map.player_base
 		state.squads.append(first)
 	state.army.pool.assign(d["pool"].map(func(i: int): return units[i]))
+
+
+# --- Special pieces (SPEC §25.6) ----------------------------------------------------------
+
+## A name that follows the Opinion Leader's: "{name}" is it, "{reversed}" it spelled backwards.
+static func fill_name(state: GameState, template: String) -> String:
+	var n := state.opinion_leader.name if state.opinion_leader else str(state.settings.get("player_name", ""))
+	var r := n.reverse().to_lower()
+	if r != "":
+		r = r[0].to_upper() + r.substr(1)
+	return template.format({"name": n, "reversed": r})
+
+
+## The army's average level, rounded (1 with no army yet).
+static func army_level(state: GameState) -> int:
+	var units := state.army.units()
+	if units.is_empty():
+		return 1
+	var total := 0
+	for u in units:
+		total += u.level
+	return roundi(total / float(units.size()))
+
+
+## A squad as a campaign file gives it: {name, slots, units: [{class, row, level, name}]}.
+## Class "opinion_leader" is the Opinion Leader's own, taken up its line to "stage" if that
+## is higher; a level "+n" is n above the army's average. Names may follow the Opinion
+## Leader's (fill_name). Not yet on the map or in the army.
+static func build_squad(state: GameState, spec: Dictionary, side: String, number: int) -> Squad:
+	var data := state.data
+	var r := state.rng.get_stream("campaign")
+	var title := str(spec.get("name", ""))
+	var s := Squad.new(number, fill_name(state, title), -1)
+	s.side = side
+	s.name_from = title if "{" in title else ""
+	if side == "player":
+		s.tech = state.tech
+	s.base_slots = int(spec.get("slots", data.rules["single_map"]["base_slots"]))
+	var average := army_level(state)
+	for us: Dictionary in spec["units"]:
+		var c := str(us["class"])
+		if c == "opinion_leader":
+			c = state.opinion_leader.unit_class
+			while int(data.units[c]["stage"]) < int(us.get("stage", 0)) and not data.next_classes(c).is_empty():
+				c = data.next_classes(c)[0]
+		var u := Unit.roll(data, c, state.rng.get_stream("recruit"), state.names)
+		var lv: Variant = us.get("level", 1)
+		var target := average + int(lv) if lv is String else int(lv)
+		while u.level < target:
+			Progression.level_up(data, u, r)
+		if str(us.get("name", "")) != "":
+			u.name_from = str(us["name"])
+			u.name = fill_name(state, u.name_from)
+		if not s.add(data, u, str(us.get("row", "front"))):
+			push_warning("Campaign squad %s has no room for its %s." % [s.name, c])
+	s.morale = int(data.rules["starting_morale"])
+	s.refresh(data)
+	return s
+
+
+## A chapter's own starting army ("army": {leader, squads, pool}): the Opinion Leader alone
+## in squad 1 on the map (of "leader"'s class, or a Serf-line leader at random), the given
+## squads waiting at the Player Base, and the given classes in the recruit pool to pick
+## companions from. Cards and the starting kit as a single map's start.
+static func start_army(state: GameState, spec: Dictionary) -> void:
+	var data := state.data
+	state.army.base_slots = int(data.rules["single_map"]["base_slots"])
+	var lead := str(spec.get("leader", ""))
+	if lead == "":
+		var all: Array = Map1Setup._leaders_by_terrain(data).values().reduce(func(a, b): return a + b, [])
+		lead = all[state.rng.get_stream("army_setup").randi() % all.size()]
+	var first := state.add_squad("", state.map.player_base, [[lead, "front"]])
+	state.army.cells[0] = first
+	state.opinion_leader = first.leader
+	for sq: Dictionary in spec.get("squads", []):
+		_into_army(state, build_squad(state, sq, "player", 0))
+	for c in spec.get("pool", []):
+		state.army.pool.append(Unit.roll(data, str(c), state.rng.get_stream("recruit"), state.names))
+	for i in int(data.cards["start"]):
+		state.draw_card(null)
+	state._starting_kit()
+
+
+## Squads that join the army when a chapter is won, waiting at the Player Base of the next map.
+static func join(state: GameState, specs: Array) -> void:
+	for sq: Dictionary in specs:
+		var s := build_squad(state, sq, "player", 0)
+		_into_army(state, s)
+		state.log.add(state.clock.tick, "progression", "%s joins the army." % s.name, s.id)
+
+
+## Puts a player squad in the army's first free cell (one more cell if none is free).
+static func _into_army(state: GameState, s: Squad) -> void:
+	var i := state.army.cells.find(null)
+	if i < 0:
+		i = state.army.cells.size()
+		state.army.cells.append(null)
+	s.id = i + 1
+	state.army.cells[i] = s
+	s.refresh(state.data)
+
+
+## The chapter's named enemy squads (place_enemies, after the rest): each stands at the
+## Enemy Base with its role; a "leader" takes the Warlord's place.
+static func place_named(state: GameState) -> void:
+	for spec: Dictionary in state.settings.get("named", []):
+		var role := str(spec.get("role", "leader"))
+		if role == "leader":
+			for o in state.squads.filter(func(o: Squad): return o.side == "enemy" and o.role == "leader"):
+				state.squads.erase(o)
+		var s := build_squad(state, spec, "enemy", state.fresh_id())
+		s.hex = state.map.enemy_base
+		s.post = state.map.enemy_base
+		s.role = role
+		s.boss = bool(spec.get("boss", false))
+		state.squads.append(s)
+		state.log.add(state.clock.tick, "map", "%s holds the Enemy Base." % s.name, s.id)
+
+
+## After the Opinion Leader is renamed: names that follow it are spelled again, with a
+## banner for each squad whose name changed.
+static func rename_followers(state: GameState) -> void:
+	var all: Array = state.squads + state.returning.map(func(e: Dictionary): return e["squad"])
+	for s: Squad in all:
+		for u in s.units:
+			if u.name_from != "":
+				u.name = fill_name(state, u.name_from)
+		if s.name_from != "":
+			var was := s.name
+			s.name = fill_name(state, s.name_from)
+			if s.name != was:
+				state.notices.append("%s is now known as %s." % [was, s.name])
 
 
 # --- Saving (SPEC §25.5) -------------------------------------------------------------------

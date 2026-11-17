@@ -1,31 +1,404 @@
 {
- "_note": "The Kingdom of Trifectus (SPEC §25.7; user's notes 2026-11-16). Placeholder text and map settings: the bosses, joining squads and starting army come in campaign step 2, the coastline and the valley's castle in step 3. A page is {title, text, image, video, sound}, every part optional; files are in data/campaigns/trifectus/. Map heights go in steps of 15 (configurator), so 75 and 105 stand for the notes' 70 and 100.",
+ "_note": "The Kingdom of Trifectus (SPEC §25.7; user's notes 2026-11-16). Placeholder text; the coastline and the valley's castle come in campaign step 3. A page is {title, text, image, video, sound}, every part optional; files are in data/campaigns/trifectus/. Map heights go in steps of 15 (configurator), so 75 and 105 stand for the notes' 70 and 100. army (chapter 1): the Opinion Leader alone (leader: a class, or a Serf-line leader at random), squads waiting at the Player Base, and classes for the recruit pool. named: the enemy's named squads at the Enemy Base; role leader takes the Warlord's place; boss: the Opinion Leader's party must beat it to win the map. join: squads that join the army when the chapter is won. A squad is {name, slots, units: [{class, row, level, name}]}: class opinion_leader is the Opinion Leader's own, taken up its line to stage; level \"+n\" is n above the army's average; {name} in a name is the Opinion Leader's, {reversed} it spelled backwards (it follows a rename).",
  "name": "The Kingdom of Trifectus",
  "description": "Three maps. Carve out a kingdom, one rival at a time.",
  "opening": [
-  {"title": "The Kingdom of Trifectus", "text": "A land of three crowns, and none of them worn well. You arrive with a small company and a long road ahead.\n\n(Placeholder story text.)"}
+  {
+   "title": "The Kingdom of Trifectus",
+   "text": "A land of three crowns, and none of them worn well. You arrive with a small company and a long road ahead.\n\n(Placeholder story text.)"
+  }
  ],
  "ending": [
-  {"title": "Trifectus is yours", "text": "The last of the three thrones is empty, and the kingdom waits to see what kind of ruler you will be.\n\n(Placeholder story text.)"}
+  {
+   "title": "Trifectus is yours",
+   "text": "The last of the three thrones is empty, and the kingdom waits to see what kind of ruler you will be.\n\n(Placeholder story text.)"
+  }
  ],
  "chapters": [
   {
    "name": "The First Crown",
-   "map": {"preset": "continent", "width": 150, "height": 75, "difficulty": "normal"},
-   "before": [{"title": "Chapter 1: The First Crown", "text": "Your Opinion Leader sets out with a handful of loyal squads. Somewhere across this valley waits a rival who looks oddly familiar.\n\n(Placeholder story text.)"}],
-   "after": [{"title": "The first crown falls", "text": "Word spreads. Three squads ride in to join your cause, two of them at home on the water and one in the high sky.\n\n(Placeholder story text.)"}]
+   "map": {
+    "preset": "continent",
+    "width": 150,
+    "height": 75,
+    "difficulty": "normal"
+   },
+   "army": {
+    "squads": [
+     {
+      "units": [
+       {
+        "class": "Soldier",
+        "row": "front"
+       },
+       {
+        "class": "Fighter",
+        "row": "front"
+       },
+       {
+        "class": "Fighter",
+        "row": "front"
+       },
+       {
+        "class": "Bowman",
+        "row": "back"
+       },
+       {
+        "class": "Acolyte",
+        "row": "back"
+       },
+       {
+        "class": "Apprentice",
+        "row": "back"
+       }
+      ]
+     },
+     {
+      "units": [
+       {
+        "class": "Lancer",
+        "row": "front"
+       },
+       {
+        "class": "Squire",
+        "row": "front"
+       },
+       {
+        "class": "Fighter",
+        "row": "front"
+       },
+       {
+        "class": "Slinger",
+        "row": "back"
+       },
+       {
+        "class": "Bowman",
+        "row": "back"
+       },
+       {
+        "class": "Acolyte",
+        "row": "back"
+       }
+      ]
+     },
+     {
+      "units": [
+       {
+        "class": "Spearman",
+        "row": "front"
+       },
+       {
+        "class": "Fighter",
+        "row": "front"
+       },
+       {
+        "class": "Squire",
+        "row": "front"
+       },
+       {
+        "class": "Archer",
+        "row": "back"
+       },
+       {
+        "class": "Apprentice",
+        "row": "back"
+       },
+       {
+        "class": "Acolyte",
+        "row": "back"
+       }
+      ]
+     }
+    ],
+    "pool": [
+     "Fighter",
+     "Fighter",
+     "Squire",
+     "Bowman",
+     "Slinger",
+     "Acolyte",
+     "Apprentice",
+     "Wolf"
+    ]
+   },
+   "named": [
+    {
+     "name": "{reversed}",
+     "role": "leader",
+     "boss": true,
+     "units": [
+      {
+       "class": "Champion",
+       "row": "front",
+       "level": 3,
+       "name": "{reversed}"
+      },
+      {
+       "class": "Soldier",
+       "row": "front",
+       "level": 2
+      },
+      {
+       "class": "Fighter",
+       "row": "front",
+       "level": 2
+      },
+      {
+       "class": "Archer",
+       "row": "back",
+       "level": 2
+      },
+      {
+       "class": "Cleric",
+       "row": "back",
+       "level": 2
+      },
+      {
+       "class": "Apprentice",
+       "row": "back",
+       "level": 2
+      }
+     ]
+    }
+   ],
+   "join": [
+    {
+     "units": [
+      {
+       "class": "Siren",
+       "row": "front",
+       "level": "+0"
+      },
+      {
+       "class": "Frog",
+       "row": "front",
+       "level": "+0"
+      },
+      {
+       "class": "Toad",
+       "row": "front",
+       "level": "+0"
+      },
+      {
+       "class": "Mermaid",
+       "row": "back",
+       "level": "+0"
+      },
+      {
+       "class": "Mermaid",
+       "row": "back",
+       "level": "+0"
+      },
+      {
+       "class": "Tadpole",
+       "row": "back",
+       "level": "+0"
+      }
+     ]
+    },
+    {
+     "units": [
+      {
+       "class": "Sea Dragon",
+       "row": "front",
+       "level": "+0"
+      },
+      {
+       "class": "Serpent",
+       "row": "front",
+       "level": "+0"
+      },
+      {
+       "class": "Mermaid",
+       "row": "back",
+       "level": "+0"
+      },
+      {
+       "class": "Mermaid",
+       "row": "back",
+       "level": "+0"
+      }
+     ]
+    },
+    {
+     "units": [
+      {
+       "class": "Eagle Knight",
+       "row": "front",
+       "level": "+0"
+      },
+      {
+       "class": "Gryphon",
+       "row": "front",
+       "level": "+0"
+      },
+      {
+       "class": "Eagle Rider",
+       "row": "front",
+       "level": "+0"
+      },
+      {
+       "class": "Eagle Rider",
+       "row": "back",
+       "level": "+0"
+      },
+      {
+       "class": "Angel",
+       "row": "back",
+       "level": "+0"
+      }
+     ]
+    }
+   ],
+   "before": [
+    {
+     "title": "Chapter 1: The First Crown",
+     "text": "Your Opinion Leader sets out with a handful of loyal squads. Somewhere across this valley waits a rival who looks oddly familiar.\n\n(Placeholder story text.)"
+    }
+   ],
+   "after": [
+    {
+     "title": "The first crown falls",
+     "text": "Word spreads. Three squads ride in to join your cause, two of them at home on the water and one in the high sky.\n\n(Placeholder story text.)"
+    }
+   ]
   },
   {
    "name": "The Sea Between",
-   "map": {"preset": "continent", "width": 250, "height": 135, "difficulty": "normal"},
-   "before": [{"title": "Chapter 2: The Sea Between", "text": "A coastline wraps around a great inland sea. On an island at its heart, the Evil Mr. Bosstoo waits in his fortress.\n\n(Placeholder story text.)"}],
-   "after": [{"title": "The fortress falls", "text": "Mr. Bosstoo's fortress is quiet at last. One crown remains, beyond a river of fire.\n\n(Placeholder story text.)"}]
+   "map": {
+    "preset": "continent",
+    "width": 250,
+    "height": 135,
+    "difficulty": "normal"
+   },
+   "named": [
+    {
+     "name": "The Evil Mr. Bosstoo",
+     "role": "leader",
+     "boss": true,
+     "slots": 7,
+     "units": [
+      {
+       "class": "opinion_leader",
+       "row": "front",
+       "level": "+1",
+       "stage": 3,
+       "name": "Mr. Bosstoo"
+      },
+      {
+       "class": "Champion",
+       "row": "front",
+       "level": "+1"
+      },
+      {
+       "class": "Knight",
+       "row": "front",
+       "level": "+1"
+      },
+      {
+       "class": "Cleric",
+       "row": "back",
+       "level": "+1"
+      },
+      {
+       "class": "Cleric",
+       "row": "back",
+       "level": "+1"
+      },
+      {
+       "class": "Mage",
+       "row": "back",
+       "level": "+1"
+      },
+      {
+       "class": "Archer",
+       "row": "back",
+       "level": "+1"
+      }
+     ]
+    }
+   ],
+   "before": [
+    {
+     "title": "Chapter 2: The Sea Between",
+     "text": "A coastline wraps around a great inland sea. On an island at its heart, the Evil Mr. Bosstoo waits in his fortress.\n\n(Placeholder story text.)"
+    }
+   ],
+   "after": [
+    {
+     "title": "The fortress falls",
+     "text": "Mr. Bosstoo's fortress is quiet at last. One crown remains, beyond a river of fire.\n\n(Placeholder story text.)"
+    }
+   ]
   },
   {
    "name": "The River of Fire",
-   "map": {"preset": "volcanic", "width": 500, "height": 105, "section_pct": 50, "crossings": 3, "difficulty": "normal"},
-   "before": [{"title": "Chapter 3: The River of Fire", "text": "A long valley, cut in two by a river of lava with only three ways across. On the far side, the Beastmaster's castle and his dragons.\n\n(Placeholder story text.)"}],
-   "after": [{"title": "The Beastmaster falls", "text": "The dragons scatter into the mountains, and the castle gates open.\n\n(Placeholder story text.)"}]
+   "map": {
+    "preset": "volcanic",
+    "width": 500,
+    "height": 105,
+    "section_pct": 50,
+    "crossings": 3,
+    "difficulty": "normal"
+   },
+   "named": [
+    {
+     "name": "The Beastmaster",
+     "role": "leader",
+     "boss": true,
+     "slots": 11,
+     "units": [
+      {
+       "class": "Beastlord",
+       "row": "front",
+       "level": "+2",
+       "name": "The Beastmaster"
+      },
+      {
+       "class": "Red Dragon",
+       "row": "front",
+       "level": "+2"
+      },
+      {
+       "class": "Blue Dragon",
+       "row": "front",
+       "level": "+2"
+      },
+      {
+       "class": "Silver Dragon",
+       "row": "back",
+       "level": "+2"
+      },
+      {
+       "class": "Black Dragon",
+       "row": "back",
+       "level": "+2"
+      },
+      {
+       "class": "Centaur",
+       "row": "back",
+       "level": "+1"
+      },
+      {
+       "class": "Centaur",
+       "row": "back",
+       "level": "+1"
+      }
+     ]
+    }
+   ],
+   "before": [
+    {
+     "title": "Chapter 3: The River of Fire",
+     "text": "A long valley, cut in two by a river of lava with only three ways across. On the far side, the Beastmaster's castle and his dragons.\n\n(Placeholder story text.)"
+    }
+   ],
+   "after": [
+    {
+     "title": "The Beastmaster falls",
+     "text": "The dragons scatter into the mountains, and the castle gates open.\n\n(Placeholder story text.)"
+    }
+   ]
   }
  ]
 }
