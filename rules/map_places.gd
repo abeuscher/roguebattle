@@ -48,6 +48,8 @@ func _setup() -> void:
 	for path in map.rivers:
 		for i in path:
 			_river[i] = 1
+	for i in map.road_water:  # a river barrier's banks and fords (chokepoints)
+		_river[i] = 1
 	for t in data.terrains:
 		_road_cost.append(float(t.get("road_cost", -1.0)))
 	_water = MapGen.terrain_flags(data, "water")
@@ -278,6 +280,19 @@ func _roads() -> void:
 	edges.sort_custom(func(x, y): return x[0] < y[0])  # short roads first, so long ones reuse them
 	for e in edges:
 		map.lay_road(_road_path(e[1], e[2]))
+	# A road through every chokepoint crossing, from the nearest town, tower or temple on
+	# each side, so crossings are the passes and fords roads lead to (session 108).
+	for spot in map.crossing_spots:
+		for side in [int(spot[1]) - 1, int(spot[1])]:
+			var near := -1
+			for b in map.buildings:
+				if b["type"] not in VISIBLE or map.section[b["hex"]] != side or region[b["hex"]] != region[spot[0]]:
+					continue
+				var at := map.hex_at(int(spot[0]))
+				if near < 0 or Hex.distance(map.hex_at(b["hex"]), at) < Hex.distance(map.hex_at(near), at):
+					near = b["hex"]
+			if near >= 0:
+				map.lay_road(_road_path(near, int(spot[0])))
 
 
 ## Minimum spanning tree over the nodes (by hex distance), plus `loops` x nodes extra short links.

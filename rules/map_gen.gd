@@ -16,6 +16,7 @@ var _flow: PackedFloat32Array  # low ground that rivers and lava follow
 var _edge: PackedFloat32Array  # squared distance from the map center: 0 there, 1 at the edge midpoints
 var _water: PackedByteArray  # per terrain id
 var _wander: FastNoiseLite  # where reef paths prefer to wind (sampled only near crossings)
+var _core: PackedByteArray  # 1 on a chokepoint barrier's core (MapGen._chokepoints)
 var _fords: Array[PackedInt32Array] = []  # deep sea turned shallow to link landmasses, widened into reefs
 
 
@@ -35,7 +36,10 @@ static func generate(game_data: GameData, game_seed: int, overrides: Dictionary 
 	g._ensure_reachable()
 	g._extra_crossings()
 	g._reefs()
+	if g._chokepoints():  # after the water's fords and reefs, so none runs through a barrier
+		g._ensure_reachable()  # a pocket a barrier cut off (any way it opens counts as a crossing)
 	MapPlaces.place_all(g.map, game_data, g.settings, g.rng)
+	g._find_crossings()
 	return g.map
 
 
@@ -358,6 +362,131 @@ func _lava_flows() -> void:
 	for src in sources:
 		for i in _downhill(src, dist, int(settings["lava_flow_length"])):
 			map.terrain[i] = _id("lava")
+
+
+# --- Chokepoints (user, 2026-11-16) ---------------------------------------------
+
+## Barriers across the line between the two bases cut the land into sections (each
+## `section_pct` of the map along that line, sections at least `min_section` hexes long),
+## each border crossed at `crossings` places, so attacks funnel through passes, fords and
+## bridges a squad can watch. A barrier is a cliff ridge (crossed at mountain passes), a
+## river (deep water with shallow banks, crossed at fords) or lava (crossed on plains),
+## from the preset's `chokepoint_barriers`, with slow ground along each side. Off at 100%,
+## and on maps the sea already divides. `one_terrain`: each section's land is one terrain.
+func _chokepoints() -> bool:
+	var pct := float(settings["section_pct"])
+	if pct >= 100.0 or not settings["chokepoints_allowed"]:
+		return false
+	var horizontal: bool = settings["spawn_side"] in ["west", "east"]
+	var length := float(map.width) if horizontal else map.height * Hex.SQRT3 * 0.5
+	var n := clampi(roundi(100.0 / pct), 1, maxi(1, int(length / float(settings["min_section"]))))
+	if n < 2:
+		return false
+	var wiggle := _noise("chokepoints", 7.0)
+	var amp := length / n * float(settings["chokepoint_wiggle"])
+	var core_w := float(settings["chokepoint_core"])
+	var bank_w := float(settings["chokepoint_bank"])
+	var kinds: Array = settings["chokepoint_barriers"]
+	map.sections = n
+	map.section.resize(map.size())
+	_core.resize(map.size())
+	map.barrier = _core  # shared: the same bytes
+	# Which section each hex is in, and how far it is from the nearest border line.
+	var gap := PackedFloat32Array()
+	gap.resize(map.size())
+	var near := PackedInt32Array()
+	near.resize(map.size())
+	for i in map.size():
+		var along := _px[i] if horizontal else _py[i]
+		var across := _py[i] if horizontal else _px[i]
+		var sec := 0
+		gap[i] = INF
+		for k in range(1, n):
+			var line := length * k / n + wiggle.get_noise_2d(across, k * 97.0) * amp
+			if along > line:
+				sec = k
+			var dd := absf(along - line)
+			if dd < gap[i]:
+				gap[i] = dd
+				near[i] = k
+		map.section[i] = sec
+	if bool(settings["one_terrain"]):
+		_one_terrain_sections(n)
+	# Each border: its barrier, then its crossings.
+	for k in range(1, n):
+		var kind: String = kinds[rng.randi_range(0, kinds.size() - 1)]
+		var core_t := _id("deep") if kind == "river" else _id(kind)
+		var bank_t := _id("shallow") if kind == "river" else _id("mountain")
+		var cores := []  # [across, hex] of this border's core on land
+		for i in map.size():
+			if near[i] != k or gap[i] > core_w + bank_w:
+				continue
+			var t := map.terrain[i]
+			if t == _id("deep") or t == _id("air_gap"):
+				continue  # open sea already divides
+			if gap[i] <= core_w:
+				map.terrain[i] = core_t
+				map.road[i] = 0  # no older river bridge across it
+				_core[i] = 1
+				cores.append([_py[i] if horizontal else _px[i], i])
+			elif not _is_water(t) or (kind == "river" and t == _id("shallow")):  # a cliff's or lava's banks are land only
+				map.terrain[i] = bank_t
+				if kind == "river":
+					map.road_water.append(i)
+		for c in cores:  # land right beside the core is always its slow bank, however the line bends
+			for nb in 6:
+				var j := map.neighbors[int(c[1]) * 6 + nb]
+				if j >= 0 and not _core[j] and (not _is_water(map.terrain[j]) or (kind == "river" and map.terrain[j] == _id("shallow"))):
+					map.terrain[j] = bank_t
+					if kind == "river":
+						map.road_water.append(j)
+		if cores.is_empty():
+			continue
+		var crossing := _id("shallow") if kind == "river" else _id(str(data.terrains[core_t]["crossing"]))
+		var count := int(settings["crossings"])
+		var lo := INF  # the land part of the border, which the crossings share out evenly
+		var hi := -INF
+		for c in cores:
+			lo = minf(lo, float(c[0]))
+			hi = maxf(hi, float(c[0]))
+		for j in count:
+			var want := lo + (hi - lo) * (j + 0.5) / count
+			var best := -1.0
+			var spot := -1
+			for c in cores:  # the nearest stretch of land core to an even spacing along the border
+				if best < 0.0 or absf(float(c[0]) - want) < absf(best - want):
+					best = float(c[0])
+					spot = int(c[1])
+			map.crossing_spots.append([spot, k])
+			for c in cores:
+				if absf(float(c[0]) - best) <= float(settings["crossing_width"]):
+					map.terrain[c[1]] = crossing
+					if kind == "river":
+						map.road_water.append(c[1])  # a road may take the ford
+	return true
+
+
+## The crossings are whatever ground squads can pass in a barrier's core once the map is
+## done: the ones laid out, plus any a later step opened (a route to a cut-off pocket, a
+## road's bridge), so every way through is a known chokepoint.
+func _find_crossings() -> void:
+	if _core.is_empty():
+		return
+	var open := ground_passable(map, data)
+	for i in map.size():
+		if _core[i] and open[i]:
+			map.chokepoints.append(i)
+
+## Every land hex of a section becomes one terrain (the barriers come after), picked per section
+## from mapgen one_terrain_choices (for campaign maps: a realm per god, say).
+func _one_terrain_sections(n: int) -> void:
+	var choices: Array = settings["one_terrain_choices"]
+	var pick := []
+	for k in n:
+		pick.append(_id(str(choices[rng.randi_range(0, choices.size() - 1)])))
+	for i in map.size():
+		if not _is_water(map.terrain[i]):
+			map.terrain[i] = pick[map.section[i]]
 
 
 func _distance_to_water() -> PackedInt32Array:

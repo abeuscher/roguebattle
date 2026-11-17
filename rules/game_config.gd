@@ -109,6 +109,7 @@ func map_overrides() -> Dictionary:
 	if values.get("mode", "") == "quick":  # a small map still gets a few of each building
 		out["building_min"] = data.rules["quick_start"]["buildings"]
 		out["town_near_base"] = data.rules["quick_start"]["town_near_base"]
+		out["section_pct"] = data.rules["quick_start"]["section_pct"]  # no chokepoints on the first map
 	return out
 
 

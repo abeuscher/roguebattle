@@ -8,8 +8,8 @@ static var _medium: MapData
 func _init() -> void:
 	if _data == null:
 		_data = GameData.load_dir()
-		_small = MapGen.generate(_data, 4)
-		_medium = MapGen.generate(_data, 4, {"size": "medium"})
+		_small = MapGen.generate(_data, 4, {"section_pct": 100})  # the pathfinder itself, without chokepoints
+		_medium = MapGen.generate(_data, 4, {"size": "medium", "section_pct": 100})
 
 
 ## Random pairs of hexes the profile can stand on, `min_apart` hexes or more apart.

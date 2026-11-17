@@ -29,8 +29,9 @@ func _key(m: MapData, i: int) -> String:
 
 
 func test_counts_follow_density() -> void:
-	var m := _map()
+	var m := _map("continent", 1, {"section_pct": 100})  # exact counts without chokepoints, whose barriers take some land
 	var counts: Dictionary = _data.mapgen["building_counts"]
+	check(_of_type(_map(), "town").size() >= int(counts["town"]) - 2, "with chokepoints, all but a town or two still fit")
 	for type in ["town", "temple"]:
 		check_eq(_of_type(m, type).size(), int(counts[type]), "%s count at medium density" % type)
 	check(_of_type(m, "tower").size() >= int(counts["tower"]), "tower count at medium density (more may cover regions)")
@@ -111,6 +112,8 @@ func test_roads_connect_visible_buildings() -> void:
 			for path in m.rivers:
 				for i in path:
 					river[i] = true
+			for i in m.road_water:  # a river barrier's banks and fords
+				river[i] = true
 			var ground := PackedByteArray()
 			ground.resize(m.size())
 			for i in m.size():
@@ -139,6 +142,8 @@ func test_roads_stay_off_sea_lava_and_cliffs() -> void:
 		for path in m.rivers:
 			for i in path:
 				river[i] = true
+		for i in m.road_water:  # a river barrier's banks and fords
+			river[i] = true
 		for i in m.size():
 			if not m.road[i]:
 				continue

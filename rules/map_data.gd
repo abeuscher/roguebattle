@@ -18,6 +18,12 @@ var terrain: PackedByteArray  # terrain id per hex, index = row * width + col
 ## hex with no links yet (a lone river bridge).
 var road: PackedByteArray
 var rivers: Array[PackedInt32Array] = []  # hex indices from source to mouth
+var sections := 1  # land cut into this many by chokepoint barriers (MapGen._chokepoints)
+var section: PackedByteArray  # which section each hex is in (empty with no barriers)
+var chokepoints: Array[int] = []  # the crossing hexes through those barriers
+var barrier: PackedByteArray  # 1 on a chokepoint barrier's core (empty with none)
+var crossing_spots: Array = []  # [hex, border] at the middle of each crossing laid out, for roads
+var road_water: Array[int] = []  # water a road may run over: a river barrier's shallow banks and fords
 ## Each: {type, hex, shop, hint, hidden, kind, road}. Bases are buildings too.
 var buildings: Array[Dictionary] = []
 var lairs: Array[Dictionary] = []  # each: {hex, home (unit terrain), danger 0..1}

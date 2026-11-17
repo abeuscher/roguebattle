@@ -216,7 +216,10 @@ static func from_dict(data: GameData, d: Dictionary, game_log: GameLog) -> Varia
 	var config := GameConfig.from_code(data, str(d.get("code", "")))
 	if config == null:
 		return "This save's map settings can't be read."
-	var map := MapGen.generate(data, int(d["map_seed"]), d["map_overrides"])
+	var overrides: Dictionary = d["map_overrides"].duplicate()
+	if not overrides.has("section_pct"):  # saved before chokepoints (session 108): none
+		overrides["section_pct"] = 100
+	var map := MapGen.generate(data, int(d["map_seed"]), overrides)
 	if hash(map.terrain) != d["terrain_hash"]:
 		return "This save's map no longer generates the same way (the game changed since); it can't be loaded."
 	var state := GameState.new(data, map, GameLog.new(), d["state"]["settings"])

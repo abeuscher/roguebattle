@@ -68,8 +68,20 @@ func test_shallows_border_land() -> void:
 		for i in path:
 			river[i] = true
 	for i in _map.size():
-		if _map.terrain[i] == deep and not river.has(i):
+		if _map.terrain[i] == deep and not river.has(i) and not _by_barrier(i):
 			for n in _map.neighbor_indices(i):
 				if _map.terrain[n] != deep and _map.terrain[n] != shallow:
 					check(false, "deep water touches land at %s" % _map.hex_at(i))
 					return
+
+
+## On or beside a chokepoint barrier's core, where a barrier may run into the sea.
+func _by_barrier(i: int) -> bool:
+	if _map.barrier.is_empty():
+		return false
+	if _map.barrier[i]:
+		return true
+	for n in _map.neighbor_indices(i):
+		if _map.barrier[n]:
+			return true
+	return false
