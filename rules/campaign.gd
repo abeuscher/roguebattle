@@ -80,6 +80,7 @@ func settings(data: GameData) -> Dictionary:
 	var out := config(data).game_settings()
 	out["campaign"] = id
 	out["chapter"] = chapter
+	out["lines"] = info.get("lines", [])  # the unit lines in this campaign (GameData.set_lines); [] = all
 	out["named"] = chapter_info().get("named", [])  # the enemy's named squads, placed by place_named
 	out["boss"] = out["named"].any(func(n: Dictionary): return n.get("boss", false))
 	return out

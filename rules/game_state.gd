@@ -68,6 +68,7 @@ func _init(game_data: GameData, game_map: MapData, game_log: GameLog, game_setti
 	map = game_map
 	log = game_log
 	settings = game_settings
+	data.set_lines(settings.get("lines", []))  # a campaign's unit lines; every line otherwise
 	rng = RngStreams.new(map.seed)
 	clock = GameClock.new(data.rules, int(data.rules["start_minute"]))
 	pathfinder = Pathfinder.new(map, data)
@@ -1466,7 +1467,7 @@ func buy_supply(b: Dictionary, id: String, s: Squad = null) -> bool:
 
 ## Serfs are sold at towns (and nomad camps) with shops (§16) and join the recruit pool.
 func sells_serfs(b: Dictionary) -> bool:
-	return b.get("shop", false) and b["type"] in data.rules["economy"]["serf_shops"]
+	return b.get("shop", false) and b["type"] in data.rules["economy"]["serf_shops"] and data.allows("Serf")
 
 
 func buy_serf(b: Dictionary, s: Squad = null) -> Unit:
@@ -2253,8 +2254,14 @@ func _toughen(s: Squad, r: RandomNumberGenerator) -> void:
 ## An enemy squad's members: one of enemy.json's builds, and in single map mode 1-2 more
 ## (rules.json single_map.enemy_builds) so they meet 6-unit squads evenly.
 func _enemy_members(r: RandomNumberGenerator) -> Array:
-	var builds: Array = data.enemy["builds"]
-	var members: Array = builds[r.randi() % builds.size()].duplicate()
+	var builds: Array = data.enemy["builds"].filter(func(b: Array): return b.all(func(m: Array): return data.allows(m[0])))
+	var members: Array
+	if builds.is_empty():  # a campaign's lines leave no build whole: a leader and three stage 2 units of its own
+		var leaders: Array = Map1Setup._leaders_by_terrain(data).values().reduce(func(a, b): return a + b, [])
+		var lead: String = leaders[r.randi() % leaders.size()]
+		members = [[lead, Map1Setup._row(data, lead)]] + Map1Setup.extra_members(data, r, 3)
+	else:
+		members = builds[r.randi() % builds.size()].duplicate()
 	if single_map():
 		var extra: Array = data.rules["single_map"]["enemy_builds"]["extra"]
 		var more := int(difficulty()["extra"])
@@ -2863,11 +2870,13 @@ func resolve_rare(take: bool) -> void:
 func _rare_class(r: RandomNumberGenerator, skip: Array) -> String:
 	var options := []
 	for lid in data.lines:
-		if String(lid).is_valid_int():
+		if String(lid).is_valid_int() or not data.line_allowed(lid):
 			continue
 		for c in data.lines[lid][0]:
 			if int(data.units[c]["stage"]) == 1 and data.units[c]["terrain"] not in skip and c not in options:
 				options.append(c)
+	if options.is_empty():  # a campaign without the race lines: a Serf-line stage 2 unit instead
+		options = Map1Setup._stage2_classes(data)
 	return options[r.randi() % options.size()]
 
 

@@ -33,7 +33,7 @@ static func _pick_class(stage: Array, rng: RandomNumberGenerator) -> String:
 static func _pick_line(data: GameData, home: String, rng: RandomNumberGenerator) -> Array:
 	var candidates: Array = []
 	for line_id in data.lines:
-		if line_id.is_valid_int():
+		if line_id.is_valid_int() or not data.line_allowed(line_id):
 			continue
 		var stages: Array = data.lines[line_id]
 		if data.units[stages[0][0]]["terrain"] == home:

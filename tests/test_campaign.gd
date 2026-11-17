@@ -176,3 +176,34 @@ func test_squads_join_after_the_first_map() -> void:
 	check(boss != null and boss.units.size() == 7 and boss.name == "The Evil Mr. Bosstoo", "the Evil Mr. Bosstoo, 7 strong")
 	check_eq(int(d.units[boss.leader.unit_class]["stage"]), maxi(3, int(d.units[next.opinion_leader.unit_class]["stage"])), "his class from the Opinion Leader's line")
 	check(boss.leader.level > Campaign.army_level(next), "a level above the army's average")
+
+
+## Lines allowed (SPEC §25.6): a campaign lists its unit lines; the rest can't be
+## recruited, promoted into or fielded by the enemy, and the glossary leaves them out.
+func test_a_campaign_has_only_its_lines() -> void:
+	var run := Campaign.begin("trifectus", 11, "Alex")
+	var st := _state(run)
+	st.place_enemies()
+	st.place_neutrals()
+	var allowed := func(c: String) -> bool: return d.allows(c)
+	check(not d.allows("Berserker") and not d.allows("Rat") and d.allows("Soldier") and d.allows("Serf"), "Berserker and Rat are out, Soldier and Serf in")
+	for s in st.squads:
+		if s.side != "player" and not s.boss:
+			for u in s.units:
+				check(allowed.call(u.unit_class), "%s (%s) has only the campaign's lines: %s" % [s.name, s.side, u.unit_class])
+	for u in st.army.units():
+		check(allowed.call(u.unit_class), "your army too: %s" % u.unit_class)
+	check(not d.next_classes("Fighter").has("Berserker") and d.next_classes("Fighter").has("Soldier"), "no promoting into a line that's out")
+	var picks := Map1Setup.conscripts(d, st.rng.get_stream("test"), 40, 2, true)
+	check(picks.all(allowed), "conscripts from the campaign's lines")
+	for ch in run.info["chapters"]:  # the file's own squads keep to its lines
+		var specs: Array = ch.get("named", []) + ch.get("join", [])
+		for sq in ch.get("army", {}).get("squads", []):
+			specs.append(sq)
+		for sq in specs:
+			for us in sq["units"]:
+				check(str(us["class"]) == "opinion_leader" or d.allows(str(us["class"])), "%s is in a listed line" % us["class"])
+		for c in ch.get("army", {}).get("pool", []):
+			check(d.allows(str(c)), "%s is in a listed line" % c)
+	GameState.new(d, st.map, GameLog.new(), {})
+	check(d.allows("Berserker"), "a game outside the campaign has every line again")

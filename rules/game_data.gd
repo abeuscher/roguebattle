@@ -29,6 +29,7 @@ var shops: Dictionary = {}          # selling share and shopkeepers' greetings (
 var audio: Dictionary = {}          # sound: cue files and buses, and which game events play them (audio.json)
 var version: Dictionary = {}        # this copy's version and when it was stamped (version.json, tools/stamp_version.py)
 var config_fields: Array = []       # configurator settings, in share-code order
+var lines_on: Dictionary = {}      # line id -> true: the unit lines this game has (a campaign's "lines"); empty = every line
 var first_names: PackedStringArray = []
 var last_names: PackedStringArray = []
 
@@ -70,10 +71,30 @@ func slots_for(unit_class: Dictionary) -> float:
 	return float(rules["size_slots"][unit_class["size"]])
 
 
-## The classes one stage after `class_name` on each of its lines.
+## The unit lines this game has (SPEC §25.6, a campaign's "lines"; empty = all). Set by
+## every new GameState, so it never outlives its game.
+func set_lines(ids: Array) -> void:
+	lines_on.clear()
+	for id in ids:
+		lines_on[str(id)] = true
+
+
+func line_allowed(line_id: String) -> bool:
+	return lines_on.is_empty() or lines_on.has(line_id)
+
+
+## Whether a class exists in this game: it is on at least one of its lines that does
+## (Serf and the shared early stages count if any line they lead to is in).
+func allows(unit_class_name: String) -> bool:
+	return lines_on.is_empty() or units[unit_class_name]["lines"].any(func(l): return lines_on.has(str(l)))
+
+
+## The classes one stage after `class_name` on each of its lines in this game.
 func next_classes(unit_class_name: String) -> PackedStringArray:
 	var out := PackedStringArray()
 	for line_id in units[unit_class_name]["lines"]:
+		if not line_allowed(line_id):
+			continue
 		var stages: Array = lines[line_id]
 		for i in stages.size() - 1:
 			if unit_class_name in stages[i]:

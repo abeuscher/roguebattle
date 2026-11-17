@@ -1,7 +1,36 @@
 {
- "_note": "The Kingdom of Trifectus (SPEC §25.7; user's notes 2026-11-16). Placeholder text. A page is {title, text, image, video, sound}, every part optional; files are in data/campaigns/trifectus/. Map heights go in steps of 15 (configurator), so 75 and 105 stand for the notes' 70 and 100. army (chapter 1): the Opinion Leader alone (leader: a class, or a Serf-line leader at random), squads waiting at the Player Base, and classes for the recruit pool. named: the enemy's named squads at the Enemy Base; role leader takes the Warlord's place; boss: the Opinion Leader's party must beat it to win the map. join: squads that join the army when the chapter is won. A squad is {name, slots, units: [{class, row, level, name}]}: class opinion_leader is the Opinion Leader's own, taken up its line to stage; level \"+n\" is n above the army's average; {name} in a name is the Opinion Leader's, {reversed} it spelled backwards (it follows a rename).",
+ "_note": "The Kingdom of Trifectus (SPEC §25.7; user's notes 2026-11-16). Placeholder text. A page is {title, text, image, video, sound}, every part optional; files are in data/campaigns/trifectus/. Map heights go in steps of 15 (configurator), so 75 and 105 stand for the notes' 70 and 100. army (chapter 1): the Opinion Leader alone (leader: a class, or a Serf-line leader at random), squads waiting at the Player Base, and classes for the recruit pool. named: the enemy's named squads at the Enemy Base; role leader takes the Warlord's place; boss: the Opinion Leader's party must beat it to win the map. join: squads that join the army when the chapter is won. A squad is {name, slots, units: [{class, row, level, name}]}: class opinion_leader is the Opinion Leader's own, taken up its line to stage; level \"+n\" is n above the army's average; {name} in a name is the Opinion Leader's, {reversed} it spelled backwards (it follows a rename). lines: the unit lines (ids as in the sheet's Line(s) column and docs/campaign-gating.md) that exist in this campaign; the rest can't be recruited, promoted into, fielded by the enemy or seen in the glossary (none listed: every line). Trifectus has the gating proposal's tiers 0 and 1 plus the lines its story squads need (Knight, Tamer, the dragons, Sea Dragon, Wolfhound, Gryphon, Angel, Eagle Rider, Mermaid, Frog, Toad).",
  "name": "The Kingdom of Trifectus",
  "description": "Three maps. Carve out a kingdom, one rival at a time.",
+ "lines": [
+  "1",
+  "6",
+  "9",
+  "13",
+  "16",
+  "19",
+  "2",
+  "7",
+  "8",
+  "10",
+  "11",
+  "14",
+  "21",
+  "22",
+  "23",
+  "R1",
+  "3",
+  "5",
+  "L1",
+  "L2",
+  "L5",
+  "L10",
+  "R2",
+  "R4",
+  "R5",
+  "N6",
+  "N7"
+ ],
  "opening": [
   {
    "title": "The Kingdom of Trifectus",
@@ -268,7 +297,8 @@
    "map": {
     "preset": "inland_sea",
     "width": 250,
-    "height": 135, "building_density": "high",
+    "height": 135,
+    "building_density": "high",
     "difficulty": "normal"
    },
    "named": [

@@ -171,7 +171,7 @@ static func large_stage1_classes(data: GameData) -> Array:
 	var skip: Array = data.rules["single_map"]["pool"]["large_skip_terrains"]
 	var out := []
 	for lid in data.lines:
-		if String(lid).is_valid_int():
+		if String(lid).is_valid_int() or not data.line_allowed(lid):
 			continue
 		for c in data.lines[lid][0]:
 			var u: Dictionary = data.units[c]
@@ -197,7 +197,7 @@ static func _build_squad(data: GameData, leader_class: String, stage2: Array, fr
 
 
 static func _serf_line_ids(data: GameData) -> Array:
-	return data.lines.keys().filter(func(k: String): return k.is_valid_int())
+	return data.lines.keys().filter(func(k: String): return k.is_valid_int() and data.line_allowed(k))
 
 
 ## The distinct stage 2 classes across every Serf line.

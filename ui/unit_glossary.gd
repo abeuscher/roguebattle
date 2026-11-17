@@ -77,12 +77,12 @@ func show_class(unit_class: String) -> void:
 		_write_entry(data.units[unit_class])
 
 
-## Every class whose name holds the search text, A to Z.
+## Every class in this game (a campaign's lines only) whose name holds the search text, A to Z.
 func _fill_list() -> void:
 	for c in _list.get_children():
 		_list.remove_child(c)
 		c.queue_free()
-	var names: Array = data.units.keys()
+	var names: Array = data.units.keys().filter(func(n: String): return data.allows(n))
 	names.sort()
 	var find := _search.text.strip_edges().to_lower()
 	for n in names:
@@ -138,6 +138,8 @@ func _write_entry(c: Dictionary) -> void:
 			str(c["terrain"]).to_lower(), int(c["speed_tier"]), "half a slot" if c["size"] == "Tiny" else ("2 slots" if c["size"] == "Large" else "1 slot")], 16, SOFT)
 	_section("Promotion lines")
 	for line_id in c["lines"]:
+		if not data.line_allowed(line_id):  # a campaign's lines only (SPEC §25.6)
+			continue
 		var stages := PackedStringArray()
 		for stage in data.lines[line_id]:
 			stages.append(" / ".join(PackedStringArray(stage)))
