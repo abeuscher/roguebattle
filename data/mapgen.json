@@ -70,7 +70,7 @@
   "crossing_min_hexes": 80,
   "section_pct": 35,
   "crossings": 3,
-  "one_terrain": false,
+  "one_terrain": false, "sea_radius": 0.6, "core_island": 0.14, "shoals": 0, "valley_walls": 0, "moat": 0, "enemy_base_at": "side", "_campaign_shapes": "SPEC §25.7 (Trifectus). shape ring: a coastline round the edge, open sea inside sea_radius (share of the way from the center to the edge midpoints) and an island inside core_island; land_pct does not apply. shoals: share of the open sea that runs shallow. valley_walls: mountains and cliffs lean toward the long north and south edges, within this share of the height. moat: a ring of deep water this many hexes out from the Enemy Base, the ground inside it the castle's island, with one bridge facing the Player Base (0: none). enemy_base_at: side (as spawn_side has it) or center (nearest the middle of the map).",
   "chokepoints_allowed": true,
   "chokepoint_barriers": ["cliff", "river"],
   "min_section": 40,
@@ -101,6 +101,8 @@
    "terrain_scale": {"snow": 3}, "frozen_lakes": 0.15},
   "volcanic": {"land_pct": 55, "chokepoint_barriers": ["lava"], "terrain_amounts": {"lava": "medium", "mountain": "high", "snow": "low", "desert": "none"},
    "lava_flows": 8},
+  "inland_sea": {"shape": "ring", "land_pct": 50, "chokepoints_allowed": false, "shoals": 0.4, "core_island": 0.17, "min_island_hexes": 60, "enemy_base_at": "center", "land_range": [25, 80], "rivers": 1, "terrain_amounts": {"swamp": "low"}},
+  "castle_valley": {"land_pct": 100, "land_range": [100, 100], "island_count": 0, "chokepoint_barriers": ["lava"], "valley_walls": 0.22, "moat": 3, "rivers": 3, "lava_flows": 2, "terrain_amounts": {"forest": "high", "mountain": "high", "cliff": "medium", "lava": "low", "snow": "low", "desert": "none", "swamp": "low"}},
   "no_ocean": {"chokepoint_barriers": ["cliff"], "land_pct": 100, "land_range": [100, 100], "island_count": 0}
  }
 }

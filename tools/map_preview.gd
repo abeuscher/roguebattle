@@ -1,6 +1,6 @@
 extends SceneTree
 ## Writes a PNG of a generated map.
-## godot --headless -s res://tools/map_preview.gd -- <seed> [size] [preset] [out.png] [--crossings]
+## godot --headless -s res://tools/map_preview.gd -- <seed> [size] [preset] [out.png] [--crossings] [key=value ...]
 ## [size] is "small"/"medium"/"large" (§6.1) or a custom "WxH", e.g. "200x120".
 
 
@@ -21,7 +21,11 @@ func _initialize() -> void:
 			overrides["height"] = int(parts[1])
 	if args.size() > 2:
 		overrides["preset"] = args[2]
-	var out: String = args[3] if args.size() > 3 else "user://map_%d.png" % seed
+	var out: String = args[3] if args.size() > 3 and "=" not in args[3] else "user://map_%d.png" % seed
+	for a in args:  # key=value: any other map setting, as a number where it reads as one
+		if "=" in a:
+			var kv: PackedStringArray = a.split("=")
+			overrides[kv[0]] = float(kv[1]) if kv[1].is_valid_float() else kv[1]
 	var started := Time.get_ticks_msec()
 	var map := MapGen.generate(data, seed, overrides)
 	print("Generated %dx%d in %d ms" % [map.width, map.height, Time.get_ticks_msec() - started])

@@ -30,6 +30,7 @@ static func place_all(m: MapData, game_data: GameData, settings: Dictionary, map
 	p.cfg = game_data.mapgen
 	p._setup()
 	p._bases()
+	p._moat()
 	p._buildings()
 	p._roads()
 	p._nomads()
@@ -134,7 +135,58 @@ func _bases() -> void:
 	map.player_base = _base_spot(cand, along, across, near_first)
 	_add("player_base", map.player_base)
 	map.enemy_base = _base_spot(cand, along, across, not near_first)
+	if s["enemy_base_at"] == "center":  # the inland sea's island fortress (SPEC §25.7)
+		var mid := Vector2(map.width / 2.0, map.height / 2.0)
+		var best := INF
+		for i in cand:
+			var d := Vector2(i % map.width, i / map.width).distance_to(mid)
+			if d < best and not _blocked[i]:
+				best = d
+				map.enemy_base = i
 	_add("enemy_base", map.enemy_base)
+
+
+## The castle's moat (SPEC §25.7, Trifectus map 3; mapgen "moat"): deep water `moat` hexes
+## out from the Enemy Base all round, the ground inside made open, and one bridge across
+## on the side facing the Player Base. Any road already over the ring is taken up.
+func _moat() -> void:
+	var r := int(s["moat"])
+	if r <= 0:
+		return
+	var c := map.hex_at(map.enemy_base)
+	var home := map.hex_at(map.player_base)
+	var plains: int = data.terrain_ids["plains"]
+	var deep: int = data.terrain_ids["deep"]
+	var blocked := MapGen.terrain_flags(data, "impassable")
+	var bridge := -1
+	for i in map.size():
+		var d := Hex.distance(map.hex_at(i), c)
+		if d < r and i != map.enemy_base and (blocked[map.terrain[i]] or _water[map.terrain[i]]):
+			map.terrain[i] = plains
+		elif d == r:
+			map.terrain[i] = deep
+			for k in 6:  # take up any road over it, both ends
+				var n := map.neighbors[i * 6 + k]
+				if n >= 0:
+					map.road[n] &= ~(1 << ((k + 3) % 6))
+			map.road[i] = 0
+			if bridge < 0 or Hex.distance(map.hex_at(i), home) < Hex.distance(map.hex_at(bridge), home):
+				bridge = i
+	var inside := -1
+	var outside := -1
+	for k in 6:
+		var n := map.neighbors[bridge * 6 + k]
+		if n < 0:
+			continue
+		var d := Hex.distance(map.hex_at(n), c)
+		if d == r - 1 and (inside < 0 or Hex.distance(map.hex_at(n), home) < Hex.distance(map.hex_at(inside), home)):
+			inside = n
+		elif d == r + 1 and (outside < 0 or Hex.distance(map.hex_at(n), home) < Hex.distance(map.hex_at(outside), home)):
+			outside = n
+	if blocked[map.terrain[outside]] or _water[map.terrain[outside]]:
+		map.terrain[outside] = plains
+	map.link_road(inside, bridge)
+	map.link_road(bridge, outside)
 
 
 ## A hex in the outer strip of candidates on one side, near the middle of that side.

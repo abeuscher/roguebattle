@@ -161,6 +161,8 @@ Every map has a seed. The same settings plus the same seed always rebuild the sa
 | Tundra | Snow, ice, frozen lakes | Snow natives | Everyone else |
 | Volcanic | Lava flows, ash plains | Squads that keep to roads | Squads that stop in the wrong place |
 | No Ocean | All land, edge to edge (added 2026-11-10) | Ground armies | Water natives |
+| Inland Sea | A coastline round a sea in the middle, deep and shallow mixed, the Enemy Base on an island at its heart reached by a reef or ford (added 2026-11-17 for Trifectus map 2, §25.7) | Water natives, flyers | Ground armies with far to walk |
+| Castle Valley | One stretch of land, mountains along its long edges, lava crossings, the Enemy Base a castle ringed by a moat with one bridge facing the Player Base (added 2026-11-17 for Trifectus map 3, §25.7) | Flyers, water natives at the moat | Squads that must storm the bridge |
 
 Land % runs 25–100 (changed 2026-11-10). Presets built on water cap it so they keep their sea (Islands and Floating Isles 70, Archipelago 60). Islands are joined by wide, winding shallows like reefs and sandbars, and a sizable island gets more than one where another landmass is near.
 

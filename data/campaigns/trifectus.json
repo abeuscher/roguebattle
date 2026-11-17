@@ -1,5 +1,5 @@
 {
- "_note": "The Kingdom of Trifectus (SPEC §25.7; user's notes 2026-11-16). Placeholder text; the coastline and the valley's castle come in campaign step 3. A page is {title, text, image, video, sound}, every part optional; files are in data/campaigns/trifectus/. Map heights go in steps of 15 (configurator), so 75 and 105 stand for the notes' 70 and 100. army (chapter 1): the Opinion Leader alone (leader: a class, or a Serf-line leader at random), squads waiting at the Player Base, and classes for the recruit pool. named: the enemy's named squads at the Enemy Base; role leader takes the Warlord's place; boss: the Opinion Leader's party must beat it to win the map. join: squads that join the army when the chapter is won. A squad is {name, slots, units: [{class, row, level, name}]}: class opinion_leader is the Opinion Leader's own, taken up its line to stage; level \"+n\" is n above the army's average; {name} in a name is the Opinion Leader's, {reversed} it spelled backwards (it follows a rename).",
+ "_note": "The Kingdom of Trifectus (SPEC §25.7; user's notes 2026-11-16). Placeholder text. A page is {title, text, image, video, sound}, every part optional; files are in data/campaigns/trifectus/. Map heights go in steps of 15 (configurator), so 75 and 105 stand for the notes' 70 and 100. army (chapter 1): the Opinion Leader alone (leader: a class, or a Serf-line leader at random), squads waiting at the Player Base, and classes for the recruit pool. named: the enemy's named squads at the Enemy Base; role leader takes the Warlord's place; boss: the Opinion Leader's party must beat it to win the map. join: squads that join the army when the chapter is won. A squad is {name, slots, units: [{class, row, level, name}]}: class opinion_leader is the Opinion Leader's own, taken up its line to stage; level \"+n\" is n above the army's average; {name} in a name is the Opinion Leader's, {reversed} it spelled backwards (it follows a rename).",
  "name": "The Kingdom of Trifectus",
  "description": "Three maps. Carve out a kingdom, one rival at a time.",
  "opening": [
@@ -266,9 +266,9 @@
   {
    "name": "The Sea Between",
    "map": {
-    "preset": "continent",
+    "preset": "inland_sea",
     "width": 250,
-    "height": 135,
+    "height": 135, "building_density": "high",
     "difficulty": "normal"
    },
    "named": [
@@ -334,7 +334,7 @@
   {
    "name": "The River of Fire",
    "map": {
-    "preset": "volcanic",
+    "preset": "castle_valley",
     "width": 500,
     "height": 105,
     "section_pct": 50,

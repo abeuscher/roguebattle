@@ -165,3 +165,54 @@ func test_reef_crossings() -> void:
 	var more: int = count.call({"preset": "islands"})
 	check(reefs > plain, "fords widen into reefs (%d > %d shallow hexes)" % [reefs, plain])
 	check(more > reefs, "extra crossings add more (%d > %d)" % [more, reefs])
+
+
+## Trifectus map 2 (SPEC §25.7): a coastline round an inland sea, the Enemy Base on an
+## island in the middle, reachable on foot (a ford or reef), deep and shallow water mixed.
+func test_inland_sea() -> void:
+	for seed in [1, 2]:
+		var m := MapGen.generate(_data, seed, {"preset": "inland_sea", "width": 250, "height": 135})
+		var mid := m.index_of(Hex.from_offset(Vector2i(m.width / 2, m.height / 2)))
+		check(Hex.distance(m.hex_at(m.enemy_base), m.hex_at(mid)) < 12, "the Enemy Base at the middle (seed %d)" % seed)
+		var water := 0
+		for t in m.terrain:
+			water += 1 if _data.terrains[t].get("water", false) else 0
+		check(water > m.size() / 5, "a sea in the middle (%d of %d hexes)" % [water, m.size()])
+		check(_count(m, "shallow") > 0 and _count(m, "deep") > _count(m, "shallow"), "deep and shallow mixed")
+		var corner := m.index_of(Hex.from_offset(Vector2i(2, 2)))
+		check(not _data.terrains[m.terrain[corner]].get("water", false), "land round the edge")
+		var p := Pathfinder.new(m, _data)
+		check(not p.find(m.player_base, m.enemy_base, "plains", false).is_empty(), "the island fortress reachable on foot (seed %d)" % seed)
+
+
+## Trifectus map 3 (SPEC §25.7): the castle ringed by a moat of deep water with one bridge,
+## facing the Player Base; mountains along the valley's long edges.
+func test_castle_valley() -> void:
+	var m := MapGen.generate(_data, 3, {"preset": "castle_valley", "width": 500, "height": 105, "section_pct": 50})
+	var r := int(MapGen.resolve_settings(_data, {"preset": "castle_valley"})["moat"])
+	var c := m.hex_at(m.enemy_base)
+	var deep: int = _data.terrain_ids["deep"]
+	var bridges := []
+	var dry := 0
+	for i in m.size():
+		if Hex.distance(m.hex_at(i), c) == r:
+			if m.road[i]:
+				bridges.append(i)
+			elif m.terrain[i] != deep:
+				dry += 1
+	check_eq(dry, 0, "the moat runs all round")
+	check_eq(bridges.size(), 1, "with one bridge")
+	check(Hex.distance(m.hex_at(bridges[0]), m.hex_at(m.player_base)) < Hex.distance(c, m.hex_at(m.player_base)), "on the side facing your base")
+	var p := Pathfinder.new(m, _data)
+	var route := p.find(m.player_base, m.enemy_base, "plains", false)
+	check(not route.is_empty() and bridges[0] in route, "the way in is over the bridge")
+	var walls := 0
+	var middle := 0
+	for i in m.size():
+		var row := i / m.width
+		var rough := m.terrain[i] in [_data.terrain_ids["mountain"], _data.terrain_ids["cliff"]]
+		if row < 8 or row >= m.height - 8:
+			walls += 1 if rough else 0
+		elif row > m.height / 3 and row < m.height * 2 / 3:
+			middle += 1 if rough else 0
+	check(walls > middle * 3, "mountains lean on the long edges (%d against %d)" % [walls, middle])

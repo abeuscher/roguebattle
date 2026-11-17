@@ -131,6 +131,8 @@ func _land_shape() -> void:
 	match settings["shape"]:
 		"islands":
 			elev = _islands_elevation()
+		"ring":
+			elev = _ring_elevation()
 		_:
 			elev = _field("elevation", float(settings["noise_frequency"]))
 			for i in map.size():
@@ -142,7 +144,7 @@ func _land_shape() -> void:
 				for i in map.size():
 					if straits[i] > cut_at:
 						elev[i] = -1e9
-	var cut := _cutoff(elev, int(map.size() * float(settings["land_pct"]) / 100.0))
+	var cut := 0.0 if settings["shape"] == "ring" else _cutoff(elev, int(map.size() * float(settings["land_pct"]) / 100.0))
 	var land := PackedByteArray()
 	land.resize(map.size())
 	for i in map.size():
@@ -157,11 +159,28 @@ func _land_shape() -> void:
 	var shelf := map.distance_from(land, shelf_width)
 	var plains := _id("plains")
 	var shallow := _id("shallow")
+	var shoals := _field("shoals", 8.0)
+	var shoal_cut := 1.0 - float(settings["shoals"])  # a share of the open sea runs shallow (the inland sea)
 	for i in map.size():
 		if land[i]:
 			map.terrain[i] = plains
 		else:
-			map.terrain[i] = shallow if shelf[i] >= 0 else sea
+			map.terrain[i] = shallow if shelf[i] >= 0 or shoals[i] > shoal_cut else sea
+
+
+## The inland sea (SPEC §25.7, Trifectus map 2): a coastline round the map's edge, the open
+## sea inside sea_radius (a share of the way from the center to the edge), and an island
+## inside core_island at the very middle. Land where this is above 0.
+func _ring_elevation() -> PackedFloat32Array:
+	var elev := _field("elevation", float(settings["noise_frequency"]))
+	var sea_r := float(settings["sea_radius"])
+	var core_r := float(settings["core_island"])
+	for i in map.size():
+		var d := sqrt(_edge[i])
+		var coast := clampf((d - sea_r) / 0.2, -1.0, 1.0)
+		var core := clampf((core_r - d) / 0.08, -1.0, 1.0)
+		elev[i] = (elev[i] - 0.5) * 1.6 + maxf(coast, core)  # noise wide enough to make the shores ragged
+	return elev
 
 
 ## Elevation around 2+ island centers, with water forced along the lines between them.
@@ -277,9 +296,16 @@ func _terrain_features() -> void:
 		dry[i] = t - moist[i]
 		wet[i] = moist[i] - ridge[i] * 0.5  # swamps sit low
 	# Each terrain takes the best-scoring plains left, in this order.
+	var walls := ridge  # valley_walls: ranges along the long edges (Trifectus map 3)
+	var wall_share := float(settings["valley_walls"])
+	if wall_share > 0.0:
+		walls = ridge.duplicate()
+		for i in map.size():
+			var from_edge := minf(_py[i], h - _py[i]) / h  # 0 at the north or south edge
+			walls[i] += 2.0 * maxf(0.0, 1.0 - from_edge / wall_share)
 	var scores := {
-		"cliff": ridge,  # the crests of the ranges
-		"mountain": ridge,
+		"cliff": walls,  # the crests of the ranges
+		"mountain": walls,
 		"lava": lava,
 		"snow": cold,
 		"desert": dry,

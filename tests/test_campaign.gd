@@ -33,7 +33,7 @@ func test_a_chapter_is_its_map_settings_in_single_map_mode() -> void:
 	var run := Campaign.begin("trifectus", 7, "Ada")
 	run.chapter = 2
 	var c := run.config(d)
-	check_eq(c.values["preset"], "volcanic", "the chapter's map type")
+	check_eq(c.values["preset"], "castle_valley", "the chapter's map type")
 	check_eq(int(c.values["width"]), 500, "its size")
 	check_eq(int(c.values["section_pct"]), 50, "and its chokepoints")
 	check_eq(c.values["mode"], "single", "single map rules")
