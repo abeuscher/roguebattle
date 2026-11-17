@@ -433,3 +433,17 @@ func test_no_capture_on_the_minute_a_fight_starts() -> void:
 	check_eq(tower["owner"], "enemy", "the tower isn't taken that minute")
 	check(st.liberations.is_empty(), "and no liberation waits behind the fight")
 	check(o.capture_ticks > 0.0, "the count is kept")
+
+
+## Playtest round 24: an enemy squad holding its town (ai.json field rethink_ticks, 4 hours)
+## that was beaten and pushed out sat beside it all that time. A fight ends the hold.
+func test_a_fight_ends_an_enemy_hold() -> void:
+	var st := _state()
+	var t := _theirs(st, 15)
+	t.role = "field"
+	t.ai_mode = "hold"
+	t.think_at = st.clock.tick + int(d.ai["field"]["rethink_ticks"])
+	var o := _ours(st, 25)  # far away: a fight set up by hand
+	st.pending = st.start_battle(o, t, t)
+	st.resolve_pending()
+	check(t.think_at <= st.clock.tick, "it weighs where to go again at once")

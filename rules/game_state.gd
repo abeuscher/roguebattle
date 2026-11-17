@@ -1349,7 +1349,7 @@ func shop_at(s: Squad) -> Dictionary:
 ## What a shop holds right now: item or consumable id -> how many are left (0 once
 ## sold out). Rolled once per shop: a random number of random items, a random count of
 ## each (round 9), every map consumable, a few of the cure potions, and the map's one
-## very rare item if this is its shop. Refilled to that at noon (restock()), except a
+## very rare item if this is its shop. A nomad camp's is bigger (economy.nomad_shop). Refilled to that at noon (restock()), except a
 ## rare item once sold.
 func shop_stock(b: Dictionary) -> Dictionary:
 	if not b.get("shop", false):
@@ -1357,13 +1357,24 @@ func shop_stock(b: Dictionary) -> Dictionary:
 	if not b.has("stock"):
 		var r := rng.get_stream("shops")
 		var e: Dictionary = data.rules["economy"]
+		# A nomad caravan (round 24: worth seeking out) carries more, goods from far off that
+		# your tech hasn't brought to your towns yet, and often one very rare piece of its own.
+		var nomads: bool = b["type"] == "nomads"
+		var n: Dictionary = e["nomad_shop"]
 		var ids := item_ids(true)
+		if nomads:
+			ids = data.items["items"].keys().filter(func(id): return not data.items["items"][id].get("rare", false))
+		var count: Array = n["shop_items"] if nomads else e["shop_items"]
 		var full := {}
-		for i in r.randi_range(int(e["shop_items"][0]), int(e["shop_items"][1])):
+		for i in r.randi_range(int(count[0]), int(count[1])):
 			var id: String = ids[r.randi() % ids.size()]
 			full[id] = int(full.get(id, 0)) + r.randi_range(int(e["item_stock"][0]), int(e["item_stock"][1]))
 		if b.has("rare_item"):
 			full[b["rare_item"]] = 1
+		if nomads and r.randf() < float(n["rare_chance"]):
+			var rare: Array = data.items["items"].keys().filter(func(id): return data.items["items"][id].get("rare", false))
+			if not rare.is_empty():
+				full[rare[r.randi() % rare.size()]] = 1
 		var cures := []
 		for id in data.items["consumables"]:
 			var c: Dictionary = data.items["consumables"][id]
@@ -2926,6 +2937,9 @@ func end_battle(b: Battle) -> Dictionary:
 		if b.sides[side].side == "enemy" and b.sides[side].follow == b.sides[1 - side]:
 			b.sides[side].follow = null
 			b.sides[side].spotted.erase(str(b.sides[1 - side].id))
+	for side in 2:  # a fight ends an enemy's hold: it weighs where to go at once (round 24: a beaten squad pushed out of its town sat beside it for up to rethink_ticks)
+		if b.sides[side].side == "enemy":
+			b.sides[side].think_at = clock.tick
 	for side in 2:  # an enemy that beat your squad stands a while, so you can come back at it (round 10)
 		if b.sides[side].side == "enemy" and b.sides[1 - side].side == "player" and _won(out, side) and b.sides[side] in squads:
 			b.sides[side].hold_until = clock.tick + int(data.enemy["victor_pause_ticks"])

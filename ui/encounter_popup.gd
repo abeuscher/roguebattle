@@ -6,7 +6,7 @@ extends Control
 ## squad's menu open, so you can shop, heal or move other squads first; it comes back when
 ## time runs again (playtest round 16, replacing Edit Squad).
 ## A modal, with a light shade and the panel in the lower part of the screen so the
-## two squads stay in view at its center.
+## two squads stay in view at its center; the map round it can be zoomed and dragged.
 
 signal go
 signal heal  # the Heal window, before the fight
@@ -24,12 +24,17 @@ var _state: GameState
 func setup(b: Battle, game_state: GameState) -> void:
 	_state = game_state
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	# The wheel and drags reach the map round the panel: zoom in on who it is and where
+	# (round 24). Clicks on the map still do nothing while this is up.
+	mouse_filter = MOUSE_FILTER_IGNORE
 	var shade := ColorRect.new()
 	shade.color = Color(0, 0, 0, 0.2)
 	shade.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	shade.mouse_filter = MOUSE_FILTER_IGNORE
 	add_child(shade)
 	var center := CenterContainer.new()
 	center.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	center.mouse_filter = MOUSE_FILTER_IGNORE
 	center.anchor_top = 0.62
 	center.anchor_bottom = 0.9
 	add_child(center)

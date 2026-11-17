@@ -473,6 +473,14 @@ func _line(start: int, route: PackedInt32Array) -> PackedVector2Array:
 func _center_on_squad(id: int) -> void:
 	if _tokens.has(id) and id < 100:
 		camera.center_on(_tokens[id].position)
+		var cfg: Dictionary = data.rules["squad_focus"]
+		var ring := SquadFocus.new()  # round 24: a ring round it, to find it on screen
+		ring.target = _tokens[id]
+		ring.hold = float(cfg["hold"])
+		ring.shrink = float(cfg["shrink"])
+		ring.position = ring.target.position
+		ring.z_index = 2
+		view.add_object(ring)
 
 
 func _squad_at(world: Vector2) -> Squad:
@@ -931,6 +939,8 @@ func _open_battle() -> void:
 	_battle.results_shown.connect(func(): _offer_tip("battle_over", _battle))
 	_battle.fight_started.connect(_tactics_tip)
 	_spring_open(_battle, state.pending.sides[0], state.pending.sides[1])
+	if bool(options.get("battle_wait_for_fight", true)):  # it waits for Play: a tip points at it (round 24)
+		_offer_tip("battle_open", _battle)
 
 
 ## The first fight against a Spearman (user, 2026-11-14): the battle pauses with its
@@ -1549,8 +1559,9 @@ func _world_waiting() -> bool:
 ## When a window closes with more the world brought still waiting (a queue: liberations
 ## after a battle, say), time stays stopped until the last of them has been seen
 ## (user, playtest round 22), so the camera goes from one to the next with nothing moving.
+## A player tip showing holds it as well, so nothing happens while it's read (round 24).
 func _hold_clock() -> void:
-	var free := _free()
+	var free := _free() and not _tip_up()  # a tip up stops time too (round 24)
 	var waiting := _world_waiting()
 	if free and not _hold_was_free:
 		_queue_hold = waiting

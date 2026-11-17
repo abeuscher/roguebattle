@@ -1115,3 +1115,13 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
   - **Saves:** the map rebuilds from its seed and settings, so a save made before this (no section_pct) rebuilds with 100 (none). Quick start keeps none (rules.json quick_start section_pct).
   - **Tests changed:** the exact building counts and the pathfinder's own tests use maps without chokepoints; the coastline test allows deep water beside a barrier.
 - **Capture and a fight in the same minute (playtest bug, 2026-11-17):** a tick now checks contact before capture, and a squad in the fight or neutral meeting just found adds nothing to its capture that tick (kept, not lost). Before, a squad one minute from taking a tower finished it on the minute an enemy came up; the liberation queued behind the fight and opened once the map was free, which looked like the tower ignoring the pause.
+
+## Session 108: playtest round 24
+
+- **A fight ends an enemy's hold:** end_battle sets an enemy squad's think_at to now, win or lose, so a field squad that was holding a town (rethink_ticks, 4 hours) weighs its next move at once. The victor pause (hold_until) still keeps a winner in place 30 minutes.
+- **Tips hold the map clock:** _hold_clock counts a showing tip as not free. Battle tips don't pause the battle (the first battle's tip shows while it waits for Play; the Spearman tip already pauses).
+- **The hidden site's sounds wait their turn** (audio "wait"): they were dropped by the 2-second queue limit behind the New Temple line and riff.
+- **Encounter window passes the mouse through** round its panel (root, shade and centring box ignore it), so the camera's wheel and drag reach the map; the map's own clicks stay blocked while it's open (_can_open).
+- **Nomad shops** (rules.json economy.nomad_shop): 6-10 item rolls from every non-rare item, tech-locked ones included (tech only gates what towns sell; equipping never needed it), and a rare_chance (0.5) of one rare item on top of the map's one. No new items: magic weapons would need designing.
+- **Squad list ring:** SquadFocus, drawn like PortalGlow, follows the token; timings in rules.json squad_focus. Number keys that centre a squad show it too.
+- **Music 20% quieter:** the army (Edit Units) and battle cues get db -1.9, as the title music has.

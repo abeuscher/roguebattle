@@ -196,8 +196,8 @@ func _gutter() -> Control:
 	for k in KEY:
 		var item := HBoxContainer.new()
 		item.add_theme_constant_override("separation", 4)
-		var swatch := TextureRect.new()  # the kind's icon in its colour (round 23)
-		swatch.texture = UiStyle.svg(KIND_ICONS[k[0]], 14, KIND_COLORS[k[0]].lightened(0.35))
+		var swatch := TextureRect.new()  # the kind's icon (round 23)
+		swatch.texture = UiStyle.svg(KIND_ICONS[k[0]], 14)  # white, as the text (round 24)
 		swatch.size_flags_vertical = SIZE_SHRINK_CENTER
 		item.add_child(swatch)
 		item.add_child(UiStyle.label(k[1], 12, Color(0.7, 0.73, 0.78)))
@@ -1274,7 +1274,7 @@ class Chip extends Control:
 		color = colors.get(Battle.base_kind(attack), Color.GRAY)
 		line = "Lv %d  ·  %s" % [u.level, attack]
 		attacks = int(c["front_count" if row == "front" else "back_count"])
-		kind_icon = UiStyle.svg(EditUnits.KIND_ICONS.get(Battle.base_kind(attack), "sword"), 16, color.lightened(0.45))
+		kind_icon = UiStyle.svg(EditUnits.KIND_ICONS.get(Battle.base_kind(attack), "sword"), 16)  # white, as the text (round 24)
 		attack_name = attack
 		custom_minimum_size = {"compact": Vector2(72, 48), "wide": Vector2(272, 58), "slot": Vector2(148, 122), "menu": Vector2(104, 70)}[mode]
 		mouse_default_cursor_shape = CURSOR_DRAG

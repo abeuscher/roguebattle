@@ -399,6 +399,8 @@ func anchor(name: String) -> Rect2:
 			return _results.get_global_rect() if _results else Rect2()
 		"tactic":
 			return _tactic.get_global_rect()
+		"play":
+			return _play_btn.get_global_rect()
 	return Rect2()
 
 

@@ -157,6 +157,23 @@ The basic loop has to be fun before the campaign builds on it. In order:
 
 Later, not before the campaign: variant takes of sounds, another round of collision playthroughs (after the user's playtest).
 
+## Playtest round 24 (user's notes, 2026-11-17)
+
+| # | Session | Spec | Verify | Status |
+|---|---|---|---|---|
+| 1 | **Attack icons white, the sword upright** | §19 | By eye | Done (session 108) |
+| 2 | **A tip at the first battle pointing at Play:** "To begin the battle, press play or use the space bar..." | §19.4 | Next playthrough | Done (session 108), in the user's words; shown while the battle waits for Play |
+| 3 | **Battle and Edit Units music 20% quieter** | M5 | By ear | Done (session 108) |
+| 4 | **Leader voices when selected on the map** ("Yes?", "Uh huh?"): one set per leader, or sets shared by units that would sound alike | M5 | | To settle with the user (proposal: a handful of shared voice types, a sheet column picking one per class) |
+| 5 | **A beaten enemy took far too long to leave a town** | §17 | Tests | Done (session 108): an enemy holding a town only reconsidered every 4 game hours, and being beaten didn't reset that; now any fight makes it decide at once. The short pause after it beats you (so you can come back at it) is unchanged |
+| 6 | **Tips pause the game while showing** | §19.4 | Watch run | Done (session 108) |
+| 7 | **Difficulty settings** through the enemy's numbers and makeup | §17 | | To settle with the user |
+| 8 | **Bug: the hidden site's voice line didn't play after a new temple** (the ping and camera did) | M5 | | Fixed (session 108): it was dropped for waiting too long behind the New Temple line and riff; it now waits its turn |
+| 9 | **Zoom and drag the map while the encounter window is up** | §11.1 | Next playthrough | Done (session 108), to try: the wheel and drags pass round the window; clicks on the map still do nothing |
+| 10 | **A ring round a squad picked from the squad list,** like the Portal's, shrinking and fading after a beat | §19 | By eye | Done (session 108) |
+| 11 | **Nomads worth seeking out:** better and more wares | §16 | Tests | Done (session 108): 6-10 item rolls (towns 1-6), goods your tech hasn't brought to your towns yet, and half the camps carry a very rare piece of their own. New magic weapons would need designing first |
+| 12 | **Bug: a tower finished taking itself after a fight was declared, while paused** | §6.5 | Tests | Fixed (session 108): it had finished in the same minute the fight began, and its window waited behind the fight; now a squad meeting an enemy doesn't finish a capture that minute |
+
 ## Playtest round 23 (user's notes, 2026-11-16)
 
 | # | Session | Spec | Verify | Status |

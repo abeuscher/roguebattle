@@ -155,3 +155,24 @@ func test_a_shopkeeper_stays_the_same() -> void:
 	var k := st.shopkeeper(shop)
 	check(str(k["name"]) != "" and str(k["greeting"]) in d.shops["greetings"]["town"], "a name and a town greeting")
 	check_eq(st.shopkeeper(shop), k, "the same keeper next time")
+
+
+## Round 24: nomad caravans worth seeking out: more on the shelves, goods your tech hasn't
+## brought to your towns yet, and often a very rare piece.
+func test_nomads_carry_more_and_better() -> void:
+	var st := _state()
+	var rare := 0
+	var teched := 0
+	var items := 0
+	for k in 20:
+		var camp := {"type": "nomads", "hex": _at(st.map, 10 + k % 10, 1 + k / 10), "shop": true, "hint": false, "hidden": false, "kind": "", "road": false, "owner": "neutral"}
+		var stock := st.shop_stock(camp)
+		for id in stock:
+			if d.items["items"].has(id):
+				items += int(stock[id])
+				rare += 1 if d.items["items"][id].get("rare", false) else 0
+				teched += 1 if d.items["items"][id].has("requires") else 0
+	check(rare >= 5, "very rare pieces turn up often (%d in 20 camps)" % rare)
+	check(teched > 0, "and goods tech would unlock (%d)" % teched)
+	var town_most := int(d.rules["economy"]["shop_items"][1]) * int(d.rules["economy"]["item_stock"][1])
+	check(items / 20.0 > town_most / 2.0, "more on the shelves than a town's usual (%d over 20 camps)" % items)
