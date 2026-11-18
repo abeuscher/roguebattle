@@ -1170,3 +1170,12 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **Crossing map 3** (a party walking to the moat, liberating places within 10 hexes that lie on its way): 45-58 game hours plus 12-25 battles; the user is happy with it. Every party won every fight on the way; noted for tuning, not changed.
 - **Branch:** cut from session-112 (not yet merged), since it changes that session's campaign file.
 
+## Session 114: scrolls
+
+- **Scrolls are consumables** (items.json, "where": "scroll", "scroll": kind): they share the army's supplies, the shop's Buy and Sell lists, Edit Units' supply chips and the save with Herbs, and stay out of the Heal window and the battle's Items (both list only "map"/"any" and "battle" supplies).
+- **Shops:** the usual non-cure supplies as before, plus, for economy.shop_scroll_chance (35%) of shops, one scroll kind by the same weights as temples, stock 1, refilled at noon like the rest.
+- **Temples:** the first time you take each temple (b.scroll_given), never again; the scroll shows on the temple's window.
+- **Invisibility** works through GameState.hostile: an unseen squad and an enemy or neutral squad aren't hostile unless the unseen squad is going for that squad (its route ends on it, or it follows it), so contact, blocking and the zone of control all skip it in one place. The enemy's chasing (hunt) and its "player strength nearby" for holding leave it out too. It ends on any battle, and when the squad's capture count first moves (so it can't take the Enemy Base from under its guards unseen). 6 game hours.
+- **Decoy** targets visible enemy squads, not the Warlord or a boss (the base guard can be lured off). Fooled, the squad is sent along the straight line, of the six, that ends farthest from the reading squad, 12 hexes out (the next line if there's no route), and makes no plans of its own (no chasing, no targets) until it has arrived and waited 4 hours; it still fights what it meets. 60% chance; a failure costs only the scroll (user).
+- **Teleport** goes to any town, tower or temple you hold without an enemy squad on it, from anywhere on the map, the squad standing still or not; not while a fight waits, nor for a squad crawling home leaderless.
+- **The list** is a small pop-up menu by the Scrolls button (like the battle's Items menu); Decoy and Teleport pick their target on the map with the portal's glow (orange for Decoy) and a confirm. Scroll icons: one rolled-parchment shape, the seal a muted colour per scroll (tools/item_icons.py).

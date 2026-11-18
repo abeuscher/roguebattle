@@ -45,6 +45,8 @@ var base_slots := 0  # slots before growth; 0 = rules.json slot_growth.base (sin
 var bonded_pairs: Array = []  # [Unit, Unit] once bonded; a +5% combat bonus while both live (Battle.gd)
 var boss := false  # a campaign chapter's boss (SPEC §25.6): the Opinion Leader's party must beat it to win the map
 var name_from := ""  # a campaign name that follows the Opinion Leader's, e.g. "{reversed}" (Campaign.fill_name)
+var unseen_until := -1  # a squad of yours under a Scroll of Invisibility: enemy and neutral squads ignore it until this tick (GameState.unseen)
+var decoy_until := -1  # an enemy squad fooled by a Scroll of Decoy: it makes no plans of its own until this tick
 
 
 func _init(squad_id: int, squad_name: String, at_hex: int) -> void:

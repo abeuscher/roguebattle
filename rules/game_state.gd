@@ -383,6 +383,7 @@ func _capture() -> void:
 			continue
 		if clock.tick < s.capture_wait or _meeting(s):  # just fought, or about to: the count waits, keeping what it has (user, 2026-11-13)
 			continue
+		s.unseen_until = -1  # starting to take a place shows a squad under Invisibility
 		var sapper := s.living().any(func(u: Unit): return u.has_tag(data, "sapper"))
 		s.capture_ticks += float(c["sapper_speed"]) if sapper else 1.0
 		var need := float(c["ticks"]) * (float(c["held_resist"]) if b["owner"] == "player" and s.side == "enemy" else 1.0)  # yours resist (round 16)
@@ -399,7 +400,7 @@ func _capture() -> void:
 			var rewards: bool = data.buildings[b["type"]].get("liberation", true)
 			if s.side == "player" and not rewards:  # a temple: just yours (session 059), with its window (round 11)
 				log.add(clock.tick, "map", "%s takes %s." % [s.name, place_label(b)], s.id)
-				liberations.append({"building": b, "card": "", "recruits": [], "taken": taken})
+				liberations.append({"building": b, "card": "", "recruits": [], "taken": taken, "scroll": _temple_scroll(b)})
 			elif s.side == "player":
 				stats["liberated"] = int(stats["liberated"]) + 1
 				log.add(clock.tick, "map", "%s liberates %s." % [s.name, place_label(b)], s.id)
@@ -1387,8 +1388,12 @@ func shop_stock(b: Dictionary) -> Dictionary:
 			var c: Dictionary = data.items["consumables"][id]
 			if c.has("cures"):
 				cures.append(id)
-			else:
+			elif not c.has("scroll"):
 				full[id] = int(c["stock"])
+		if r.randf() < float(e["shop_scroll_chance"]):  # some shops sell a scroll (user, 2026-11-16)
+			var sc := _pick_scroll(r)
+			if sc != "":
+				full[sc] = int(data.items["consumables"][sc]["stock"])
 		for i in range(cures.size() - 1, 0, -1):  # seeded shuffle
 			var j := r.randi_range(0, i)
 			var t = cures[i]
@@ -1563,6 +1568,161 @@ func use_supply(u: Unit, id: String) -> bool:
 		return true
 	u.hp = mini(u.max_hp(data), u.hp + int(item["heal"]))
 	log.add(clock.tick, "economy", "%s uses a %s." % [u.name, item["name"]])
+	return true
+
+
+# --- Scrolls: map actions as items (user, 2026-11-16 and 2026-11-18) ----------------------
+
+## A scroll's id from the scrolls' weights (items.json "weight"), or "" if there are none.
+func _pick_scroll(r: RandomNumberGenerator) -> String:
+	var ids: Array = data.items["consumables"].keys().filter(func(id): return data.items["consumables"][id].has("scroll"))
+	var total := 0.0
+	for id in ids:
+		total += float(data.items["consumables"][id]["weight"])
+	var roll := r.randf() * total
+	for id in ids:
+		roll -= float(data.items["consumables"][id]["weight"])
+		if roll < 0.0:
+			return id
+	return ids[-1] if not ids.is_empty() else ""
+
+
+## A temple taken for the first time gives a scroll, into the army's supplies; its id, or "".
+func _temple_scroll(b: Dictionary) -> String:
+	if b.get("scroll_given", false):
+		return ""
+	b["scroll_given"] = true
+	var id := _pick_scroll(rng.get_stream("scrolls"))
+	if id != "":
+		army.supplies[id] = int(army.supplies.get(id, 0)) + 1
+		log.add(clock.tick, "map", "%s gives you a %s." % [place_label(b), data.items["consumables"][id]["name"]])
+	return id
+
+
+## The scrolls you carry: [id, count] pairs, in items.json order.
+func scrolls() -> Array:
+	var out := []
+	for id in data.items["consumables"]:
+		if data.items["consumables"][id].has("scroll") and int(army.supplies.get(id, 0)) > 0:
+			out.append([id, int(army.supplies[id])])
+	return out
+
+
+## Why `s` can't read a scroll now ("" if it can): it must be on the map, out of a fight,
+## and not crawling home.
+func scroll_block(s: Squad) -> String:
+	if s not in squads or s.hex < 0:
+		return "Only a squad on the map can read a scroll."
+	if in_fight(s):
+		return "Not now: a fight is about to start."
+	if s.crawling():
+		return "Not while it crawls home without its leader."
+	return ""
+
+
+## Whether `s` is under a Scroll of Invisibility.
+func unseen(s: Squad) -> bool:
+	return s.side == "player" and clock.tick < s.unseen_until
+
+
+## An unseen squad of yours slips past `o` unless it's going for it (ordered onto its hex,
+## or following it): then they meet as usual.
+func _slips_past(p: Squad, o: Squad) -> bool:
+	if not unseen(p):
+		return false
+	return not (p.follow == o or (p.is_moving() and p.path[p.path.size() - 1] == o.hex))
+
+
+func _spend_scroll(id: String) -> bool:
+	if int(army.supplies.get(id, 0)) <= 0:
+		return false
+	army.supplies[id] = int(army.supplies[id]) - 1
+	return true
+
+
+## Scroll of Invisibility: enemy and neutral squads ignore `s` for a while; any that were
+## chasing it lose it.
+func read_invisibility(s: Squad) -> bool:
+	if scroll_block(s) != "" or not _spend_scroll("scroll_invisibility"):
+		return false
+	var ticks := int(data.items["consumables"]["scroll_invisibility"]["ticks"])
+	s.unseen_until = clock.tick + ticks
+	for o in squads:
+		if o.side != "player" and o.follow == s:
+			o.follow = null
+			o.path.clear()
+			o.rally.clear()
+			o.goal = -1
+	log.add(clock.tick, "map", "%s reads a Scroll of Invisibility: unseen for %s." % [s.name, duration_text(ticks)], s.id)
+	return true
+
+
+## Enemy squads a Scroll of Decoy can fool: ones you can see, not the enemy's leader or a boss.
+func decoy_targets() -> Array[Squad]:
+	var out: Array[Squad] = []
+	for o in squads:
+		if o.side == "enemy" and o.role != "leader" and not o.boss and not o.living().is_empty() and is_visible(o):
+			out.append(o)
+	return out
+
+
+## Scroll of Decoy, read by `s` on enemy squad `e`: works the scroll's chance of the time.
+## Fooled, `e` marches off about "hexes" away from `s` and waits there "ticks" after it
+## arrives, making no plans of its own. Returns {"read": the scroll was spent, "worked": bool}.
+func read_decoy(s: Squad, e: Squad) -> Dictionary:
+	var out := {"read": false, "worked": false}
+	if scroll_block(s) != "" or e not in decoy_targets() or not _spend_scroll("scroll_decoy"):
+		return out
+	out["read"] = true
+	var cfg: Dictionary = data.items["consumables"]["scroll_decoy"]
+	if rng.get_stream("scrolls").randf() >= float(cfg["chance"]):
+		log.add(clock.tick, "map", "%s reads a Scroll of Decoy, but %s isn't fooled." % [s.name, e.name], s.id)
+		return out
+	var from := map.hex_at(e.hex)
+	var away := map.hex_at(s.hex)
+	var spots := []
+	for dir in 6:  # the six straight lines out from the enemy, farthest from your squad first
+		var h := from
+		for i in int(cfg["hexes"]):
+			h = Hex.neighbor(h, dir)
+		if map.in_bounds(h):
+			spots.append(h)
+	spots.sort_custom(func(a: Vector2i, b: Vector2i): return Hex.distance(a, away) > Hex.distance(b, away))
+	for h: Vector2i in spots:
+		e.follow = null
+		e.goal = -1
+		if order_move(e, PackedInt32Array([map.index_of(h)])):
+			e.decoy_until = clock.tick + roundi(route_ticks(e, e.path)) + int(cfg["ticks"])
+			out["worked"] = true
+			log.add(clock.tick, "map", "%s reads a Scroll of Decoy: %s marches off after a squad that isn't there." % [s.name, e.name], s.id)
+			return out
+	log.add(clock.tick, "map", "%s reads a Scroll of Decoy, but %s has nowhere to go." % [s.name, e.name], s.id)
+	return out
+
+
+## Where a Scroll of Teleport can take `s`: the towns, towers and temples you hold, other
+## than where it stands, with no hostile squad on them.
+func teleport_targets(s: Squad) -> Array[int]:
+	var out: Array[int] = []
+	for b in map.buildings:
+		if b["type"] in ["town", "tower", "temple"] and b["owner"] == "player" and b["hex"] != s.hex and not _hostile_at(b["hex"], s):
+			out.append(b["hex"])
+	return out
+
+
+## Scroll of Teleport: `s` stands at once on `to_hex`.
+func read_teleport(s: Squad, to_hex: int) -> bool:
+	if scroll_block(s) != "" or to_hex not in teleport_targets(s) or not _spend_scroll("scroll_teleport"):
+		return false
+	var from := s.hex
+	s.hex = to_hex
+	s.path.clear()
+	s.rally.clear()
+	s.follow = null
+	s.progress = 0.0
+	s.capture_ticks = 0.0
+	s.entering_base = false
+	log.add(clock.tick, "map", "%s reads a Scroll of Teleport and steps from %s to %s." % [s.name, where(from), where(to_hex)], s.id)
 	return true
 
 
@@ -2000,6 +2160,8 @@ func player_squads() -> Array[Squad]:
 func hostile(a: Squad, b: Squad) -> bool:
 	if a.side == b.side:
 		return false
+	if _slips_past(a, b) or _slips_past(b, a):
+		return false
 	if "neutral" in [a.side, b.side] and "enemy" in [a.side, b.side]:
 		if settings.get("neutrals_ignore_enemy", false):
 			return false
@@ -2032,6 +2194,8 @@ func _run_enemy_ai() -> void:
 				s.marching_home = true
 				s.goal = -1
 				_fall_back(s)
+		if clock.tick < s.decoy_until and not s.marching_home:
+			continue  # fooled by a decoy (Scroll of Decoy): no plans of its own for now
 		if s.role == "field" and not s.marching_home and s.follow == null:
 			_spot(s)
 		if s.is_moving() or s.marching_home:
@@ -2104,7 +2268,7 @@ func _spot(s: Squad) -> void:
 	var at := map.hex_at(s.hex)
 	for p in player_squads():
 		var key := str(p.id)
-		if p.living().is_empty() or Hex.distance(at, map.hex_at(p.hex)) > int(h["sight"]):
+		if p.living().is_empty() or unseen(p) or Hex.distance(at, map.hex_at(p.hex)) > int(h["sight"]):
 			s.spotted.erase(key)
 			continue
 		if s.spotted.has(key):
@@ -2893,6 +3057,7 @@ func start_battle(player: Squad, enemy: Squad, defender: Squad) -> Battle:
 	b.worn = [worn(player), worn(enemy)]
 	b.defense = [0.0 if b.broken[0] else building_defense(player), 0.0 if b.broken[1] else building_defense(enemy)]
 	b.odds = Threat.label(data, player, enemy)
+	player.unseen_until = -1  # a squad under Invisibility shows itself once it fights
 	for side in 2:  # poison that lingered since the last battle carries into this one (round 22)
 		for u in b.sides[side].units:
 			if u.is_alive() and u.poison_left > 0:

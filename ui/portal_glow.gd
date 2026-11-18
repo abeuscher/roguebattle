@@ -5,6 +5,7 @@ extends Node2D
 ## keep a readable size on screen however far the map is zoomed out.
 
 const COLOR := Color(0.55, 0.9, 1.0)
+var color := COLOR  # a portal's; a scroll's targets may use another
 const MIN_SCREEN_RADIUS := 34.0  # pixels
 
 var spots: Array[Vector2] = []
@@ -22,7 +23,7 @@ func _draw() -> void:
 	var pulse := 0.5 + 0.5 * sin(_t * 4.0)
 	var width := 4.0 / maxf(scale_now, 0.001)
 	for p in spots:
-		draw_circle(p, r * 1.5, Color(COLOR, 0.12 + 0.12 * pulse))
-		draw_circle(p, r * 1.1, Color(COLOR, 0.15 + 0.15 * pulse))
-		draw_arc(p, r * (1.15 + 0.35 * pulse), 0.0, TAU, 48, Color(COLOR, 0.95 - 0.5 * pulse), width, true)
+		draw_circle(p, r * 1.5, Color(color, 0.12 + 0.12 * pulse))
+		draw_circle(p, r * 1.1, Color(color, 0.15 + 0.15 * pulse))
+		draw_arc(p, r * (1.15 + 0.35 * pulse), 0.0, TAU, 48, Color(color, 0.95 - 0.5 * pulse), width, true)
 		draw_arc(p, r * 0.95, 0.0, TAU, 48, Color(1, 1, 1, 0.9), width * 0.6, true)

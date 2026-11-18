@@ -82,7 +82,8 @@ var _selected: Squad  # the squad whose menu or move order is open (the game is 
 var _planning := false  # laying rally points for _selected
 var _skipping := false  # skip to action running (playtest round 15)
 var _amb_clock := 0.0  # seconds to the next update of the ambience's facts
-var _portaling := false  # choosing a glowing temple for _selected to step to (user's notes, 2026-11-11)
+var _portaling := false  # choosing a glowing temple for _selected to step to (user's notes, 2026-11-11), or a scroll's target
+var _pick_scroll := ""  # while _portaling: "" for a portal, or the scroll whose target is being chosen ("scroll_decoy", "scroll_teleport")
 var _glow: PortalGlow
 var _shown_sites := {}  # building index -> true once its icon is revealed
 var _claimed_heard := {}  # building index -> true once its claim has played its sound
@@ -412,6 +413,7 @@ func _update_tokens() -> void:
 		token.selected = s == _selected
 		token.crawl = s.crawling()
 		token.visible = state.is_visible(s)
+		token.modulate.a = 0.45 if state.unseen(s) else 1.0  # under a Scroll of Invisibility
 	_update_dest_flag()
 
 
@@ -630,6 +632,7 @@ func _open_menu() -> void:
 		_open_edit(s.id - 1)
 		_edit.closed.connect(_back_to_menu.bind(s)))  # (Deploy from Edit Units goes on to the map instead)
 	_menu.portal.connect(_start_portal)
+	_menu.scroll.connect(_choose_scroll)
 	_menu.glossary.connect(func(unit_class: String):  # over the menu, which waits under it
 		var g := UnitGlossary.new()
 		_ui.add_child(g)
@@ -664,6 +667,9 @@ func _start_portal() -> void:
 
 
 func _portal_click(world: Vector2) -> void:
+	if _pick_scroll != "":
+		_scroll_click(world)
+		return
 	var hex := _hex_at(world)
 	var building := _building_under(world)
 	if not building.is_empty():
@@ -690,6 +696,112 @@ func _step_through(s: Squad, hex: int, from: String) -> void:
 	_notify("%s steps through the portal from %s to %s." % [s.name, from, state.where(hex)], 4.0)
 
 
+## Scrolls (user, 2026-11-16 and 2026-11-18): a list of the scrolls you carry; Invisibility
+## asks and is read at once, Decoy and Teleport go back to the map to pick their target,
+## as the portal does.
+func _choose_scroll() -> void:
+	var s := _selected
+	_close_menu()
+	var menu := PopupMenu.new()
+	menu.add_theme_font_size_override("font_size", 18)
+	var have := state.scrolls()
+	for i in have.size():
+		var item: Dictionary = data.items["consumables"][have[i][0]]
+		menu.add_icon_item(ItemIcons.item(have[i][0], 28), "%s  ·  you have %d" % [item["name"], have[i][1]], i)
+		menu.set_item_tooltip(i, item["text"])
+	var picked := [false]
+	menu.id_pressed.connect(func(i: int):
+		picked[0] = true
+		_read_scroll(s, str(have[i][0])))
+	menu.popup_hide.connect(func():
+		menu.queue_free.call_deferred()
+		if not picked[0] and _selected == s and _free():
+			_open_menu())
+	_ui.add_child(menu)
+	menu.popup(Rect2i(get_viewport().get_mouse_position(), Vector2i.ZERO))
+
+
+func _read_scroll(s: Squad, id: String) -> void:
+	if id == "scroll_invisibility":
+		_confirm = ConfirmDialog.new()
+		_ui.add_child(_confirm)
+		_confirm.setup("Read a Scroll of Invisibility on %s? %s" % [s.name, data.items["consumables"][id]["text"]], "Read")
+		_confirm.confirmed.connect(func():
+			_close_confirm()
+			if state.read_invisibility(s):
+				_notify("%s fades from the enemy's sight." % s.name, 4.0)
+			_end_selection())
+		_confirm.cancelled.connect(func():
+			_close_confirm()
+			_open_menu())
+		return
+	var spots: Array[int] = []
+	if id == "scroll_decoy":
+		for o in state.decoy_targets():
+			spots.append(o.hex)
+	else:
+		spots = state.teleport_targets(s)
+	if spots.is_empty():
+		_notify("No enemy squad in sight to fool." if id == "scroll_decoy" else "You hold no other town, tower or temple to step to.", 4.0)
+		_open_menu()
+		return
+	_portaling = true
+	_pick_scroll = id
+	_glow = PortalGlow.new()
+	_glow.z_index = 2
+	if id == "scroll_decoy":
+		_glow.color = Color(1.0, 0.72, 0.4)
+	var area := Rect2(MapView.hex_center(state.map, s.hex), Vector2.ZERO)
+	for hex in spots:
+		_glow.spots.append(MapView.hex_center(state.map, hex))
+		area = area.expand(_glow.spots[-1])
+	view.add_object(_glow)
+	camera.frame(area, 0.6)
+	hud.show_banner(("Decoy: click a glowing enemy squad to send it chasing a squad that isn't there." if id == "scroll_decoy" \
+			else "Teleport: click a glowing place to send %s there." % s.name) + "  Esc: back")
+
+
+func _scroll_click(world: Vector2) -> void:
+	var s := _selected
+	var id := _pick_scroll
+	if id == "scroll_decoy":
+		var foes := _squads_at(world).filter(func(o: Squad): return o in state.decoy_targets())
+		if foes.is_empty():
+			hud.show_banner("Click one of the glowing enemy squads.  Esc: back")
+			return
+		var e: Squad = foes[0]
+		_confirm = ConfirmDialog.new()
+		_ui.add_child(_confirm)
+		_confirm.setup("Read a Scroll of Decoy on %s? It works 3 times in 5." % e.name, "Read")
+		_confirm.confirmed.connect(func():
+			_close_confirm()
+			var r := state.read_decoy(s, e)
+			_end_selection()
+			if r["read"]:
+				_notify("%s marches off after a squad that isn't there." % e.name if r["worked"] else "%s isn't fooled. The scroll is spent." % e.name, 4.0))
+		_confirm.cancelled.connect(_close_confirm)
+		return
+	var hex := _hex_at(world)
+	var building := _building_under(world)
+	if not building.is_empty():
+		hex = building["hex"]
+	if hex not in state.teleport_targets(s):
+		hud.show_banner("Click one of the glowing places.  Esc: back")
+		return
+	var from := state.where(s.hex)
+	_confirm = ConfirmDialog.new()
+	_ui.add_child(_confirm)
+	_confirm.setup("Read a Scroll of Teleport to send %s from %s to %s?" % [s.name, from, state.where(hex)], "Read")
+	_confirm.confirmed.connect(func():
+		_close_confirm()
+		if state.read_teleport(s, hex):
+			_end_selection()
+			_sync_tokens()
+			camera.fly_to(MapView.hex_center(state.map, hex), 0.15, 0.6)
+			_notify("%s steps from %s to %s." % [s.name, from, state.where(hex)], 4.0))
+	_confirm.cancelled.connect(_close_confirm)
+
+
 func _clear_glow() -> void:
 	if _glow:
 		_glow.queue_free()
@@ -711,6 +823,7 @@ func _end_selection() -> void:
 	_selected = null
 	_planning = false
 	_portaling = false
+	_pick_scroll = ""
 	_clear_glow()
 	hud.show_banner("")
 
@@ -1396,7 +1509,7 @@ func _prompt_start() -> void:
 func _open_liberation_popup(entry: Dictionary) -> void:
 	_liberation_popup = LiberationPopup.new()
 	_ui.add_child(_liberation_popup)
-	_liberation_popup.setup(state, entry["building"], entry["card"], options, entry.get("recruits", []), entry.get("offer", false), int(entry.get("times", 1)))
+	_liberation_popup.setup(state, entry["building"], entry["card"], options, entry.get("recruits", []), entry.get("offer", false), int(entry.get("times", 1)), str(entry.get("scroll", "")))
 	_glide_to_place(entry["building"]["hex"], _liberation_popup)
 	_offer_tip(str(entry["building"]["type"]) + "_liberated", _liberation_popup)
 	var hex: int = entry["building"]["hex"]
@@ -1634,6 +1747,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif key == KEY_ESCAPE:
 			_planning = false
 			_portaling = false
+			_pick_scroll = ""
 			_clear_glow()
 			_open_menu()
 		get_viewport().set_input_as_handled()

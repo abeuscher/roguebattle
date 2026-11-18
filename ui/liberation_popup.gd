@@ -18,7 +18,8 @@ var _panel: PanelContainer
 ## was none or it's an offer instead (`offered`; read from `game_state.card_offer`).
 ## `times`: how often you've taken it; from the second time a town or tower that draws
 ## nothing is "Recaptured" (round 19), with a line saying so over its picture.
-func setup(game_state: GameState, building: Dictionary, drawn_card: String, options := {}, recruits: Array = [], offered := false, times := 1) -> void:
+## `scroll`: the scroll a temple gave the first time it was taken, or "".
+func setup(game_state: GameState, building: Dictionary, drawn_card: String, options := {}, recruits: Array = [], offered := false, times := 1, scroll := "") -> void:
 	state = game_state
 	_offering = offered and not state.card_offer.is_empty()
 	set_anchors_and_offsets_preset(PRESET_FULL_RECT)
@@ -64,6 +65,8 @@ func setup(game_state: GameState, building: Dictionary, drawn_card: String, opti
 	body.add_child(left)
 	if not rewards:  # a temple (round 11): what holding it means, and its god
 		_temple(left, building)
+		if scroll != "":
+			left.add_child(_scroll_line(scroll))
 	elif recaptured:  # round 19: retaking it stings a little; tall enough that its picture shows
 		var l := UiStyle.label(str(state.data.buildings[building["type"]].get("recaptured_text", "")).format({"nth": GameState.ordinal(times)}), 18, Color("#f4ead2"))
 		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -130,6 +133,20 @@ func _temple(col: VBoxContainer, building: Dictionary) -> void:
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD
 	l.custom_minimum_size.x = 380
 	col.add_child(l)
+
+
+## The scroll a temple gave: its icon and "The temple gives you a Scroll of ...", its use on hover.
+func _scroll_line(id: String) -> Control:
+	var item: Dictionary = state.data.items["consumables"][id]
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	row.tooltip_text = item["text"]
+	row.mouse_filter = MOUSE_FILTER_PASS
+	row.add_child(ItemIcons.rect(id, 40))
+	var l := UiStyle.label("The temple gives you a %s." % item["name"], 17, Color("#f4ead2"))
+	l.mouse_filter = MOUSE_FILTER_PASS
+	row.add_child(l)
+	return row
 
 
 ## One conscript: class icon, then name over class and level.

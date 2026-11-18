@@ -1,5 +1,5 @@
 {
- "_note": "Items (SPEC §15.2) and consumables (§15.1). All numbers and prices are placeholders. 'back_attacks': a bow that adds that many attacks from the back row (the Longbow and Stormbow; playtest round 23, in place of the map range they gave). 'use': any, melee (a unit with a Melee attack in either row), archer (the archer tag). Consumables: 'stock' is how many a shop holds when full (refilled at noon); 'where' is map (squad menu, anywhere on the map) or battle (the battle view's Items button); a 'cures' potion removes that one status; each shop carries economy.shop_cures of the cure potions, picked once per shop. Items marked rare (round 9: very rare, a big buff) are never rolled for shops, kits or treasure; one random shop per map holds one, not restocked once sold.",
+ "_note": "Items (SPEC §15.2) and consumables (§15.1). All numbers and prices are placeholders. 'back_attacks': a bow that adds that many attacks from the back row (the Longbow and Stormbow; playtest round 23, in place of the map range they gave). 'use': any, melee (a unit with a Melee attack in either row), archer (the archer tag). Consumables: 'stock' is how many a shop holds when full (refilled at noon); 'where' is map (squad menu, anywhere on the map), battle (the battle view's Items button) or scroll (scrolls, map actions read from the squad menu's Scrolls button: 'weight' is the odds of each from a temple's first liberation and a shop's scroll; Invisibility lasts 'ticks'; Decoy works 'chance' of the time and sends the enemy squad 'hexes' away, to wait 'ticks' after it arrives); a 'cures' potion removes that one status; each shop carries economy.shop_cures of the cure potions, picked once per shop. Items marked rare (round 9: very rare, a big buff) are never rolled for shops, kits or treasure; one random shop per map holds one, not restocked once sold.",
  "slots": ["weapon", "armor", "jewelry"],
  "consumables": {
   "herb":       {"name": "Herb", "price": 15, "heal": 30, "stock": 5, "where": "map", "text": "Heals a unit 30 HP."},
@@ -11,7 +11,10 @@
   "soft_oil":   {"name": "Softening Oil", "price": 20, "cures": "petrify", "stock": 2, "where": "battle", "text": "Cures petrify."},
   "salts":      {"name": "Smelling Salts", "price": 10, "cures": "sleep", "stock": 3, "where": "battle", "text": "Wakes a sleeping unit."},
   "eye_drops":  {"name": "Eye Drops", "price": 10, "cures": "blind", "stock": 3, "where": "battle", "text": "Cures blind."},
-  "echo_herb":  {"name": "Echo Herb", "price": 15, "cures": "silence", "stock": 3, "where": "battle", "text": "Cures silence."}
+  "echo_herb":  {"name": "Echo Herb", "price": 15, "cures": "silence", "stock": 3, "where": "battle", "text": "Cures silence."},
+  "scroll_invisibility": {"name": "Scroll of Invisibility", "price": 60, "scroll": "invisibility", "where": "scroll", "stock": 1, "weight": 35, "ticks": 360, "text": "For 6 hours a squad passes enemy squads unseen: they don't notice it, block it or fight it. It shows itself when it attacks or starts taking a place."},
+  "scroll_decoy": {"name": "Scroll of Decoy", "price": 90, "scroll": "decoy", "where": "scroll", "stock": 1, "weight": 10, "chance": 0.6, "hexes": 12, "ticks": 240, "text": "An enemy squad you can see marches off after a squad that isn't there, about 12 hexes away from yours, and waits there 4 hours. Works 3 times in 5; otherwise the scroll is simply spent."},
+  "scroll_teleport": {"name": "Scroll of Teleport", "price": 150, "scroll": "teleport", "where": "scroll", "stock": 1, "weight": 5, "text": "A squad steps at once to a town, tower or temple you hold."}
  },
  "items": {
   "dagger":   {"name": "Dagger", "price": 30,   "slot": "weapon",  "use": "melee",  "stats": {"STR": 1, "AGI": 2}},

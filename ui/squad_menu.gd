@@ -10,6 +10,7 @@ signal shop
 signal heal  # the Heal window (supplies, and a temple's healing)
 signal view_destination
 signal portal
+signal scroll  # the Scrolls list (Invisibility, Decoy, Teleport)
 signal closed
 signal glossary(unit_class: String)  # a unit's ? (playtest round 16)
 
@@ -76,6 +77,11 @@ func setup(state: GameState, s: Squad) -> void:
 	var place := state.shop_at(s)
 	_button(actions, "hand-coins", "Shop", not place.is_empty(), "Buy here." if not place.is_empty() else "Stand still in a building with a shop (not enemy-held).") 			.pressed.connect(func(): shop.emit())
 	_button(actions, "footprints", "Move", true, "Click hexes to lay rally points.").pressed.connect(func(): move.emit())
+	var have := state.scrolls()
+	var no_read := state.scroll_block(s)
+	var scroll_tip := "You carry no scrolls (temples and some shops give them)." if have.is_empty() else no_read if no_read != "" \
+			else "Read a scroll: " + ", ".join(have.map(func(p: Array): return "%s ×%d" % [state.data.items["consumables"][p[0]]["name"], p[1]]))
+	_button(actions, "scroll-text", "Scrolls", not have.is_empty() and no_read == "", scroll_tip).pressed.connect(func(): scroll.emit())
 	var here := state.building_at(s.hex)
 	if here.get("type", "") == "temple" and not s.is_moving():  # session 059
 		var gates := state.portal_targets(s)

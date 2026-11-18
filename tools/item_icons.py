@@ -314,6 +314,15 @@ def ward():
     body += poly(star(32, 32, 20, 8, 6), "#b3e5fc")
     return svg(body)
 
+def scroll(seal):
+    """A rolled scroll (playtest notes, 2026-11-16): one shape, the paper muted, the seal a colour per scroll."""
+    paper, edge = "#d9cfb4", "#b8ab8a"
+    return svg(rect(14, 14, 36, 36, paper, 3)
+            + rect(10, 10, 44, 8, edge, 4) + rect(10, 46, 44, 8, edge, 4)
+            + path("M20 26 H44 M20 32 H40 M20 38 H36", extra='stroke-width="2" opacity="0.45"')
+            + path("M40 40 L36 58 L41 54 L44 59 L46 41", seal, 'stroke-width="2"')
+            + circle(42, 40, 7, seal, 'stroke-width="2.5"'))
+
 ITEMS = {
     "herb": leaf5(),
     "revive": flask("#e91e63"),
@@ -325,6 +334,9 @@ ITEMS = {
     "salts": crystals(),
     "eye_drops": dropper(),
     "echo_herb": sprig(),
+    "scroll_invisibility": scroll("#7b8fb0"),
+    "scroll_decoy": scroll("#b0894f"),
+    "scroll_teleport": scroll("#8a6fae"),
     "dagger": blade(22, 4),
     "sword": blade(32, 5),
     "club": club(),

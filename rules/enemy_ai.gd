@@ -88,7 +88,7 @@ static func hold_score(state: GameState, s: Squad) -> float:
 	var near := 0.0
 	var at := state.map.hex_at(s.hex)
 	for o in state.squads:
-		if o.side == "player" and not o.living().is_empty() and Hex.distance(at, state.map.hex_at(o.hex)) <= int(f["threat_radius"]):
+		if o.side == "player" and not o.living().is_empty() and not state.unseen(o) and Hex.distance(at, state.map.hex_at(o.hex)) <= int(f["threat_radius"]):
 			near += Threat.squad(state.data, o)
 	var danger := minf(1.0, near / maxf(1.0, Threat.squad(state.data, s)))
 	return value(state, b) * (float(f["hold_base"]) + float(f["threat_weight"]) * danger)

@@ -600,6 +600,15 @@ All values are placeholders.
 | Selling back | Items nobody wears and supplies sell to any shop for half their base price, whatever the reputation or the squad (user, 2026-11-13) |
 | Consumables | Herb (+30 HP) 15; Revival Draught (revive a fallen unit anywhere on the map) 80; one cure potion per status, used in battle (Antidote for poison, and so on) 10–20. Shops hold limited stock, refilled at noon (user's playtest notes, 2026-11-08) |
 
+### 15.1a Scrolls
+
+Map actions as items (user, 2026-11-16 and 2026-11-18). Army-wide stock like Herbs, read by a squad on the map from the squad menu. Each temple's first liberation gives one at random, weighted by power (Invisibility 35, Decoy 10, Teleport 5); some shops sell one, priced by power. No spoils. All numbers in data.
+
+- **Invisibility:** enemy and neutral squads ignore the squad for a while (no chasing, blocking, fighting or counting it), until it attacks or starts taking a place.
+- **Decoy:** an enemy squad you can see marches off after a squad that isn't there, and waits. It can fail; failing just spends the scroll.
+- **Teleport:** the squad steps at once to a town, tower or temple you hold.
+- **Later:** Swap (two squads trade places) and Summon (one squad calls another to it).
+
 ### 15.2 Items
 
 - **Slots.** Each unit has three: weapon, armor and jewelry.
