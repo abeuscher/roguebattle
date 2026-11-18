@@ -1197,3 +1197,9 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **Katana:** STR +3, AGI +2, 90 gold, melee, after Steelworking (like Steel armor), a step above the Sword.
 - **Metal Claws:** STR +3, 55 gold, only for the "claws" tag in battle.json: the cat, lion and wolf families (the sheet has no claws column). Beasts could already wear melee weapons (a Melee attack); that's unchanged.
 - **Icons** drawn in tools/item_icons.py like the rest (a staff with an orb, glowing for the better two, the Storm Staff with a bolt).
+
+## Session 118: beasts and weapons
+
+- **Unarmed** (battle.json tag, roles Beast, Breath beast, Dragon and Swarm): no weapon but Metal Claws. Swarms (rats, bats) count as beasts here, and the lizards (Breath beasts) have no claws tag, so both wear no weapon at all; armor and jewelry are unchanged. Items a beast already wears stay on it until taken off.
+- **Claws** now also the birds and gryphons (War Bird to Storm Roc, Sphinx) and the dragons with legs (Drakeling, Wyrm, the five coloured Dragons, Sea Dragon, Kuraokami); not the serpents (Serpent, Leviathan, Snow Snake, Snow Serpent).
+- The Opinion Leader's kit tries Metal Claws after the Sword and Bow, so a beast leader gets them.

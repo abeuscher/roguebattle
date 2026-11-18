@@ -85,9 +85,13 @@ func stat(data: GameData, s: String) -> int:
 
 
 ## Melee weapons need a Melee attack in either row; bows need an archer class; staffs a
-## Magic attack in either row; Metal Claws a beast with claws.
+## Magic attack in either row; Metal Claws a beast with claws. Beasts, dragons and swarms
+## (the unarmed tag) wear no other weapon.
 func can_use(data: GameData, item_id: String) -> bool:
-	match data.items["items"][item_id]["use"]:
+	var item: Dictionary = data.items["items"][item_id]
+	if item["slot"] == "weapon" and item["use"] != "claws" and has_tag(data, "unarmed"):
+		return false  # beasts, dragons and swarms: Metal Claws or nothing (user, 2026-11-18)
+	match item["use"]:
 		"melee":
 			return Battle.base_kind(info(data)["front_attack"]) == "Melee" or Battle.base_kind(info(data)["back_attack"]) == "Melee"
 		"archer":

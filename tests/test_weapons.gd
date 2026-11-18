@@ -45,3 +45,14 @@ func test_a_rune_staff_casts_from_the_front_row_only() -> void:
 	check_eq(b.attack_kind(gnome), "Magic", "the battle uses it")
 	gnome.row = "back"
 	check_eq(b.attack_kind(gnome), str(gnome.info(d)["back_attack"]), "in the back row, just its stats")
+
+
+func test_beasts_wear_claws_or_nothing() -> void:
+	var lion := _unit("Lion")
+	check(not lion.can_use(d, "sword") and not lion.can_use(d, "katana") and not lion.can_use(d, "dagger"), "no swords on a lion")
+	check(lion.can_use(d, "bronze") and lion.can_use(d, "ring"), "armor and jewelry as before")
+	for c in ["Gryphon", "Roc", "Red Dragon", "Drakeling", "Wolf"]:
+		check(_unit(c).can_use(d, "claws") and not _unit(c).can_use(d, "sword"), "%s: claws, no sword" % c)
+	check(not _unit("Serpent").can_use(d, "claws"), "a serpent has no claws")
+	check(not _unit("Rat").can_use(d, "sword") and not _unit("Rat").can_use(d, "claws"), "a rat wears no weapon")
+	check(_unit("Knight").can_use(d, "sword"), "people still use swords")

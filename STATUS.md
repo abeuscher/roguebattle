@@ -163,6 +163,7 @@ Where the project stands, for picking up in a new session or on another machine.
 - **Session 107 (playtest round 23):** no ranged attacks on the map (yours or the enemy's); banner news lasts 7 s, fades gently, older lines fainter, a lighter box; tips carry a ticked "Don't show this message again" box and only a ticked close retires a tip; skip to action stops only for windows and squads wanting orders, glides to the squad, and keeps the game's speed; the Edit Units tip says "enter the main map view"; four draft tips for the user to read next playthrough (following a moving squad, the shop, the Heal window, terrain advantage).
 - **Session 108:** attack kinds as icons in Edit Units (white; the sword upright); chokepoints in map generation (barriers between the bases crossed at a few passes and fords; configurator Section size, Crossings, one terrain per section); playtest round 24 (in `ROADMAP.md`): a capture no longer finishes on the minute a fight starts, a beaten enemy leaves a town at once, tips pause the map, a tip pointing at Play in the first battle, battle and Edit Units music 20% quieter, the hidden site's line waits behind a New Temple, zoom and drag round the encounter window, a ring round a squad picked from the list, bigger nomad shops. Chokepoints measured: a little smaller defence gap; the enemy still soft.
 - **Session 109:** zone of control (a squad standing still fights hostile squads passing within 2 hexes); board sim guards and difficulty (Normal still soft for the scripted player, Hard about even, Brutal the enemy's); the campaign design in SPEC §25 and M6 planned in five steps; campaign step 1, the loop: Start Campaign, pages between maps, the army carried, Try again, the campaign save, Trifectus with placeholder text.
+- **Session 118:** beasts, dragons and swarms wear no weapon but Metal Claws, which now also fit birds, gryphons and the dragons with legs.
 - **Session 117:** more weapons: the Staff, Rune Staff and rare Storm Staff for spellcasters (the better two cast a spell from the front row only), the Crossbow, the Katana, and Metal Claws for cats, lions and wolves.
 - **Session 116:** playtest notes: options to pause after every battle and after a liberation; the Opinion Leader starts with double HP, Bronze armor and a weapon for its class. Campaign work still on hold for the user's full playthrough.
 - **Session 115:** the toolbar made compact: four icon buttons on a glass panel, named with their keys on hover, the hand's count beside the cards. Campaign work still on hold for the user's full playthrough.
@@ -207,7 +208,7 @@ Where the project stands, for picking up in a new session or on another machine.
 
 ## How the user works
 
-- **One git branch per session,** named `session-NNN` (next: `session-118`), cut from `main`.
+- **One git branch per session,** named `session-NNN` (next: `session-119`), cut from `main`.
 - **Commit locally only:**
   - Never push or merge; the user merges and pushes, then says "continue".
   - Commit messages end with a `Co-Authored-By:` line naming whatever Claude model is doing the session (the harness's own attribution instructions say exactly what to write).

@@ -41,7 +41,7 @@
   "spear": {"traits": ["Brace"]},
   "dragonslayer": {"traits": ["Giant-killer"]},
   "wolf": {"classes": ["Wolf", "Ember Wolf", "Hellhound", "Hellmaw", "Wolfhound", "Arctic Wolf", "Winter Wolf"]},
-  "beast": {"roles": ["Beast", "Breath beast"]}, "claws": {"_note": "Beasts with claws, who can wear Metal Claws (user, 2026-11-18): the cats, lions and wolves.", "classes": ["Bobcat", "Hell Cat", "Shadow Cat", "Sabretooth", "Prowler", "War Cat", "White Tiger", "Lion Cub", "Lion", "Pride Lion", "Golden Lion", "Wolf", "Ember Wolf", "Hellhound", "Hellmaw", "Wolfhound", "Arctic Wolf", "Winter Wolf"]}
+  "beast": {"roles": ["Beast", "Breath beast"]}, "unarmed": {"_note": "Beasts, dragons and swarms wear no weapon but Metal Claws, and those only if they have the claws tag (user, 2026-11-18).", "roles": ["Beast", "Breath beast", "Dragon", "Swarm"]}, "claws": {"_note": "Beasts with claws, who can wear Metal Claws (user, 2026-11-18): the cats, lions, wolves, birds and gryphons, and the dragons with legs (not the serpents).", "classes": ["War Bird", "Gryphon", "Royal Gryphon", "Sphinx", "Stormhawk", "Roc", "Storm Roc", "Drakeling", "Wyrm", "Dragon", "Red Dragon", "Blue Dragon", "Silver Dragon", "Black Dragon", "Sea Dragon", "Kuraokami", "Bobcat", "Hell Cat", "Shadow Cat", "Sabretooth", "Prowler", "War Cat", "White Tiger", "Lion Cub", "Lion", "Pride Lion", "Golden Lion", "Wolf", "Ember Wolf", "Hellhound", "Hellmaw", "Wolfhound", "Arctic Wolf", "Winter Wolf"]}
  },
  "traits": {
   "Black market": {"_note": "Mechanics tab: lower shop prices, reputation swings doubled.", "price": {"Smuggler": -0.10, "Fence": -0.20}, "reputation_swing": 2},
