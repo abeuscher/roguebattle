@@ -613,8 +613,10 @@ Map actions as items (user, 2026-11-16 and 2026-11-18). Army-wide stock like Her
 
 - **Slots.** Each unit has three: weapon, armor and jewelry.
 - **Armor:** Bronze, Iron, Steel give PDEF +2 / +4 / +6.
-- **Melee weapons:** Dagger, Sword, Club, Mace. One version each; any melee class can use any of them.
-- **Bows:** Bow, Longbow (§11.2). Archer classes only.
+- **Melee weapons:** Dagger, Sword, Club, Mace, Katana. One version each; any melee class can use any of them.
+- **Bows:** Bow, Longbow (§11.2), Crossbow. Archer classes only.
+- **Staffs** (user, 2026-11-18): for spellcasters. A plain Staff adds INT; better staffs also cast a spell, but only from the front row (in place of the wearer's front-row attack), so using it means standing in harm's way.
+- **Metal Claws** (user, 2026-11-18): only for beasts with claws.
 - **Enchanted weapons:** any weapon plus an element, adding element damage (for example Sword of Fire = +2 physical, +1 fire).
 - **Jewelry:** Necklace (HP), Ring (INT), Earring (AGI), Bracelet (PDEF).
 - **Shops vary** (playtest round 9): each shop stocks a random number of item kinds and a random count of each, and about one shop per map holds one very rare item with a big buff, not restocked once sold.

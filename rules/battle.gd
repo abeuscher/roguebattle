@@ -206,7 +206,7 @@ func side_of(u: Unit) -> int:
 
 ## The unit's attack from its row (§8.1), e.g. "Breath (row)".
 func attack_kind(u: Unit) -> String:
-	return u.info(data)["front_attack" if u.row == "front" else "back_attack"]
+	return u.attack(data, u.row)
 
 
 ## "Melee (cleave 2)" -> "Melee".

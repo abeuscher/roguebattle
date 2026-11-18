@@ -84,14 +84,30 @@ func stat(data: GameData, s: String) -> int:
 	return v
 
 
-## Melee weapons need a Melee attack in either row; bows need an archer class.
+## Melee weapons need a Melee attack in either row; bows need an archer class; staffs a
+## Magic attack in either row; Metal Claws a beast with claws.
 func can_use(data: GameData, item_id: String) -> bool:
 	match data.items["items"][item_id]["use"]:
 		"melee":
 			return Battle.base_kind(info(data)["front_attack"]) == "Melee" or Battle.base_kind(info(data)["back_attack"]) == "Melee"
 		"archer":
 			return has_tag(data, "archer")
+		"caster":
+			return "Magic" in [Battle.base_kind(info(data)["front_attack"]), Battle.base_kind(info(data)["back_attack"])]
+		"claws":
+			return has_tag(data, "claws")
 	return true
+
+
+## The unit's attack from a row, e.g. "Breath (row)": its class's, except that in the front
+## row a staff with a spell (items.json "front_attack") casts that instead (user, 2026-11-18).
+func attack(data: GameData, from_row: String) -> String:
+	if from_row == "front":
+		for slot in items:
+			var it: Dictionary = data.items["items"][items[slot]["id"]]
+			if it.has("front_attack"):
+				return it["front_attack"]
+	return info(data)["front_attack" if from_row == "front" else "back_attack"]
 
 
 func is_alive() -> bool:

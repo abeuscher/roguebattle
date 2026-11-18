@@ -31,7 +31,7 @@ static func offense(data: GameData, u: Unit) -> float:
 	var t: Dictionary = data.battle["threat"]
 	var ref := yardstick(data)
 	var c := u.info(data)
-	var kind: String = c["front_attack" if u.row == "front" else "back_attack"]
+	var kind := u.attack(data, u.row)
 	var attacks := float(c["front_count" if u.row == "front" else "back_count"])
 	var per_hit: float
 	match Battle.base_kind(kind):

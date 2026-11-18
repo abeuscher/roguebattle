@@ -1189,3 +1189,11 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **Pause after every battle** (options.json pause_after_battle) sits beside Pause after losing battle, which stays; either pauses the map as the battle closes (GameState.pause_after). **Pause after a liberation** (pause_after_liberation) pauses as each liberation is shown, window or banner, so the map is paused when the window closes; it stops a skip too.
 - **The Opinion Leader's HP:** a new Unit.hp_mult (2) multiplies max HP after the Veterans tech's share, so the two stack and the bonus follows the unit through saves and campaign maps. Set once, at the start of a game (in the starting kit), on whoever is the Opinion Leader then. Saves from before keep their Opinion Leader as it was.
 - **Kit:** Bronze armor and the first of Sword, Bow the unit can use (a melee attack in either row, or the archer tag); a pure caster gets a Ring (INT) in the jewelry slot, since no weapon item suits it. New items, on top of the starting kit's 6. All in rules.json opinion_leader_kit.
+
+## Session 117: more weapons
+
+- **Staffs** (use "caster": a Magic attack in either row, so healers and buffers without one wear a Ring instead). Staff INT +2, 40 gold, in shops and kits. Rune Staff INT +2, 95 gold, after Elemental Focus (Arcana, tier 2, the way Longbow Training opens the Longbow). Storm Staff, rare, INT +5, 420 gold. A staff's "front_attack" (Magic; Magic (row) for the Storm Staff) replaces the wearer's front-row attack in the front row only, at the class's front-row count (Unit.attack, used by the battle, the threat estimate and the character sheet). In the back row it's only its stats, as the user's balance asked.
+- **Crossbow:** STR +4, AGI -1, 65 gold, archers: harder hitting than the Bow, less accurate, no extra attack.
+- **Katana:** STR +3, AGI +2, 90 gold, melee, after Steelworking (like Steel armor), a step above the Sword.
+- **Metal Claws:** STR +3, 55 gold, only for the "claws" tag in battle.json: the cat, lion and wolf families (the sheet has no claws column). Beasts could already wear melee weapons (a Melee attack); that's unchanged.
+- **Icons** drawn in tools/item_icons.py like the rest (a staff with an orb, glowing for the better two, the Storm Staff with a bolt).

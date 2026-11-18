@@ -166,6 +166,7 @@ Later, not before the campaign: variant takes of sounds, another round of collis
 | 3 | **Squads met in a town or tower that may join** (campaigns; on hold with the rest of the campaign work until the user's full playthrough, 2026-11-18): a full squad waits in a town or tower; when your party arrives, a dice roll decides whether it joins, swayed by a question put to you and/or a trait of the party's leader or the Opinion Leader. Some interactivity for the story | §25.6 | Tests; play | To design with the user |
 | 4 | **Options to pause after every battle, and after a liberation** (both off by default) | §5.2 | Tests | Done (session 116) |
 | 5 | **The Opinion Leader dies on a fluke:** double its HP, Bronze armor, and a weapon for its class | §2 | Tests; next playthrough | Done (session 116): a Sword or Bow, else a Ring for a unit that can use neither |
+| 6 | **More weapons:** a staff for spellcasters, the better ones casting a spell from the front row only; Crossbow, Katana, and Metal Claws for beasts with claws | §15.2 | Tests; icons by eye | Done (session 117): Staff, Rune Staff (Elemental Focus) and the rare Storm Staff; Katana after Steelworking; claws on cats, lions and wolves |
 
 ## Playtest round 24 (user's notes, 2026-11-17)
 

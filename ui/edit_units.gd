@@ -770,7 +770,7 @@ func _unit_overview(u: Unit, sq: Squad, locked: bool) -> Control:
 			_refresh())
 		mid.add_child(lead)
 	mid.add_child(_sheet_section("In battle"))
-	mid.add_child(_sheet_pair("Front row", "%s ×%d" % [c["front_attack"], int(c["front_count"])]))
+	mid.add_child(_sheet_pair("Front row", "%s ×%d" % [u.attack(data, "front"), int(c["front_count"])]))
 	mid.add_child(_sheet_pair("Back row", "%s ×%d" % [c["back_attack"], int(c["back_count"])]))
 	if c["element"] != null:
 		mid.add_child(_sheet_pair("Element", str(c["element"])))
@@ -1037,6 +1037,8 @@ func _item_label(id: String) -> String:
 		parts.append("%s %+d" % [s, int(item["stats"][s])])
 	if item.has("back_attacks"):
 		parts.append("+%d attack from the back row" % int(item["back_attacks"]))
+	if item.has("front_attack"):
+		parts.append("casts %s from the front row" % item["front_attack"])
 	return "%s: %s" % [item["name"], ", ".join(parts)]
 
 
@@ -1270,7 +1272,7 @@ class Chip extends Control:
 		# In a squad, the attack of the row it stands in; in the pool, of the row it would be
 		# placed in (healers show as healers, not by their front-row swing).
 		var row := u.row if squad else EditUnits.preferred_row(data, u)
-		var attack: String = c["front_attack" if row == "front" else "back_attack"]
+		var attack := u.attack(data, row)
 		color = colors.get(Battle.base_kind(attack), Color.GRAY)
 		line = "Lv %d  ·  %s" % [u.level, attack]
 		attacks = int(c["front_count" if row == "front" else "back_count"])

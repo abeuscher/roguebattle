@@ -158,6 +158,49 @@ def bow(long=False, wood="#8d6e63", string="#eeeeee", bolt=False):
         body += poly([(44, 6), (36, 18), (42, 18), (34, 30), (50, 14), (43, 14), (50, 6)], "#ffeb3b")
     return svg(body)
 
+def staff(orb, glow=None, bolt=False):
+    # a wooden staff leaning right, an orb held in a fork at the top
+    body = ""
+    if glow:
+        body += circle(42, 18, 16, glow, 'stroke="none" opacity="0.35"')
+    body += path("M18 58 L40 24", extra=f'stroke="{INK}" stroke-width="9"')
+    body += path("M18 58 L40 24", extra='stroke="#8d6e63" stroke-width="5"')
+    body += path("M38 28 Q32 18 36 10 M42 26 Q52 22 52 12", extra='stroke-width="3"')
+    body += circle(43, 17, 7, orb)
+    body += circle(41, 15, 2, "#ffffff", 'stroke="none" opacity="0.7"')
+    if bolt:
+        body += poly([(22, 6), (16, 16), (21, 16), (14, 28), (28, 12), (23, 12), (28, 6)], "#ffeb3b")
+    return svg(body)
+
+def crossbow():
+    body = rect(29, 14, 6, 44, "#8d6e63", 2)
+    body += path("M10 24 Q32 12 54 24", extra=f'stroke="{INK}" stroke-width="8"')
+    body += path("M10 24 Q32 12 54 24", extra='stroke="#78909c" stroke-width="4"')
+    body += path("M10 24 L32 34 L54 24", extra='stroke="#eeeeee" stroke-width="2"')
+    body += path("M32 34 L32 6", extra='stroke-width="3"')
+    body += poly([(32, 4), (27, 12), (37, 12)], "#b0bec5")
+    body += rect(27, 44, 10, 5, "#5d4037", 2)
+    return svg(body)
+
+def katana():
+    # a slim curved blade, a round guard and a wrapped grip
+    body = '<g transform="rotate(45 32 32)">'
+    body += path("M29 40 L29 16 Q30 8 36 4 Q34 12 35 16 L35 40 Z", "#eceff1")
+    body += circle(32, 42, 6, "#424242")
+    body += rect(29, 46, 6, 14, "#263238", 2)
+    body += path("M29 50 L35 52 M29 55 L35 57", extra='stroke="#b0bec5" stroke-width="1.5"')
+    body += "</g>"
+    return svg(body)
+
+def claws():
+    # three curved metal blades over a strap
+    body = ""
+    for x in (20, 30, 40):
+        body += path(f"M{x} 44 Q{x - 2} 22 {x + 10} 8 Q{x + 6} 24 {x + 7} 44 Z", "#cfd8dc")
+    body += rect(14, 42, 38, 12, "#795548", 3)
+    body += path("M20 48 H46", extra='stroke="#a1887f" stroke-width="2"')
+    return svg(body)
+
 def armor(metal, trim, scales=False):
     body = path("M14 14 L24 8 Q32 14 40 8 L50 14 L54 28 L46 30 L46 56 L18 56 L18 30 L10 28 Z", metal)
     body += path("M24 8 Q32 18 40 8", extra=f'stroke="{trim}" stroke-width="3"')
@@ -343,6 +386,11 @@ ITEMS = {
     "mace": club(spikes=True, metal=True),
     "bow": bow(),
     "longbow": bow(long=True, wood="#6d4c41"),
+    "crossbow": crossbow(),
+    "katana": katana(),
+    "claws": claws(),
+    "staff": staff("#90caf9"),
+    "rune_staff": staff("#ab47bc", glow="#ce93d8"),
     "bronze": armor("#cd8b4f", "#8d5a2b"),
     "iron": armor("#9e9e9e", "#616161"),
     "steel": armor("#cfd8dc", "#78909c"),
@@ -352,6 +400,7 @@ ITEMS = {
     "bracelet": bracelet(),
     "sunblade": blade(34, 6, metal="#fff176", hilt="#ff8f00", guard="#ffb300", glow="#ffeb3b"),
     "stormbow": bow(long=True, wood="#455a64", string="#b3e5fc", bolt=True),
+    "storm_staff": staff("#4fc3f7", glow="#b3e5fc", bolt=True),
     "dragonscale": armor("#43a047", "#1b5e20", scales=True),
     "crown": crown(),
 }
