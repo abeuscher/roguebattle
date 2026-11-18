@@ -1163,3 +1163,10 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **A class is in** if any of its lines is (the doc's rule for shared stages: Serf, the stage 2 classes, Tadpole, Wolf, Bobcat and so on).
 - **Lines are named by the sheet's ids** ("1", "R5", "L10"), as the gating proposal's appendix lists them. The tier, pack and other sheet columns, the filters and per-map unlocks are later steps of that proposal.
 - **Trifectus's list** is a suggestion: tiers 0 and 1 from the proposal plus every line its story squads use (Knight for Mr. Bosstoo, Tamer for the Beastmaster, the dragons, Sea Dragon, Wolfhound for the starting pool's Wolf, Gryphon, Angel, Eagle Rider, Mermaid, Frog, Toad).
+
+## Session 113: tuning the final boss
+
+- **Measured headlessly** (a throwaway script, not kept): parties fought the Beastmaster at the Enemy Base, healed between tries, the boss not (a quick retry, before his daily rest). As built (four dragons at +2, Centaurs at +1) no party won a first try in 30, from level 8 to the user's level 25 party; he fell only through losing heart and wearing down. Two dragons (Red and Black, the fire and dark breaths) at +1, Centaurs at +0, the Beastmaster still at +2: about 2 tries at every level tried. Two dragons at +0 was a first-try win for a strong party, too soft for a final boss. Slots 7 (11 was for four dragons).
+- **Crossing map 3** (a party walking to the moat, liberating places within 10 hexes that lie on its way): 45-58 game hours plus 12-25 battles; the user is happy with it. Every party won every fight on the way; noted for tuning, not changed.
+- **Branch:** cut from session-112 (not yet merged), since it changes that session's campaign file.
+

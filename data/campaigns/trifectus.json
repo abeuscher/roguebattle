@@ -376,7 +376,7 @@
      "name": "The Beastmaster",
      "role": "leader",
      "boss": true,
-     "slots": 11,
+     "slots": 7,
      "units": [
       {
        "class": "Beastlord",
@@ -387,32 +387,22 @@
       {
        "class": "Red Dragon",
        "row": "front",
-       "level": "+2"
-      },
-      {
-       "class": "Blue Dragon",
-       "row": "front",
-       "level": "+2"
-      },
-      {
-       "class": "Silver Dragon",
-       "row": "back",
-       "level": "+2"
+       "level": "+1"
       },
       {
        "class": "Black Dragon",
        "row": "back",
-       "level": "+2"
-      },
-      {
-       "class": "Centaur",
-       "row": "back",
        "level": "+1"
       },
       {
        "class": "Centaur",
        "row": "back",
-       "level": "+1"
+       "level": "+0"
+      },
+      {
+       "class": "Centaur",
+       "row": "back",
+       "level": "+0"
       }
      ]
     }

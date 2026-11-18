@@ -47,7 +47,7 @@ Goal: a generated map the player can look at, and one squad they can move.
 
 **M3 milestone check:** a short play session.
 
-**Later (UI):** once the toolbar's full button set is known (likely after M4, when the debug panel and any end-of-map screens are in), plan icons for the toolbar buttons and a more compact toolbar.
+**Later (UI)** (queued in playtest round 25, 2026-11-18): once the toolbar's full button set is known (likely after M4, when the debug panel and any end-of-map screens are in), plan icons for the toolbar buttons and a more compact toolbar.
 
 **Parked for discussion after M4** (user's own notes, to talk through, not yet decided):
 - ~~Front/rear row placement at half-slot granularity~~ Dropped (user, 2026-11-16).
@@ -157,6 +157,14 @@ The basic loop has to be fun before the campaign builds on it. In order:
 
 Later, not before the campaign: variant takes of sounds, another round of collision playthroughs (after the user's playtest).
 
+## Playtest round 25 (user's notes, 2026-11-18)
+
+| # | Session | Spec | Verify | Status |
+|---|---|---|---|---|
+| 1 | **The final boss is too strong** (the user's level 25 party lost to the Beastmaster 4 times). Also measured: the time to cross map 3 | §25.7 | Headless runs of map 3 | Done (session 113). As it was, no party won a first try (30 each, levels 8-25): a fight took 13-16% of the boss's HP and cost the party 51-70% of its own; he fell only once worn down, after 6-7 tries. Now the Beastmaster (+2) with two dragons, Red and Black (+1), and two Centaurs (+0): first try won in a third to two thirds of runs, beaten in about 2. Crossing: 444-486 hexes, 45-58 game hours (9-12 real minutes at Normal) plus 12-25 battles, all won, liberating on the way; the user is happy with that |
+| 2 | **Toolbar icons and a more compact toolbar** (the note under M3). Nothing new in style: match the rest of the UI | §5.2 | Screenshots at 1600×900 and 1920×1080 | Next |
+| 3 | **Squads met in a town or tower that may join** (campaigns): a full squad waits in a town or tower; when your party arrives, a dice roll decides whether it joins, swayed by a question put to you and/or a trait of the party's leader or the Opinion Leader. Some interactivity for the story | §25.6 | Tests; play | To design with the user |
+
 ## Playtest round 24 (user's notes, 2026-11-17)
 
 | # | Session | Spec | Verify | Status |
@@ -197,7 +205,7 @@ The design is SPEC §25 (written 2026-11-17 from the notes below and the user's 
 | 2 | **Bosses and story moments:** named squads (bosses), the Opinion Leader's party must beat the boss, the reversed name that follows a rename, squads joining between maps, Trifectus's starting army | §25.6, 25.7 | Tests; play map 1 | Done (session 110): a chapter's `army`, `named` and `join` in the campaign file (Campaign.build_squad); the boss rule in GameState (_check_boss, boss_beaten); the boss tip. Map 1's opening checked in a window |
 | 3 | **The new map shapes:** the coastline round a central ocean with an island fortress (map 2); the 500 × 100 valley with the lava river and three crossings, and the moated castle with one bridge (map 3) | §25.7 | Map previews | Done (session 111): the Inland Sea and Castle Valley map types (mapgen shape ring, shoals, valley_walls, moat, enemy_base_at), also in the configurator. Previewed over several seeds and looked at in the game |
 | 4 | **Lines allowed per campaign** (the first step of `docs/campaign-gating.md`) | §25.6 | Tests | Done (session 112): a campaign's `lines`; GameData.set_lines / allows / line_allowed, set by every new GameState; next_classes, the starting army and conscript pools, neutral and rare recruit lines, enemy builds and the glossary keep to them. Trifectus: tiers 0 and 1 plus its story lines |
-| 5 | **Tuning Trifectus** by playtest | §25.7 | Playtest | Next (the user's playtest) |
+| 5 | **Tuning Trifectus** by playtest | §25.7 | Playtest | In progress: the Beastmaster made lighter from headless runs (session 113, playtest round 25); the user's full playthrough next |
 
 The notes below are the background; where they and SPEC §25 differ, §25 is what was settled.
 
