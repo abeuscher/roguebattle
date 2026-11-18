@@ -1203,3 +1203,7 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 - **Unarmed** (battle.json tag, roles Beast, Breath beast, Dragon and Swarm): no weapon but Metal Claws. Swarms (rats, bats) count as beasts here, and the lizards (Breath beasts) have no claws tag, so both wear no weapon at all; armor and jewelry are unchanged. Items a beast already wears stay on it until taken off.
 - **Claws** now also the birds and gryphons (War Bird to Storm Roc, Sphinx) and the dragons with legs (Drakeling, Wyrm, the five coloured Dragons, Sea Dragon, Kuraokami); not the serpents (Serpent, Leviathan, Snow Snake, Snow Serpent).
 - The Opinion Leader's kit tries Metal Claws after the Sword and Bow, so a beast leader gets them.
+
+## Session 119: more claws
+
+- **Claws** also for the lizards (Salamander to Basilisk) and the swarms (the rats and bats), so of the unarmed only the serpents wear no weapon (user).

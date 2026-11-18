@@ -373,7 +373,7 @@ func _about(l: Dictionary) -> String:
 			return "%s Used %s." % [c["text"], "in battle (the Items button)" if c["where"] == "battle" else "from the squad menu's Scrolls button" if c["where"] == "scroll" else ("in battle or on the map" if c["where"] == "any" else "anywhere on the map (the squad menu's Heal)")]
 	var it: Dictionary = data.items["items"][l["id"]]
 	var who: String = {"melee": "Units with a melee attack can use it, not beasts.", "archer": "Archers can use it, not beasts.",
-			"caster": "Spellcasters (a Magic attack) can use it, not beasts.", "claws": "Only beasts with claws can wear it: cats, lions, wolves, birds, gryphons and dragons."}.get(it["use"], "Anyone can use it.")
+			"caster": "Spellcasters (a Magic attack) can use it, not beasts.", "claws": "Only beasts with claws can wear it: cats, lions, wolves, birds, gryphons, lizards, rats, bats and dragons."}.get(it["use"], "Anyone can use it.")
 	var extra := ", +%d attack from the back row" % int(it["back_attacks"]) if it.has("back_attacks") else ""
 	if it.has("front_attack"):
 		extra = "; in the front row its wearer casts %s in place of its usual attack" % it["front_attack"]
