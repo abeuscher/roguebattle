@@ -1183,3 +1183,9 @@ The user added `data/units-landwar-v3.xlsx` (190 classes, Traits, Leader aura, X
 ## Session 115: the compact toolbar
 
 - **Icons only, named on hover** (user: nothing new, match the rest): the four buttons are flat icon buttons, like the skip button under the minimap, on one glass panel, like the gold's and the notifications book's; the icon lights in the accent colour on hover. The tooltip gives the name and key ("Deploy Squad (D)"), and for Deploy why it's greyed out. The labels go; the Cards button keeps the hand's count beside its icon. Cards uses the fan of cards (as on the liberation window's View all cards) instead of the layers icon.
+
+## Session 116: pause options and a sturdier Opinion Leader
+
+- **Pause after every battle** (options.json pause_after_battle) sits beside Pause after losing battle, which stays; either pauses the map as the battle closes (GameState.pause_after). **Pause after a liberation** (pause_after_liberation) pauses as each liberation is shown, window or banner, so the map is paused when the window closes; it stops a skip too.
+- **The Opinion Leader's HP:** a new Unit.hp_mult (2) multiplies max HP after the Veterans tech's share, so the two stack and the bonus follows the unit through saves and campaign maps. Set once, at the start of a game (in the starting kit), on whoever is the Opinion Leader then. Saves from before keep their Opinion Leader as it was.
+- **Kit:** Bronze armor and the first of Sword, Bow the unit can use (a melee attack in either row, or the archer tag); a pure caster gets a Ring (INT) in the jewelry slot, since no weapon item suits it. New items, on top of the starting kit's 6. All in rules.json opinion_leader_kit.

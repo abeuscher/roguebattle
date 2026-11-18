@@ -245,6 +245,7 @@ The enemy fields its Warlord and Base guard plus as many squads as you may have 
 
 ## Your Opinion Leader and this copy of the game
 
+- **Sturdier from the start:** at the start of a game (or campaign) the Opinion Leader has double the usual max HP, wears Bronze armor, and carries a Sword (a unit with a melee attack) or a Bow (an archer); one that can use neither wears a Ring instead. The armor and weapon are extra, not taken from the starting kit, and can be swapped in Edit Units like any item.
 - **Renaming:** open the Opinion Leader's character sheet in Edit Units and click the pencil by their name; type a new one (up to 24 letters) and press Enter or click away. Their squad's name follows.
 - **The title screen** shows which copy of the game this is, in a black box near the bottom: "Working copy", the version (0. and the session number) and when it was stamped, so testers can say which build they played.
 
@@ -277,7 +278,7 @@ The enemy fields its Warlord and Base guard plus as many squads as you may have 
 
 While time is stopped on the map, a large pause sign and "Paused" show at the top left.
 
-Options on the Start screen and in the in-game menu (Esc) hold your own settings, saved between sessions. **Sound** comes first: a master volume (80 to start), Music (70), Effects (80) and Voice (100) sliders, and Mute all sound; changes are heard at once. The switches below are all on by default: whether a battle shows both squads and waits for Fight (a checkbox next to Fight turns it off too), whether switching to another window pauses the game (the battle, if one is playing, otherwise the map; you resume it yourself), the noon ledger, the liberation message, and player tips. **Pause game after losing battle?** is off by default; on, the map stays paused after a battle you lose until you press Play. The game also remembers the battle speed you last picked, and which tips you've seen.
+Options on the Start screen and in the in-game menu (Esc) hold your own settings, saved between sessions. **Sound** comes first: a master volume (80 to start), Music (70), Effects (80) and Voice (100) sliders, and Mute all sound; changes are heard at once. The switches below are all on by default: whether a battle shows both squads and waits for Fight (a checkbox next to Fight turns it off too), whether switching to another window pauses the game (the battle, if one is playing, otherwise the map; you resume it yourself), the noon ledger, the liberation message, and player tips. Three pause switches are off by default; each, on, leaves the map paused until you press Play: **Pause game after losing battle?** (after a battle you lose), **Pause game after every battle** (after any battle) and **Pause game after a place is liberated** (after you take a town, tower or temple). The game also remembers the battle speed you last picked, and which tips you've seen.
 
 ## Sound
 

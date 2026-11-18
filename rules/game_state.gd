@@ -299,9 +299,26 @@ func _setup_quick_start() -> void:
 	_starting_kit()
 
 
+## The Opinion Leader starts sturdier (user, 2026-11-18; rules.json opinion_leader_kit):
+## more max HP, armor, and a weapon for its class (else a piece of jewelry).
+func _arm_opinion_leader() -> void:
+	var u := opinion_leader
+	if u == null:
+		return
+	var kit: Dictionary = data.rules["opinion_leader_kit"]
+	u.hp_mult = float(kit["hp_mult"])
+	var wear: Array = [kit["armor"]]
+	var weapons: Array = kit["weapons"].filter(func(id): return u.can_use(data, id))
+	wear.append(weapons[0] if not weapons.is_empty() else kit["no_weapon"])
+	for id in wear:
+		army.equip(u, army.add_item(id))
+	u.hp = u.max_hp(data)
+
+
 ## The starting kit (user's playtest notes, 2026-11-10; rules.json "starting_kit"):
 ## a few random items that need no tech, plus supplies.
 func _starting_kit() -> void:
+	_arm_opinion_leader()
 	var kit: Dictionary = data.rules["starting_kit"]
 	var r := rng.get_stream("army_setup")
 	var basic := item_ids(false)
@@ -2857,7 +2874,7 @@ func resolve_pending() -> Dictionary:
 ## Whether the map stays paused after a battle with this result: the player option
 ## "Pause game after losing battle?" (off by default; playtest round 19).
 static func pause_after(result: String, options: Dictionary) -> bool:
-	return result == "lost" and bool(options.get("pause_after_loss", false))
+	return bool(options.get("pause_after_battle", false)) or (result == "lost" and bool(options.get("pause_after_loss", false)))
 
 
 static func battle_result(out: Dictionary) -> String:

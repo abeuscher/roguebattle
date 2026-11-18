@@ -16,6 +16,16 @@
    "tip": "On: after a battle you lose, the map stays paused until you press Play.",
    "default": false
   },
+  "pause_after_battle": {
+   "label": "Pause game after every battle",
+   "tip": "On: when any battle ends, the map stays paused until you press Play.",
+   "default": false
+  },
+  "pause_after_liberation": {
+   "label": "Pause game after a place is liberated",
+   "tip": "On: when you take a town, tower or temple, the map stays paused until you press Play.",
+   "default": false
+  },
   "battle_speed": {
    "label": "Battle speed",
    "tip": "Not on the Options screen: the speed last chosen in a battle (an index into battle.json view speeds), kept for the next battles.",

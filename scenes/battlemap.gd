@@ -1393,6 +1393,8 @@ func _pump_liberations() -> void:
 	if Time.get_ticks_msec() < _next_liberation or Sound.quiet_in() > 0.0:
 		return  # a beat after the last one, its sound finished, so each plays with its own window (round 18)
 	var entry: Dictionary = state.liberations.pop_front()
+	if bool(options.get("pause_after_liberation", false)) and not state.clock.paused:
+		state.toggle_pause()  # the player's option (user, 2026-11-18): the map waits for Play after a liberation
 	if entry["building"]["type"] == "temple":
 		_last_temple = entry["building"]["hex"]
 	# "New Town!" (or Tower, Temple) first, the important part, and the riff three quarters

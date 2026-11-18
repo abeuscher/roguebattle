@@ -18,6 +18,7 @@ var extra_slots := 0  # slots earned as a leader (§8.2)
 var element := ""  # overrides the class's element when set (Skeletons)
 var items := {}  # slot (weapon, armor, jewelry) -> the item worn ({uid, id}, §15.2)
 var hp_bonus := 0.0  # extra share of max HP (the Veterans tech)
+var hp_mult := 1.0  # max HP multiplier: the Opinion Leader's (rules.json opinion_leader_kit)
 # Hidden (§12.2)
 var growth := {}  # non-key stat -> chance to grow per level, before talent
 var since_growth := {}  # non-key stat -> levels since it last grew (§12.2 guarantee)
@@ -72,7 +73,7 @@ static func roll(data: GameData, unit_class_name: String, rng: RandomNumberGener
 
 
 func max_hp(data: GameData) -> int:
-	return roundi(stat(data, "CON") * int(data.rules["hp_per_con"]) * (1.0 + hp_bonus))
+	return roundi(stat(data, "CON") * int(data.rules["hp_per_con"]) * (1.0 + hp_bonus) * hp_mult)
 
 
 ## A stat with its items' bonuses.

@@ -152,7 +152,7 @@ func test_state_army_and_editing() -> void:
 	check_eq(st.army.squads().size(), 6, "the 6 Map 1 squads (§18)")
 	check_eq(st.player_squads().size(), 1, "only the first squad starts on the map (§8.4)")
 	check(st.army.pool.is_empty(), "no starting recruit pool")
-	check_eq(st.army.items.size(), 6, "a starting kit of 6 items")
+	check_eq(st.army.items.size(), 6 + 2, "a starting kit of 6 items, and the Opinion Leader's armor and weapon")
 	check(st.army.items.all(func(it): return not d.items["items"][it["id"]].has("requires")), "none of them needs tech")
 	check_eq(int(st.army.supplies.get("revive", 0)), 5, "5 Revival Draughts")
 	check_eq(int(st.army.supplies.get("herb", 0)), 20, "20 Herbs")
