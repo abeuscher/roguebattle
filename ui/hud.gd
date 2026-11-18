@@ -3,7 +3,7 @@ extends Control
 ## The battlemap HUD (SPEC §5.2; layout from playtest round 7, ROADMAP M4 session 24):
 ## gold and the reputation meter at the top right; the squad drawer at the middle left;
 ## the minimap at the bottom right with the clock and game speed under it; the toolbar
-## (Edit Units, Deploy Squad, Cards, Tech) at the bottom centre; an info button at the bottom
+## (Edit Units, Deploy Squad, Cards, Tech: icon buttons, named on hover) at the bottom centre; an info button at the bottom
 ## left that shows or hides the key help (hidden to start).
 
 signal squad_pressed(id: int)
@@ -25,7 +25,7 @@ const DRAWER_SHUT := 104.0  # the drawer's width, collapsed: number and leader i
 const DRAWER_OPEN := 340.0  # expanded: markers and the squad's name too
 const DRAWER_TIME := 0.2  # seconds to slide
 const BOTTOM := 60.0  # gap under everything along the bottom edge (16 until a playtester's screen hid the toolbar; user 2026-11-15)
-const TOOL_HEIGHT := 32.0  # toolbar buttons, about half the old size
+const TOOL_SIZE := Vector2(44, 38)  # a toolbar button: an icon, its name and key on hover (user, 2026-11-18: compact, like the rest)
 
 var minimap := Minimap.new()
 var _clock := Label.new()
@@ -53,7 +53,7 @@ var _banner := PanelContainer.new()  # lines of labels, with place names as link
 var _banner_box := VBoxContainer.new()
 var _banner_lines: Array = []  # [text, its row, msec it goes (0: it stays), how long it has, msec], oldest first
 var _banner_cfg := {}  # rules.json banner (set in refresh)
-var _toolbar := HBoxContainer.new()
+var _toolbar := PanelContainer.new()  # the toolbar's glass panel, its icon buttons in a row
 var _cards_button: Button
 var _deploy_button: Button  # off when the squad cap is reached or no squad waits at base
 
@@ -217,44 +217,42 @@ func _build_clock() -> void:
 	row.add_child(_skip)  # right of the speed menu (user, 2026-11-15), in the room "Day" or "Night" took
 
 
-## Bottom centre: small rounded, see-through buttons, an icon left of each label.
+## Bottom centre: a glass panel like the gold's and the book's, with a row of icon buttons;
+## hover one for its name and key (user, 2026-11-18: compact, matching the rest of the HUD).
 func _build_toolbar() -> void:
-	_toolbar.add_theme_constant_override("separation", 8)
+	_toolbar.add_theme_stylebox_override("panel", _glass(4))
 	add_child(_toolbar)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 2)
+	_toolbar.add_child(row)
 	for entry in [["Edit Units (U)", "users", edit_pressed], ["Deploy Squad (D)", "flag", deploy_pressed],
-			["Cards (C)", "layers", cards_pressed], ["Tech (T)", "flask-conical", tech_pressed]]:
+			["Cards (C)", "cards-fan", cards_pressed], ["Tech (T)", "flask-conical", tech_pressed]]:
 		var b := _tool_button(entry[0], entry[1])
 		b.pressed.connect(entry[2].emit)
-		_toolbar.add_child(b)
+		row.add_child(b)
 		if entry[0].begins_with("Cards"):
 			_cards_button = b
+			b.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT  # the icon, then the hand's count
 		elif entry[0].begins_with("Deploy"):
 			_deploy_button = b
 
 
-func _tool_button(text: String, icon_name: String) -> Button:
+## A flat icon button, its icon lit in the accent colour on hover, as the skip button is.
+func _tool_button(tip: String, icon_name: String) -> Button:
 	var b := Button.new()
-	b.text = text
-	b.icon = UiStyle.svg(icon_name, 16)
+	b.flat = true
+	b.icon = UiStyle.svg(icon_name, 24)
+	b.tooltip_text = tip
 	b.focus_mode = FOCUS_NONE
-	b.custom_minimum_size = Vector2(0, TOOL_HEIGHT)
-	b.add_theme_font_size_override("font_size", 14)
-	b.add_theme_constant_override("h_separation", 6)
-	for st in ["normal", "hover", "pressed", "disabled", "focus"]:
-		var fill: Color = {"normal": Color(0.12, 0.14, 0.18, 0.7), "hover": Color(0.2, 0.23, 0.28, 0.8), "pressed": Color(0.08, 0.1, 0.12, 0.85),
-				"disabled": Color(0.1, 0.11, 0.13, 0.5), "focus": Color(0, 0, 0, 0)}[st]
-		var box := StyleBoxFlat.new()
-		box.bg_color = fill
-		box.set_corner_radius_all(25)
-		box.set_border_width_all(1)
-		box.border_color = UiStyle.ACCENT if st in ["hover", "pressed"] else Color(UiStyle.OUTLINE, 0.6)
-		box.content_margin_left = 14
-		box.content_margin_right = 16
-		box.content_margin_top = 4
-		box.content_margin_bottom = 4
-		b.add_theme_stylebox_override(st, box)
-	b.add_theme_color_override("font_disabled_color", Color(1, 1, 1, 0.35))
-	b.add_theme_color_override("icon_disabled_color", Color(1, 1, 1, 0.35))
+	b.custom_minimum_size = TOOL_SIZE
+	b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	b.mouse_default_cursor_shape = CURSOR_POINTING_HAND
+	b.add_theme_font_size_override("font_size", 15)
+	b.add_theme_constant_override("h_separation", 5)
+	b.add_theme_color_override("icon_hover_color", UiStyle.ACCENT)
+	b.add_theme_color_override("font_hover_color", UiStyle.ACCENT)
+	b.add_theme_color_override("font_disabled_color", Color(1, 1, 1, 0.3))
+	b.add_theme_color_override("icon_disabled_color", Color(1, 1, 1, 0.3))
 	return b
 
 
@@ -495,10 +493,11 @@ func refresh(state: GameState) -> void:
 			b.tooltip_text = "%d %s: %s" % [s.id, s.name, state.status_text(s)]
 	_reputation.value = state.reputation
 	_reputation.tooltip_text = "Reputation %d of 100" % state.reputation
-	_cards_button.text = "Cards (C): %d" % state.cards.size()
+	_cards_button.text = str(state.cards.size())  # the hand's size beside the cards
+	_cards_button.tooltip_text = "Cards (C): %d in your hand" % state.cards.size()
 	var why: String = state.deploy_menu_blocker()
 	_deploy_button.disabled = why != ""
-	_deploy_button.tooltip_text = why
+	_deploy_button.tooltip_text = "Deploy Squad (D)" + ("\n" + why if why != "" else "")
 	var now := Time.get_ticks_msec()
 	var gone := _banner_lines.filter(func(l: Array): return int(l[2]) > 0 and now > int(l[2]))
 	for line in gone:
